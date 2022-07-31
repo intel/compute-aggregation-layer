@@ -3350,6 +3350,9 @@ config :
                  5 :
                     name : ptr
                     type : "const void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"
@@ -3648,6 +3651,9 @@ config :
                  10 :
                     name : ptr
                     type : "const void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
@@ -4055,6 +4061,9 @@ config :
                  10 :
                     name : ptr
                     type : "void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
@@ -4245,6 +4254,9 @@ config :
                  5 :
                     name : ptr
                     type : "void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"
@@ -4584,6 +4596,9 @@ config :
                  7 :
                     name : ptr
                     type : "void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}src_origin, {arg_prefix}region, {arg_prefix}row_pitch, {arg_prefix}slice_pitch)"
@@ -4678,6 +4693,9 @@ config :
                  7 :
                     name : ptr
                     type : "const void*"
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}origin, {arg_prefix}region, {arg_prefix}input_row_pitch, {arg_prefix}input_slice_pitch)"
@@ -5974,6 +5992,9 @@ config :
                  3 :
                     name : src_ptr
                     type : const void*
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"
@@ -6040,6 +6061,9 @@ config :
                  2 :
                     name : dst_ptr
                     type : void*
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"
@@ -6420,6 +6444,9 @@ config :
                  3 :
                     name : srcPtr
                     type : const void*
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"
@@ -6488,6 +6515,9 @@ config :
                  2 :
                     name : dstPtr
                     type : void*
+                    capture_details :
+                        mode : standalone
+                        reclaim_method : command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                     kind : ptr_array
                     kind_details :
                         num_elements: "size"

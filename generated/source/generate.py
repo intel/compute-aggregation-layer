@@ -171,13 +171,39 @@ class KindDetails:
         self.variable_generator = src.get("variable_generator", None)
         self.underlying_type = UnderlyingType(src.get("underlying_type", {}))
 
+class CaptureMode:
+    def __init__(self, src: str):
+        self.str = src
+
+    def is_inline_mode(self):
+        return self.str == "inline"
+
+    def is_standalone_mode(self):
+        return self.str == "standalone"
+
+class CaptureReclaimMethod:
+    def __init__(self, src: str):
+        self.str = src
+
+    def is_immediate_mode(self):
+        return self.str == "immediate"
+
+    def format(self, ptr):
+        return self.str.format(allocation=ptr)
+
+class CaptureDetails:
+    def __init__(self, src: dict):
+        self.mode = CaptureMode(src.get("mode", "inline"))
+        self.reclaim_method = CaptureReclaimMethod(src.get("reclaim_method", "immediate"))
 
 class ArgTraits:
     def __init__(self, arg, parent_function):
         self.arg = arg
-        self.uses_dynamic_mem = arg.kind.is_pointer_to_array() and not arg.kind_details.num_elements.is_constant()
-        self.uses_dynamic_arg_getter = parent_function.traits.uses_dynamic_arg_getters and arg.kind.is_pointer_to_array(
-        ) and not arg.kind_details.num_elements.is_constant()
+        self.uses_standalone_allocation = arg.capture_details.mode.is_standalone_mode()
+        if self.uses_standalone_allocation:
+            assert( arg.kind.is_pointer() )
+        self.uses_inline_dynamic_mem = arg.kind.is_pointer_to_array() and (not arg.kind_details.num_elements.is_constant()) and (not self.uses_standalone_allocation)
+        self.uses_dynamic_arg_getter = parent_function.traits.uses_dynamic_arg_getters and self.uses_inline_dynamic_mem
         self.uses_nested_capture = arg.kind.is_pointer_to_array() and arg.kind_details.element.kind.is_pointer_to_array()
 
 
@@ -194,6 +220,7 @@ class Arg:
         self.daemon_action_on_success = DaemonAction(src["daemon_action_on_success"]) if "daemon_action_on_success" in src.keys() else None
         self.daemon_action_at_end = DaemonAction(src["daemon_action_at_end"]) if "daemon_action_at_end" in src.keys() else None
         self.server_access = ServerAccess(src.get("server_access", {}))
+        self.capture_details = CaptureDetails(src.get("capture_details", {}))
 
     def to_str(self, inject_pointer=0, inject_ref=False) -> str:
         if self.kind.is_pointer_function():
@@ -370,21 +397,21 @@ class SpecialHandling:
 class FunctionTraits:
     def __init__(self, function):
         self.function = function
-        self.num_of_all_args_with_dynamic_mem = len(self.get_dyn_ptr_array_args()) + \
+        self.num_of_all_args_with_inline_dynamic_mem = len(self.get_inline_dyn_ptr_array_args()) + \
             self.count_of_capturable_struct_members_includig_nested(self.get_ptr_array_args())
-        self.uses_dynamic_arg_getters = self.num_of_all_args_with_dynamic_mem > 1
+        self.uses_dynamic_arg_getters = self.num_of_all_args_with_inline_dynamic_mem > 1
         ptr_array_args = self.get_ptr_array_args()
 
         self.emit_copy_from_caller = self.requires_copy_from_caller(ptr_array_args, function.implicit_args)
         self.emit_copy_to_caller = self.requires_copy_to_caller(ptr_array_args, function.implicit_args)
 
-        self.uses_dynamic_mem = self.num_of_all_args_with_dynamic_mem > 0
+        self.uses_inline_dynamic_mem = self.num_of_all_args_with_inline_dynamic_mem > 0
         self.is_extension = function.special_handling and function.special_handling.is_extension()
         self.is_variant = function.special_handling and function.special_handling.is_variant()
         self.requires_malloc_shmem_zero_copy_handler = any(arg.kind.is_pointer_zero_copy_malloc_shmem() for arg in function.args)
 
     def requires_copy_from_caller(self, ptr_array_args, implicit_args):
-        is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args)
+        is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args if not arg.capture_details.mode.is_standalone_mode())
         is_copy_required_for_implicit_args = any(not arg.server_access.write_only() for arg in implicit_args)
 
         capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
@@ -412,12 +439,15 @@ class FunctionTraits:
             total_count += struct_type.traits.capturable_members_count_including_nested()
         return total_count
 
+    def get_standalone_args(self):
+        return [arg for arg in self.function.args if arg.capture_details.mode.is_standalone_mode()]
+
     def get_ptr_array_args(self):
         return [arg for arg in self.function.args if arg.kind.is_pointer_to_array()]
 
-    def get_dyn_ptr_array_args(self):
+    def get_inline_dyn_ptr_array_args(self):
         dyn_ptr_array_args = [arg for arg in self.function.args if arg.kind.is_pointer_to_array()
-                             and not arg.kind_details.num_elements.is_constant()]
+                             and (not arg.kind_details.num_elements.is_constant()) and (not arg.capture_details.mode.is_standalone_mode())]
 
         def is_costly(arg):
             return arg.kind_details.num_elements.is_nullterminated() or arg.kind_details.num_elements.is_nullterminated_key() or arg.kind_details.element.kind.is_pointer_to_array()
@@ -727,6 +757,8 @@ class FunctionCaptureLayout:
         self.struct_members_layouts = {}
 
         for arg in function.traits.get_ptr_array_args():
+            if arg.traits.uses_standalone_allocation:
+                continue
             # Ensure that capture layout includes nested structure fields.
             if arg.kind_details.element.kind.is_struct() and arg.kind_details.element.type.str in structures:
                 if structures[arg.kind_details.element.type.str].traits.is_trivial():
@@ -738,6 +770,8 @@ class FunctionCaptureLayout:
                         arg, parent_layout, member) for member in members_to_capture]
 
         for arg in function.traits.get_fixed_ptr_array_args():
+            if arg.traits.uses_standalone_allocation:
+                continue
             arg_layout = FunctionCaptureLayout.ArgCaptureLayout()
             arg_layout.arg = arg
             arg_layout.fixed_size = True
@@ -746,7 +780,7 @@ class FunctionCaptureLayout:
             self.fixed_ptr_array_args_layouts.append(arg_layout)
 
         prev = None
-        for arg in function.traits.get_dyn_ptr_array_args():
+        for arg in function.traits.get_inline_dyn_ptr_array_args():
             arg_layout = FunctionCaptureLayout.ArgCaptureLayout()
             arg_layout.arg = arg
             arg_layout.fixed_size = False
@@ -760,7 +794,7 @@ class FunctionCaptureLayout:
 
         self.nested_capture_args_layouts = [
             arg_layout for arg_layout in self.dynamic_ptr_array_args_layouts if arg_layout.uses_nested_capture]
-        self.emit_dynamic_traits = self.function.traits.uses_dynamic_mem
+        self.emit_dynamic_traits = self.function.traits.uses_inline_dynamic_mem
 
         self.emit_per_arg_dynamic_traits = any(
             a for a in self.dynamic_ptr_array_args_layouts if (
@@ -830,7 +864,7 @@ class FunctionCaptureLayout:
         emit_copy_assignment = self.function.special_handling and self.function.special_handling.rpc and self.function.special_handling.rpc.emit_copy_assignment
 
         return Template(template).render(cl=self,
-                                         dyn_array_args=self.function.traits.get_dyn_ptr_array_args(),
+                                         inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
                                          fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
                                          dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
                                          dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
@@ -844,7 +878,7 @@ class FunctionCaptureLayout:
             template = f.read()
 
         return Template(template).render(cl=self,
-                                         dyn_array_args=self.function.traits.get_dyn_ptr_array_args(),
+                                         inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
                                          fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
                                          dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
                                          dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
@@ -1046,7 +1080,7 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
         return functions_with_messages.index(func)
 
     def get_copy_from_or_to_caller_args(func, const_iargs):
-        return (["const Captures::DynamicTraits &dynMemTraits"] if func.traits.uses_dynamic_mem else []) + \
+        return (["const Captures::DynamicTraits &dynMemTraits"] if func.traits.uses_inline_dynamic_mem else []) + \
             ([f"{'const ' if const_iargs else ''}ImplicitArgs &implicitArgs"] if func.implicit_args else [])
 
     def get_ptr_array_args(func):
@@ -1206,7 +1240,7 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
             [f"{sarg}" for sarg in [arg.name for arg in f.args] + get_implicit_call_param(f)])
 
     def get_copy_from_or_to_caller_call_params_list(f):
-        return (["dynMemTraits"] if f.traits.uses_dynamic_mem else [
+        return (["dynMemTraits"] if f.traits.uses_inline_dynamic_mem else [
         ]) + ([f"implArgsFor{f.message_name}"] if f.implicit_args else [])
 
     def get_copy_from_or_to_caller_call_params_list_str(f):
@@ -1308,7 +1342,7 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         return rpc_func.capture_layout.struct_members_layouts
 
     def get_arg_from_api_command_struct(rpc_func, arg):
-        if arg.kind.is_pointer_to_array():
+        if arg.kind.is_pointer_to_array() and not arg.traits.uses_standalone_allocation:
             if arg.kind_details.num_elements.is_constant() or not rpc_func.traits.uses_dynamic_arg_getters:
                 captured_arg = f"{'&' if (arg.kind_details.num_elements.get_constant() == 1) else ''}apiCommand->captures.{arg.name}"
             else:

@@ -37,13 +37,13 @@ ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeInitRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(flags);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(flags);
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -56,8 +56,8 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCreateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, hDevice, desc, phCommandList);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, desc, phCommandList);
     command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
@@ -65,7 +65,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -83,8 +83,8 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, hDevice, altdesc, phCommandList);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, altdesc, phCommandList);
     command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
@@ -92,7 +92,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -110,14 +110,14 @@ ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandList);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -133,14 +133,14 @@ ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCloseRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandList);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -153,14 +153,14 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListResetRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandList);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -176,8 +176,8 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, hDevice, desc, phCommandQueue);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, desc, phCommandQueue);
     command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
@@ -185,7 +185,7 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -203,14 +203,14 @@ ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandQueue);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandQueue);
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -227,8 +227,8 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandQueue, numCommandLists, phCommandLists, hFence);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandQueue, numCommandLists, phCommandLists, hFence);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandQueue, numCommandLists, phCommandLists, hFence);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
     if(phCommandLists)
@@ -249,7 +249,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -263,14 +263,14 @@ ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunk
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(chunksCount, chunks, transferDescsCount, transferDescs);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, chunksCount, chunks, transferDescsCount, transferDescs);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, chunksCount, chunks, transferDescsCount, transferDescs);
     command->copyFromCaller(dynMemTraits);
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -284,14 +284,14 @@ ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hComma
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandQueue, timeout);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandQueue, timeout);
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -304,15 +304,15 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextCreateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDriver, desc, phContext);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDriver, desc, phContext);
     command->copyFromCaller();
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -331,8 +331,8 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextCreateExRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, desc, numDevices, phDevices, phContext);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDriver, desc, numDevices, phDevices, phContext);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, desc, numDevices, phDevices, phContext);
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
     if(phDevices)
@@ -349,7 +349,7 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -367,14 +367,14 @@ ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -390,14 +390,14 @@ ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextGetStatusRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -412,8 +412,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -434,7 +434,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -448,8 +448,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm (ze_command_list_ha
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -470,7 +470,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm (ze_command_list_ha
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -484,8 +484,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_comman
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -506,7 +506,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_comman
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -520,8 +520,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc (ze_command_list_ha
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -542,7 +542,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc (ze_command_list_ha
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -556,8 +556,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc (ze_command_list
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -578,7 +578,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc (ze_command_list
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -593,8 +593,8 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -615,7 +615,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -629,8 +629,8 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -651,7 +651,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -665,15 +665,15 @@ ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, pCount, phDevices);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDriver, pCount, phDevices);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, pCount, phDevices);
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -698,15 +698,15 @@ ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phSubdevices);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDevice, pCount, phSubdevices);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, phSubdevices);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -730,15 +730,15 @@ ze_result_t zeDeviceGetProperties (ze_device_handle_t hDevice, ze_device_propert
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pDeviceProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pDeviceProperties);
     command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -756,14 +756,14 @@ ze_result_t zeDeviceGetComputeProperties (ze_device_handle_t hDevice, ze_device_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetComputePropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pComputeProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pComputeProperties);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -777,14 +777,14 @@ ze_result_t zeDeviceGetModuleProperties (ze_device_handle_t hDevice, ze_device_m
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetModulePropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pModuleProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pModuleProperties);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -799,15 +799,15 @@ ze_result_t zeDeviceGetCommandQueueGroupProperties (ze_device_handle_t hDevice, 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetCommandQueueGroupPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, pCommandQueueGroupProperties);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDevice, pCount, pCommandQueueGroupProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, pCommandQueueGroupProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -822,15 +822,15 @@ ze_result_t zeDeviceGetMemoryProperties (ze_device_handle_t hDevice, uint32_t* p
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, pMemProperties);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDevice, pCount, pMemProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, pMemProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -844,15 +844,15 @@ ze_result_t zeDeviceGetMemoryAccessProperties (ze_device_handle_t hDevice, ze_de
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryAccessPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pMemAccessProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pMemAccessProperties);
     command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -867,15 +867,15 @@ ze_result_t zeDeviceGetCacheProperties (ze_device_handle_t hDevice, uint32_t* pC
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetCachePropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, pCacheProperties);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDevice, pCount, pCacheProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, pCacheProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -889,15 +889,15 @@ ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_im
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetImagePropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pImageProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pImageProperties);
     command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -911,15 +911,15 @@ ze_result_t zeDeviceGetExternalMemoryProperties (ze_device_handle_t hDevice, ze_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pExternalMemoryProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pExternalMemoryProperties);
     command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -933,15 +933,15 @@ ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, hPeerDevice, value);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, hPeerDevice, value);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -955,14 +955,14 @@ ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -975,14 +975,14 @@ ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* h
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, hostTimestamp, deviceTimestamp);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, hostTimestamp, deviceTimestamp);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -997,14 +997,14 @@ ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDriver
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(pCount, phDrivers);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, pCount, phDrivers);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, pCount, phDrivers);
     command->copyFromCaller(dynMemTraits);
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1018,14 +1018,14 @@ ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t*
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetApiVersionRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDriver, version);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDriver, version);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1039,15 +1039,15 @@ ze_result_t zeDriverGetProperties (ze_driver_handle_t hDriver, ze_driver_propert
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDriver, pDriverProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDriver, pDriverProperties);
     command->copyFromCaller();
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1061,15 +1061,15 @@ ze_result_t zeDriverGetIpcProperties (ze_driver_handle_t hDriver, ze_driver_ipc_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetIpcPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDriver, pIpcProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDriver, pIpcProperties);
     command->copyFromCaller();
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1084,15 +1084,15 @@ ze_result_t zeDriverGetExtensionProperties (ze_driver_handle_t hDriver, uint32_t
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetExtensionPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, pCount, pExtensionProperties);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDriver, pCount, pExtensionProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, pCount, pExtensionProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1108,8 +1108,8 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hContext, desc, numDevices, phDevices, phEventPool);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hContext, desc, numDevices, phDevices, phEventPool);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hContext, desc, numDevices, phDevices, phEventPool);
     command->copyFromCaller(dynMemTraits);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     if(phDevices)
@@ -1126,7 +1126,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1144,14 +1144,14 @@ ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEventPool);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEventPool);
     command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1167,15 +1167,15 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventCreateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEventPool, desc, phEvent);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEventPool, desc, phEvent);
     command->copyFromCaller();
     command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1193,14 +1193,14 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEvent);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1217,8 +1217,8 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
@@ -1239,7 +1239,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1252,8 +1252,8 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandList, hEvent);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList, hEvent);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hEvent)
     {
@@ -1263,7 +1263,7 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1277,8 +1277,8 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendWaitOnEventsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, numEvents, phEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, numEvents, phEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, numEvents, phEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(phEvents)
@@ -1295,7 +1295,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1308,14 +1308,14 @@ ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t 
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEvent, timeout);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEvent, timeout);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1328,14 +1328,14 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEvent);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1348,14 +1348,14 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostResetRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEvent);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1368,14 +1368,14 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hEvent, dstptr);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEvent, dstptr);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1389,15 +1389,15 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceCreateRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hCommandQueue, desc, phFence);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandQueue, desc, phFence);
     command->copyFromCaller();
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1415,14 +1415,14 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hFence);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1438,14 +1438,14 @@ ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t 
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hFence, timeout);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hFence, timeout);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1458,14 +1458,14 @@ ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hFence);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1478,14 +1478,14 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceResetRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hFence);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1501,14 +1501,14 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, offsetX, offsetY, offsetZ);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, offsetX, offsetY, offsetZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1521,8 +1521,8 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
     command->copyFromCaller(implArgsForZeMemAllocSharedRpcM);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     if(hDevice)
@@ -1533,7 +1533,7 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(implArgsForZeMemAllocSharedRpcM);
@@ -1547,8 +1547,8 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, device_desc, size, alignment, hDevice, pptr);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, device_desc, size, alignment, hDevice, pptr);
     command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
@@ -1556,7 +1556,7 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1574,15 +1574,15 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocHostRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, host_desc, size, alignment, pptr);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, host_desc, size, alignment, pptr);
     command->copyFromCaller(implArgsForZeMemAllocHostRpcM);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(implArgsForZeMemAllocHostRpcM);
@@ -1596,15 +1596,15 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemFreeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, ptr);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     globalL0Platform->destroyUsmDescriptor(ptr);
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1617,15 +1617,15 @@ ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* p
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, ptr, pMemAllocProperties, phDevice);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, pMemAllocProperties, phDevice);
     command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1643,14 +1643,14 @@ ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr,
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hContext, ptr, pBase, pSize);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, pBase, pSize);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1665,8 +1665,8 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleCreateRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hContext, hDevice, desc, phModule, phBuildLog);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hContext, hDevice, desc, phModule, phBuildLog);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hContext, hDevice, desc, phModule, phBuildLog);
     command->copyFromCaller(dynMemTraits);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
@@ -1674,7 +1674,7 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1696,14 +1696,14 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hModule);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hModule);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1719,14 +1719,14 @@ ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLo
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hModuleBuildLog);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hModuleBuildLog);
     command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1743,15 +1743,15 @@ ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuild
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModuleBuildLog, pSize, pBuildLog);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModuleBuildLog, pSize, pBuildLog);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModuleBuildLog, pSize, pBuildLog);
     command->copyFromCaller(dynMemTraits);
     command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1766,15 +1766,15 @@ ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, pSize, pModuleNativeBinary);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, pSize, pModuleNativeBinary);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModule, pSize, pModuleNativeBinary);
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1789,15 +1789,15 @@ ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pG
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, pGlobalName, pSize, pptr);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, pGlobalName, pSize, pptr);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModule, pGlobalName, pSize, pptr);
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1817,15 +1817,15 @@ ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetKernelNamesRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, totalLength, namesBuffer);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, totalLength, namesBuffer);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModule, totalLength, namesBuffer);
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1839,15 +1839,15 @@ ze_result_t zeModuleGetProperties (ze_module_handle_t hModule, ze_module_propert
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hModule, pModuleProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hModule, pModuleProperties);
     command->copyFromCaller();
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1862,15 +1862,15 @@ ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelCreateRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, desc, phKernel);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, desc, phKernel);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModule, desc, phKernel);
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1888,14 +1888,14 @@ ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelDestroyRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     {
@@ -1912,15 +1912,15 @@ ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetFunctionPointerRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, pFunctionName, pfnFunction);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, pFunctionName, pfnFunction);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hModule, pFunctionName, pfnFunction);
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -1934,14 +1934,14 @@ ze_result_t zeKernelSetGroupSize (ze_kernel_handle_t hKernel, uint32_t groupSize
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGroupSizeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, groupSizeX, groupSizeY, groupSizeZ);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, groupSizeX, groupSizeY, groupSizeZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -1954,14 +1954,14 @@ ze_result_t zeKernelSuggestGroupSize (ze_kernel_handle_t hKernel, uint32_t globa
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestGroupSizeRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1975,14 +1975,14 @@ ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel,
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestMaxCooperativeGroupCountRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, totalGroupCount);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, totalGroupCount);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -1997,15 +1997,15 @@ ze_result_t zeKernelSetArgumentValue (ze_kernel_handle_t hKernel, uint32_t argIn
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetArgumentValueRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hKernel, argIndex, argSize, pArgValue);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hKernel, argIndex, argSize, pArgValue);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hKernel, argIndex, argSize, pArgValue);
     command->copyFromCaller(dynMemTraits);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -2018,14 +2018,14 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetIndirectAccessRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, flags);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, flags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -2038,14 +2038,14 @@ ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetIndirectAccessRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, pFlags);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, pFlags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -2059,14 +2059,14 @@ ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetCacheConfigRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, flags);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, flags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -2079,15 +2079,15 @@ ze_result_t zeKernelGetProperties (ze_kernel_handle_t hKernel, ze_kernel_propert
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hKernel, pKernelProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, pKernelProperties);
     command->copyFromCaller();
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();
@@ -2102,15 +2102,15 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetNameRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hKernel, pSize, pName);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hKernel, pSize, pName);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hKernel, pSize, pName);
     command->copyFromCaller(dynMemTraits);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
@@ -2125,8 +2125,8 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
@@ -2148,7 +2148,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     ze_result_t ret = command->captures.ret;
@@ -2161,15 +2161,15 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
     auto &channel = globalL0Platform->getRpcChannel();;
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM;
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(hDevice, pPciProperties);
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pPciProperties);
     command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
     command->copyToCaller();

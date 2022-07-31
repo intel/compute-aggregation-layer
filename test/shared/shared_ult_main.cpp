@@ -13,14 +13,7 @@
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
 
-    Cal::Mocks::LogCaptureContext globalLogsCapture;
+    Cal::Mocks::DisallowLogs disallowLogs;
     auto ret = RUN_ALL_TESTS();
-    if (false == globalLogsCapture.empty()) {
-        printf("Unexpected CAL logs captured globally:\n[%s]\n", globalLogsCapture.str().c_str());
-        if (0 == ret) {
-            ret = -1;
-        }
-    }
-
     return ret;
 }

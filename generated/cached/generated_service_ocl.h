@@ -156,7 +156,7 @@ extern cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_p
 
 bool isSuccessful(cl_int result);
 
-inline bool clGetPlatformInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetPlatformInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetPlatformInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetPlatformInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetPlatformInfo(
@@ -168,7 +168,7 @@ inline bool clGetPlatformInfoHandler(Provider &service, ClientContext &ctx, Cal:
                                                 );
     return true;
 }
-inline bool clGetDeviceIDsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetDeviceIDsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceIDs");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceIDsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetDeviceIDs(
@@ -180,7 +180,7 @@ inline bool clGetDeviceIDsHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clGetDeviceInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetDeviceInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetDeviceInfo(
@@ -192,7 +192,7 @@ inline bool clGetDeviceInfoHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clCreateContextHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateContext");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContext(
@@ -205,7 +205,7 @@ inline bool clCreateContextHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clCreateContextFromTypeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateContextFromTypeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateContextFromType");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContextFromType(
@@ -217,7 +217,7 @@ inline bool clCreateContextFromTypeHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clGetContextInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetContextInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetContextInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetContextInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetContextInfo(
@@ -229,7 +229,7 @@ inline bool clGetContextInfoHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clCreateSubDevicesHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateSubDevicesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubDevices");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateSubDevices(
@@ -241,7 +241,7 @@ inline bool clCreateSubDevicesHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clCreateCommandQueueHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateCommandQueueHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateCommandQueue");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateCommandQueueRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateCommandQueue(
@@ -252,7 +252,7 @@ inline bool clCreateCommandQueueHandler(Provider &service, ClientContext &ctx, C
                                                 );
     return true;
 }
-inline bool clSetDefaultDeviceCommandQueueHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetDefaultDeviceCommandQueueHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetDefaultDeviceCommandQueue");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetDefaultDeviceCommandQueueRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetDefaultDeviceCommandQueue(
@@ -262,7 +262,7 @@ inline bool clSetDefaultDeviceCommandQueueHandler(Provider &service, ClientConte
                                                 );
     return true;
 }
-inline bool clCreateCommandQueueWithPropertiesHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateCommandQueueWithPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateCommandQueueWithProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateCommandQueueWithPropertiesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateCommandQueueWithProperties(
@@ -273,7 +273,7 @@ inline bool clCreateCommandQueueWithPropertiesHandler(Provider &service, ClientC
                                                 );
     return true;
 }
-inline bool clCreateProgramWithSourceHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateProgramWithSourceHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateProgramWithSource");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateProgramWithSourceRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateProgramWithSource(
@@ -285,7 +285,7 @@ inline bool clCreateProgramWithSourceHandler(Provider &service, ClientContext &c
                                                 );
     return true;
 }
-inline bool clCreateProgramWithILHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateProgramWithILHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateProgramWithIL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateProgramWithILRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateProgramWithIL(
@@ -296,7 +296,7 @@ inline bool clCreateProgramWithILHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clCreateProgramWithBinaryHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateProgramWithBinaryHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateProgramWithBinary");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateProgramWithBinaryRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateProgramWithBinary(
@@ -310,7 +310,7 @@ inline bool clCreateProgramWithBinaryHandler(Provider &service, ClientContext &c
                                                 );
     return true;
 }
-inline bool clCreateProgramWithBuiltInKernelsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateProgramWithBuiltInKernelsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateProgramWithBuiltInKernels");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateProgramWithBuiltInKernelsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateProgramWithBuiltInKernels(
@@ -322,7 +322,7 @@ inline bool clCreateProgramWithBuiltInKernelsHandler(Provider &service, ClientCo
                                                 );
     return true;
 }
-inline bool clBuildProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clBuildProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClBuildProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clBuildProgram(
@@ -335,7 +335,7 @@ inline bool clBuildProgramHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clCompileProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCompileProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCompileProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCompileProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCompileProgram(
@@ -351,7 +351,7 @@ inline bool clCompileProgramHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clLinkProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clLinkProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clLinkProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClLinkProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clLinkProgram(
@@ -367,7 +367,7 @@ inline bool clLinkProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clGetProgramBuildInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetProgramBuildInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetProgramBuildInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetProgramBuildInfo(
@@ -380,7 +380,7 @@ inline bool clGetProgramBuildInfoHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clCreateKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateKernel(
@@ -390,7 +390,7 @@ inline bool clCreateKernelHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clCloneKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCloneKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCloneKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCloneKernelRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCloneKernel(
@@ -399,7 +399,7 @@ inline bool clCloneKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clCreateKernelsInProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateKernelsInProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateKernelsInProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateKernelsInProgram(
@@ -410,7 +410,7 @@ inline bool clCreateKernelsInProgramHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
-inline bool clGetCommandQueueInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetCommandQueueInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetCommandQueueInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetCommandQueueInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetCommandQueueInfo(
@@ -422,7 +422,7 @@ inline bool clGetCommandQueueInfoHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clGetProgramInfoRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetProgramInfoRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetProgramInfoRpcHelper");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoRpcHelperRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetProgramInfo(
@@ -434,8 +434,8 @@ inline bool clGetProgramInfoRpcHelperHandler(Provider &service, ClientContext &c
                                                 );
     return true;
 }
-bool clGetProgramInfoGetBinariesRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clGetMemObjectInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clGetProgramInfoGetBinariesRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clGetMemObjectInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetMemObjectInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetMemObjectInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetMemObjectInfo(
@@ -447,7 +447,7 @@ inline bool clGetMemObjectInfoHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clGetImageInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetImageInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetImageInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetImageInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetImageInfo(
@@ -459,7 +459,7 @@ inline bool clGetImageInfoHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clGetSamplerInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetSamplerInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetSamplerInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetSamplerInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetSamplerInfo(
@@ -471,7 +471,7 @@ inline bool clGetSamplerInfoHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clGetKernelInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetKernelInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetKernelInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetKernelInfo(
@@ -483,7 +483,7 @@ inline bool clGetKernelInfoHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clGetKernelWorkGroupInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetKernelWorkGroupInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetKernelWorkGroupInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelWorkGroupInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetKernelWorkGroupInfo(
@@ -496,7 +496,7 @@ inline bool clGetKernelWorkGroupInfoHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
-inline bool clGetKernelArgInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetKernelArgInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetKernelArgInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelArgInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetKernelArgInfo(
@@ -509,7 +509,7 @@ inline bool clGetKernelArgInfoHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clGetKernelSubGroupInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetKernelSubGroupInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetKernelSubGroupInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelSubGroupInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetKernelSubGroupInfo(
@@ -524,7 +524,7 @@ inline bool clGetKernelSubGroupInfoHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clReleaseCommandQueueHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseCommandQueueHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseCommandQueue");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseCommandQueueRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseCommandQueue(
@@ -532,7 +532,7 @@ inline bool clReleaseCommandQueueHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clReleaseContextHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseContext");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseContextRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseContext(
@@ -540,7 +540,7 @@ inline bool clReleaseContextHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clReleaseDeviceHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseDeviceHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseDevice");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseDeviceRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseDevice(
@@ -548,7 +548,7 @@ inline bool clReleaseDeviceHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clReleaseKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseKernelRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseKernel(
@@ -556,7 +556,7 @@ inline bool clReleaseKernelHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clReleaseSamplerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseSamplerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseSampler");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseSamplerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseSampler(
@@ -564,7 +564,7 @@ inline bool clReleaseSamplerHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clReleaseProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseProgram(
@@ -572,8 +572,8 @@ inline bool clReleaseProgramHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-bool clReleaseMemObjectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clReleaseEventHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clReleaseEventHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseEvent");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseEventRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseEvent(
@@ -581,7 +581,7 @@ inline bool clReleaseEventHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clRetainCommandQueueHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainCommandQueueHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainCommandQueue");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainCommandQueueRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainCommandQueue(
@@ -589,7 +589,7 @@ inline bool clRetainCommandQueueHandler(Provider &service, ClientContext &ctx, C
                                                 );
     return true;
 }
-inline bool clRetainContextHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainContext");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainContextRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainContext(
@@ -597,7 +597,7 @@ inline bool clRetainContextHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clRetainDeviceHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainDeviceHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainDevice");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainDeviceRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainDevice(
@@ -605,7 +605,7 @@ inline bool clRetainDeviceHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clRetainProgramHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainProgramRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainProgram(
@@ -613,7 +613,7 @@ inline bool clRetainProgramHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clRetainMemObjectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainMemObject");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainMemObjectRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainMemObject(
@@ -621,7 +621,7 @@ inline bool clRetainMemObjectHandler(Provider &service, ClientContext &ctx, Cal:
                                                 );
     return true;
 }
-inline bool clRetainSamplerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainSamplerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainSampler");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainSamplerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainSampler(
@@ -629,7 +629,7 @@ inline bool clRetainSamplerHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clRetainKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainKernelRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainKernel(
@@ -637,7 +637,7 @@ inline bool clRetainKernelHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clRetainEventHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainEventHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainEvent");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainEventRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clRetainEvent(
@@ -645,7 +645,7 @@ inline bool clRetainEventHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clFlushHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clFlushHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clFlush");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClFlushRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clFlush(
@@ -653,7 +653,7 @@ inline bool clFlushHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcM
                                                 );
     return true;
 }
-inline bool clFinishHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clFinishHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clFinish");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClFinishRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clFinish(
@@ -661,7 +661,7 @@ inline bool clFinishHandler(Provider &service, ClientContext &ctx, Cal::Rpc::Rpc
                                                 );
     return true;
 }
-inline bool clEnqueueNDRangeKernelHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueNDRangeKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueNDRangeKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueNDRangeKernelRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueNDRangeKernel(
@@ -677,7 +677,7 @@ inline bool clEnqueueNDRangeKernelHandler(Provider &service, ClientContext &ctx,
                                                 );
     return true;
 }
-inline bool clEnqueueTaskHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueTaskHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueTask");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueTaskRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueTask(
@@ -689,7 +689,7 @@ inline bool clEnqueueTaskHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clEnqueueMarkerWithWaitListHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMarkerWithWaitListHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMarkerWithWaitList");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMarkerWithWaitListRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueMarkerWithWaitList(
@@ -700,7 +700,7 @@ inline bool clEnqueueMarkerWithWaitListHandler(Provider &service, ClientContext 
                                                 );
     return true;
 }
-inline bool clEnqueueMarkerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMarkerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMarker");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMarkerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueMarker(
@@ -709,7 +709,7 @@ inline bool clEnqueueMarkerHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clEnqueueBarrierWithWaitListHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueBarrierWithWaitListHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueBarrierWithWaitList");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueBarrierWithWaitListRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueBarrierWithWaitList(
@@ -720,7 +720,7 @@ inline bool clEnqueueBarrierWithWaitListHandler(Provider &service, ClientContext
                                                 );
     return true;
 }
-inline bool clEnqueueBarrierHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueBarrierHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueBarrier");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueBarrierRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueBarrier(
@@ -728,7 +728,7 @@ inline bool clEnqueueBarrierHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
-inline bool clEnqueueWaitForEventsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWaitForEventsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWaitForEvents");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWaitForEventsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWaitForEvents(
@@ -738,7 +738,7 @@ inline bool clEnqueueWaitForEventsHandler(Provider &service, ClientContext &ctx,
                                                 );
     return true;
 }
-inline bool clEnqueueMigrateMemObjectsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMigrateMemObjectsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMigrateMemObjects");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemObjectsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueMigrateMemObjects(
@@ -752,8 +752,8 @@ inline bool clEnqueueMigrateMemObjectsHandler(Provider &service, ClientContext &
                                                 );
     return true;
 }
-bool clCreateBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem");
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -769,7 +769,7 @@ inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider
                                                 );
     return true;
 }
-inline bool clCreateSubBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateSubBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateSubBuffer(
@@ -781,7 +781,7 @@ inline bool clCreateSubBufferHandler(Provider &service, ClientContext &ctx, Cal:
                                                 );
     return true;
 }
-inline bool clCreatePipeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreatePipeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreatePipe");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreatePipeRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreatePipe(
@@ -794,7 +794,7 @@ inline bool clCreatePipeHandler(Provider &service, ClientContext &ctx, Cal::Rpc:
                                                 );
     return true;
 }
-inline bool clGetPipeInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetPipeInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetPipeInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetPipeInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetPipeInfo(
@@ -806,7 +806,7 @@ inline bool clGetPipeInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clCreateImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateImage(
@@ -819,7 +819,7 @@ inline bool clCreateImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clCreateImage2DHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateImage2DHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateImage2D");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateImage2DRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateImage2D(
@@ -834,7 +834,7 @@ inline bool clCreateImage2DHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clCreateImage3DHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateImage3DHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateImage3D");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateImage3DRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateImage3D(
@@ -851,7 +851,7 @@ inline bool clCreateImage3DHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clCreateSamplerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateSamplerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSampler");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSamplerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateSampler(
@@ -863,7 +863,7 @@ inline bool clCreateSamplerHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clCreateSamplerWithPropertiesHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateSamplerWithPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSamplerWithProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSamplerWithPropertiesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateSamplerWithProperties(
@@ -873,7 +873,7 @@ inline bool clCreateSamplerWithPropertiesHandler(Provider &service, ClientContex
                                                 );
     return true;
 }
-inline bool clCreateImageWithPropertiesHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateImageWithPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateImageWithProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateImageWithPropertiesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateImageWithProperties(
@@ -887,7 +887,7 @@ inline bool clCreateImageWithPropertiesHandler(Provider &service, ClientContext 
                                                 );
     return true;
 }
-inline bool clCreateBufferWithPropertiesHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateBufferWithPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateBufferWithProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferWithPropertiesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBufferWithProperties(
@@ -900,7 +900,7 @@ inline bool clCreateBufferWithPropertiesHandler(Provider &service, ClientContext
                                                 );
     return true;
 }
-inline bool clGetSupportedImageFormatsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetSupportedImageFormatsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetSupportedImageFormats");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetSupportedImageFormatsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetSupportedImageFormats(
@@ -913,7 +913,7 @@ inline bool clGetSupportedImageFormatsHandler(Provider &service, ClientContext &
                                                 );
     return true;
 }
-inline bool clSetKernelArgHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetKernelArgHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetKernelArg");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelArgRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetKernelArg(
@@ -924,7 +924,7 @@ inline bool clSetKernelArgHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clSetProgramSpecializationConstantHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetProgramSpecializationConstantHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetProgramSpecializationConstant");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetProgramSpecializationConstantRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetProgramSpecializationConstant(
@@ -935,7 +935,7 @@ inline bool clSetProgramSpecializationConstantHandler(Provider &service, ClientC
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBuffer(
@@ -951,7 +951,7 @@ inline bool clEnqueueWriteBufferHandler(Provider &service, ClientContext &ctx, C
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferRpcHelperMallocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferRpcHelperMallocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRpcHelperMallocHost");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcHelperMallocHostRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBuffer(
@@ -960,14 +960,14 @@ inline bool clEnqueueWriteBufferRpcHelperMallocHostHandler(Provider &service, Cl
                                                 apiCommand->args.blocking_write, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem");
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -987,7 +987,7 @@ inline bool clEnqueueWriteBufferRpcHelperZeroCopyMallocShmemHandler(Provider &se
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferRectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
@@ -1008,7 +1008,7 @@ inline bool clEnqueueWriteBufferRectHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferRectRpcHelperMallocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferRectRpcHelperMallocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRectRpcHelperMallocHost");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
@@ -1022,14 +1022,14 @@ inline bool clEnqueueWriteBufferRectRpcHelperMallocHostHandler(Provider &service
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem");
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -1054,7 +1054,7 @@ inline bool clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBuffer(
@@ -1070,7 +1070,7 @@ inline bool clEnqueueReadBufferHandler(Provider &service, ClientContext &ctx, Ca
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
@@ -1091,7 +1091,7 @@ inline bool clEnqueueReadBufferRectHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRectRpcHelperMallocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferRectRpcHelperMallocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRectRpcHelperMallocHost");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperMallocHostRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
@@ -1105,14 +1105,14 @@ inline bool clEnqueueReadBufferRectRpcHelperMallocHostHandler(Provider &service,
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem");
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -1137,7 +1137,7 @@ inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider 
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRpcHelperMallocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferRpcHelperMallocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRpcHelperMallocHost");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRpcHelperMallocHostRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBuffer(
@@ -1146,14 +1146,14 @@ inline bool clEnqueueReadBufferRpcHelperMallocHostHandler(Provider &service, Cli
                                                 apiCommand->args.blocking_read, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRpcHelperZeroCopyMallocShmem");
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -1173,7 +1173,7 @@ inline bool clEnqueueReadBufferRpcHelperZeroCopyMallocShmemHandler(Provider &ser
                                                 );
     return true;
 }
-inline bool clEnqueueCopyBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueCopyBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyBuffer(
@@ -1189,7 +1189,7 @@ inline bool clEnqueueCopyBufferHandler(Provider &service, ClientContext &ctx, Ca
                                                 );
     return true;
 }
-inline bool clEnqueueCopyBufferRectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueCopyBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyBufferRect");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferRectRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyBufferRect(
@@ -1209,7 +1209,7 @@ inline bool clEnqueueCopyBufferRectHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clEnqueueReadImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueReadImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadImage(
@@ -1220,14 +1220,14 @@ inline bool clEnqueueReadImageHandler(Provider &service, ClientContext &ctx, Cal
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.row_pitch, 
                                                 apiCommand->args.slice_pitch, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueWriteImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueWriteImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteImage(
@@ -1238,14 +1238,14 @@ inline bool clEnqueueWriteImageHandler(Provider &service, ClientContext &ctx, Ca
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.input_row_pitch, 
                                                 apiCommand->args.input_slice_pitch, 
-                                                apiCommand->args.ptr ? apiCommand->captures.getPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueCopyImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueCopyImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyImage(
@@ -1261,7 +1261,7 @@ inline bool clEnqueueCopyImageHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clEnqueueCopyImageToBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueCopyImageToBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyImageToBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyImageToBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyImageToBuffer(
@@ -1277,7 +1277,7 @@ inline bool clEnqueueCopyImageToBufferHandler(Provider &service, ClientContext &
                                                 );
     return true;
 }
-inline bool clEnqueueCopyBufferToImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueCopyBufferToImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyBufferToImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferToImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyBufferToImage(
@@ -1293,7 +1293,7 @@ inline bool clEnqueueCopyBufferToImageHandler(Provider &service, ClientContext &
                                                 );
     return true;
 }
-inline bool clEnqueueMapBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMapBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMapBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMapBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueMapBuffer(
@@ -1310,7 +1310,7 @@ inline bool clEnqueueMapBufferHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clEnqueueUnmapMemObjectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueUnmapMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueUnmapMemObject");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueUnmapMemObjectRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueUnmapMemObject(
@@ -1323,7 +1323,7 @@ inline bool clEnqueueUnmapMemObjectHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clEnqueueFillBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueFillBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueFillBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueFillBufferRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueFillBuffer(
@@ -1339,7 +1339,7 @@ inline bool clEnqueueFillBufferHandler(Provider &service, ClientContext &ctx, Ca
                                                 );
     return true;
 }
-inline bool clEnqueueFillImageHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueFillImageHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueFillImage");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueFillImageRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueFillImage(
@@ -1354,7 +1354,7 @@ inline bool clEnqueueFillImageHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clWaitForEventsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clWaitForEventsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clWaitForEvents");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClWaitForEventsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clWaitForEvents(
@@ -1363,7 +1363,7 @@ inline bool clWaitForEventsHandler(Provider &service, ClientContext &ctx, Cal::R
                                                 );
     return true;
 }
-inline bool clGetEventInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetEventInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetEventInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetEventInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetEventInfo(
@@ -1375,7 +1375,7 @@ inline bool clGetEventInfoHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-inline bool clGetEventProfilingInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetEventProfilingInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetEventProfilingInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetEventProfilingInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetEventProfilingInfo(
@@ -1387,7 +1387,7 @@ inline bool clGetEventProfilingInfoHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clCreateUserEventHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateUserEventHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateUserEvent");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateUserEventRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateUserEvent(
@@ -1396,7 +1396,7 @@ inline bool clCreateUserEventHandler(Provider &service, ClientContext &ctx, Cal:
                                                 );
     return true;
 }
-inline bool clSetUserEventStatusHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetUserEventStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetUserEventStatus");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetUserEventStatusRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetUserEventStatus(
@@ -1405,7 +1405,7 @@ inline bool clSetUserEventStatusHandler(Provider &service, ClientContext &ctx, C
                                                 );
     return true;
 }
-inline bool clSetEventCallbackHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetEventCallback");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetEventCallbackRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetEventCallback(
@@ -1416,7 +1416,7 @@ inline bool clSetEventCallbackHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clGetDeviceAndHostTimerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetDeviceAndHostTimerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceAndHostTimer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceAndHostTimerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetDeviceAndHostTimer(
@@ -1426,7 +1426,7 @@ inline bool clGetDeviceAndHostTimerHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
-inline bool clGetHostTimerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetHostTimerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetHostTimer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetHostTimerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetHostTimer(
@@ -1435,11 +1435,11 @@ inline bool clGetHostTimerHandler(Provider &service, ClientContext &ctx, Cal::Rp
                                                 );
     return true;
 }
-bool clSVMAllocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clSVMFreeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clEnqueueSVMMapHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clEnqueueSVMUnmapHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clSetKernelArgSVMPointerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clEnqueueSVMMapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clEnqueueSVMUnmapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clSetKernelArgSVMPointerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetKernelArgSVMPointer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelArgSVMPointerRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetKernelArgSVMPointer(
@@ -1449,7 +1449,7 @@ inline bool clSetKernelArgSVMPointerHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
-inline bool clSetKernelExecInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetKernelExecInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetKernelExecInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelExecInfoRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetKernelExecInfo(
@@ -1460,7 +1460,7 @@ inline bool clSetKernelExecInfoHandler(Provider &service, ClientContext &ctx, Ca
                                                 );
     return true;
 }
-inline bool clEnqueueSVMMemFillHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueSVMMemFillHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMemFill");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemFillRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemFill(
@@ -1475,8 +1475,8 @@ inline bool clEnqueueSVMMemFillHandler(Provider &service, ClientContext &ctx, Ca
                                                 );
     return true;
 }
-bool clEnqueueSVMMigrateMemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clEnqueueSVMMemcpyHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clEnqueueSVMMigrateMemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clEnqueueSVMMemcpyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMemcpy");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
@@ -1491,37 +1491,37 @@ inline bool clEnqueueSVMMemcpyHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clEnqueueSVMMemcpyRpcHelperMalloc2UsmHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueSVMMemcpyRpcHelperMalloc2UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMemcpyRpcHelperMalloc2Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dst_ptr, 
-                                                apiCommand->args.src_ptr ? apiCommand->captures.getSrc_ptr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.src_ptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueSVMMemcpyRpcHelperUsm2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueSVMMemcpyRpcHelperUsm2MallocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMemcpyRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                apiCommand->args.dst_ptr ? apiCommand->captures.getDst_ptr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dst_ptr), 
                                                 apiCommand->args.src_ptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clCreateSubDevicesEXTHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clCreateSubDevicesEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubDevicesEXT");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clCreateSubDevicesEXT(
@@ -1533,7 +1533,7 @@ inline bool clCreateSubDevicesEXTHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clReleaseDeviceEXTHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clReleaseDeviceEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseDeviceEXT");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clReleaseDeviceEXT(
@@ -1541,7 +1541,7 @@ inline bool clReleaseDeviceEXTHandler(Provider &service, ClientContext &ctx, Cal
                                                 );
     return true;
 }
-inline bool clRetainDeviceEXTHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clRetainDeviceEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clRetainDeviceEXT");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clRetainDeviceEXT(
@@ -1549,7 +1549,7 @@ inline bool clRetainDeviceEXTHandler(Provider &service, ClientContext &ctx, Cal:
                                                 );
     return true;
 }
-inline bool clGetKernelSubGroupInfoKHRHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetKernelSubGroupInfoKHRHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetKernelSubGroupInfoKHR");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelSubGroupInfoKHRRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetKernelSubGroupInfoKHR(
@@ -1564,7 +1564,7 @@ inline bool clGetKernelSubGroupInfoKHRHandler(Provider &service, ClientContext &
                                                 );
     return true;
 }
-inline bool clEnqueueMemFillINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMemFillINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemFillINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemFillINTEL(
@@ -1579,7 +1579,7 @@ inline bool clEnqueueMemFillINTELHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clEnqueueMemcpyINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMemcpyINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
@@ -1594,37 +1594,37 @@ inline bool clEnqueueMemcpyINTELHandler(Provider &service, ClientContext &ctx, C
                                                 );
     return true;
 }
-inline bool clEnqueueMemcpyINTELRpcHelperMalloc2UsmHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMemcpyINTELRpcHelperMalloc2UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTELRpcHelperMalloc2Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dstPtr, 
-                                                apiCommand->args.srcPtr ? apiCommand->captures.getSrcPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.srcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clEnqueueMemcpyINTELRpcHelperUsm2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clEnqueueMemcpyINTELRpcHelperUsm2MallocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTELRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                apiCommand->args.dstPtr ? apiCommand->captures.getDstPtr() : nullptr, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dstPtr), 
                                                 apiCommand->args.srcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
     return true;
 }
-inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSetKernelArgMemPointerINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clSetKernelArgMemPointerINTEL(
@@ -1634,7 +1634,7 @@ inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, ClientContex
                                                 );
     return true;
 }
-inline bool clGetMemAllocInfoINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetMemAllocInfoINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetMemAllocInfoINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetMemAllocInfoINTEL(
@@ -1647,7 +1647,7 @@ inline bool clGetMemAllocInfoINTELHandler(Provider &service, ClientContext &ctx,
                                                 );
     return true;
 }
-inline bool clDeviceMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clDeviceMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clDeviceMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clDeviceMemAllocINTEL(
@@ -1660,11 +1660,11 @@ inline bool clDeviceMemAllocINTELHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-bool clHostMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clSharedMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clMemFreeINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-bool clMemBlockingFreeINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clEnqueueMigrateMemINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clMemFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clMemBlockingFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool clEnqueueMigrateMemINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMigrateMemINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMigrateMemINTEL(
@@ -1678,7 +1678,7 @@ inline bool clEnqueueMigrateMemINTELHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
-inline bool clGetDeviceGlobalVariablePointerINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool clGetDeviceGlobalVariablePointerINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceGlobalVariablePointerINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetDeviceGlobalVariablePointerINTEL(

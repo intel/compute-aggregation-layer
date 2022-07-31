@@ -43,10 +43,10 @@ bool isSuccessful(${config.result_type} result);
 % for rpc_func in rpc_functions:
 \
 %  if get_rpc_handler_suffix(rpc_func) or use_rpc_custom_handler(rpc_func):
-bool ${rpc_func.name}Handler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool ${rpc_func.name}Handler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 %  endif
 %  if not use_rpc_custom_handler(rpc_func):
-inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for ${rpc_func.name}");
 %     if requires_malloc_shmem_zero_copy_handler(rpc_func):
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
@@ -61,10 +61,14 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
     apiCommand->captures.ret = ${get_rpc_func_fqfn(rpc_func)}(
 %    for arg in rpc_func.args:
 %     if arg.kind.is_pointer_zero_copy_malloc_shmem():
-<%      arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
+<%      arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
                                                 ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size})\
 %     else : # not arg.kind.is_pointer_zero_copy_malloc_shmem
+%      if arg.traits.uses_standalone_allocation:
+                                                channel.decodeLocalPtrFromHeapOffset(${get_arg_from_api_command_struct(rpc_func, arg)})\
+%      else : # not arg.traits.uses_standalone_allocation       
                                                 ${get_arg_from_api_command_struct(rpc_func, arg)}\
+%      endif
 %     endif
 ${", " if not loop.last else ""}
 %    endfor # rpc_func.args

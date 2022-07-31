@@ -12,7 +12,7 @@
             static DynamicTraits calculate(${function.get_args_list_str()});
             uint32_t totalDynamicSize = 0;
 %  if emit_per_arg_dynamic_traits:
-%   for arg in dyn_array_args:
+%   for arg in inline_dyn_array_args:
 ## Dynamic traits
             DynamicArgTraits ${arg.name} = {};          
 %   endfor
@@ -70,10 +70,10 @@
 %  endfor
 \
 ## Create getters for dynamic-length arrays
-% for arg in dyn_array_args:
+% for arg in [arg for arg in inline_dyn_array_args if not arg.traits.uses_standalone_allocation]:
 %  if not arg.traits.uses_dynamic_arg_getter:
 ## Special case without getter - only when on dynamic arg
-<% assert len(dyn_array_args) == 1 %>\
+<% assert(len([arg for arg in inline_dyn_array_args if not arg.traits.uses_standalone_allocation]) == 1) %>\
         ${arg.kind_details.element.type.get_deref_type()} ${arg.name}[];
 %  else:
 <% assert requires_raw_dynamic_mem %>\
@@ -202,12 +202,12 @@
 ## Dynmem
 % if requires_raw_dynamic_mem:
             memcpy(this->dynMem, rhs.dynMem, rhs.getCaptureDynMemSize());
-% elif dyn_array_args : # not requires_raw_dynamic_mem and dyn_array_args
-<% assert len(dyn_array_args) == 1 %>\
-            for(size_t i = 0; i < ${f_count_name(dyn_array_args[0])}; ++i){
-                this->${dyn_array_args[0].name}[i] = rhs.${dyn_array_args[0].name}[i];
+% elif inline_dyn_array_args : # not requires_raw_dynamic_mem and inline_dyn_array_args
+<% assert len(inline_dyn_array_args) == 1 %>\
+            for(size_t i = 0; i < ${f_count_name(inline_dyn_array_args[0])}; ++i){
+                this->${inline_dyn_array_args[0].name}[i] = rhs.${inline_dyn_array_args[0].name}[i];
             }
-% endif # not requires_raw_dynamic_mem and dyn_array_args
+% endif # not requires_raw_dynamic_mem and inline_dyn_array_args
 \
 % if requires_raw_dynamic_mem and (nested_args or cl.struct_members_layouts):
             this->dynMemSize = rhs.dynMemSize;

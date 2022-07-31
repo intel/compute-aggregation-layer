@@ -1172,10 +1172,6 @@ size_t ClEnqueueWriteBufferRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueWriteBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = size;
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1185,18 +1181,12 @@ ClEnqueueWriteBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueWr
 }
 
 size_t ClEnqueueWriteBufferRpcHelperMallocHostRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueWriteBufferRpcHelperMallocHostRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -1242,10 +1232,6 @@ size_t ClEnqueueWriteBufferRectRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch);
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1255,18 +1241,12 @@ ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnque
 }
 
 size_t ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -1332,10 +1312,6 @@ size_t ClEnqueueReadBufferRectRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch);
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1345,18 +1321,12 @@ ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueu
 }
 
 size_t ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -1382,10 +1352,6 @@ size_t ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::Captures::getCap
 
 ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = size;
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1395,18 +1361,12 @@ ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueRea
 }
 
 size_t ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -1472,10 +1432,6 @@ size_t ClEnqueueCopyBufferRectRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueReadImageRpcM::Captures::DynamicTraits ClEnqueueReadImageRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t* src_origin, const size_t* region, size_t row_pitch, size_t slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch);
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1485,27 +1441,17 @@ ClEnqueueReadImageRpcM::Captures::DynamicTraits ClEnqueueReadImageRpcM::Captures
 }
 
 size_t ClEnqueueReadImageRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueReadImageRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 ClEnqueueWriteImageRpcM::Captures::DynamicTraits ClEnqueueWriteImageRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem image, cl_bool blocking_write, const size_t* origin, const size_t* region, size_t input_row_pitch, size_t input_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.ptr.count = Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch);
-    ret.ptr.size = ret.ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.ptr.offset + ret.ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1515,18 +1461,12 @@ ClEnqueueWriteImageRpcM::Captures::DynamicTraits ClEnqueueWriteImageRpcM::Captur
 }
 
 size_t ClEnqueueWriteImageRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueWriteImageRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -1886,10 +1826,6 @@ size_t ClEnqueueSVMMemcpyRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.src_ptr.count = size;
-    ret.src_ptr.size = ret.src_ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.src_ptr.offset + ret.src_ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1899,27 +1835,17 @@ ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueSVMM
 }
 
 size_t ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.dst_ptr.count = size;
-    ret.dst_ptr.size = ret.dst_ptr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.dst_ptr.offset + ret.dst_ptr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -1929,18 +1855,12 @@ ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueSVMM
 }
 
 size_t ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
@@ -2056,10 +1976,6 @@ size_t ClEnqueueMemcpyINTELRpcM::Captures::getCaptureDynMemSize() const {
 
 ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.srcPtr.count = size;
-    ret.srcPtr.size = ret.srcPtr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.srcPtr.offset + ret.srcPtr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -2069,27 +1985,17 @@ ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueMe
 }
 
 size_t ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
-    ret.dstPtr.count = size;
-    ret.dstPtr.size = ret.dstPtr.count;
-
-    ret.event_wait_list.offset = alignUpPow2<8>(ret.dstPtr.offset + ret.dstPtr.size);
     ret.event_wait_list.count = num_events_in_wait_list;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
     ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
@@ -2099,18 +2005,12 @@ ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueMe
 }
 
 size_t ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::getCaptureTotalSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 
 size_t ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSize() const {
-     const auto lastMemberOffset = offsetEvent_wait_list;
-     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
-
-     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 

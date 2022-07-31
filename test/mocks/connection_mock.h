@@ -20,6 +20,10 @@ class ConnectionMock : public Cal::Ipc::Connection {
   public:
     ~ConnectionMock() override = default;
 
+    ConnectionMock() = default;
+    ConnectionMock(const ConnectionMock &rhs) {
+    }
+
     int send(const void *data, size_t dataSize) override {
         if (apiConfig.send.impl) {
             return apiConfig.send.impl.value()(data, dataSize);
@@ -141,7 +145,7 @@ template <typename MessagesT, int CurrIt = 0>
             same = false;
         }
 
-        if (false == (*gotMessage == expMessage)) {
+        if (false == (*gotMessage == expMessage)) { // comparison operators are defined along control messages
             outMismatchLog.append("Data mismatch for message #" + std::to_string(expIt) + " - payload mismatch.");
             same = false;
         }

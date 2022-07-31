@@ -29,6 +29,21 @@ class LogCaptureContext : public Cal::Utils::LogSstream {
     Cal::Utils::Log *prevLogger = nullptr;
 };
 
+class UnexpectedLogException : public std::runtime_error {
+  public:
+    using runtime_error::runtime_error;
+};
+
+class DisallowLogs : public LogCaptureContext {
+  public:
+    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
+        Cal::Utils::LogSstream::log(useLoggerName, appendPID, verbosity, logMessage);
+        auto log = this->str();
+        this->clear();
+        throw UnexpectedLogException("Unexpected Log : " + log);
+    }
+};
+
 } // namespace Mocks
 
 } // namespace Cal

@@ -135,7 +135,7 @@ ${func.capture_layout.generate_h()}
 %   if func.traits.emit_copy_from_caller:
 
     void copyFromCaller(${', '.join(get_copy_from_caller_args(func))}){
-%    for arg in get_ptr_array_args(func):
+%    for arg in [arg for arg in get_ptr_array_args(func) if not arg.traits.uses_standalone_allocation] :
 %     if not arg.kind_details.server_access.write_only():
 %      if arg.kind_details.can_be_null:
         if(args.${arg.name}){
@@ -145,7 +145,7 @@ ${func.capture_layout.generate_h()}
         ${i}captures.${arg.name} = *args.${arg.name};
 %      elif not arg.traits.uses_nested_capture:
 <%      dst = f"captures.{CapturesFormater.f_arg_getter_name(arg)}()" if arg.traits.uses_dynamic_arg_getter else f"captures.{arg.name}"%>\
-<%      arg_size = f"dynMemTraits.{arg.name}.size" if arg.traits.uses_dynamic_mem else arg.get_calculated_array_size('args.')%>\
+<%      arg_size = f"dynMemTraits.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('args.')%>\
         ${i}memcpy(asMemcpyDstT(${dst}), args.${arg.name}, ${arg_size});
 %      else:
         ${i}{
@@ -195,7 +195,7 @@ ${member_layout.create_copy_from_caller("currentOffset", member_layout_formatter
 %   if func.traits.emit_copy_to_caller:
 
     void copyToCaller(${', '.join(get_copy_to_caller_args(func))}){
-%    for arg in get_ptr_array_args(func):
+%    for arg in [arg for arg in get_ptr_array_args(func) if not arg.traits.uses_standalone_allocation] :
 %     if not arg.kind_details.server_access.read_only():
 %      if arg.kind_details.can_be_null:
         if(args.${arg.name}){
@@ -205,7 +205,7 @@ ${member_layout.create_copy_from_caller("currentOffset", member_layout_formatter
 %      else: # not arg.kind_details.num_elements.is_single_element():
 <%      assert arg.traits.uses_nested_capture == False %>\
 <%      src = f"captures.{CapturesFormater.f_arg_getter_name(arg)}()" if arg.traits.uses_dynamic_arg_getter else f"captures.{arg.name}" %>\
-<%      arg_size = f"dynMemTraits.{arg.name}.size" if arg.traits.uses_dynamic_mem else arg.get_calculated_array_size('args.')%>\
+<%      arg_size = f"dynMemTraits.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('args.')%>\
             memcpy(args.${arg.name}, ${src}, ${arg_size});
 %      endif # not arg.kind_details.num_elements.is_single_element():
 %      if arg.kind_details.can_be_null:

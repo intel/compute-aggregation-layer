@@ -7,6 +7,7 @@
 add_subdirectories()
 
 add_definitions(-DCAL_LOGGER_NAME=C)
+add_definitions(-Dmockable=)
 
 add_library(cal SHARED # acts as ICD
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_platform.cpp

@@ -6,6 +6,7 @@
 
 add_definitions(-DCAL_NAME=calrun)
 add_definitions(-DCAL_LOGGER_NAME=S)
+add_definitions(-Dmockable=)
 include_directories(${cal_binary_root_dir}/generated)
 add_executable(calrun # SERVICE
                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp

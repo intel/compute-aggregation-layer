@@ -326,10 +326,10 @@ class ClientContext {
 
 class Provider {
   public:
-    using RpcHandler = bool (*)(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
+    using RpcHandler = bool (*)(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
     using RpcSubtypeHandlers = std::vector<RpcHandler>;
     static constexpr size_t defaultUsmAddressRangeSizePerClient = 16 * Cal::Utils::GB;
-    static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 2048;
+    static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 256;
 
     enum ErrorCode : int {
         Success = 0,
@@ -776,17 +776,17 @@ class Provider {
         log<Verbosity::debug>("Starting to service RPC channel : %d", channel->getId());
         while (false == ctx.isClientStopping()) {
             auto newCommand = channel->wait(service.getYieldThreads());
-            if (nullptr == newCommand.hostAccessible) {
+            if (nullptr == newCommand.command) {
                 log<Verbosity::debug>("Received empty RPC command on channel : %d", channel->getId());
                 continue;
             }
 
-            auto *header = reinterpret_cast<Cal::Rpc::RpcMessageHeader *>(newCommand.hostAccessible);
+            auto *header = reinterpret_cast<Cal::Rpc::RpcMessageHeader *>(newCommand.command);
             log<Verbosity::debug>("Received new RPC command request on channel : %d (type : %u, subtype %u)", channel->getId(), header->type, header->subtype);
 
-            service.serviceSingleRpcCommand(ctx, header, newCommand.size);
+            service.serviceSingleRpcCommand(*channel, ctx, header, newCommand.commandMaxSize);
 
-            channel->removeCommand(newCommand, header->flags);
+            channel->signalCompletion(newCommand.completionStamp, header->flags);
 
             if (service.getYieldThreads()) {
                 std::this_thread::yield();
@@ -795,7 +795,7 @@ class Provider {
         log<Verbosity::debug>("Stopping servicing RPC channel : %d", channel->getId());
     }
 
-    bool serviceSingleRpcCommand(ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    bool serviceSingleRpcCommand(Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
         if (command->type >= rpcHandlers.size()) {
             log<Verbosity::error>("Unhandled RPC command type : %d", command->type);
             return false;
@@ -812,7 +812,7 @@ class Provider {
             spectacleAssignment->makeStepBefore(*command);
         }
 
-        auto ret = subtypeHandlers[command->subtype](*this, ctx, command, commandMaxSize);
+        auto ret = subtypeHandlers[command->subtype](*this, channel, ctx, command, commandMaxSize);
 
         if (spectacleAssignment) {
             spectacleAssignment->makeStepAfter(*command);

@@ -404,10 +404,10 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
         auto &channel = globalOclPlatform->getRpcChannel();
         auto lock = channel.lock();
         auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        memcpy(space.hostAccessible, command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-        command = static_cast<CommandT *>(space.hostAccessible);
+        memcpy(space.get(), command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
+        command = static_cast<CommandT *>(space.get());
         commandPtr.reset();
-        if (false == channel.callSynchronous(space, 0U)) {
+        if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
     }
@@ -442,10 +442,10 @@ cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t p
         auto &channel = globalOclPlatform->getRpcChannel();
         auto lock = channel.lock();
         auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        memcpy(space.hostAccessible, command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-        command = static_cast<CommandT *>(space.hostAccessible);
+        memcpy(space.get(), command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
+        command = static_cast<CommandT *>(space.get());
         commandPtr.reset();
-        if (false == channel.callSynchronous(space, 0U)) {
+        if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
     }
@@ -493,11 +493,11 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         using CommandT = Cal::Rpc::Ocl::ClSetKernelArgRpcM;
         const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, arg_index, arg_size, arg_value);
         auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        auto command = new (space.hostAccessible) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
+        auto command = new (space.get()) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
         command->copyFromCaller(dynMemTraits);
         command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
         static_cast<IcdOclKernel *>(kernel)->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
-        if (false == channel.callSynchronous(space, 0U)) {
+        if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
         ret = command->captures.ret;
@@ -529,9 +529,9 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
         auto lock = channel.lock();
         using CommandT = Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM;
         auto space = channel.getSpace<CommandT>(0);
-        auto command = new (space.hostAccessible) CommandT(kernel, argIndex, argValue);
+        auto command = new (space.get()) CommandT(kernel, argIndex, argValue);
         command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
-        if (false == channel.callSynchronous(space, 0U)) {
+        if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
 

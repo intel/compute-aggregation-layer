@@ -56,15 +56,15 @@ struct ReqHandshake {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != ReqHandshake::messageSubtype);
-        invalid = invalid || (this->pid == 0);
-        invalid = invalid || ((this->clientType != ocl) && (this->clientType != l0));
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqHandshake::messageSubtype) ? 1 : 0;
+        invalid |= (this->pid == 0) ? 1 : 0;
+        invalid |= (((this->clientType != ocl) ? 1 : 0) & ((this->clientType != l0) ? 1 : 0));
+        if (0 != invalid) {
             log<Verbosity::error>("Message ReqHandshake is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     const char *clientTypeStr() const {
@@ -92,14 +92,14 @@ struct RespHandshake {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != RespHandshake::messageSubtype);
-        invalid = invalid || (this->pid == 0);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespHandshake::messageSubtype) ? 1 : 0;
+        invalid |= (this->pid == 0) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message RespHandshake is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     pid_t pid = 0;
@@ -120,13 +120,13 @@ struct ReqAllocateShmem {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != ReqAllocateShmem::messageSubtype);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqAllocateShmem::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message ReqAllocateShmem is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     const char *purposeStr() const {
@@ -139,10 +139,13 @@ struct ReqAllocateShmem {
     }
 
     size_t size = 0U;
-    size_t minimumSize = 0U;
-    uint32_t purpose = unknown;
+    AllocationPurpose purpose = unknown;
 };
 static_assert(std::is_standard_layout<ReqAllocateShmem>::value);
+
+inline bool operator==(const ReqAllocateShmem &lhs, const ReqAllocateShmem &rhs) {
+    return (lhs.size == rhs.size) && (lhs.purpose == rhs.purpose);
+}
 
 struct RespAllocateShmem {
     Cal::Ipc::ControlMessageHeader header = {};
@@ -155,19 +158,95 @@ struct RespAllocateShmem {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != RespAllocateShmem::messageSubtype);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespAllocateShmem::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message RespAllocateShmem is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     size_t size = 0U;
     int id = -1;
 };
 static_assert(std::is_standard_layout<RespAllocateShmem>::value);
+
+inline bool operator==(const RespAllocateShmem &lhs, const RespAllocateShmem &rhs) {
+    return (lhs.size == rhs.size) && (lhs.id == rhs.id);
+}
+
+using OffsetWithinChannelT = int64_t;
+constexpr OffsetWithinChannelT invalidOffsetWithinChannel = -1;
+
+//                                          ringStart                   ringStart+ringCapacity / completionStampsStart    heapStart                      heapEnd
+// |       HEADER                              |                 RING                  |         COMPLETION_STAMPS          |        HEAP                    |
+// | semClient , semServer, ringHead, ringTail |           MESSAGE_OFFSETs             |                                    |  MESSAGES  /  TEMP BUFFERS     |
+//                                                     |                        |
+//                                                 *ringHead               *ringTail
+struct CommandsChannelLayout {
+    // HEADER :
+    OffsetWithinChannelT semClient = invalidOffsetWithinChannel;
+    OffsetWithinChannelT semServer = invalidOffsetWithinChannel;
+    OffsetWithinChannelT ringHead = invalidOffsetWithinChannel;
+    OffsetWithinChannelT ringTail = invalidOffsetWithinChannel;
+    // RING :
+    OffsetWithinChannelT ringStart = invalidOffsetWithinChannel;
+    uint64_t ringCapacity = 0U;
+    // COMPLETION_STAMPS
+    OffsetWithinChannelT completionStampsStart = invalidOffsetWithinChannel;
+    uint64_t completionStampsCapacity = 0U;
+    // HEAP :
+    OffsetWithinChannelT heapStart = invalidOffsetWithinChannel;
+    OffsetWithinChannelT heapEnd = invalidOffsetWithinChannel;
+
+    bool isValid() const {
+        uint32_t valid = 1;
+        valid &= (semClient >= 0) ? 1 : 0;
+        valid &= (semServer >= 0) ? 1 : 0;
+        valid &= (ringHead >= 0) ? 1 : 0;
+        valid &= (ringTail >= 0) ? 1 : 0;
+
+        valid &= (ringStart >= 0) ? 1 : 0;
+        valid &= (ringCapacity > 0U) ? 1 : 0;
+
+        valid &= (completionStampsStart >= 0) ? 1 : 0;
+        valid &= (completionStampsCapacity > 0U) ? 1 : 0;
+
+        valid &= (heapStart >= 0) ? 1 : 0;
+        valid &= (heapEnd >= 0) ? 1 : 0;
+
+        if (0 == valid) {
+            log<Verbosity::debug>("Commands channel layout is invalid (invalid offsets).");
+        }
+
+        return 0 != valid;
+    }
+
+    bool isInvalid() const {
+        return false == isValid();
+    }
+};
+static_assert(std::is_standard_layout<CommandsChannelLayout>::value);
+
+inline bool operator==(const CommandsChannelLayout &lhs, const CommandsChannelLayout &rhs) {
+    uint32_t same = 1;
+    same &= (lhs.semClient == rhs.semClient) ? 1 : 0;
+    same &= (lhs.semServer == rhs.semServer) ? 1 : 0;
+    same &= (lhs.ringHead == rhs.ringHead) ? 1 : 0;
+    same &= (lhs.ringTail == rhs.ringTail) ? 1 : 0;
+
+    same &= (lhs.ringStart == rhs.ringStart) ? 1 : 0;
+    same &= (lhs.ringCapacity == rhs.ringCapacity) ? 1 : 0;
+
+    same &= (lhs.completionStampsStart == rhs.completionStampsStart) ? 1 : 0;
+    same &= (lhs.completionStampsCapacity == rhs.completionStampsCapacity) ? 1 : 0;
+
+    same &= (lhs.heapStart == rhs.heapStart) ? 1 : 0;
+    same &= (lhs.heapEnd == rhs.heapEnd) ? 1 : 0;
+
+    return same == 1;
+}
 
 struct ReqLaunchRpcShmemRingBuffer {
     Cal::Ipc::ControlMessageHeader header = {};
@@ -180,30 +259,26 @@ struct ReqLaunchRpcShmemRingBuffer {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != ReqLaunchRpcShmemRingBuffer::messageSubtype);
-        invalid = invalid || (this->ringbufferShmemId == -1);
-        invalid = invalid || (this->headOffsetWithinShmem == -1);
-        invalid = invalid || (this->tailOffsetWithinShmem == -1);
-        invalid = invalid || (this->iterationOffsetWithinShmem == -1);
-        invalid = invalid || (this->clientSemaphoreOffsetWithinShmem == -1);
-        invalid = invalid || (this->serverSemaphoreOffsetWithinShmem == -1);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqLaunchRpcShmemRingBuffer::messageSubtype) ? 1 : 0;
+        invalid |= (this->ringbufferShmemId == -1) ? 1 : 0;
+        invalid |= this->layout.isInvalid() ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message ReqLaunchRpcShmemRingBuffer is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     int ringbufferShmemId = -1;
-    int64_t headOffsetWithinShmem = -1;
-    int64_t tailOffsetWithinShmem = -1;
-    int64_t iterationOffsetWithinShmem = -1;
-    int64_t clientSemaphoreOffsetWithinShmem = -1;
-    int64_t serverSemaphoreOffsetWithinShmem = -1;
-    int64_t ringStartOffsetWithinShmem = -1;
+
+    CommandsChannelLayout layout;
 };
 static_assert(std::is_standard_layout<ReqLaunchRpcShmemRingBuffer>::value);
+
+inline bool operator==(const ReqLaunchRpcShmemRingBuffer &lhs, const ReqLaunchRpcShmemRingBuffer &rhs) {
+    return (lhs.layout == rhs.layout) && (lhs.ringbufferShmemId == rhs.ringbufferShmemId);
+}
 
 struct RespLaunchRpcShmemRingBuffer {
     Cal::Ipc::ControlMessageHeader header = {};
@@ -220,14 +295,14 @@ struct RespLaunchRpcShmemRingBuffer {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
-        invalid = invalid || (this->header.subtype != RespLaunchRpcShmemRingBuffer::messageSubtype);
-        invalid = invalid || (this->serviceSynchronizationMethod == unknown);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespLaunchRpcShmemRingBuffer::messageSubtype) ? 1 : 0;
+        invalid |= (this->serviceSynchronizationMethod == unknown) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message RespLaunchRpcShmemRingBuffer is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     static const char *asCStr(ServiceSynchronizationMethod e) {
@@ -245,6 +320,10 @@ struct RespLaunchRpcShmemRingBuffer {
 };
 static_assert(std::is_standard_layout<RespLaunchRpcShmemRingBuffer>::value);
 
+inline bool operator==(const RespLaunchRpcShmemRingBuffer &lhs, const RespLaunchRpcShmemRingBuffer &rhs) {
+    return (lhs.serviceSynchronizationMethod == rhs.serviceSynchronizationMethod);
+}
+
 struct ReqNegotiateUsmAddressRange {
     Cal::Ipc::ControlMessageHeader header = {};
 
@@ -256,13 +335,13 @@ struct ReqNegotiateUsmAddressRange {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmBase));
-        invalid = invalid || (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmSize));
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmBase)) ? 1 : 0;
+        invalid |= (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmSize)) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message ReqNegotiateUsmAddressSpace is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     void *proposedUsmBase = nullptr;
@@ -285,13 +364,13 @@ struct RespNegotiateUsmAddressRange {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmBase));
-        invalid = invalid || (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmSize));
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmBase)) ? 1 : 0;
+        invalid |= (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(this->proposedUsmSize)) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message RespNegotiateUsmAddressRange is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     void *proposedUsmBase = nullptr;
@@ -314,12 +393,12 @@ struct ReqImportAddressSpace {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        invalid = invalid || (addressSpace <= 0);
-        if (invalid) {
+        uint32_t invalid = 0;
+        invalid |= (addressSpace <= 0) ? 1 : 0;
+        if (0 != invalid) {
             log<Verbosity::error>("Message ReqImportAddressSpace is not valid");
         }
-        return invalid;
+        return 0 != invalid;
     }
 
     malloc_shmem_exported_address_space_handle_t addressSpace = -1;
@@ -337,11 +416,7 @@ struct RespImportAddressSpace {
     }
 
     bool isInvalid() const {
-        bool invalid = false;
-        if (invalid) {
-            log<Verbosity::error>("Message RespImportAddressSpace is not valid");
-        }
-        return invalid;
+        return false;
     }
 
     bool allowedToUseZeroCopyForMallocShmem = false;

@@ -6484,33 +6484,18 @@ struct ClEnqueueWriteBufferRpcHelperMallocHostRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        const void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -6557,11 +6542,8 @@ struct ClEnqueueWriteBufferRpcHelperMallocHostRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.ptr){
-            memcpy(asMemcpyDstT(captures.getPtr()), args.ptr, dynMemTraits.ptr.size);
-        }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
@@ -6868,7 +6850,6 @@ struct ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
@@ -6877,27 +6858,13 @@ struct ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM {
         size_t host_offset[3];
         size_t region[3];
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        const void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -6963,11 +6930,8 @@ struct ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM {
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
         }
-        if(args.ptr){
-            memcpy(asMemcpyDstT(captures.getPtr()), args.ptr, dynMemTraits.ptr.size);
-        }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
@@ -7414,7 +7378,6 @@ struct ClEnqueueReadBufferRectRpcHelperMallocHostRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
@@ -7423,27 +7386,13 @@ struct ClEnqueueReadBufferRectRpcHelperMallocHostRpcM {
         size_t host_offset[3];
         size_t region[3];
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -7510,14 +7459,11 @@ struct ClEnqueueReadBufferRectRpcHelperMallocHostRpcM {
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
         }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.ptr){
-            memcpy(args.ptr, captures.getPtr(), dynMemTraits.ptr.size);
-        }
         if(args.event){
             *args.event = captures.event;
         }
@@ -7702,33 +7648,18 @@ struct ClEnqueueReadBufferRpcHelperMallocHostRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -7776,14 +7707,11 @@ struct ClEnqueueReadBufferRpcHelperMallocHostRpcM {
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.ptr){
-            memcpy(args.ptr, captures.getPtr(), dynMemTraits.ptr.size);
-        }
         if(args.event){
             *args.event = captures.event;
         }
@@ -8184,7 +8112,6 @@ struct ClEnqueueReadImageRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t* src_origin, const size_t* region, size_t row_pitch, size_t slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
@@ -8192,27 +8119,13 @@ struct ClEnqueueReadImageRpcM {
         size_t src_origin[3];
         size_t region[3];
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -8270,14 +8183,11 @@ struct ClEnqueueReadImageRpcM {
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
         }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.ptr){
-            memcpy(args.ptr, captures.getPtr(), dynMemTraits.ptr.size);
-        }
         if(args.event){
             *args.event = captures.event;
         }
@@ -8326,7 +8236,6 @@ struct ClEnqueueWriteImageRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_mem image, cl_bool blocking_write, const size_t* origin, const size_t* region, size_t input_row_pitch, size_t input_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
@@ -8334,27 +8243,13 @@ struct ClEnqueueWriteImageRpcM {
         size_t origin[3];
         size_t region[3];
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        const void* getPtr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countPtr = dynamicTraits.ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -8411,11 +8306,8 @@ struct ClEnqueueWriteImageRpcM {
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
         }
-        if(args.ptr){
-            memcpy(asMemcpyDstT(captures.getPtr()), args.ptr, dynMemTraits.ptr.size);
-        }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
@@ -10648,33 +10540,18 @@ struct ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits src_ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countSrc_ptr = 0;
         uint32_t countEvent_wait_list = 0;
-        const void* getSrc_ptr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countSrc_ptr = dynamicTraits.src_ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -10719,11 +10596,8 @@ struct ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.src_ptr){
-            memcpy(asMemcpyDstT(captures.getSrc_ptr()), args.src_ptr, dynMemTraits.src_ptr.size);
-        }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
@@ -10770,33 +10644,18 @@ struct ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits dst_ptr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countDst_ptr = 0;
         uint32_t countEvent_wait_list = 0;
-        void* getDst_ptr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countDst_ptr = dynamicTraits.dst_ptr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -10842,14 +10701,11 @@ struct ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM {
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.dst_ptr){
-            memcpy(args.dst_ptr, captures.getDst_ptr(), dynMemTraits.dst_ptr.size);
-        }
         if(args.event){
             *args.event = captures.event;
         }
@@ -11450,33 +11306,18 @@ struct ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits srcPtr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countSrcPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        const void* getSrcPtr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countSrcPtr = dynamicTraits.srcPtr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -11521,11 +11362,8 @@ struct ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.srcPtr){
-            memcpy(asMemcpyDstT(captures.getSrcPtr()), args.srcPtr, dynMemTraits.srcPtr.size);
-        }
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
@@ -11572,33 +11410,18 @@ struct ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits dstPtr = {};          
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
         cl_event event;
-        uint32_t offsetEvent_wait_list = 0;
-        uint32_t countDstPtr = 0;
         uint32_t countEvent_wait_list = 0;
-        void* getDstPtr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        const cl_event* getEvent_wait_list() {
-            auto offset = offsetEvent_wait_list;
-            return reinterpret_cast<const cl_event*>(dynMem + offset);
-        }
-
+        cl_event event_wait_list[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetEvent_wait_list = dynamicTraits.event_wait_list.offset;
-        countDstPtr = dynamicTraits.dstPtr.count;
         countEvent_wait_list = dynamicTraits.event_wait_list.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -11644,14 +11467,11 @@ struct ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM {
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.getEvent_wait_list()), args.event_wait_list, dynMemTraits.event_wait_list.size);
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.dstPtr){
-            memcpy(args.dstPtr, captures.getDstPtr(), dynMemTraits.dstPtr.size);
-        }
         if(args.event){
             *args.event = captures.event;
         }

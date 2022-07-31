@@ -84,7 +84,7 @@ constexpr bool isPow2(size_t v) {
 }
 
 template <size_t Pow2Alignment, typename T>
-inline bool isAlignedPow2(T value) {
+constexpr bool isAlignedPow2(T value) {
     static_assert(isPow2(Pow2Alignment));
     size_t asInt = 0;
     if constexpr (std::is_pointer_v<T>) {
@@ -94,6 +94,17 @@ inline bool isAlignedPow2(T value) {
     }
     auto mask = Pow2Alignment - 1;
     return 0 == (asInt & mask);
+}
+
+template <typename T>
+constexpr bool isAligned(T value, size_t alignment) {
+    size_t asInt = 0;
+    if constexpr (std::is_pointer_v<T>) {
+        asInt = static_cast<size_t>(reinterpret_cast<uintptr_t>(value));
+    } else {
+        asInt = static_cast<size_t>(value);
+    }
+    return 0 == (asInt % alignment);
 }
 
 template <size_t Pow2Alignment, typename T>
@@ -134,7 +145,7 @@ inline T *moveByBytes(T *ptr, size_t offset) {
 }
 
 template <size_t Pow2Alignment, typename T>
-constexpr T alignUpPow2(T *value) {
+constexpr T *alignUpPow2(T *value) {
     auto before = reinterpret_cast<uintptr_t>(value);
     auto after = alignUpPow2<Pow2Alignment>(before);
     return moveByBytes(value, after - before);
@@ -295,7 +306,8 @@ class CountingSemaphore { // switch to counting_semaphore in C++20
     }
 
     void reset(uint32_t counter = 0) {
-        counter = counter;
+        this->counter = counter;
+        cv.notify_all();
     }
 
   protected:

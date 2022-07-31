@@ -57,15 +57,24 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
     using CommandT = ${get_fq_message_name(func_base)};
 %     if func_base.capture_layout.emit_dynamic_traits:
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(${func_base.get_call_params_list_str()});
-    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(space.hostAccessible) CommandT(dynMemTraits, ${func_base.get_call_params_list_str()});
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, ${func_base.get_call_params_list_str()});
 %     else : # not func_base.capture_layout.emit_dynamic_traits
-    auto space = channel.getSpace<CommandT>(0);
-    auto command = new(space.hostAccessible) CommandT(${func_base.get_call_params_list_str()});
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(${func_base.get_call_params_list_str()});
 %     endif # not func_base.capture_layout.emit_dynamic_traits
+%     for arg in func_base.traits.get_standalone_args():
+    auto standaloneSpaceFor${arg.name} = channel.getSpace(${arg.get_calculated_array_size()});
+%      if not arg.kind_details.server_access.write_only():
+    memcpy(standaloneSpaceFor${arg.name}.get(), ${arg.name}, ${arg.get_calculated_array_size()});
+%      endif # not arg.kind_details.server_access.write_only()
+%     endfor # arg in func_base.traits.get_standalone_args()
 %     if func_base.traits.emit_copy_from_caller:
     command->copyFromCaller(${get_copy_from_caller_call_params_list_str(func_base)});
 %     endif # func_base.traits.emit_copy_from_caller:
+%     for arg in func_base.traits.get_standalone_args():
+    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFor${arg.name}.get());
+%     endfor # arg in func_base.traits.get_standalone_args()
 %     for arg in get_args_requiring_translation_before(func_base):
 %       if can_be_null(arg):
     if(${arg.name})
@@ -98,12 +107,17 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
-    if(false == channel.callSynchronous(space, command->header.flags)){
+    if(false == channel.callSynchronous(command)){
         return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
     }
 %      if func_base.traits.emit_copy_to_caller:
     command->copyToCaller(${get_copy_to_caller_call_params_list_str(func_base)});
 %      endif # func_base.traits.emit_copy_to_caller
+%      for arg in func_base.traits.get_standalone_args():
+%       if not arg.kind_details.server_access.read_only():
+    memcpy(${arg.name}, standaloneSpaceFor${arg.name}.get(), ${arg.get_calculated_array_size()});
+%       endif # not arg.kind_details.server_access.write_only()
+%      endfor # arg in func_base.traits.get_standalone_args():
 %      for arg in get_args_requiring_translation_after(func_base):
 %       if can_be_null(arg):
     if(${arg.name})
@@ -137,6 +151,11 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %      if func_base.returns.translate_after:
     ${func_base.returns.translate_after.format("ret", "ret")};
 %      endif # func_base.returns.translate_after
+%      for arg in func_base.traits.get_standalone_args():
+%       if not arg.capture_details.reclaim_method.is_immediate_mode():
+    ${arg.capture_details.reclaim_method.format(f"standaloneSpaceFor{arg.name}")};
+%       endif # not arg.capture_details.reclaim_method.is_immediate_mode()
+%      endfor # arg in func_base.traits.get_standalone_args():
 %      if epilogue(f):
     channelLock.unlock();
 %      endif #epilogue(f)

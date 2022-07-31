@@ -63,8 +63,9 @@ struct Shmem {
 class ShmemManager {
   public:
     ShmemManager() = default;
+    virtual ~ShmemManager() = default;
 
-    Shmem get(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
+    mockable Shmem get(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
         if (false == remoteShmem.isValid()) {
             log<Verbosity::critical>("Request to open invalid remote shmem ");
             return {};
@@ -104,7 +105,7 @@ class ShmemManager {
         return ret;
     }
 
-    Shmem get(size_t size, bool dontMap) {
+    mockable Shmem get(size_t size, bool dontMap) {
         auto path = basePath + std::to_string(numShmemFiles);
         log<Verbosity::debug>("Unlinking stale shmem file (if exists) : %s", path.c_str());
         Cal::Sys::shm_unlink(path.c_str());
@@ -148,7 +149,7 @@ class ShmemManager {
         return ret;
     }
 
-    void release(const Shmem &shmem) {
+    mockable void release(const Shmem &shmem) {
         auto path = basePath + std::to_string(shmem.id);
 
         if ((nullptr != shmem.ptr) && (-1 == Cal::Sys::munmap(shmem.ptr, shmem.underlyingSize))) {
@@ -192,7 +193,6 @@ inline RemoteShmem allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
     Cal::Messages::ReqAllocateShmem request;
     Cal::Messages::RespAllocateShmem response;
     request.purpose = Cal::Messages::ReqAllocateShmem::rpcMessageChannel;
-    request.minimumSize = minSize;
     request.size = size;
     request.purpose = purpose;
     {
@@ -206,7 +206,7 @@ inline RemoteShmem allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
             log<Verbosity::error>("Invalid response from service for shmem (purpose : %s, size : %zu)", request.purposeStr(), request.size);
             return {};
         }
-        log<Verbosity::debug>("Returned shmem looks valid (id : %d, size : %zu)", response.id, response.size);
+        log<Verbosity::debug>("Returned shmem from service : (id : %d, size : %zu)", response.id, response.size);
     }
     RemoteShmem ret;
     ret.size = response.size;

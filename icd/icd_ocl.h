@@ -585,11 +585,38 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
 
     void synchronizeNow() {
         currentWaitedCount = enqueueCount.load();
+        this->cleanTemporaryAllocations();
     }
 
     void enqueue() {
         ++enqueueCount;
     }
+
+    void registerTemporaryAllocation(std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter> alloc) {
+        std::lock_guard<std::mutex> lock(temporaryAllocations.mutex);
+        temporaryAllocations.allocations.push_back(std::move(alloc));
+    }
+
+    void cleanTemporaryAllocations() {
+        std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> tmp;
+        {
+            std::lock_guard<std::mutex> lock(temporaryAllocations.mutex);
+            tmp.swap(temporaryAllocations.allocations);
+        }
+
+        if (tmp.empty()) {
+            return;
+        }
+
+        auto &channel = tmp[0].get_deleter().getChannel();
+        auto channelLock = channel.lock();
+        tmp.clear();
+    }
+
+    struct {
+        std::mutex mutex;
+        std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> allocations;
+    } temporaryAllocations;
 };
 
 struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclTypePrinter> {

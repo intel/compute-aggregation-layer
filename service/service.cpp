@@ -122,7 +122,7 @@ cl_platform_id OclSharedObjects::getPlatformByName(const char *regex) {
     return foundPlatformId;
 }
 
-bool clGetPlatformIDsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool clGetPlatformIDsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetPlatformIDsRpcM *>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetPlatformIDs(apiCommand->args.num_entries,
                                                                                    apiCommand->args.platforms ? apiCommand->captures.platforms : nullptr,
@@ -145,7 +145,7 @@ bool clGetPlatformIDsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::Rp
     return true;
 };
 
-bool clGetProgramInfoGetBinariesRpcHelperHandler(Cal::Service::Provider &service, Cal::Service::ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool clGetProgramInfoGetBinariesRpcHelperHandler(Cal::Service::Provider &service, Cal::Rpc::ChannelServer &channel, Cal::Service::ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoGetBinariesRpcHelperRpcM *>(command);
 
     const auto binariesCount = apiCommand->args.binaries_count;
@@ -189,7 +189,7 @@ void gpuDestructorClMem(void *ctx, void *ptr) {
     }
 }
 
-inline bool clHostMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clHostMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM *>(command);
     if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
@@ -272,7 +272,7 @@ inline bool clHostMemAllocINTELHandler(Provider &service, ClientContext &ctx, Ca
     return true;
 }
 
-inline bool clSharedMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSharedMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM *>(command);
     if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
@@ -354,7 +354,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, ClientContext &ctx, 
     return true;
 }
 
-inline bool clSVMAllocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSVMAlloc");
     log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSVMAllocRpcM *>(command);
@@ -422,7 +422,7 @@ inline bool clSVMAllocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::R
     return true;
 }
 
-inline bool clSVMFreeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSVMFree");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSVMFreeRpcM *>(command);
     auto ptr = apiCommand->args.ptr;
@@ -434,7 +434,7 @@ inline bool clSVMFreeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::Rp
     return true;
 }
 
-inline bool clEnqueueSVMMapHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clEnqueueSVMMapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMap");
     log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMapRpcM *>(command);
@@ -448,7 +448,7 @@ inline bool clEnqueueSVMMapHandler(Provider &service, ClientContext &ctx, Cal::R
     return true;
 }
 
-inline bool clEnqueueSVMUnmapHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clEnqueueSVMUnmapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMUnmap");
     log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMUnmapRpcM *>(command);
@@ -459,7 +459,7 @@ inline bool clEnqueueSVMUnmapHandler(Provider &service, ClientContext &ctx, Cal:
     return true;
 }
 
-inline bool clEnqueueSVMMigrateMemHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clEnqueueSVMMigrateMemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMigrateMem");
     log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMigrateMemRpcM *>(command);
@@ -499,7 +499,7 @@ inline bool clEnqueueSVMMigrateMemHandler(Provider &service, ClientContext &ctx,
     return true;
 }
 
-inline bool clCreateBufferHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcM *>(command);
 
@@ -561,7 +561,7 @@ inline bool clCreateBufferHandler(Provider &service, ClientContext &ctx, Cal::Rp
     return true;
 }
 
-inline bool clMemFreeINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clMemFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clMemFreeINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClMemFreeINTELRpcM *>(command);
     auto ptr = apiCommand->args.ptr;
@@ -574,7 +574,7 @@ inline bool clMemFreeINTELHandler(Provider &service, ClientContext &ctx, Cal::Rp
     return true;
 }
 
-inline bool clMemBlockingFreeINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clMemBlockingFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clMemBlockingFreeINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM *>(command);
     auto ptr = apiCommand->args.ptr;
@@ -587,7 +587,7 @@ inline bool clMemBlockingFreeINTELHandler(Provider &service, ClientContext &ctx,
     return true;
 }
 
-inline bool clReleaseMemObjectHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+inline bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clReleaseMemObjectHandler");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClReleaseMemObjectRpcM *>(command);
     cl_uint refCount = 0;
@@ -715,7 +715,7 @@ std::optional<std::vector<ze_device_handle_t>> LevelZeroSharedObjects::getDevice
     return devices;
 }
 
-bool zeInitHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeInitHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeInit");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeInitRpcM *>(command);
     apiCommand->captures.ret = service.getL0SharedObjects().getZeInitReturnValue();
@@ -723,7 +723,7 @@ bool zeInitHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHe
     return true;
 }
 
-bool zeDriverGetHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeDriverGetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDriverGet");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetRpcM *>(command);
 
@@ -755,7 +755,7 @@ void gpuDestructorUsm(void *ctx, void *ptr) {
     }
 }
 
-bool zeMemAllocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemAllocHost");
 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocHostRpcM *>(command);
@@ -846,7 +846,7 @@ bool zeMemAllocHostHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcM
     return true;
 }
 
-bool zeMemAllocSharedHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemAllocShared");
 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM *>(command);
@@ -939,7 +939,7 @@ bool zeMemAllocSharedHandler(Provider &service, ClientContext &ctx, Cal::Rpc::Rp
     return true;
 }
 
-bool zeMemFreeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeMemFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemFree");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemFreeRpcM *>(command);
 
@@ -953,7 +953,7 @@ bool zeMemFreeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessag
     return true;
 }
 
-bool zeModuleGetKernelNamesRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeModuleGetKernelNamesRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleGetKernelNamesRpcHelper");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetKernelNamesRpcHelperRpcM *>(command);
 
@@ -1005,7 +1005,7 @@ bool zeModuleGetKernelNamesRpcHelperHandler(Provider &service, ClientContext &ct
     return true;
 }
 
-bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM *>(command);
 
@@ -1023,7 +1023,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     return true;
 }
 
-bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
 
@@ -1043,7 +1043,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &
     return true;
 }
 
-bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM *>(command);
 
@@ -1061,7 +1061,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
     return true;
 }
 
-bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM *>(command);
 
@@ -1082,7 +1082,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     return true;
 }
 
-bool zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+bool zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM *>(command);
 
