@@ -19,7 +19,7 @@ fi
 
 BUILD_SRPM="${BUILD_SRPM:-1}"
 BUILD_RPM="${BUILD_RPM:-1}"
-SPEC_FILE="${SPEC_FILE:-${OS_TYPE}}"
+SPEC_FILE="${SPEC_FILE:-sles}"
 if [[ ${SPEC_FILE} == rhel* ]]; then
     SPEC_FILE=${SPEC_FILE%.*}
 fi
