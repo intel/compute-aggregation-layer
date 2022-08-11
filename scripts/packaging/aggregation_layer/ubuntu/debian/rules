@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --builddir build/ --buildsystem=cmake+ninja
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
+override_dh_auto_build:
+	${BUILD_PREFIX} dh_auto_build
+
+override_dh_builddeb:
+	dh_builddeb -- -Zxz

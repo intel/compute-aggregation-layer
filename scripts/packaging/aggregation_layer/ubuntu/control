@@ -1,0 +1,16 @@
+Source: compute-aggregation-layer
+Section: libs
+Priority: optional
+Maintainer: Intel Compute Runtime Team <compute-runtime@intel.com>
+Build-Depends: debhelper (>= 11),
+ cmake
+Standards-Version: 4.3.0
+Homepage: https://github.com/intel/compute-aggregation-layer
+
+Package: compute-aggregation-layer
+Architecture: amd64 arm64
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+Description: Compute Aggregation Layer for oneAPI Level Zero
+ and OpenCL(TM) Applications.

@@ -1,0 +1,5 @@
+compute-aggregation-layer (0.0.0-0) unstable; urgency=medium
+
+  * Initial release (Closes: #926706)
+
+ -- Compute-Runtime-Automation <compute-runtime@intel.com>  Wed, 08 Jun 2022 19:39:37 +0200
