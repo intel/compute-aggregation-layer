@@ -28,7 +28,17 @@ make -j
 ./calrun -h
 ```
 
-This way binaries will be produced in `build` catalog and ready to use. You can also install them by invoking `sudo cmake install`.
+This way binaries will be produced in `build` catalog and ready to use. You can also install them by invoking:
+
+```bash
+sudo make install
+```
+
+You may also need to run ldconfig to update shared libraries cache for newly installed libraries:
+
+```bash
+sudo ldconfig
+```
 
 For development, we use Ubuntu 20.04 native and WSL, with gcc-9 and clang-14.
 

@@ -4,5 +4,5 @@
 # SPDX-License-Identifier: MIT
 #
 
-source cal_setvars_ocl.sh
-source cal_setvars_l0.sh
+source /opt/compute-aggregation-layer/cal_setvars_ocl.sh
+source /opt/compute-aggregation-layer/cal_setvars_l0.sh
