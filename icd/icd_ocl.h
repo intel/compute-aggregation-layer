@@ -824,6 +824,11 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
             translateRemoteObjectToLocalObject<cl_program>(dst);
             return;
         }
+
+        case CL_PROGRAM_DEVICES: {
+            translateRemoteObjectToLocalObject<cl_device_id>(dst);
+            return;
+        }
         }
     }
 
