@@ -1171,6 +1171,11 @@ void destroyResources(const char *resourceName, TrackingT &tracking, const Destr
 }
 
 void ClientContext::l0SpecificCleanup() {
+    if (isPersistentMode) {
+        log<Verbosity::info>("Resource tracking is disabled. Skipping resource cleaning.");
+        return;
+    }
+
     destroyResources("ze_fence_handle_t", getTracking<ze_fence_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeFenceDestroy);
     destroyResources("ze_command_list_handle_t", getTracking<ze_command_list_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeCommandListDestroy);
     destroyResources("ze_command_queue_handle_t", getTracking<ze_command_queue_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeCommandQueueDestroy);

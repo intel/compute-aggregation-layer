@@ -113,11 +113,14 @@ class ClientContext {
   public:
     int32_t mutexIndex = -1;
     int32_t subDeviceIndex = 0u;
+    bool isPersistentMode;
 
     struct ChoreographyAssignment {
         ISpectacle *spectacle = nullptr;
         IMember *member = nullptr;
     };
+
+    ClientContext(bool isPersistentMode) : isPersistentMode(isPersistentMode) {}
 
     std::unique_lock<std::mutex> lock() {
         return std::unique_lock<std::mutex>(criticalSection);
@@ -239,12 +242,16 @@ class ClientContext {
 
     template <typename HandleT>
     void trackAllocatedResource(HandleT handle) {
-        trackAllocatedResource(handle, getTracking<HandleT>());
+        if (isPersistentMode) {
+            trackAllocatedResource(handle, getTracking<HandleT>());
+        }
     }
 
     template <typename HandleT>
     void removeResourceTracking(HandleT handle) {
-        removeResourceTracking(handle, getTracking<HandleT>());
+        if (isPersistentMode) {
+            removeResourceTracking(handle, getTracking<HandleT>());
+        }
     }
 
   protected:
@@ -331,7 +338,7 @@ class Provider {
 
     Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, ServiceConfig &&serviceConfig);
 
-    int run() {
+    int run(bool isPersistentMode) {
         if (this->isRunning) {
             log<Verbosity::critical>("Service is already running");
             return -1;
@@ -399,7 +406,7 @@ class Provider {
                 continue;
             }
             log<Verbosity::debug>("Spawning thread for new client (number of asynchronous client threads : %d)", static_cast<uint32_t>(clients.size() + 1));
-            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection), std::ref(*this)));
+            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection), std::ref(*this), isPersistentMode));
         }
         listener->close();
         this->isStopping = true;
@@ -559,7 +566,7 @@ class Provider {
         return ((clientType == Cal::Messages::ReqHandshake::ocl) && systemInfo.availableApis.ocl) || ((clientType == Cal::Messages::ReqHandshake::l0) && systemInfo.availableApis.l0);
     }
 
-    static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, Provider &service) {
+    static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, Provider &service, bool isPersistentMode) {
         log<Verbosity::debug>("Starting to service client : %d", clientConnection->getId());
         Cal::Messages::ReqHandshake handshake;
         log<Verbosity::debug>("Performing handshake with client #%d", clientConnection->getId());
@@ -576,7 +583,7 @@ class Provider {
             return;
         }
         log<Verbosity::info>("Handshake with client #%d has SUCCEEDED (pid:%d, ppid:%d, api:%s, process:%s)", clientConnection->getId(), handshake.pid, handshake.ppid, handshake.clientTypeStr(), handshake.clientProcessName);
-        ClientContext ctx;
+        ClientContext ctx(isPersistentMode);
         service.assignToSpectacle(handshake.ppid, handshake.pid, handshake.clientProcessName, ctx);
         if (ctx.getSpectacleAssignment()) {
             log<Verbosity::debug>("Client #%d was assigned to a spectacle %p", clientConnection->getId(), ctx.getSpectacleAssignment());

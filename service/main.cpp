@@ -85,7 +85,7 @@ int main(int argc, const char *argv[]) {
         chrLib->load(".");
     }
     Cal::Service::Provider service(std::move(chrLib), std::move(serviceConfig));
-    return service.run();
+    return service.run(isPersistentMode);
 }
 
 void printCalServiceHelp() {
