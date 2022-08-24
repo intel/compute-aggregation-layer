@@ -121,7 +121,7 @@ class ShmemManager {
         static constexpr auto pageSize = Cal::Utils::pageSize4KB;
         auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(shmemSize);
         if (-1 == ftruncate(shmemFd, alignedSize)) {
-            log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", alignedSize);
+            log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", path.c_str(), alignedSize);
             shm_unlink(path.c_str());
             return {};
         }
@@ -326,7 +326,7 @@ class BasicMemoryBlock {
         }
     }
 
-    const void *translate(const void *srcptr) const {
+    void *translate(const void *srcptr) const {
         const auto src = reinterpret_cast<uintptr_t>(srcptr);
         const auto blockBegin = chunks.front().firstPageAddress;
         const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
@@ -335,7 +335,7 @@ class BasicMemoryBlock {
             const auto mappedBegin = reinterpret_cast<uintptr_t>(chunks.front().shmem.ptr);
             const auto offset = src - blockBegin;
 
-            return reinterpret_cast<const void *>(mappedBegin + offset);
+            return reinterpret_cast<void *>(mappedBegin + offset);
         }
 
         log<Verbosity::error>("Failed to translate srcptr=%p to mapped shared memory! It does not belong to memory block!", srcptr);
@@ -632,14 +632,22 @@ class BasicMemoryBlocksManager {
             }
         }
 
-        return overlappingBegin;
+        if (overlappingBegin != memoryBlocks.end()) {
+            auto &currentMemoryBlock = (*overlappingBegin).second;
+
+            if (currentMemoryBlock.overlapsPages(srcptr, size)) {
+                return overlappingBegin;
+            }
+        }
+
+        return memoryBlocks.end();
     }
 
     auto getOverlappingBlocksEnd(const void *srcptr, size_t size) {
         const auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         const auto srcEnd = srcBegin + size;
 
-        return memoryBlocks.lower_bound(srcEnd);
+        return memoryBlocks.upper_bound(srcEnd);
     }
 
     void eraseUnneededBlocks(MemoryBlockIterator first, MemoryBlockIterator last) {

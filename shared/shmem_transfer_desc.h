@@ -19,7 +19,7 @@ struct ShmemTransferDesc {
     uint32_t underlyingSize{};    // Underlying size of shared memory file.
     uint32_t bytesCountToCopy{};  // The number of bytes to copy.
     uint32_t offsetFromMapping{}; // Offset from the mapped address.
-    uintptr_t transferStart{};    // Client's VA from which the memory should be copied.
+    uintptr_t transferStart{};    // Client's VA from/to which the memory should be copied.
 };
 static_assert(std::is_standard_layout_v<ShmemTransferDesc>);
 

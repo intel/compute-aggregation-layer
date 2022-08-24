@@ -25,6 +25,8 @@ class MockMemoryBlock : public Cal::Ipc::BasicMemoryBlock<Cal::Mocks::MockShmemM
 class MockMemoryBlocksManager : public Cal::Ipc::BasicMemoryBlocksManager<MockMemoryBlock, Cal::Mocks::MockShmemManager> {
   public:
     using BasicMemoryBlocksManager::getMemoryBlockWhichIncludesChunk;
+    using BasicMemoryBlocksManager::getOverlappingBlocksBegin;
+    using BasicMemoryBlocksManager::getOverlappingBlocksEnd;
     using BasicMemoryBlocksManager::memoryBlocks;
 };
 

@@ -268,6 +268,31 @@ class IcdPlatform {
         return true;
     }
 
+    bool readRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
+        auto shmemManagerLock = shmemManager.lock();
+
+        for (const auto &transfer : transferDescs) {
+            Cal::Ipc::RemoteShmem remoteShmem{};
+            remoteShmem.id = transfer.shmemId;
+            remoteShmem.size = transfer.underlyingSize;
+
+            auto shmem = shmemManager.get(remoteShmem, nullptr);
+            if (!shmem.isValid()) {
+                log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
+                return false;
+            }
+
+            const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.ptr) + transfer.offsetFromMapping;
+            const auto source = reinterpret_cast<const void *>(sourceAddress);
+            const auto destination = reinterpret_cast<void *>(transfer.transferStart);
+
+            std::memcpy(destination, source, transfer.bytesCountToCopy);
+            shmemManager.release(shmem);
+        }
+
+        return true;
+    }
+
   protected:
     Cal::Utils::CpuInfo cpuInfo;
 

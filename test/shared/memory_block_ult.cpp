@@ -447,6 +447,32 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringNonOverlapingChu
     EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.underlyingSize);
 }
 
+TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringNonOverlapingChunksInReversedOrderThenTheyAreRegisteredAsSeparateMemoryBlocks) {
+    const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t firstChunkSize{pageSize};
+
+    const uintptr_t firstPageOfSecondChunk{firstPageAddress + (4 * pageSize)};
+    const void *secondSrcAddress{reinterpret_cast<const void *>(firstPageOfSecondChunk)};
+    const size_t secondChunkSize{3 * pageSize};
+
+    auto &secondRegisteredMemoryBlock = memoryBlocksManager.registerMemoryBlock(shmemManagerMock, secondSrcAddress, secondChunkSize);
+    auto &firstRegisteredMemoryBlock = memoryBlocksManager.registerMemoryBlock(shmemManagerMock, firstSrcAddress, firstChunkSize);
+
+    ASSERT_EQ(2u, memoryBlocksManager.memoryBlocks.size());
+
+    auto &realFirstMemoryBlock = memoryBlocksManager.memoryBlocks.at(firstPageAddress);
+    ASSERT_EQ(&realFirstMemoryBlock, &firstRegisteredMemoryBlock);
+
+    EXPECT_EQ(firstPageAddress, realFirstMemoryBlock.chunks[0].firstPageAddress);
+    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.underlyingSize);
+
+    auto &realSecondMemoryBlock = memoryBlocksManager.memoryBlocks.at(firstPageOfSecondChunk);
+    ASSERT_EQ(&realSecondMemoryBlock, &secondRegisteredMemoryBlock);
+
+    EXPECT_EQ(firstPageOfSecondChunk, realSecondMemoryBlock.chunks[0].firstPageAddress);
+    EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.underlyingSize);
+}
+
 TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringChunkWhichIsIncludedByAnotherThenOnlySingleMemoryBlockIsRegistered) {
     const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
     const size_t firstChunkSize{pageSize};
@@ -745,6 +771,101 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     EXPECT_EQ(thirdChunkSize, transferDescs[1].bytesCountToCopy);
     EXPECT_EQ(0u, transferDescs[1].offsetFromMapping);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(thirdSrcAddress), transferDescs[1].transferStart);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenNoMemoryBlocksWhenLookingForOverlappingBlocksBeginThenEndIsReturned) {
+    const void *srcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t chunkSize{pageSize};
+
+    const auto overlappingMemoryBlocksBegin = memoryBlocksManager.getOverlappingBlocksBegin(srcAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksBegin);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenSingleMemoryBlockWhichDoesNotOverlapWhenLookingForOverlappingBlocksBeginThenEndIsReturned) {
+    const void *srcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, srcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress - (3 * pageSize))};
+
+    const auto overlappingMemoryBlocksBegin = memoryBlocksManager.getOverlappingBlocksBegin(searchedChunkAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksBegin);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenTwoMemoryBlocksAndFirstIsOverlappingWhenLookingForOverlappingBlocksBeginThenFirstIsReturned) {
+    const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const void *secondSrcAddress{reinterpret_cast<const void *>(firstPageAddress - (2 * pageSize))};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, firstSrcAddress, chunkSize);
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, secondSrcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress - (2 * pageSize) + 64)};
+
+    const auto overlappingMemoryBlocksBegin = memoryBlocksManager.getOverlappingBlocksBegin(searchedChunkAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.begin(), overlappingMemoryBlocksBegin);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenTwoMemoryBlocksAndSecondIsOverlappingWhenLookingForOverlappingBlocksBeginThenSecondIsReturned) {
+    const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const void *secondSrcAddress{reinterpret_cast<const void *>(firstPageAddress - (2 * pageSize))};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, firstSrcAddress, chunkSize);
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, secondSrcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress - 1)};
+
+    const auto overlappingMemoryBlocksBegin = memoryBlocksManager.getOverlappingBlocksBegin(searchedChunkAddress, chunkSize);
+    const auto expectedOverlappingBegin = std::next(memoryBlocksManager.memoryBlocks.begin(), 1);
+    EXPECT_EQ(expectedOverlappingBegin, overlappingMemoryBlocksBegin);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenTwoMemoryBlocksAndNoneIsOverlappingWhenLookingForOverlappingBlocksBeginThenEndIsReturned) {
+    const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const void *secondSrcAddress{reinterpret_cast<const void *>(firstPageAddress - (6 * pageSize))};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, firstSrcAddress, chunkSize);
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, secondSrcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress - (2 * pageSize))};
+
+    const auto overlappingMemoryBlocksBegin = memoryBlocksManager.getOverlappingBlocksBegin(searchedChunkAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksBegin);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenNoMemoryBlocksWhenLookingForOverlappingBlocksEndThenEndIsReturned) {
+    const void *srcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t chunkSize{pageSize};
+
+    const auto overlappingMemoryBlocksEnd = memoryBlocksManager.getOverlappingBlocksEnd(srcAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksEnd);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenSingleMemoryBlockWithLowerAddressWhichDoesNotOverlapWhenLookingForOverlappingBlocksEndThenEndIsReturned) {
+    const void *srcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, srcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress + (3 * pageSize))};
+
+    const auto overlappingMemoryBlocksEnd = memoryBlocksManager.getOverlappingBlocksEnd(searchedChunkAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksEnd);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenSingleMemoryBlockWithGreaterAddressWhichDoesNotOverlapWhenLookingForOverlappingBlocksEndThisBlockIsIsReturned) {
+    const void *srcAddress{reinterpret_cast<const void *>(firstPageAddress + 64)};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, srcAddress, chunkSize);
+
+    const void *searchedChunkAddress{reinterpret_cast<const void *>(firstPageAddress - (3 * pageSize))};
+
+    const auto overlappingMemoryBlocksEnd = memoryBlocksManager.getOverlappingBlocksEnd(searchedChunkAddress, chunkSize);
+    EXPECT_EQ(memoryBlocksManager.memoryBlocks.begin(), overlappingMemoryBlocksEnd);
 }
 
 } // namespace Cal::Ult

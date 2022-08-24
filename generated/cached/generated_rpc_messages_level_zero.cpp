@@ -36,7 +36,7 @@ size_t ZeCommandQueueExecuteCommandListsRpcM::Captures::getCaptureDynMemSize() c
      return size;
 }
 
-ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures::DynamicTraits::calculate(uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
+ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::DynamicTraits::calculate(uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
     DynamicTraits ret = {};
     ret.chunks.count = chunksCount;
     ret.chunks.size = ret.chunks.count * sizeof(Cal::Rpc::MemChunk);
@@ -50,7 +50,7 @@ ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures::Dynami
     return ret;
 }
 
-size_t ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures::getCaptureTotalSize() const {
+size_t ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::getCaptureTotalSize() const {
      const auto lastMemberOffset = offsetTransferDescs;
      const auto lastMemberArraySize = this->countTransferDescs * sizeof(Cal::Rpc::ShmemTransferDesc);
 
@@ -58,7 +58,7 @@ size_t ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures:
      return size;
 }
 
-size_t ZeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
+size_t ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
      const auto lastMemberOffset = offsetTransferDescs;
      const auto lastMemberArraySize = this->countTransferDescs * sizeof(Cal::Rpc::ShmemTransferDesc);
 
@@ -102,6 +102,46 @@ size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::Captures::getCaptur
 }
 
 size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
      return size;
 }

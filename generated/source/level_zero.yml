@@ -634,7 +634,7 @@ config :
                         can_be_null : True
                     translate_before : "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
 
-        - name : zeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelper
+        - name : zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper
           special_handling :
                 variant_of : "zeCommandQueueExecuteCommandLists"
                 icd :
@@ -689,6 +689,9 @@ config :
                         server_access : write
 
         - name : zeCommandQueueSynchronize
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  CommandQueue
           returns :
                     type : ze_result_t
@@ -894,6 +897,116 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm
+          special_handling :
+                variant_of : "zeCommandListAppendMemoryCopy"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    custom_handler : True
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : dstptr
+                    type : void*
+                    kind : pointer
+                 2 :
+                    name : srcptr
+                    type : const void*
+                    kind : pointer
+                 3 :
+                    name : size
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : hSignalEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    kind_details :
+                        can_be_null : True
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                 5 :
+                    name : numWaitEvents
+                    type : uint32_t
+                    kind : scalar
+                 6 :
+                    name : phWaitEvents
+                    type : ze_event_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: numWaitEvents
+                        can_be_null : True
+                        element :
+                            type : ze_event_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                        server_access : read
+
+        - name : zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc
+          special_handling :
+                variant_of : "zeCommandListAppendMemoryCopy"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    custom_handler : True
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : dstptr
+                    type : void*
+                    kind : pointer
+                 2 :
+                    name : srcptr
+                    type : const void*
+                    kind : pointer
+                 3 :
+                    name : size
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : hSignalEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    kind_details :
+                        can_be_null : True
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                 5 :
+                    name : numWaitEvents
+                    type : uint32_t
+                    kind : scalar
+                 6 :
+                    name : phWaitEvents
+                    type : ze_event_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: numWaitEvents
+                        can_be_null : True
+                        element :
+                            type : ze_event_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                        server_access : read
+
+        - name : zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc
           special_handling :
                 variant_of : "zeCommandListAppendMemoryCopy"
                 icd :
@@ -2280,6 +2393,9 @@ config :
 #                    kind : scalar
 #
         - name : zeEventHostSynchronize
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2607,7 +2723,7 @@ config :
                         element :
                             type : ze_fence_handle_t
                             kind : scalar
-                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, hCommandQueue)"
                         server_access : write
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
@@ -2627,6 +2743,9 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeFenceHostSynchronize
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Fence
           returns :
                     type : ze_result_t
@@ -2668,6 +2787,7 @@ config :
                     type : ze_fence_handle_t
                     kind : scalar
                     translate_before : "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+                    translate_after : "{arg}->asLocalObject()->clearExecutedCommandListsPointers()"
 
         - name : zeKernelSetGlobalOffsetExp
           ddi_category :  KernelExp

@@ -1427,7 +1427,7 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Waiting for finish of command queue via zeFenceHostSynchronize()!");
 
-    const auto zeFenceHostSynchronizeResult = zeFenceHostSynchronize(fenceHandle, UINT64_MAX);
+    auto zeFenceHostSynchronizeResult = zeFenceHostSynchronize(fenceHandle, UINT64_MAX);
     if (zeFenceHostSynchronizeResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeFenceHostSynchronize() call has failed! Error code = %d", static_cast<int>(zeFenceHostSynchronizeResult));
         return -1;
@@ -1459,7 +1459,7 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Resetting fence via zeFenceReset()!");
 
-    const auto zeFenceResetResult = zeFenceReset(fenceHandle);
+    auto zeFenceResetResult = zeFenceReset(fenceHandle);
     if (zeFenceResetResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeFenceReset() call has failed! Error code = %d", static_cast<int>(zeFenceResetResult));
         return -1;
@@ -1826,6 +1826,164 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
     }
 
     log<Verbosity::info>("usmBufferShared passed check!");
+
+    log<Verbosity::info>("Resetting command list!");
+
+    zeCommandListResetResult = zeCommandListReset(commandListHandle);
+    if (zeCommandListResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListReset() call has failed! Error code = %d", static_cast<int>(zeCommandListResetResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Command list reset has been successful!");
+
+    std::vector<unsigned char> bufferOnClientsHeap{};
+    bufferOnClientsHeap.resize(bufferSize, 0xFF);
+
+    log<Verbosity::info>("Appending memory copy operation for copying usmHostBuffer to a buffer on client's heap to command list!");
+
+    zeCommandListAppendMemoryCopyResult = zeCommandListAppendMemoryCopy(commandListHandle,
+                                                                        bufferOnClientsHeap.data(),
+                                                                        usmHostBuffer,
+                                                                        bufferSize,
+                                                                        nullptr,
+                                                                        0,
+                                                                        nullptr);
+    if (zeCommandListAppendMemoryCopyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopy() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryCopyResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Memory copy operation appended successfully!");
+
+    log<Verbosity::info>("Closing command list via zeCommandListClose()!");
+
+    zeCommandListCloseResult = zeCommandListClose(commandListHandle);
+    if (zeCommandListCloseResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListClose() call has failed! Error code = %d", static_cast<int>(zeCommandListCloseResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Command list has been successfully closed!");
+
+    log<Verbosity::info>("Executing command list via zeCommandQueueExecuteCommandLists()!");
+
+    zeCommandQueueExecuteCommandListsResult = zeCommandQueueExecuteCommandLists(commandQueue, 1, &commandListHandle, nullptr);
+    if (zeCommandQueueExecuteCommandListsResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandQueueExecuteCommandLists() call has failed! Error code = %d", static_cast<int>(zeCommandQueueExecuteCommandListsResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Execution started!");
+
+    log<Verbosity::info>("Waiting for finishing execution via zeCommandQueueSynchronize()!");
+
+    zeCommandQueueSynchronizeResult = zeCommandQueueSynchronize(commandQueue, UINT64_MAX);
+    if (zeCommandQueueSynchronizeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandQueueSynchronize() call has failed! Error code = %d", static_cast<int>(zeCommandQueueSynchronizeResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Execution finished!");
+
+    log<Verbosity::info>("Checking if buffer on client's heap contains values from usmHostBuffer!");
+
+    for (int i = 0; i < bufferSize; ++i) {
+        auto *usmHostBufBytes = static_cast<unsigned char *>(usmHostBuffer);
+
+        if (usmHostBufBytes[i] != bufferOnClientsHeap[i]) {
+            log<Verbosity::error>("bufferOnClientsHeap differs from usmHostBuffer! Expected: %d, actual: %d. Byte: %d",
+                                  static_cast<int>(usmHostBufBytes[i]),
+                                  static_cast<int>(bufferOnClientsHeap[i]),
+                                  i);
+            return -1;
+        }
+    }
+
+    log<Verbosity::info>("bufferOnClientsHeap passed check!");
+
+    log<Verbosity::info>("Resetting command list!");
+
+    zeCommandListResetResult = zeCommandListReset(commandListHandle);
+    if (zeCommandListResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListReset() call has failed! Error code = %d", static_cast<int>(zeCommandListResetResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Command list reset has been successful!");
+
+    std::vector<unsigned char> anotherBufferOnClientsHeap{};
+    anotherBufferOnClientsHeap.resize(bufferSize, 0xAA);
+
+    log<Verbosity::info>("Appending memory copy operation for copying bufferOnClientsHeap to anotherBufferOnClientsHeap to command list!");
+
+    zeCommandListAppendMemoryCopyResult = zeCommandListAppendMemoryCopy(commandListHandle,
+                                                                        anotherBufferOnClientsHeap.data(),
+                                                                        bufferOnClientsHeap.data(),
+                                                                        bufferSize,
+                                                                        nullptr,
+                                                                        0,
+                                                                        nullptr);
+    if (zeCommandListAppendMemoryCopyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopy() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryCopyResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Memory copy operation appended successfully!");
+
+    log<Verbosity::info>("Closing command list via zeCommandListClose()!");
+
+    zeCommandListCloseResult = zeCommandListClose(commandListHandle);
+    if (zeCommandListCloseResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListClose() call has failed! Error code = %d", static_cast<int>(zeCommandListCloseResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Command list has been successfully closed!");
+
+    log<Verbosity::info>("Resetting fence via zeFenceReset()!");
+
+    zeFenceResetResult = zeFenceReset(fenceHandle);
+    if (zeFenceResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeFenceReset() call has failed! Error code = %d", static_cast<int>(zeFenceResetResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("zeFenceReset() has been successful!");
+
+    log<Verbosity::info>("Executing command list via zeCommandQueueExecuteCommandLists()!");
+
+    zeCommandQueueExecuteCommandListsResult = zeCommandQueueExecuteCommandLists(commandQueue, 1, &commandListHandle, fenceHandle);
+    if (zeCommandQueueExecuteCommandListsResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandQueueExecuteCommandLists() call has failed! Error code = %d", static_cast<int>(zeCommandQueueExecuteCommandListsResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Execution started!");
+
+    log<Verbosity::info>("Waiting for finish of command queue via zeFenceHostSynchronize()!");
+
+    zeFenceHostSynchronizeResult = zeFenceHostSynchronize(fenceHandle, UINT64_MAX);
+    if (zeFenceHostSynchronizeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeFenceHostSynchronize() call has failed! Error code = %d", static_cast<int>(zeFenceHostSynchronizeResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Execution finished!");
+
+    log<Verbosity::info>("Checking if another buffer on client's heap contains values from buffer on client's heap!");
+
+    for (int i = 0; i < bufferSize; ++i) {
+        if (anotherBufferOnClientsHeap[i] != bufferOnClientsHeap[i]) {
+            log<Verbosity::error>("anotherBufferOnClientsHeap differs from bufferOnClientsHeap! Expected: %d, actual: %d. Byte: %d",
+                                  static_cast<int>(bufferOnClientsHeap[i]),
+                                  static_cast<int>(anotherBufferOnClientsHeap[i]),
+                                  i);
+            return -1;
+        }
+    }
+
+    log<Verbosity::info>("anotherBufferOnClientsHeap passed check!");
 
     log<Verbosity::info>("Destroying DoubleVals kernel via zeKernelDestroy()!");
 

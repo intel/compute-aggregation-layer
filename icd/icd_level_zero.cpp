@@ -651,43 +651,57 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
         icdCommandList->registerMemoryToWrite(srcptr, size);
         return zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else if (srcIsUsm) {
-        log<Verbosity::debug>("zeCommandListAppendMemoryCopy() from USM to host's heap/stack is not supported yet!");
+        icdCommandList->registerMemoryToRead(dstptr, size);
+        return zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else {
         if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
             log<Verbosity::debug>("zeCommandListAppendMemoryCopy(): host's heap/stack memory blocks overlap!");
             return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
         }
 
-        log<Verbosity::debug>("zeCommandListAppendMemoryCopy() from host's heap/stack to host's heap/stack is not supported yet!");
+        icdCommandList->registerMemoryToWrite(srcptr, size);
+        icdCommandList->registerMemoryToRead(dstptr, size);
+
+        return zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 
     return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
 
 void IcdL0CommandList::registerMemoryToWrite(const void *srcPtr, size_t srcSize) {
-    const auto overlaps = [srcPtr, srcSize](const auto &chunk) {
-        return IcdL0CommandList::rangesOverlap(chunk.address, chunk.size, srcPtr, srcSize);
+    std::lock_guard lock{memoryToWriteMutex};
+    registerMemoryToContainer(srcPtr, srcSize, memoryToWrite);
+}
+
+void IcdL0CommandList::registerMemoryToRead(const void *dstPtr, size_t dstSize) {
+    std::lock_guard lock{memoryToReadMutex};
+    registerMemoryToContainer(dstPtr, dstSize, memoryToRead);
+}
+
+void IcdL0CommandList::registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory) {
+    const auto overlaps = [ptr, size](const auto &chunk) {
+        return IcdL0CommandList::rangesOverlap(chunk.address, chunk.size, ptr, size);
     };
 
-    const auto overlappingCount = std::count_if(std::begin(memoryToWrite), std::end(memoryToWrite), overlaps);
+    const auto overlappingCount = std::count_if(std::begin(memory), std::end(memory), overlaps);
     if (overlappingCount == 0) {
-        memoryToWrite.emplace_back(srcPtr, srcSize);
+        memory.emplace_back(ptr, size);
         return;
     }
 
     if (overlappingCount == 1) {
-        auto overlappingChunkIt = std::find_if(std::begin(memoryToWrite), std::end(memoryToWrite), overlaps);
-        *overlappingChunkIt = mergeChunks(ChunkEntry{srcPtr, srcSize}, *overlappingChunkIt);
+        auto overlappingChunkIt = std::find_if(std::begin(memory), std::end(memory), overlaps);
+        *overlappingChunkIt = mergeChunks(ChunkEntry{ptr, size}, *overlappingChunkIt);
 
         return;
     }
 
     std::vector<ChunkEntry> newChunks{};
-    newChunks.reserve(memoryToWrite.size());
+    newChunks.reserve(memory.size());
 
-    ChunkEntry currentChunk{srcPtr, srcSize};
-    for (auto &chunk : memoryToWrite) {
-        if (!rangesOverlap(chunk.address, chunk.size, srcPtr, srcSize)) {
+    ChunkEntry currentChunk{ptr, size};
+    for (auto &chunk : memory) {
+        if (!rangesOverlap(chunk.address, chunk.size, ptr, size)) {
             newChunks.push_back(chunk);
             continue;
         }
@@ -696,7 +710,7 @@ void IcdL0CommandList::registerMemoryToWrite(const void *srcPtr, size_t srcSize)
     }
 
     newChunks.push_back(currentChunk);
-    memoryToWrite = std::move(newChunks);
+    memory = std::move(newChunks);
 }
 
 bool IcdL0CommandList::rangesOverlap(const void *srcPtr, const void *dstPtr, size_t size) {
@@ -729,42 +743,210 @@ auto IcdL0CommandList::mergeChunks(const ChunkEntry &first, const ChunkEntry &se
     return ChunkEntry{mergedAddress, mergedSize};
 }
 
-ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence) {
+ze_result_t IcdL0CommandList::writeRequiredMemory() {
+    std::lock_guard lock{memoryToWriteMutex};
+
+    if (memoryToWrite.empty()) {
+        return ZE_RESULT_SUCCESS;
+    }
+
+    uint32_t transferDescsCount{0};
+    const auto queryCountResult = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
+                                                                                       memoryToWrite.data(),
+                                                                                       &transferDescsCount,
+                                                                                       nullptr);
+    if (queryCountResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Could not get total count of memory blocks to write from service! Execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    transferDescs.resize(transferDescsCount);
+
+    const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
+                                                                                         memoryToWrite.data(),
+                                                                                         &transferDescsCount,
+                                                                                         transferDescs.data());
+    if (queryTransferDescs != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Could not get memory blocks to write from service! Execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
     auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    if (!globalL0Platform->writeRequiredMemory(transferDescs)) {
+        log<Verbosity::error>("Could not write required memory from user's stack/heap! Execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    return ZE_RESULT_SUCCESS;
+}
+
+ze_result_t IcdL0CommandList::readRequiredMemory() {
+    std::lock_guard lock{memoryToReadMutex};
+
+    if (memoryToRead.empty()) {
+        return ZE_RESULT_SUCCESS;
+    }
+
+    uint32_t transferDescsCount{0};
+    const auto queryCountResult = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToRead.size()),
+                                                                                       memoryToRead.data(),
+                                                                                       &transferDescsCount,
+                                                                                       nullptr);
+    if (queryCountResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Could not get total count of memory blocks to read from service! Execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    transferDescs.resize(transferDescsCount);
+
+    const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToRead.size()),
+                                                                                         memoryToRead.data(),
+                                                                                         &transferDescsCount,
+                                                                                         transferDescs.data());
+    if (queryTransferDescs != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Could not get memory blocks to read from service! Execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    if (!globalL0Platform->readRequiredMemory(transferDescs)) {
+        log<Verbosity::error>("Could not read required memory to user's stack/heap! Results of execution of command list would be invalid!");
+        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    return ZE_RESULT_SUCCESS;
+}
+
+ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout) {
+    log<Verbosity::debug>("Detected call to zeEventHostSynchronize()! "
+                          "If events were used to synchronize zeCommandListAppendMemoryCopy() to user's heap/stack, then operation result may be invalid!");
+    return zeEventHostSynchronizeRpcHelper(hEvent, timeout);
+}
+
+ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout) {
+    auto icdFence = static_cast<IcdL0Fence *>(hFence);
+    auto icdQueue = icdFence->peekQueue();
+    auto queueLock = icdQueue->lock();
+
+    const auto result = zeFenceHostSynchronizeRpcHelper(hFence, timeout);
+    if (result == ZE_RESULT_SUCCESS) {
+        auto icdCommandLists = icdFence->clearExecutedCommandListsPointers();
+
+        for (const auto &commandList : icdCommandLists) {
+            const auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);
+            const auto readResult = icdCommandList->readRequiredMemory();
+
+            if (readResult != ZE_RESULT_SUCCESS) {
+                return readResult;
+            }
+        }
+
+        icdQueue->removeFromExecutedCommandLists(icdCommandLists);
+    }
+
+    return result;
+}
+
+ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
+    auto icdCommandQueue = static_cast<IcdL0CommandQueue *>(hCommandQueue);
+    auto lock = icdCommandQueue->lock();
+
+    auto result = zeCommandQueueSynchronizeRpcHelper(hCommandQueue, timeout);
+    if (result == ZE_RESULT_SUCCESS) {
+        result = icdCommandQueue->readMemoryRequiredByCurrentlyExecutedCommandLists();
+        icdCommandQueue->clearExecutedCommandListsPointers();
+    }
+
+    return result;
+}
+
+ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence) {
+    auto icdCommandQueue = static_cast<IcdL0CommandQueue *>(hCommandQueue);
+    auto queueLock = icdCommandQueue->lock();
+
+    icdCommandQueue->storeExecutedCommandListsPointers(numCommandLists, phCommandLists);
+
+    if (hFence) {
+        auto icdFence = static_cast<IcdL0Fence *>(hFence);
+        icdFence->storeExecutedCommandListsPointers(numCommandLists, phCommandLists);
+    }
 
     for (uint32_t i = 0u; i < numCommandLists; ++i) {
         const auto icdCommandList = static_cast<IcdL0CommandList *>(phCommandLists[i]);
-        const auto &memoryToWrite = icdCommandList->getMemoryToWrite();
+        const auto writeResult = icdCommandList->writeRequiredMemory();
 
-        uint32_t transferDescsCount{0};
-        const auto queryCountResult = zeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
-                                                                                                 memoryToWrite.data(),
-                                                                                                 &transferDescsCount,
-                                                                                                 nullptr);
-        if (queryCountResult != ZE_RESULT_SUCCESS) {
-            log<Verbosity::error>("Could not get total count of memory blocks to write from service! Execution of command list would be invalid!");
-            return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        }
-
-        std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
-        transferDescs.resize(transferDescsCount);
-
-        const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopySourceMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
-                                                                                                   memoryToWrite.data(),
-                                                                                                   &transferDescsCount,
-                                                                                                   transferDescs.data());
-        if (queryTransferDescs != ZE_RESULT_SUCCESS) {
-            log<Verbosity::error>("Could not get memory blocks to write from service! Execution of command list would be invalid!");
-            return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        }
-
-        if (!globalL0Platform->writeRequiredMemory(transferDescs)) {
-            log<Verbosity::error>("Could not write required memory from user's stack/heap! Execution of command list would be invalid!");
-            return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        if (writeResult != ZE_RESULT_SUCCESS) {
+            return writeResult;
         }
     }
 
+    queueLock.unlock();
     return zeCommandQueueExecuteCommandListsRpcHelper(hCommandQueue, numCommandLists, phCommandLists, hFence);
+}
+
+ze_result_t IcdL0CommandQueue::readMemoryRequiredByCurrentlyExecutedCommandLists() {
+    for (const auto &commandList : currentlyExecutedCommandLists) {
+        const auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);
+        const auto readResult = icdCommandList->readRequiredMemory();
+
+        if (readResult != ZE_RESULT_SUCCESS) {
+            return readResult;
+        }
+    }
+
+    return ZE_RESULT_SUCCESS;
+}
+
+void IcdL0CommandQueue::storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists) {
+    currentlyExecutedCommandLists.insert(currentlyExecutedCommandLists.end(),
+                                         phCommandLists,
+                                         phCommandLists + numCommandLists);
+}
+
+void IcdL0CommandQueue::removeFromExecutedCommandLists(const std::vector<ze_command_list_handle_t> &commandListsToRemove) {
+    if (commandListsToRemove.empty()) {
+        return;
+    }
+
+    auto first = std::find(currentlyExecutedCommandLists.begin(), currentlyExecutedCommandLists.end(), commandListsToRemove.front());
+    auto last = std::find(currentlyExecutedCommandLists.begin(), currentlyExecutedCommandLists.end(), commandListsToRemove.back());
+    if (first == currentlyExecutedCommandLists.end() && last == currentlyExecutedCommandLists.end()) {
+        // Everything is fine. The range was synchronized in another call.
+        return;
+    }
+
+    if (first == currentlyExecutedCommandLists.end() || last == currentlyExecutedCommandLists.end()) {
+        log<Verbosity::error>("Could not remove executed command lists! Could not find all elements!");
+        return;
+    }
+
+    const auto realLast = std::next(last);
+    const auto foundRangeSize = std::distance(first, realLast);
+
+    if (foundRangeSize != static_cast<int64_t>(commandListsToRemove.size())) {
+        log<Verbosity::error>("Could not remove executed command lists! Invalid range! "
+                              "Expected range size: %d, actual range size: %d",
+                              static_cast<int>(commandListsToRemove.size()),
+                              static_cast<int>(foundRangeSize));
+        return;
+    }
+
+    currentlyExecutedCommandLists.erase(first, realLast);
+}
+
+std::vector<ze_command_list_handle_t> IcdL0Fence::clearExecutedCommandListsPointers() {
+    std::lock_guard lock{currentlyExecutedCommandListsMutex};
+    return std::move(currentlyExecutedCommandLists);
+}
+
+void IcdL0Fence::storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists) {
+    std::lock_guard lock{currentlyExecutedCommandListsMutex};
+
+    currentlyExecutedCommandLists.insert(currentlyExecutedCommandLists.end(),
+                                         phCommandLists,
+                                         phCommandLists + numCommandLists);
 }
 
 ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount, const char **pNames) {
@@ -793,7 +975,7 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
 }
 
 ze_result_t IcdL0Module::getKernelNames(uint32_t *pCount, const char **pNames) {
-    if (!wasKernelNamesQueried && !queryKernelNames()) {
+    if (!wasKernelNamesQueried.load() && !queryKernelNames()) {
         return ZE_RESULT_ERROR_DEVICE_LOST;
     }
 
@@ -807,7 +989,7 @@ ze_result_t IcdL0Module::getKernelNames(uint32_t *pCount, const char **pNames) {
 }
 
 ze_result_t IcdL0Module::getKernelNamesCount(uint32_t *pCount) {
-    if (!wasKernelNamesQueried && !queryKernelNames()) {
+    if (!wasKernelNamesQueried.load() && !queryKernelNames()) {
         return ZE_RESULT_ERROR_DEVICE_LOST;
     }
 
@@ -816,6 +998,12 @@ ze_result_t IcdL0Module::getKernelNamesCount(uint32_t *pCount) {
 }
 
 bool IcdL0Module::queryKernelNames() {
+    if (wasKernelNamesQueried.load()) {
+        return true;
+    }
+
+    std::lock_guard lock{kernelNamesMutex};
+
     uint32_t totalLength{0};
     auto ret = Cal::Icd::LevelZero::zeModuleGetKernelNamesRpcHelper(this, &totalLength, nullptr);
     if (ZE_RESULT_SUCCESS != ret) {
@@ -834,7 +1022,7 @@ bool IcdL0Module::queryKernelNames() {
 
     populateKernelNames(concatenatedNames);
 
-    wasKernelNamesQueried = true;
+    wasKernelNamesQueried.store(true);
     return true;
 }
 
