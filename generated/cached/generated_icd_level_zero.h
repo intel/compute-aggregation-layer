@@ -61,6 +61,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool);
 ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent);
+ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
 ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout);
@@ -101,10 +102,6 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 
 namespace Unimplemented {
-inline void zeCommandListAppendBarrierUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendBarrier is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryRangesBarrier is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -415,6 +412,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.EventPool.pfnDestroy = Cal::Icd::LevelZero::zeEventPoolDestroy;
     dt.Event.pfnCreate = Cal::Icd::LevelZero::zeEventCreate;
     dt.Event.pfnDestroy = Cal::Icd::LevelZero::zeEventDestroy;
+    dt.CommandList.pfnAppendBarrier = Cal::Icd::LevelZero::zeCommandListAppendBarrier;
     dt.CommandList.pfnAppendSignalEvent = Cal::Icd::LevelZero::zeCommandListAppendSignalEvent;
     dt.CommandList.pfnAppendWaitOnEvents = Cal::Icd::LevelZero::zeCommandListAppendWaitOnEvents;
     dt.Event.pfnHostSynchronize = Cal::Icd::LevelZero::zeEventHostSynchronize;
@@ -453,7 +451,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Kernel.pfnGetName = Cal::Icd::LevelZero::zeKernelGetName;
     dt.CommandList.pfnAppendLaunchKernel = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel;
     // below are unimplemented, provided bindings are for easier debugging only
-    dt.CommandList.pfnAppendBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendBarrierUnimpl);
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
     dt.Device.pfnReserveCacheExt = reinterpret_cast<decltype(dt.Device.pfnReserveCacheExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceReserveCacheExtUnimpl);

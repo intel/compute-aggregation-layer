@@ -1747,6 +1747,13 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Memory fill operation appended successfully!");
 
+    auto zeCommandListAppendBarrierResult = zeCommandListAppendBarrier(commandListHandle, nullptr, 0, nullptr);
+    if (zeCommandListAppendBarrierResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendBarrier() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendBarrierResult));
+        return -1;
+    }
+    log<Verbosity::info>("Barrier appended successfully");
+
     log<Verbosity::info>("Closing command list via zeCommandListClose()!");
 
     zeCommandListCloseResult = zeCommandListClose(commandListHandle);

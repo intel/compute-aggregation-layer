@@ -895,6 +895,38 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
 
     return ret;
 }
+ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.phWaitEvents;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+    if(false == channel.callSynchronous(space)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -1726,6 +1758,9 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
 }
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     return Cal::Icd::LevelZero::zeEventDestroy(hEvent);
+}
+ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    return Cal::Icd::LevelZero::zeCommandListAppendBarrier(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
     return Cal::Icd::LevelZero::zeCommandListAppendSignalEvent(hCommandList, hEvent);

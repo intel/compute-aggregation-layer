@@ -154,7 +154,6 @@ config :
                         server_access : read
 
     unimplemented:
-        - CommandList.zeCommandListAppendBarrier
         - CommandList.zeCommandListAppendMemoryRangesBarrier
         - Context.zeContextSystemBarrier
         - Device.zeDeviceReserveCacheExt
@@ -241,30 +240,6 @@ config :
                     type : ze_init_flags_t
                     kind : scalar
 
-#        - name : zeCommandListAppendBarrier
-#          ddi_category :  CommandList
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hCommandList
-#                    type : ze_command_list_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hSignalEvent
-#                    type : ze_event_handle_t
-#                    kind : scalar
-#                 2 :
-#                    name : numWaitEvents
-#                    type : uint32_t
-#                    kind : scalar
-#                 3 :
-#                    name : phWaitEvents
-#                    type : ze_event_handle_t*
-#                    kind : pointer
-#
 #        - name : zeCommandListAppendMemoryRangesBarrier
 #          ddi_category :  CommandList
 #          returns :
@@ -2208,6 +2183,42 @@ config :
 #                    type : ze_event_pool_handle_t
 #                    kind : scalar
 #
+        - name : zeCommandListAppendBarrier
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hSignalEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    kind_details :
+                        can_be_null : True
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                 2 :
+                    name : numWaitEvents
+                    type : uint32_t
+                    kind : scalar
+                 3 :
+                    name : phWaitEvents
+                    type : ze_event_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "numWaitEvents"
+                        can_be_null : True
+                        element :
+                            type : ze_event_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                        server_access : read
+
         - name : zeCommandListAppendSignalEvent
           ddi_category :  CommandList
           returns :

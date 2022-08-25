@@ -58,6 +58,7 @@ ze_result_t (*zeEventPoolCreate)(ze_context_handle_t hContext, const ze_event_po
 ze_result_t (*zeEventPoolDestroy)(ze_event_pool_handle_t hEventPool) = nullptr;
 ze_result_t (*zeEventCreate)(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) = nullptr;
 ze_result_t (*zeEventDestroy)(ze_event_handle_t hEvent) = nullptr;
+ze_result_t (*zeCommandListAppendBarrier)(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendSignalEvent)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) = nullptr;
 ze_result_t (*zeEventHostSynchronize)(ze_event_handle_t hEvent, uint64_t timeout) = nullptr;
@@ -345,6 +346,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeCommandListAppendBarrier = reinterpret_cast<decltype(zeCommandListAppendBarrier)>(dlsym(libraryHandle, "zeCommandListAppendBarrier"));
+    if(nullptr == zeCommandListAppendBarrier){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendBarrier in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeCommandListAppendSignalEvent = reinterpret_cast<decltype(zeCommandListAppendSignalEvent)>(dlsym(libraryHandle, "zeCommandListAppendSignalEvent"));
     if(nullptr == zeCommandListAppendSignalEvent){
         log<Verbosity::error>("Missing symbol zeCommandListAppendSignalEvent in %s", loadPath.c_str());
@@ -610,6 +617,7 @@ void unloadLevelZeroLibrary() {
     zeEventPoolDestroy = nullptr;
     zeEventCreate = nullptr;
     zeEventDestroy = nullptr;
+    zeCommandListAppendBarrier = nullptr;
     zeCommandListAppendSignalEvent = nullptr;
     zeCommandListAppendWaitOnEvents = nullptr;
     zeEventHostSynchronize = nullptr;

@@ -66,6 +66,7 @@ extern ze_result_t (*zeEventPoolCreate)(ze_context_handle_t hContext, const ze_e
 extern ze_result_t (*zeEventPoolDestroy)(ze_event_pool_handle_t hEventPool);
 extern ze_result_t (*zeEventCreate)(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
 extern ze_result_t (*zeEventDestroy)(ze_event_handle_t hEvent);
+extern ze_result_t (*zeCommandListAppendBarrier)(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeCommandListAppendSignalEvent)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 extern ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
 extern ze_result_t (*zeEventHostSynchronize)(ze_event_handle_t hEvent, uint64_t timeout);
@@ -540,6 +541,17 @@ inline bool zeEventDestroyHandler(Provider &service, ClientContext &ctx, Cal::Rp
     }
     return true;
 }
+inline bool zeCommandListAppendBarrierHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendBarrier");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.hSignalEvent, 
+                                                apiCommand->args.numWaitEvents, 
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
+                                                );
+    return true;
+}
 inline bool zeCommandListAppendSignalEventHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendSignalEvent");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM*>(command);
@@ -960,6 +972,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeEventPoolDestroyRpcM::messageSubtype] = zeEventPoolDestroyHandler;
     outHandlers[ZeEventCreateRpcM::messageSubtype] = zeEventCreateHandler;
     outHandlers[ZeEventDestroyRpcM::messageSubtype] = zeEventDestroyHandler;
+    outHandlers[ZeCommandListAppendBarrierRpcM::messageSubtype] = zeCommandListAppendBarrierHandler;
     outHandlers[ZeCommandListAppendSignalEventRpcM::messageSubtype] = zeCommandListAppendSignalEventHandler;
     outHandlers[ZeCommandListAppendWaitOnEventsRpcM::messageSubtype] = zeCommandListAppendWaitOnEventsHandler;
     outHandlers[ZeEventHostSynchronizeRpcM::messageSubtype] = zeEventHostSynchronizeHandler;
@@ -1272,6 +1285,14 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeEventDestroyRpcM &apiCommand) {
                                                 apiCommand.args.hEvent
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendSignalEvent(
                                                 apiCommand.args.hCommandList, 
@@ -1574,6 +1595,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventDestroyRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendWaitOnEventsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWaitOnEventsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM*>(command)); break;

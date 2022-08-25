@@ -17,7 +17,6 @@ namespace LevelZero {
 
 inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     std::vector<std::string> ret;
-    ret.push_back("CommandList.zeCommandListAppendBarrier");
     ret.push_back("CommandList.zeCommandListAppendMemoryRangesBarrier");
     ret.push_back("Context.zeContextSystemBarrier");
     ret.push_back("Device.zeDeviceReserveCacheExt");

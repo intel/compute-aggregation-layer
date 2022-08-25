@@ -316,6 +316,26 @@ size_t ZeEventPoolCreateRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeCommandListAppendBarrierRpcM::Captures::DynamicTraits ZeCommandListAppendBarrierRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendBarrierRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendBarrierRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
 ZeCommandListAppendWaitOnEventsRpcM::Captures::DynamicTraits ZeCommandListAppendWaitOnEventsRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
     DynamicTraits ret = {};
     ret.phEvents.count = numEvents;
