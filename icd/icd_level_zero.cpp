@@ -508,7 +508,7 @@ ze_result_t zeInit(ze_init_flags_t flags) {
         return ZE_RESULT_ERROR_UNINITIALIZED;
     }
 
-    log<Verbosity::info>("Initializing LevelZero! Flags passed to zeInit() will be ignored by Compute Aggregation Layer service.");
+    log<Verbosity::info>("Initializing LevelZero! Flags argument used with zeInit() will be ignored by Compute Aggregation Layer service.");
     return Cal::Icd::LevelZero::zeInitRpcHelper(flags);
 }
 
