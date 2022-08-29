@@ -1,8 +1,9 @@
 components:
   neo:
-    branch: neo
-    revision: 22.29.23750
     dest_dir: neo
     type: git
+    branch: neo
+    revision: 22.34.24023
+    repository: https://github.com/intel/compute-runtime.git
 version: '1'
 converter: E-0
