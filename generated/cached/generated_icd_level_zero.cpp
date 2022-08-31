@@ -1346,6 +1346,10 @@ ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pG
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
+    if(pptr)
+    {
+        command->captures.ret = static_cast<IcdL0Module*>(hModule)->recordGlobalPointer(*pptr) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    }
     ze_result_t ret = command->captures.ret;
 
     return ret;

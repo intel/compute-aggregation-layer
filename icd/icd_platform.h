@@ -114,6 +114,13 @@ class IcdPlatform {
             return true;
         }
 
+        // Check global pointer list
+        auto globalPtrLock = globalPointers.lock();
+        if (std::find(globalPointers.ptrList.begin(), globalPointers.ptrList.end(), usmPtr) != globalPointers.ptrList.end()) {
+            log<Verbosity::debug>("Found usmPtr %lx in global pointer list. Returning true", usmPtr);
+            return true;
+        }
+
         return getUserModeAccessibleUsmDeviceRangeFromMap(usmPtr) != userModeAccessibleUsmDeviceAddresses.end();
     }
 
@@ -216,6 +223,26 @@ class IcdPlatform {
         return allowedToUseZeroCopyForMallocShmem;
     }
 
+    bool recordGlobalPointer(void *ptr) {
+        log<Verbosity::debug>("Adding global pointer:%lx to global pointer cache to list", ptr);
+        auto globalPtrLock = globalPointers.lock();
+        globalPointers.ptrList.push_back(ptr);
+        return true;
+    }
+
+    bool removeGlobalPointer(void *ptr) {
+        log<Verbosity::debug>("Removing global pointer:%lx from global pointer cache", ptr);
+        auto globalPtrLock = globalPointers.lock();
+        auto it = std::find(globalPointers.ptrList.begin(), globalPointers.ptrList.end(), ptr);
+        if (it == globalPointers.ptrList.end()) {
+            log<Verbosity::debug>("Pointer:%lx not found in global pointer cache ", ptr);
+            return true;
+        }
+
+        globalPointers.ptrList.erase(it);
+        return true;
+    }
+
     bool writeRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
         auto shmemManagerLock = shmemManager.lock();
 
@@ -251,6 +278,12 @@ class IcdPlatform {
     std::unique_ptr<Cal::Rpc::ChannelClient> rpcChannel;
     std::map<const void *, const void *> userModeAccessibleUsmDeviceAddresses;
     std::string socketPath;
+
+    struct {
+        std::unique_lock<std::mutex> lock() { return std::unique_lock<std::mutex>(criticalSection); }
+        std::mutex criticalSection;
+        std::vector<void *> ptrList{};
+    } globalPointers;
 
     struct {
         std::unique_lock<std::mutex> lock() { return std::unique_lock<std::mutex>(criticalSection); }

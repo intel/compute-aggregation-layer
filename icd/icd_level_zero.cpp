@@ -850,6 +850,28 @@ void IcdL0Module::populateKernelNames(const std::vector<char> &buffer) {
     }
 }
 
+bool IcdL0Module::removeGlobalPointer() {
+    auto globalPtrLock = globalPointers.lock();
+    for (auto &ptr : globalPointers.ptrList) {
+        Cal::Icd::icdGlobalState.getL0Platform()->removeGlobalPointer(ptr);
+    }
+    globalPointers.ptrList.clear();
+    return true;
+}
+
+bool IcdL0Module::recordGlobalPointer(void *ptr) {
+    //Add to list if ptr is unique
+    auto globalPtrLock = globalPointers.lock();
+    if (std::find(globalPointers.ptrList.begin(), globalPointers.ptrList.end(), ptr) == globalPointers.ptrList.end()) {
+        globalPointers.ptrList.push_back(ptr);
+    } else {
+        return true;
+    }
+    globalPtrLock.unlock();
+    Cal::Icd::icdGlobalState.getL0Platform()->recordGlobalPointer(ptr);
+    return true;
+}
+
 bool IcdL0Device::patchDeviceName(ze_device_properties_t &properties) {
     const auto nullTerminator = std::find(std::begin(properties.name), std::end(properties.name), '\0');
     if (nullTerminator == std::begin(properties.name)) {

@@ -3513,6 +3513,7 @@ config :
                             type : void*
                             kind : scalar
                         server_access : write
+                    translate_after : "command->captures.ret = static_cast<IcdL0Module*>(hModule)->recordGlobalPointer(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
 
         - name : zeModuleGetKernelNames
           special_handling :

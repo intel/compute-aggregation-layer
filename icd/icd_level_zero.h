@@ -244,8 +244,14 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
+    ~IcdL0Module() {
+        removeGlobalPointer();
+    }
+
     ze_result_t getKernelNames(uint32_t *pCount, const char **pNames);
     ze_result_t getKernelNamesCount(uint32_t *pCount);
+    bool recordGlobalPointer(void *ptr);
+    bool removeGlobalPointer();
 
   private:
     bool queryKernelNames();
@@ -253,6 +259,11 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
 
     bool wasKernelNamesQueried{false};
     std::vector<std::string> kernelNames{};
+    struct {
+        std::unique_lock<std::mutex> lock() { return std::unique_lock<std::mutex>(criticalSection); }
+        std::mutex criticalSection;
+        std::vector<void *> ptrList{};
+    } globalPointers;
 };
 
 struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, IcdL0TypePrinter> {
