@@ -1070,6 +1070,17 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Allocation has been successful!");
 
+    auto UsmHostBufferWithOffset = static_cast<char *>(usmHostBuffer) + 10;
+    void *basePtrToQuery = nullptr;
+    size_t sizeOfUSMBuffer = 0;
+    auto zeMemGetAddressRangeResult = zeMemGetAddressRange(contextHandle, UsmHostBufferWithOffset, &basePtrToQuery, &sizeOfUSMBuffer);
+    if (zeMemGetAddressRangeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemGetAddressRange() call has failed! Error code: %d", static_cast<int>(zeMemGetAddressRangeResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("zeMemGetAddressRange has been successful! For USM pointer %p base address is %p. Allocation size is %zd", UsmHostBufferWithOffset, basePtrToQuery, sizeOfUSMBuffer);
+
     log<Verbosity::info>("Allocating USM shared buffer!");
     void *usmBufferShared{nullptr};
     const auto zeMemAllocSharedResult = zeMemAllocShared(contextHandle, &deviceMemAllocDesc, &hostMemAllocDesc, bufferSize, alignment, nullptr, &usmBufferShared);

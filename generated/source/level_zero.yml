@@ -194,7 +194,6 @@ config :
         - ImageExp.zeImageViewCreateExp
         - KernelExp.zeKernelSchedulingHintExp
         - Module.zeModuleInspectLinkageExt
-        - Mem.zeMemGetAddressRange
         - Mem.zeMemGetIpcHandle
         - Mem.zeMemOpenIpcHandle
         - Mem.zeMemCloseIpcHandle
@@ -3199,30 +3198,45 @@ config :
                             translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, static_cast<ze_device_handle_t>(nullptr))"
                         server_access : write
 
-#        - name : zeMemGetAddressRange
-#          ddi_category :  Mem
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : ptr
-#                    type : const void*
-#                    kind : pointer
-#                 2 :
-#                    name : pBase
-#                    type : void**
-#                    kind : pointer
-#                 3 :
-#                    name : pSize
-#                    type : size_t*
-#                    kind : pointer
-#
+        - name : zeMemGetAddressRange
+          ddi_category :  Mem
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : const void*
+                    kind : pointer
+                 2 :
+                    name : pBase
+                    type : void**
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : void*
+                            kind : scalar
+                        server_access : write
+                 3 :
+                    name : pSize
+                    type : size_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : size_t
+                            kind : scalar
+                        server_access : write
+
 #        - name : zeMemGetIpcHandle
 #          ddi_category :  Mem
 #          returns :

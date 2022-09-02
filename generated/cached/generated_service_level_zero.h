@@ -84,6 +84,7 @@ extern ze_result_t (*zeMemAllocDevice)(ze_context_handle_t hContext, const ze_de
 extern ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr);
 extern ze_result_t (*zeMemFree)(ze_context_handle_t hContext, void* ptr);
 extern ze_result_t (*zeMemGetAllocProperties)(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
+extern ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize);
 extern ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 extern ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule);
 extern ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog);
@@ -698,6 +699,17 @@ inline bool zeMemGetAllocPropertiesHandler(Provider &service, ClientContext &ctx
                                                 );
     return true;
 }
+inline bool zeMemGetAddressRangeHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeMemGetAddressRange");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemGetAddressRange(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.pBase ? &apiCommand->captures.pBase : nullptr, 
+                                                apiCommand->args.pSize ? &apiCommand->captures.pSize : nullptr
+                                                );
+    return true;
+}
 inline bool zeModuleCreateHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM*>(command);
@@ -990,6 +1002,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeMemAllocHostRpcM::messageSubtype] = zeMemAllocHostHandler;
     outHandlers[ZeMemFreeRpcM::messageSubtype] = zeMemFreeHandler;
     outHandlers[ZeMemGetAllocPropertiesRpcM::messageSubtype] = zeMemGetAllocPropertiesHandler;
+    outHandlers[ZeMemGetAddressRangeRpcM::messageSubtype] = zeMemGetAddressRangeHandler;
     outHandlers[ZeModuleCreateRpcM::messageSubtype] = zeModuleCreateHandler;
     outHandlers[ZeModuleDestroyRpcM::messageSubtype] = zeModuleDestroyHandler;
     outHandlers[ZeModuleBuildLogDestroyRpcM::messageSubtype] = zeModuleBuildLogDestroyHandler;
@@ -1408,6 +1421,14 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM &apiCo
                                                 apiCommand.args.phDevice
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemGetAddressRange(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.pBase, 
+                                                apiCommand.args.pSize
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleCreateRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleCreate(
                                                 apiCommand.args.hContext, 
@@ -1613,6 +1634,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocHostRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemFreeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemFreeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM*>(command)); break;

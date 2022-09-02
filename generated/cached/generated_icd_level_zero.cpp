@@ -1246,6 +1246,23 @@ ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* p
 
     return ret;
 }
+ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) {
+    log<Verbosity::bloat>("Establishing RPC for zeMemGetAddressRange");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM;
+    auto space = channel.getSpace<CommandT>(0);
+    auto command = new(space.hostAccessible) CommandT(hContext, ptr, pBase, pSize);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    if(false == channel.callSynchronous(space)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleCreate");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -1816,6 +1833,9 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
 }
 ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
     return Cal::Icd::LevelZero::zeMemGetAllocProperties(hContext, ptr, pMemAllocProperties, phDevice);
+}
+ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) {
+    return Cal::Icd::LevelZero::zeMemGetAddressRange(hContext, ptr, pBase, pSize);
 }
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     return Cal::Icd::LevelZero::zeModuleCreate(hContext, hDevice, desc, phModule, phBuildLog);

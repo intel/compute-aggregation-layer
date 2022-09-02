@@ -76,6 +76,7 @@ ze_result_t (*zeMemAllocDevice)(ze_context_handle_t hContext, const ze_device_me
 ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) = nullptr;
 ze_result_t (*zeMemFree)(ze_context_handle_t hContext, void* ptr) = nullptr;
 ze_result_t (*zeMemGetAllocProperties)(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) = nullptr;
+ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
 ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog) = nullptr;
@@ -454,6 +455,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeMemGetAddressRange = reinterpret_cast<decltype(zeMemGetAddressRange)>(dlsym(libraryHandle, "zeMemGetAddressRange"));
+    if(nullptr == zeMemGetAddressRange){
+        log<Verbosity::error>("Missing symbol zeMemGetAddressRange in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeModuleCreate = reinterpret_cast<decltype(zeModuleCreate)>(dlsym(libraryHandle, "zeModuleCreate"));
     if(nullptr == zeModuleCreate){
         log<Verbosity::error>("Missing symbol zeModuleCreate in %s", loadPath.c_str());
@@ -635,6 +642,7 @@ void unloadLevelZeroLibrary() {
     zeMemAllocHost = nullptr;
     zeMemFree = nullptr;
     zeMemGetAllocProperties = nullptr;
+    zeMemGetAddressRange = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;
     zeModuleBuildLogDestroy = nullptr;
