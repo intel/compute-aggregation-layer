@@ -436,6 +436,10 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 
     ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle, ze_command_queue_handle_t queueHandle) {
         auto fence = translateNewRemoteObjectToLocalObject<IcdL0Fence>(remoteHandle, static_cast<ze_fence_handle_t>(nullptr), fencesMap, fencesMapMutex);
+        if (!fence) {
+            return nullptr;
+        }
+
         auto icdFence = static_cast<IcdL0Fence *>(fence);
         icdFence->setCommandQueue(static_cast<IcdL0CommandQueue *>(queueHandle));
 
