@@ -1040,6 +1040,7 @@ config :
                         element:
                             type : "cl_program"
                             kind : "scalar"
+                            translate_before : "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
                         server_access : read
                  6 :
                     name : pfn_notify
@@ -6630,4 +6631,60 @@ config :
                             kind : scalar
                             translate_after : "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                         server_access : write
-                        
+
+################### cl_get_device_global_variable_pointer_intel EXTENSION
+        - name : clGetDeviceGlobalVariablePointerINTEL
+          special_handling :
+                extension_name : "cl_get_device_global_variable_pointer_intel"
+                icd :
+                    not_in_dispatch_table : True
+                    in_get_extension_function_address : True
+          returns :
+                    type : cl_int
+                    kind : scalar
+                    default : "CL_DEVICE_NOT_AVAILABLE"
+          args :
+                 0 :
+                    name : device
+                    type : cl_device_id
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                 1 :
+                    name : program
+                    type : cl_program
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+                 2 :
+                    name : globalVariableName
+                    type : "const char*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "nullterminated"
+                        can_be_null : True
+                        element:
+                            type : "char"
+                            kind : "scalar"
+                        server_access : read
+                 3 :
+                    name : globalVariableSizeRet
+                    type : "size_t*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element:
+                            type : "size_t"
+                            kind : "scalar"
+                        server_access : write
+                 4 :
+                    name : globalVariablePointerRet
+                    type : void**
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : void*
+                            kind : scalar
+                        server_access : write
+                    translate_after : "if (command->captures.ret == CL_SUCCESS)\n            static_cast<IcdOclProgram*>(program)->recordGlobalPointer(*{arg})"

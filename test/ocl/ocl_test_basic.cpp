@@ -145,27 +145,62 @@ int main(int argc, const char *argv[]) {
     const char *f0 = "int f0(int a) { return a + 5; }";
     const char *f1 = "int f1(int a) { return a*5; }";
     const char *k = "__kernel void k(__global int *x, int y) { *x = f0(*x)*f1(*x) + y; }";
-    const char *src[] = {f0, f1, k};
-    cl_program program = clCreateProgramWithSource(ctx, 3, src, nullptr, &cl_err);
+    const char *g = "__global int my_special_global_var = 5;";
+    const char *h = "__kernel void exchange_special_global_var(__global int* old_ret, int new_val) { *old_ret = my_special_global_var; my_special_global_var = new_val; }";
+    const char *src[] = {f0, f1, k, g, h};
+    cl_program program = clCreateProgramWithSource(ctx, 5, src, nullptr, &cl_err);
     if ((nullptr == program) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create program with error : %d", cl_err);
         return 1;
     };
     log<Verbosity::info>("Succesfully created program : %p", program);
 
-    cl_err = clBuildProgram(program, 1, &devices[0], "-cl-std=CL2.0", nullptr, nullptr);
+    cl_err = clCompileProgram(program, 1, &devices[0], "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr);
     if (CL_SUCCESS != cl_err) {
-        log<Verbosity::error>("Build failed with error : %d", cl_err);
+        log<Verbosity::error>("Compilation of program failed with error : %d", cl_err);
         std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(program, devices[0]);
         log<Verbosity::info>("Build log %s", buildLog.c_str());
         return 1;
     }
-    log<Verbosity::info>("Succesfully built program : %p", program);
+    log<Verbosity::info>("Succesfully compiled program : %p", program);
     std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(program, devices[0]);
     log<Verbosity::info>("Build log %s", buildLog.c_str());
 
+    auto linkedProgram = clLinkProgram(ctx, 1, &devices[0], "-cl-take-global-address", 1, &program, nullptr, nullptr, &cl_err);
+    if (CL_SUCCESS != cl_err || linkedProgram == nullptr) {
+        log<Verbosity::error>("Link failed with error : %d", cl_err);
+        buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, devices[0]);
+        log<Verbosity::info>("Build log %s", buildLog.c_str());
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully linked program : %p", linkedProgram);
+    buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, devices[0]);
+    log<Verbosity::info>("Build log %s", buildLog.c_str());
+
+    log<Verbosity::info>("Trying to get an address of 'clGetDeviceGlobalVariablePointerINTEL' extension!");
+    void *clGetDeviceGlobalVariablePointerINTELAddress = clGetExtensionFunctionAddress("clGetDeviceGlobalVariablePointerINTEL");
+    if (!clGetDeviceGlobalVariablePointerINTELAddress) {
+        log<Verbosity::error>("Could not get an address of 'clGetDeviceGlobalVariablePointerINTEL' extension!");
+        return -1;
+    }
+    log<Verbosity::info>("Successfuly got an address of 'clGetDeviceGlobalVariablePointerINTEL' extension!");
+
+    using ClGetDeviceGlobalVariablePointerINTELFun = cl_int(cl_device_id, cl_program, const char *, size_t *, void **);
+    const auto clGetDeviceGlobalVariablePointerINTEL = reinterpret_cast<ClGetDeviceGlobalVariablePointerINTELFun *>(clGetDeviceGlobalVariablePointerINTELAddress);
+
+    log<Verbosity::info>("Trying to get an address of a global variable with name 'my_special_global_var'");
+    size_t globalVarSize{};
+    void *globalVarPtr{};
+    cl_int clGetDeviceGlobalVariablePointerINTELResult = clGetDeviceGlobalVariablePointerINTEL(devices[0], linkedProgram, "my_special_global_var", &globalVarSize, &globalVarPtr);
+    if (clGetDeviceGlobalVariablePointerINTELResult != CL_SUCCESS) {
+        log<Verbosity::error>("Could not get a global pointer for 'my_special_global_var' variable!");
+        return -1;
+    }
+
+    log<Verbosity::info>("Got global pointer for 'my_special_global_var' variable. Size: %d, Addres: %p", globalVarSize, globalVarPtr);
+
     log<Verbosity::info>("Creating kernel object");
-    cl_kernel kernel = clCreateKernel(program, "k", &cl_err);
+    cl_kernel kernel = clCreateKernel(linkedProgram, "k", &cl_err);
     if ((nullptr == kernel) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create kernel with error : %d", cl_err);
         return 1;
@@ -658,6 +693,7 @@ int main(int argc, const char *argv[]) {
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseMemObject(mem2sub));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseMemObject(mem2));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseKernel(kernel));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(linkedProgram));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(program));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(ctx));
     if (false == succesfullyReleasedAllObjects) {

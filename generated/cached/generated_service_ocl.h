@@ -150,6 +150,7 @@ extern void* (*clSharedMemAllocINTEL)(cl_context context, cl_device_id device, c
 extern cl_int (*clMemFreeINTEL)(cl_context context, void* ptr);
 extern cl_int (*clMemBlockingFreeINTEL)(cl_context context, void* ptr);
 extern cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+extern cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 } // Extensions
 
 bool isSuccessful(cl_int result);
@@ -1662,10 +1663,22 @@ inline bool clEnqueueMigrateMemINTELHandler(Provider &service, ClientContext &ct
                                                 );
     return true;
 }
+inline bool clGetDeviceGlobalVariablePointerINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clGetDeviceGlobalVariablePointerINTEL");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetDeviceGlobalVariablePointerINTEL(
+                                                apiCommand->args.device, 
+                                                apiCommand->args.program, 
+                                                apiCommand->args.globalVariableName ? apiCommand->captures.globalVariableName : nullptr, 
+                                                apiCommand->args.globalVariableSizeRet ? &apiCommand->captures.globalVariableSizeRet : nullptr, 
+                                                apiCommand->args.globalVariablePointerRet ? &apiCommand->captures.globalVariablePointerRet : nullptr
+                                                );
+    return true;
+}
 
 inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::Ocl;
-    outHandlers.resize(ClEnqueueMigrateMemINTELRpcM::messageSubtype + 1);
+    outHandlers.resize(ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype + 1);
     outHandlers[ClGetPlatformInfoRpcM::messageSubtype] = clGetPlatformInfoHandler;
     outHandlers[ClGetDeviceIDsRpcM::messageSubtype] = clGetDeviceIDsHandler;
     outHandlers[ClGetDeviceInfoRpcM::messageSubtype] = clGetDeviceInfoHandler;
@@ -1794,6 +1807,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClMemFreeINTELRpcM::messageSubtype] = clMemFreeINTELHandler;
     outHandlers[ClMemBlockingFreeINTELRpcM::messageSubtype] = clMemBlockingFreeINTELHandler;
     outHandlers[ClEnqueueMigrateMemINTELRpcM::messageSubtype] = clEnqueueMigrateMemINTELHandler;
+    outHandlers[ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype] = clGetDeviceGlobalVariablePointerINTELHandler;
 }
 
 inline void callDirectly(Cal::Rpc::Ocl::ClGetPlatformInfoRpcM &apiCommand) {
@@ -3014,6 +3028,15 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM &apiCommand
                                                 apiCommand.args.event
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetDeviceGlobalVariablePointerINTEL(
+                                                apiCommand.args.device, 
+                                                apiCommand.args.program, 
+                                                apiCommand.args.globalVariableName, 
+                                                apiCommand.args.globalVariableSizeRet, 
+                                                apiCommand.args.globalVariablePointerRet
+                                                );
+}
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
@@ -3156,6 +3179,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClMemFreeINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClMemFreeINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command)); break;
     }
     return true;
 }

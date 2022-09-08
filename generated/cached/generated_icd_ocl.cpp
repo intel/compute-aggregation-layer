@@ -495,6 +495,16 @@ cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_devi
             baseMutable[i] = static_cast<IcdOclDevice*>(baseMutable[i])->asRemoteObject();
         }
     }
+    if(input_programs)
+    {
+        auto base = command->captures.getInput_programs();
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.input_programs.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdOclProgram*>(baseMutable[i])->asRemoteObject();
+        }
+    }
     if(false == channel.callSynchronous(space)){
         return command->returnValue();
     }
@@ -3359,6 +3369,31 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
     command_queue->asLocalObject()->enqueue();
     return ret;
 }
+cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
+    log<Verbosity::bloat>("Establishing RPC for clGetDeviceGlobalVariablePointerINTEL");
+    auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalOclPlatform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
+    command->copyFromCaller(dynMemTraits);
+    command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
+    command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
+    if(false == channel.callSynchronous(space)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(globalVariablePointerRet)
+    {
+        if (command->captures.ret == CL_SUCCESS)
+            static_cast<IcdOclProgram*>(program)->recordGlobalPointer(*globalVariablePointerRet);
+    }
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
 
 void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("clCreateSubDevicesEXT", funcName)) {
@@ -3399,6 +3434,9 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     }
     if(0 == strcmp("clEnqueueMigrateMemINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clEnqueueMigrateMemINTEL);
+    }
+    if(0 == strcmp("clGetDeviceGlobalVariablePointerINTEL", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::Ocl::clGetDeviceGlobalVariablePointerINTEL);
     }
     return nullptr;
 }
@@ -3771,6 +3809,9 @@ cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr) {
 }
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     return Cal::Icd::Ocl::clEnqueueMigrateMemINTEL(command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
+}
+cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
+    return Cal::Icd::Ocl::clGetDeviceGlobalVariablePointerINTEL(device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
 }
 } // extern "C"
 

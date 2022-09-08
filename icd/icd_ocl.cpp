@@ -622,6 +622,28 @@ bool IcdOclKernel::initTraits(const IcdOclKernel *sourceKernel) {
     return true;
 }
 
+void IcdOclProgram::recordGlobalPointer(void *ptr) {
+    if (!ptr) {
+        return;
+    }
+
+    std::lock_guard lock{globalPointersMutex};
+    if (std::find(globalPointers.begin(), globalPointers.end(), ptr) != globalPointers.end()) {
+        return;
+    }
+
+    globalPointers.push_back(ptr);
+    Cal::Icd::icdGlobalState.getOclPlatform()->recordGlobalPointer(ptr);
+}
+
+void IcdOclProgram::removeGlobalPointer() {
+    std::lock_guard lock{globalPointersMutex};
+    for (auto &ptr : globalPointers) {
+        Cal::Icd::icdGlobalState.getOclPlatform()->removeGlobalPointer(ptr);
+    }
+    globalPointers.clear();
+}
+
 template <typename OclObjectT>
 void objectCleanup(void *remote, void *local) {
     Cal::Icd::icdGlobalState.getOclPlatform()->removeObjectFromMap(static_cast<OclObjectT>(remote), static_cast<OclObjectT>(local));

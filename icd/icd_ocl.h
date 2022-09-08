@@ -590,9 +590,22 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         ++enqueueCount;
     }
 };
+
 struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+
+    ~IcdOclProgram() {
+        removeGlobalPointer();
+    }
+
+    void recordGlobalPointer(void *ptr);
+    void removeGlobalPointer();
+
+  protected:
+    std::vector<void *> globalPointers{};
+    std::mutex globalPointersMutex{};
 };
+
 struct IcdOclEvent : Cal::Shared::RefCountedWithParent<_cl_event, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 };

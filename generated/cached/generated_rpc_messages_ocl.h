@@ -11986,6 +11986,101 @@ struct ClEnqueueMigrateMemINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemINTELRpcM>);
+struct ClGetDeviceGlobalVariablePointerINTELRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 129;
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_device_id device = {};
+        cl_program program = {};
+        const char* globalVariableName = {};
+        size_t* globalVariableSizeRet = {};
+        void** globalVariablePointerRet = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->device == rhs.device;
+            equal &= this->program == rhs.program;
+            equal &= this->globalVariableName == rhs.globalVariableName;
+            equal &= this->globalVariableSizeRet == rhs.globalVariableSizeRet;
+            equal &= this->globalVariablePointerRet == rhs.globalVariablePointerRet;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits globalVariableName = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        size_t globalVariableSizeRet;
+        void* globalVariablePointerRet;
+        uint32_t countGlobalVariableName = 0;
+        char globalVariableName[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countGlobalVariableName = dynamicTraits.globalVariableName.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClGetDeviceGlobalVariablePointerINTELRpcM() = default;
+
+    ClGetDeviceGlobalVariablePointerINTELRpcM(const Captures::DynamicTraits &dynamicTraits, cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.device = device;
+        args.program = program;
+        args.globalVariableName = globalVariableName;
+        args.globalVariableSizeRet = globalVariableSizeRet;
+        args.globalVariablePointerRet = globalVariablePointerRet;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClGetDeviceGlobalVariablePointerINTELRpcM &message, cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.device = device;
+        message.args.program = program;
+        message.args.globalVariableName = globalVariableName;
+        message.args.globalVariableSizeRet = globalVariableSizeRet;
+        message.args.globalVariablePointerRet = globalVariablePointerRet;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.globalVariableName){
+            memcpy(asMemcpyDstT(captures.globalVariableName), args.globalVariableName, dynMemTraits.globalVariableName.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.globalVariableSizeRet){
+            *args.globalVariableSizeRet = captures.globalVariableSizeRet;
+        }
+        if(args.globalVariablePointerRet){
+            *args.globalVariablePointerRet = captures.globalVariablePointerRet;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClGetDeviceGlobalVariablePointerINTELRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -12118,6 +12213,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemFreeINTELRpcM::messageSubtype).id, "clMemFreeINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype).id, "clMemBlockingFreeINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype).id, "clEnqueueMigrateMemINTEL"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype).id, "clGetDeviceGlobalVariablePointerINTEL"),
     };
 
     auto it = options.find(callId.id);
@@ -12259,6 +12355,7 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clMemFreeINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemFreeINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clMemBlockingFreeINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMigrateMemINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clGetDeviceGlobalVariablePointerINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -12398,6 +12495,7 @@ static constexpr RpcCallId clSharedMemAllocINTEL = {Cal::Rpc::RpcMessageHeader::
 static constexpr RpcCallId clMemFreeINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemFreeINTELRpcM::messageSubtype};
 static constexpr RpcCallId clMemBlockingFreeINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMigrateMemINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype};
+static constexpr RpcCallId clGetDeviceGlobalVariablePointerINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -12530,6 +12628,7 @@ using clSharedMemAllocINTEL = ClSharedMemAllocINTELRpcM;
 using clMemFreeINTEL = ClMemFreeINTELRpcM;
 using clMemBlockingFreeINTEL = ClMemBlockingFreeINTELRpcM;
 using clEnqueueMigrateMemINTEL = ClEnqueueMigrateMemINTELRpcM;
+using clGetDeviceGlobalVariablePointerINTEL = ClGetDeviceGlobalVariablePointerINTELRpcM;
 }
 
 } // namespace Ocl

@@ -151,6 +151,7 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
 cl_int clMemFreeINTEL (cl_context context, void* ptr);
 cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr);
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 
 namespace Unimplemented {
 inline void clSetCommandQueuePropertyUnimpl() {

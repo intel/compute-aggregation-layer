@@ -2164,6 +2164,26 @@ size_t ClEnqueueMigrateMemINTELRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::DynamicTraits ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::DynamicTraits::calculate(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
+    DynamicTraits ret = {};
+    ret.globalVariableName.count = Cal::Utils::countNullterminated(globalVariableName);
+    ret.globalVariableName.size = ret.globalVariableName.count * sizeof(char);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.globalVariableName.offset + ret.globalVariableName.size);
+
+
+    return ret;
+}
+
+size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, globalVariableName) + Cal::Utils::alignUpPow2<8>(this->countGlobalVariableName * sizeof(char));
+     return size;
+}
+
+size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countGlobalVariableName * sizeof(char));
+     return size;
+}
+
 } // namespace Ocl
 } // namespace Rpc
 } // namespace Cal
