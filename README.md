@@ -16,6 +16,14 @@ You may obtain a copy of the License at: https://opensource.org/licenses/MIT
 
 We at Intel are commited to create an open, welcoming, diverse, inclusive, and healthy community. Please refer to our [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md) for full text of our pledge and standards.
 
+## Supported workloads
+
+```<this list is currently empty>```
+
+Development of Compute Aggregation Layer is workload-driven. Along with new improvements to Compute Aggregation Layer, this section will be updated to contain a support matrix of workload/platform combinations that were enabled and tested.
+
+Applications not listed in the support matrix may or may not work with Compute Aggregation Layer.
+
 ## Building and Installing
 To build Compute Aggregation Layer, a Linux machine with C++17 compliant compiler is required. It also requires [CMake](https://cmake.org/) build system. Following commands will produce Release build. If you would like to build in Debug mode, add `-DCMAKE_BUILD_TYPE=Debug` flag to cmake step.
 ```bash
