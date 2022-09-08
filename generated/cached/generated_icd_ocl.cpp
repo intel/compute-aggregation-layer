@@ -3238,6 +3238,24 @@ cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argInde
 
     return ret;
 }
+cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    log<Verbosity::bloat>("Establishing RPC for clGetMemAllocInfoINTEL");
+    auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalOclPlatform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
+    command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
+    if(false == channel.callSynchronous(space)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
 void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clDeviceMemAllocINTEL");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3416,6 +3434,9 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     }
     if(0 == strcmp("clSetKernelArgMemPointerINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clSetKernelArgMemPointerINTEL);
+    }
+    if(0 == strcmp("clGetMemAllocInfoINTEL", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::Ocl::clGetMemAllocInfoINTEL);
     }
     if(0 == strcmp("clDeviceMemAllocINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clDeviceMemAllocINTEL);
@@ -3791,6 +3812,9 @@ cl_int clEnqueueMemcpyINTEL (cl_command_queue command_queue, cl_bool blocking, v
 }
 cl_int clSetKernelArgMemPointerINTEL (cl_kernel kernel, cl_uint argIndex, const void* argValue) {
     return Cal::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, argIndex, argValue);
+}
+cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    return Cal::Icd::Ocl::clGetMemAllocInfoINTEL(context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
 }
 void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     return Cal::Icd::Ocl::clDeviceMemAllocINTEL(context, device, properties, size, alignment, errcode_ret);

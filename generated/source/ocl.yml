@@ -6328,6 +6328,57 @@ config :
                     kind_details :
                         server_access : read_write
 
+        - name : clGetMemAllocInfoINTEL
+          special_handling :
+                extension_name : "USM"
+                icd :
+                    not_in_dispatch_table : True
+                    in_get_extension_function_address : True
+          returns :
+                    type : cl_int
+                    kind : scalar
+                    default : "CL_DEVICE_NOT_AVAILABLE"
+          args :
+                 0 :
+                    name : context
+                    type : cl_context
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : "const void*"
+                    kind : pointer
+                 2 :
+                    name : param_name
+                    type : cl_mem_info_intel
+                    kind : scalar
+                 3 :
+                    name : param_value_size
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : param_value
+                    type : "void*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "param_value_size"
+                        can_be_null : True
+                        element :
+                            type : void
+                            kind : scalar
+                        server_access : write
+                 5 :
+                    name : param_value_size_ret
+                    type : "size_t*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : size_t
+                            kind : scalar
+                        server_access : write
+
         - name : clDeviceMemAllocINTEL
           special_handling : 
                 extension_name : "USM"

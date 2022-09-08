@@ -361,6 +361,34 @@ int main(int argc, const char *argv[]) {
     }
     log<Verbosity::info>("Succesfully allocated USM device memory, ptr : %p", usmDeviceMem);
 
+    log<Verbosity::info>("Trying to get an address of 'clGetMemAllocInfoINTEL' extension!");
+    auto clGetMemAllocInfoINTELAddress = clGetExtensionFunctionAddress("clGetMemAllocInfoINTEL");
+    if (!clGetMemAllocInfoINTELAddress) {
+        log<Verbosity::error>("Could not get an address of 'clGetMemAllocInfoINTEL' extension!");
+        return -1;
+    }
+    log<Verbosity::info>("Successfuly got an address of 'clGetMemAllocInfoINTEL' extension!");
+
+    using ClGetMemAllocInfoINTELFunction = cl_int(cl_context, const void *, cl_mem_info_intel, size_t, void *, size_t *);
+    const auto clGetMemAllocInfoINTEL = reinterpret_cast<ClGetMemAllocInfoINTELFunction *>(clGetMemAllocInfoINTELAddress);
+
+    const auto usmDeviceMemWithOffset = static_cast<const char *>(usmDeviceMem) + 2;
+    log<Verbosity::info>("Getting base USM address of usmDeviceMemWithOffset = %p", usmDeviceMemWithOffset);
+    void *deviceUsmBaseAddress{};
+    size_t outParamSize{};
+    const auto clGetMemAllocInfoINTELResult = clGetMemAllocInfoINTEL(ctx,
+                                                                     usmDeviceMemWithOffset,
+                                                                     CL_MEM_ALLOC_BASE_PTR_INTEL,
+                                                                     sizeof(deviceUsmBaseAddress),
+                                                                     &deviceUsmBaseAddress,
+                                                                     &outParamSize);
+    if (clGetMemAllocInfoINTELResult != CL_SUCCESS) {
+        log<Verbosity::error>("Could not get base address of USM allocation for usmDeviceMemWithOffset!");
+        return -1;
+    }
+
+    log<Verbosity::info>("Successfuly retrieved base address of USM allocation for %p! Base address: %p", usmDeviceMemWithOffset, deviceUsmBaseAddress);
+
     log<Verbosity::info>("Creating USM host memory");
     void *usmHostMem = usmExt.clHostMemAllocINTEL(ctx, nullptr, 4, 0, &cl_err);
     if ((nullptr == usmHostMem) || (CL_SUCCESS != cl_err)) {

@@ -2084,6 +2084,26 @@ size_t ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSi
      return size;
 }
 
+ClGetMemAllocInfoINTELRpcM::Captures::DynamicTraits ClGetMemAllocInfoINTELRpcM::Captures::DynamicTraits::calculate(cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    DynamicTraits ret = {};
+    ret.param_value.count = param_value_size;
+    ret.param_value.size = ret.param_value.count;
+    ret.totalDynamicSize = alignUpPow2<8>(ret.param_value.offset + ret.param_value.size);
+
+
+    return ret;
+}
+
+size_t ClGetMemAllocInfoINTELRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, param_value) + Cal::Utils::alignUpPow2<8>(this->countParam_value);
+     return size;
+}
+
+size_t ClGetMemAllocInfoINTELRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countParam_value);
+     return size;
+}
+
 ClDeviceMemAllocINTELRpcM::Captures::DynamicTraits ClDeviceMemAllocINTELRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     DynamicTraits ret = {};
     ret.properties.count = Cal::Utils::countNullterminated(properties);

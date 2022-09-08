@@ -982,6 +982,17 @@ cl_int clSetKernelArgMemPointerINTELLoad(cl_kernel kernel, cl_uint argIndex, con
     Cal::Service::Apis::Ocl::Extensions::clSetKernelArgMemPointerINTEL = extAddr;
     return extAddr(kernel, argIndex, argValue);
 }
+cl_int clGetMemAllocInfoINTELLoad(cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret){
+    using ExtFuncT = decltype(clGetMemAllocInfoINTELLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clGetMemAllocInfoINTEL"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : clGetMemAllocInfoINTEL");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::Ocl::Extensions::clGetMemAllocInfoINTEL = extAddr;
+    return extAddr(context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
+}
 void* clDeviceMemAllocINTELLoad(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret){
     using ExtFuncT = decltype(clDeviceMemAllocINTELLoad);
     static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clDeviceMemAllocINTEL"));
@@ -1067,6 +1078,7 @@ cl_int (*clGetKernelSubGroupInfoKHR)(cl_kernel kernel, cl_device_id device, cl_k
 cl_int (*clEnqueueMemFillINTEL)(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMemFillINTELLoad;
 cl_int (*clEnqueueMemcpyINTEL)(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMemcpyINTELLoad;
 cl_int (*clSetKernelArgMemPointerINTEL)(cl_kernel kernel, cl_uint argIndex, const void* argValue) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clSetKernelArgMemPointerINTELLoad;
+cl_int (*clGetMemAllocInfoINTEL)(cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clGetMemAllocInfoINTELLoad;
 void* (*clDeviceMemAllocINTEL)(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clDeviceMemAllocINTELLoad;
 void* (*clHostMemAllocINTEL)(cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clHostMemAllocINTELLoad;
 void* (*clSharedMemAllocINTEL)(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clSharedMemAllocINTELLoad;

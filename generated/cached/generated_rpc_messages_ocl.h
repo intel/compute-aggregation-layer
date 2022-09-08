@@ -11478,9 +11478,101 @@ struct ClSetKernelArgMemPointerINTELRpcM {
     
 };
 static_assert(std::is_standard_layout_v<ClSetKernelArgMemPointerINTELRpcM>);
-struct ClDeviceMemAllocINTELRpcM {
+struct ClGetMemAllocInfoINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 123;
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_context context = {};
+        const void* ptr = {};
+        cl_mem_info_intel param_name = {};
+        size_t param_value_size = {};
+        void* param_value = {};
+        size_t* param_value_size_ret = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->context == rhs.context;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->param_name == rhs.param_name;
+            equal &= this->param_value_size == rhs.param_value_size;
+            equal &= this->param_value == rhs.param_value;
+            equal &= this->param_value_size_ret == rhs.param_value_size_ret;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits param_value = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        size_t param_value_size_ret;
+        uint32_t countParam_value = 0;
+        char param_value[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countParam_value = dynamicTraits.param_value.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClGetMemAllocInfoINTELRpcM() = default;
+
+    ClGetMemAllocInfoINTELRpcM(const Captures::DynamicTraits &dynamicTraits, cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.context = context;
+        args.ptr = ptr;
+        args.param_name = param_name;
+        args.param_value_size = param_value_size;
+        args.param_value = param_value;
+        args.param_value_size_ret = param_value_size_ret;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClGetMemAllocInfoINTELRpcM &message, cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.context = context;
+        message.args.ptr = ptr;
+        message.args.param_name = param_name;
+        message.args.param_value_size = param_value_size;
+        message.args.param_value = param_value;
+        message.args.param_value_size_ret = param_value_size_ret;
+    }
+    
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.param_value){
+            memcpy(args.param_value, captures.param_value, dynMemTraits.param_value.size);
+        }
+        if(args.param_value_size_ret){
+            *args.param_value_size_ret = captures.param_value_size_ret;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClGetMemAllocInfoINTELRpcM>);
+struct ClDeviceMemAllocINTELRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 124;
 
     using ReturnValueT = void*;
 
@@ -11575,7 +11667,7 @@ struct ClDeviceMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClDeviceMemAllocINTELRpcM>);
 struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 124;
+    static constexpr uint16_t messageSubtype = 125;
 
     using ReturnValueT = void*;
 
@@ -11677,7 +11769,7 @@ struct ClHostMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClHostMemAllocINTELRpcM>);
 struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 125;
+    static constexpr uint16_t messageSubtype = 126;
 
     using ReturnValueT = void*;
 
@@ -11783,7 +11875,7 @@ struct ClSharedMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSharedMemAllocINTELRpcM>);
 struct ClMemFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 126;
+    static constexpr uint16_t messageSubtype = 127;
 
     using ReturnValueT = cl_int;
 
@@ -11836,7 +11928,7 @@ struct ClMemFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemFreeINTELRpcM>);
 struct ClMemBlockingFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 127;
+    static constexpr uint16_t messageSubtype = 128;
 
     using ReturnValueT = cl_int;
 
@@ -11889,7 +11981,7 @@ struct ClMemBlockingFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemBlockingFreeINTELRpcM>);
 struct ClEnqueueMigrateMemINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 128;
+    static constexpr uint16_t messageSubtype = 129;
 
     using ReturnValueT = cl_int;
 
@@ -11988,7 +12080,7 @@ struct ClEnqueueMigrateMemINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemINTELRpcM>);
 struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 129;
+    static constexpr uint16_t messageSubtype = 130;
 
     using ReturnValueT = cl_int;
 
@@ -12207,6 +12299,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype).id, "clEnqueueMemcpyINTELRpcHelperMalloc2Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype).id, "clEnqueueMemcpyINTELRpcHelperUsm2Malloc"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype).id, "clSetKernelArgMemPointerINTEL"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype).id, "clGetMemAllocInfoINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype).id, "clDeviceMemAllocINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClHostMemAllocINTELRpcM::messageSubtype).id, "clHostMemAllocINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSharedMemAllocINTELRpcM::messageSubtype).id, "clSharedMemAllocINTEL"),
@@ -12349,6 +12442,7 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clEnqueueMemcpyINTELRpcHelperMalloc2Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMemcpyINTELRpcHelperUsm2Malloc", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clSetKernelArgMemPointerINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clGetMemAllocInfoINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clDeviceMemAllocINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clHostMemAllocINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClHostMemAllocINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clSharedMemAllocINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSharedMemAllocINTELRpcM::messageSubtype)),
@@ -12489,6 +12583,7 @@ static constexpr RpcCallId clEnqueueMemcpyINTEL = {Cal::Rpc::RpcMessageHeader::m
 static constexpr RpcCallId clEnqueueMemcpyINTELRpcHelperMalloc2Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMemcpyINTELRpcHelperUsm2Malloc = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype};
 static constexpr RpcCallId clSetKernelArgMemPointerINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype};
+static constexpr RpcCallId clGetMemAllocInfoINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype};
 static constexpr RpcCallId clDeviceMemAllocINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype};
 static constexpr RpcCallId clHostMemAllocINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClHostMemAllocINTELRpcM::messageSubtype};
 static constexpr RpcCallId clSharedMemAllocINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSharedMemAllocINTELRpcM::messageSubtype};
@@ -12622,6 +12717,7 @@ using clEnqueueMemcpyINTEL = ClEnqueueMemcpyINTELRpcM;
 using clEnqueueMemcpyINTELRpcHelperMalloc2Usm = ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM;
 using clEnqueueMemcpyINTELRpcHelperUsm2Malloc = ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM;
 using clSetKernelArgMemPointerINTEL = ClSetKernelArgMemPointerINTELRpcM;
+using clGetMemAllocInfoINTEL = ClGetMemAllocInfoINTELRpcM;
 using clDeviceMemAllocINTEL = ClDeviceMemAllocINTELRpcM;
 using clHostMemAllocINTEL = ClHostMemAllocINTELRpcM;
 using clSharedMemAllocINTEL = ClSharedMemAllocINTELRpcM;

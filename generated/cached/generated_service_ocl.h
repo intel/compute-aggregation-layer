@@ -144,6 +144,7 @@ extern cl_int (*clGetKernelSubGroupInfoKHR)(cl_kernel kernel, cl_device_id devic
 extern cl_int (*clEnqueueMemFillINTEL)(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueMemcpyINTEL)(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clSetKernelArgMemPointerINTEL)(cl_kernel kernel, cl_uint argIndex, const void* argValue);
+extern cl_int (*clGetMemAllocInfoINTEL)(cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 extern void* (*clDeviceMemAllocINTEL)(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret);
 extern void* (*clHostMemAllocINTEL)(cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret);
 extern void* (*clSharedMemAllocINTEL)(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret);
@@ -1632,6 +1633,19 @@ inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, ClientContex
                                                 );
     return true;
 }
+inline bool clGetMemAllocInfoINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clGetMemAllocInfoINTEL");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetMemAllocInfoINTEL(
+                                                apiCommand->args.context, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.param_name, 
+                                                apiCommand->args.param_value_size, 
+                                                apiCommand->args.param_value ? apiCommand->captures.param_value : nullptr, 
+                                                apiCommand->args.param_value_size_ret ? &apiCommand->captures.param_value_size_ret : nullptr
+                                                );
+    return true;
+}
 inline bool clDeviceMemAllocINTELHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clDeviceMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM*>(command);
@@ -1801,6 +1815,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype] = clEnqueueMemcpyINTELRpcHelperMalloc2UsmHandler;
     outHandlers[ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype] = clEnqueueMemcpyINTELRpcHelperUsm2MallocHandler;
     outHandlers[ClSetKernelArgMemPointerINTELRpcM::messageSubtype] = clSetKernelArgMemPointerINTELHandler;
+    outHandlers[ClGetMemAllocInfoINTELRpcM::messageSubtype] = clGetMemAllocInfoINTELHandler;
     outHandlers[ClDeviceMemAllocINTELRpcM::messageSubtype] = clDeviceMemAllocINTELHandler;
     outHandlers[ClHostMemAllocINTELRpcM::messageSubtype] = clHostMemAllocINTELHandler;
     outHandlers[ClSharedMemAllocINTELRpcM::messageSubtype] = clSharedMemAllocINTELHandler;
@@ -2976,6 +2991,16 @@ inline void callDirectly(Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM &apiCo
                                                 apiCommand.args.argValue
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetMemAllocInfoINTEL(
+                                                apiCommand.args.context, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.param_name, 
+                                                apiCommand.args.param_value_size, 
+                                                apiCommand.args.param_value, 
+                                                apiCommand.args.param_value_size_ret
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clDeviceMemAllocINTEL(
                                                 apiCommand.args.context, 
@@ -3173,6 +3198,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM*>(command)); break;
