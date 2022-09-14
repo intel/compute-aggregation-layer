@@ -214,7 +214,8 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, "zexDriverImportExternalPointer", nullptr);
+    void *zexDriverImportExternalPointerFptr = nullptr;
+    auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, "zexDriverImportExternalPointer", &zexDriverImportExternalPointerFptr);
     if (zeDriverGetExtensionFunctionAddressResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has failed! Error code = %d", static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
     }
@@ -303,7 +304,11 @@ int main(int argc, const char *argv[]) {
            << " * maxGroupCountX :  " << computeProperties.maxGroupCountX << "\n"
            << " * maxGroupCountY :  " << computeProperties.maxGroupCountY << "\n"
            << " * maxGroupCountZ :  " << computeProperties.maxGroupCountZ << "\n"
-           << " * maxSharedLocalMemory : " << computeProperties.maxSharedLocalMemory << "\n";
+           << " * maxSharedLocalMemory : " << computeProperties.maxSharedLocalMemory << "\n"
+           << " * numSubGroupSizes : " << computeProperties.numSubGroupSizes << "\n";
+        for (int i = 0; i < computeProperties.numSubGroupSizes; ++i) {
+            ss << " * subGroupSizes[" << i << "] : " << computeProperties.subGroupSizes[i] << "\n";
+        }
         const auto computeInfoStr = ss.str();
 
         log<Verbosity::info>("%s", computeInfoStr.c_str());
