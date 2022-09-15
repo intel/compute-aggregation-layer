@@ -173,10 +173,11 @@ struct ReqLaunchRpcShmemRingBuffer {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 5;
-    enum SynchronizationMethod : uint32_t { unknown,
-                                            activePooling,
-                                            semaphores,
-                                            adaptive };
+    enum ClientSynchronizationMethod : uint32_t { unknown,
+                                                  activePolling, // client polls for status in busy loop
+                                                  semaphores,    // client requires service to signal completion using semaphore
+                                                  adaptive       // method differs based on call characterisctics
+    };
 
     ReqLaunchRpcShmemRingBuffer() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -193,19 +194,19 @@ struct ReqLaunchRpcShmemRingBuffer {
         invalid = invalid || (this->iterationOffsetWithinShmem == -1);
         invalid = invalid || (this->clientSemaphoreOffsetWithinShmem == -1);
         invalid = invalid || (this->serverSemaphoreOffsetWithinShmem == -1);
-        invalid = invalid || (this->synchronizationMethod == unknown);
+        invalid = invalid || (this->clientSynchronizationMethod == unknown);
         if (invalid) {
             log<Verbosity::error>("Message ReqLaunchRpcShmemRingBuffer is not valid");
         }
         return invalid;
     }
 
-    const char *synchronizationMethodStr() const {
-        switch (this->synchronizationMethod) {
+    static const char *asCStr(ClientSynchronizationMethod e) {
+        switch (e) {
         default:
             return "unknown";
-        case activePooling:
-            return "activePooling";
+        case activePolling:
+            return "activePolling";
         case semaphores:
             return "semaphores";
         case adaptive:
@@ -220,7 +221,7 @@ struct ReqLaunchRpcShmemRingBuffer {
     int64_t clientSemaphoreOffsetWithinShmem = -1;
     int64_t serverSemaphoreOffsetWithinShmem = -1;
     int64_t ringStartOffsetWithinShmem = -1;
-    uint32_t synchronizationMethod = unknown;
+    ClientSynchronizationMethod clientSynchronizationMethod = unknown;
 };
 static_assert(std::is_standard_layout<ReqLaunchRpcShmemRingBuffer>::value);
 
@@ -228,9 +229,10 @@ struct RespLaunchRpcShmemRingBuffer {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 6;
-    enum SynchronizationMethod : uint32_t { activePooling,
-                                            semaphores,
-                                            adaptive };
+    enum ServiceSynchronizationMethod : uint32_t { unknown,
+                                                   activePolling, // service polls for new requests in busy loop
+                                                   semaphores,    // service requires client to signal new request using semaphore
+    };
 
     RespLaunchRpcShmemRingBuffer() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -241,11 +243,25 @@ struct RespLaunchRpcShmemRingBuffer {
         bool invalid = false;
         invalid = invalid || (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest);
         invalid = invalid || (this->header.subtype != RespLaunchRpcShmemRingBuffer::messageSubtype);
+        invalid = invalid || (this->serviceSynchronizationMethod == unknown);
         if (invalid) {
             log<Verbosity::error>("Message RespLaunchRpcShmemRingBuffer is not valid");
         }
         return invalid;
     }
+
+    static const char *asCStr(ServiceSynchronizationMethod e) {
+        switch (e) {
+        default:
+            return "unknown";
+        case activePolling:
+            return "activePolling";
+        case semaphores:
+            return "semaphores";
+        }
+    }
+
+    ServiceSynchronizationMethod serviceSynchronizationMethod = unknown;
 };
 static_assert(std::is_standard_layout<RespLaunchRpcShmemRingBuffer>::value);
 

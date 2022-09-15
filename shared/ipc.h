@@ -9,6 +9,7 @@
 
 #include "malloc_shmem.h"
 #include "shared/log.h"
+#include "shared/sys.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -36,7 +37,7 @@ inline int initializeSemaphore(sem_t *semaphore, unsigned int value = 0U) {
     }
 
     *semaphore = {};
-    if (-1 == sem_init(semaphore, 1, value)) {
+    if (-1 == Cal::Sys::sem_init(semaphore, 1, value)) {
         log<Verbosity::error>("Failed to initialize semaphore %p to %u", semaphore, value);
         return -1;
     }

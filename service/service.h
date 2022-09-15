@@ -697,6 +697,11 @@ class Provider {
     bool service(const Cal::Messages::ReqLaunchRpcShmemRingBuffer &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         log<Verbosity::debug>("Client : %d requested RPC ring buffer", clientConnection.getId());
 
+        auto serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::activePolling;
+        if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelServerEnvName)) {
+            serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores;
+        }
+
         auto clientCtxLock = ctx.lock();
         auto shmem = ctx.getShmemById(request.ringbufferShmemId);
         if (false == shmem.isValid()) {
@@ -705,13 +710,14 @@ class Provider {
         }
 
         auto channelServer = std::make_unique<Cal::Rpc::ChannelServer>(clientConnection, shmemManager);
-        if (false == channelServer->init(shmem, request)) {
+        if (false == channelServer->init(shmem, request, serviceSynchronizationMethod)) {
             log<Verbosity::error>("Failed to initialize channel server for client : %d", clientConnection.getId());
             return false;
         }
 
         log<Verbosity::debug>("Initialized RPC ring buffer for client : %d", clientConnection.getId());
         Cal::Messages::RespLaunchRpcShmemRingBuffer response;
+        response.serviceSynchronizationMethod = serviceSynchronizationMethod;
         if (false == clientConnection.send(response)) {
             log<Verbosity::error>("Could not send response RespLaunchRpcShmemRingBuffer to client : %d", clientConnection.getId());
             return false;

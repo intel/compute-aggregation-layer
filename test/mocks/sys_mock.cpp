@@ -49,6 +49,22 @@ int (*shm_unlink)(const char *name) = +[](const char *name) -> int {
     return Cal::Mocks::sysCallsContext->shm_unlink(name);
 };
 
+int (*sem_init)(sem_t *sem, int pshared, unsigned int value) = +[](sem_t *sem, int pshared, unsigned int value) -> int {
+    return Cal::Mocks::sysCallsContext->sem_init(sem, pshared, value);
+};
+
+int (*sem_destroy)(sem_t *sem) = +[](sem_t *sem) -> int {
+    return Cal::Mocks::sysCallsContext->sem_destroy(sem);
+};
+
+int (*sem_wait)(sem_t *sem) = +[](sem_t *sem) -> int {
+    return Cal::Mocks::sysCallsContext->sem_wait(sem);
+};
+
+int (*sem_post)(sem_t *sem) = +[](sem_t *sem) -> int {
+    return Cal::Mocks::sysCallsContext->sem_post(sem);
+};
+
 } // namespace Sys
 
 } // namespace Cal

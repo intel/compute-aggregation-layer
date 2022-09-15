@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <memory>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -27,6 +28,11 @@ extern std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, st
 
 extern int (*shm_open)(const char *name, int oflag, mode_t mode);
 extern int (*shm_unlink)(const char *name);
+
+extern int (*sem_init)(sem_t *sem, int pshared, unsigned int value);
+extern int (*sem_destroy)(sem_t *sem);
+extern int (*sem_wait)(sem_t *sem);
+extern int (*sem_post)(sem_t *sem);
 
 } // namespace Sys
 

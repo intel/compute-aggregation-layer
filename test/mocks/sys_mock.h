@@ -28,6 +28,10 @@ struct MmapTraits {
     off_t offset;
 };
 
+struct PSemaphore {
+    Utils::CountingSemaphore cs;
+};
+
 struct SysCallsContext {
     using Vma = Cal::Utils::PartitionedAddressRange<MmapTraits>;
 
@@ -65,45 +69,6 @@ struct SysCallsContext {
             return apiConfig.getenv.impl.value()(name);
         }
         return getenvBaseImpl(name);
-    }
-
-    void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto addrReceived = addr;
-        if (nullptr == addrReceived) {
-            if (vma.getSubRanges().empty()) {
-                addr = reinterpret_cast<void *>(static_cast<uintptr_t>(4096u));
-            } else {
-                addr = vma.getSubRanges().rbegin()->getBoundingRange().rightBound();
-                if (false == vma.getBoundingRange().contains({addr, length})) {
-                    return MAP_FAILED;
-                }
-            }
-
-            vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                           MmapTraits{addrReceived, length, prot, flags, fd, offset}));
-        } else {
-            auto intersection = vma.getIntersectedSubRanges({addr, length});
-            if (intersection.empty()) {
-                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
-            } else if (flags & MAP_FIXED) {
-                vma.destroySubRange({addr, length});
-                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
-            } else if (flags & MAP_FIXED_NOREPLACE) {
-                return MAP_FAILED;
-            } else {
-                addr = vma.getSubRanges().rbegin()->getBoundingRange().rightBound();
-                if (false == vma.getBoundingRange().contains({addr, length})) {
-                    return MAP_FAILED;
-                }
-                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
-            }
-        }
-
-        return addr;
     }
 
     virtual std::unique_ptr<std::istream> openFileForRead(const char *filename, std::ios_base::openmode mode) {
@@ -144,6 +109,89 @@ struct SysCallsContext {
         return -1;
     }
 
+    virtual int sem_init(sem_t *sem, int pshared, unsigned int value) {
+        ++apiConfig.sem_init.callCount;
+        if (apiConfig.sem_init.returnValue) {
+            return apiConfig.sem_init.returnValue.value();
+        }
+        if (apiConfig.sem_init.impl) {
+            return apiConfig.sem_init.impl.value()(sem, pshared, value);
+        }
+        return sem_initBaseImpl(sem, pshared, value);
+    };
+
+    virtual int sem_destroy(sem_t *sem) {
+        ++apiConfig.sem_destroy.callCount;
+        if (apiConfig.sem_destroy.returnValue) {
+            return apiConfig.sem_destroy.returnValue.value();
+        }
+        if (apiConfig.sem_destroy.impl) {
+            return apiConfig.sem_destroy.impl.value()(sem);
+        }
+        return sem_destroyBaseImpl(sem);
+    }
+
+    virtual int sem_wait(sem_t *sem) {
+        ++apiConfig.sem_wait.callCount;
+        if (apiConfig.sem_wait.returnValue) {
+            return apiConfig.sem_wait.returnValue.value();
+        }
+        if (apiConfig.sem_wait.impl) {
+            return apiConfig.sem_wait.impl.value()(sem);
+        }
+        return sem_waitBaseImpl(sem);
+    };
+
+    virtual int sem_post(sem_t *sem) {
+        ++apiConfig.sem_post.callCount;
+        if (apiConfig.sem_post.returnValue) {
+            return apiConfig.sem_post.returnValue.value();
+        }
+        if (apiConfig.sem_post.impl) {
+            return apiConfig.sem_post.impl.value()(sem);
+        }
+        return sem_postBaseImpl(sem);
+    };
+
+    void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto addrReceived = addr;
+        if (nullptr == addrReceived) {
+            if (vma.getSubRanges().empty()) {
+                addr = reinterpret_cast<void *>(static_cast<uintptr_t>(4096u));
+            } else {
+                addr = vma.getSubRanges().rbegin()->getBoundingRange().rightBound();
+                if (false == vma.getBoundingRange().contains({addr, length})) {
+                    return MAP_FAILED;
+                }
+            }
+
+            vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
+                                           MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+        } else {
+            auto intersection = vma.getIntersectedSubRanges({addr, length});
+            if (intersection.empty()) {
+                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
+                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+            } else if (flags & MAP_FIXED) {
+                vma.destroySubRange({addr, length});
+                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
+                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+            } else if (flags & MAP_FIXED_NOREPLACE) {
+                return MAP_FAILED;
+            } else {
+                addr = vma.getSubRanges().rbegin()->getBoundingRange().rightBound();
+                if (false == vma.getBoundingRange().contains({addr, length})) {
+                    return MAP_FAILED;
+                }
+                vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
+                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+            }
+        }
+
+        return addr;
+    }
+
     int munmapBaseImpl(void *addr, size_t length) {
         std::lock_guard<std::mutex> lock(mutex);
         vma.destroySubRange({addr, length});
@@ -154,7 +202,54 @@ struct SysCallsContext {
         return nullptr;
     }
 
+    int sem_initBaseImpl(sem_t *sem, int pshared, unsigned int value) {
+        auto representation = std::make_unique<PSemaphore>();
+        representation->cs.reset(value);
+        std::lock_guard<std::mutex> lock(mutex);
+        semaphores[sem] = std::move(representation);
+        return 0;
+    }
+
+    int sem_destroyBaseImpl(sem_t *sem) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto it = semaphores.find(sem);
+        if (semaphores.end() == it) {
+            return -1;
+        }
+        semaphores.erase(it);
+        return 0;
+    }
+
+    int sem_waitBaseImpl(sem_t *sem) {
+        PSemaphore *representation = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto it = semaphores.find(sem);
+            if (semaphores.end() == it) {
+                return -1;
+            }
+            representation = it->second.get();
+        }
+        representation->cs.wait();
+        return 0;
+    }
+
+    int sem_postBaseImpl(sem_t *sem) {
+        PSemaphore *representation = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto it = semaphores.find(sem);
+            if (semaphores.end() == it) {
+                return -1;
+            }
+            representation = it->second.get();
+        }
+        representation->cs.signal(1);
+        return 0;
+    }
+
     Vma vma = {{static_cast<uintptr_t>(0U), static_cast<uintptr_t>(1ULL << 48)}};
+    std::unordered_map<sem_t *, std::unique_ptr<PSemaphore>> semaphores;
     std::mutex mutex;
 
     struct {
@@ -193,6 +288,30 @@ struct SysCallsContext {
             std::optional<std::function<int(const char *name)>> impl;
             uint64_t callCount = 0U;
         } shm_unlink;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(sem_t *sem, int pshared, unsigned int value)>> impl;
+            uint64_t callCount = 0U;
+        } sem_init;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(sem_t *sem)>> impl;
+            uint64_t callCount = 0U;
+        } sem_destroy;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(sem_t *sem)>> impl;
+            uint64_t callCount = 0U;
+        } sem_wait;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(sem_t *sem)>> impl;
+            uint64_t callCount = 0U;
+        } sem_post;
     } apiConfig;
 };
 

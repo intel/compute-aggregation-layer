@@ -23,6 +23,11 @@ std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, std::ios_
 int (*shm_open)(const char *name, int oflag, mode_t mode) = ::shm_open;
 int (*shm_unlink)(const char *name) = ::shm_unlink;
 
+int (*sem_init)(sem_t *sem, int pshared, unsigned int value) = ::sem_init;
+int (*sem_destroy)(sem_t *sem) = ::sem_destroy;
+int (*sem_wait)(sem_t *sem) = ::sem_wait;
+int (*sem_post)(sem_t *sem) = ::sem_post;
+
 } // namespace Sys
 
 } // namespace Cal
