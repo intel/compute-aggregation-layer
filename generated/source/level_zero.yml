@@ -223,6 +223,7 @@ config :
 
     functions :
         - name : zeInit
+          latency : 1.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -384,6 +385,7 @@ config :
 #                    kind : scalar
 #
         - name : zeCommandListCreate
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -426,6 +428,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeCommandListCreateImmediate
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -468,6 +471,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeCommandListDestroy
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -483,6 +487,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeCommandListClose
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -496,6 +501,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
 
         - name : zeCommandListReset
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -538,6 +544,7 @@ config :
 #                    kind : pointer
 #
         - name : zeCommandQueueCreate
+          latency : 1.0
           ddi_category :  CommandQueue
           returns :
                     type : ze_result_t
@@ -581,6 +588,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeCommandQueueDestroy
+          latency : 0.0
           ddi_category :  CommandQueue
           returns :
                     type : ze_result_t
@@ -596,6 +604,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeCommandQueueExecuteCommandLists
+          latency : 0.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -635,6 +644,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
 
         - name : zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandQueueExecuteCommandLists"
                 icd :
@@ -689,6 +699,7 @@ config :
                         server_access : write
 
         - name : zeCommandQueueSynchronize
+          latency : 2.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -709,6 +720,7 @@ config :
                     kind : scalar
 
         - name : zeContextCreate
+          latency : 1.0
           ddi_category :  Context
           returns :
                     type : ze_result_t
@@ -775,6 +787,7 @@ config :
 #                    kind : pointer
 #
         - name : zeContextDestroy
+          latency : 0.0
           ddi_category :  Context
           returns :
                     type : ze_result_t
@@ -790,6 +803,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeContextGetStatus
+          latency : 0.0
           ddi_category :  Context
           returns :
                     type : ze_result_t
@@ -803,6 +817,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
 
         - name : zeCommandListAppendMemoryCopy
+          latency : 0.0
           special_handling :
                 icd :
                     dont_generate_handler : True
@@ -844,6 +859,7 @@ config :
                     kind : pointer
 
         - name : zeCommandListAppendMemoryCopyRpcHelperUsm2Usm
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryCopy"
                 icd :
@@ -897,6 +913,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryCopy"
                 icd :
@@ -952,6 +969,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryCopy"
                 icd :
@@ -1007,6 +1025,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryCopy"
                 icd :
@@ -1062,6 +1081,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryFill
+          latency : 0.0
           special_handling :
                 icd :
                     dont_generate_handler : True
@@ -1107,6 +1127,7 @@ config :
                     kind : pointer
 
         - name : zeCommandListAppendMemoryFillRpcHelperUsm2Usm
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryFill"
                 icd :
@@ -1164,6 +1185,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendMemoryFillRpcHelperMalloc2Usm
+          latency : 0.0
           special_handling :
                 variant_of : "zeCommandListAppendMemoryFill"
                 icd :
@@ -1516,6 +1538,7 @@ config :
 #                    kind : scalar
 #
         - name : zeDeviceGet
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1553,6 +1576,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetSubDevices
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1592,6 +1616,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1617,6 +1642,7 @@ config :
                     translate_after : "command->captures.ret = static_cast<IcdL0Device*>(hDevice)->patchDeviceName(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST"
 
         - name : zeDeviceGetComputeProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1641,6 +1667,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetModuleProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1665,6 +1692,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetCommandQueueGroupProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1701,6 +1729,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetMemoryProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1737,6 +1766,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetMemoryAccessProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1762,6 +1792,7 @@ config :
 
 
         - name : zeDeviceGetCacheProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1798,6 +1829,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetImageProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1822,6 +1854,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetExternalMemoryProperties
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1866,6 +1899,7 @@ config :
 #                    kind : pointer
 #
         - name : zeDeviceCanAccessPeer
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1895,6 +1929,7 @@ config :
                         server_access : write
 
         - name : zeDeviceGetStatus
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1908,6 +1943,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
 
         - name : zeDeviceGetGlobalTimestamps
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1943,6 +1979,7 @@ config :
                         server_access : write
 
         - name : zeDriverGet
+          latency : 0.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -1980,6 +2017,7 @@ config :
                         server_access : write
 
         - name : zeDriverGetApiVersion
+          latency : 0.0
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2004,6 +2042,7 @@ config :
                         server_access : write
 
         - name : zeDriverGetProperties
+          latency : 0.0
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2028,6 +2067,7 @@ config :
                         server_access : write
 
         - name : zeDriverGetIpcProperties
+          latency : 0.0
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2052,6 +2092,7 @@ config :
                         server_access : write
 
         - name : zeDriverGetExtensionProperties
+          latency : 0.0
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2088,6 +2129,7 @@ config :
                         server_access : write                    
 
         - name : zeDriverGetExtensionFunctionAddress
+          latency : 0.0
           special_handling :
                 icd :
                     dont_generate_handler : True
@@ -2128,6 +2170,7 @@ config :
                         server_access : write
 
         - name : zeEventPoolCreate
+          latency : 1.0
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
@@ -2181,6 +2224,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeEventPoolDestroy
+          latency : 0.0
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
@@ -2196,6 +2240,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeEventCreate
+          latency : 0.0
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2233,6 +2278,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeEventDestroy
+          latency : 0.0
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2296,6 +2342,7 @@ config :
 #                    kind : scalar
 #
         - name : zeCommandListAppendBarrier
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -2332,6 +2379,7 @@ config :
                         server_access : read
 
         - name : zeCommandListAppendSignalEvent
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -2352,6 +2400,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
 
         - name : zeCommandListAppendWaitOnEvents
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -2393,6 +2442,7 @@ config :
 #                    kind : scalar
 #
         - name : zeEventHostSynchronize
+          latency : 2.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -2413,6 +2463,7 @@ config :
                     kind : scalar
 
         - name : zeEventQueryStatus
+          latency : 0.0
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2442,6 +2493,7 @@ config :
 #                    kind : scalar
 #
         - name : zeEventHostReset
+          latency : 0.0
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2455,6 +2507,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
 
         - name : zeEventQueryKernelTimestamp
+          latency : 0.0
           ddi_category :  Event
           returns :
                     type : ze_result_t
@@ -2692,6 +2745,7 @@ config :
 #                    kind : pointer
 #
         - name : zeFenceCreate
+          latency : 1.0
           ddi_category :  Fence
           returns :
                     type : ze_result_t
@@ -2728,6 +2782,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeFenceDestroy
+          latency : 0.0
           ddi_category :  Fence
           returns :
                     type : ze_result_t
@@ -2743,6 +2798,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeFenceHostSynchronize
+          latency : 2.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -2763,6 +2819,7 @@ config :
                     kind : scalar
 
         - name : zeFenceQueryStatus
+          latency : 0.0
           ddi_category :  Fence
           returns :
                     type : ze_result_t
@@ -2776,6 +2833,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
 
         - name : zeFenceReset
+          latency : 0.0
           ddi_category :  Fence
           returns :
                     type : ze_result_t
@@ -2790,6 +2848,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->clearExecutedCommandListsPointers()"
 
         - name : zeKernelSetGlobalOffsetExp
+          latency : 0.0
           ddi_category :  KernelExp
           returns :
                     type : ze_result_t
@@ -3063,6 +3122,7 @@ config :
 #                    kind : pointer
 #
         - name : zeMemAllocShared
+          latency : 1.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -3145,6 +3205,7 @@ config :
                     server_access : write
 
         - name : zeMemAllocDevice
+          latency : 1.0
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -3194,6 +3255,7 @@ config :
                         server_access : write
 
         - name : zeMemAllocHost
+          latency : 1.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper"
@@ -3258,6 +3320,7 @@ config :
                     server_access : write
 
         - name : zeMemFree
+          latency : 0.0
           special_handling :
                 rpc :
                     custom_handler : True
@@ -3279,6 +3342,7 @@ config :
                     translate_before : "globalL0Platform->destroyUsmDescriptor({arg})"
 
         - name : zeMemGetAllocProperties
+          latency : 0.0
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -3319,6 +3383,7 @@ config :
                         server_access : write
 
         - name : zeMemGetAddressRange
+          latency : 0.0
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -3442,6 +3507,7 @@ config :
 #                    kind : pointer
 #
         - name : zeModuleCreate
+          latency : 2.0
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -3497,6 +3563,7 @@ config :
                     daemon_action_at_end : "ctx.trackAllocatedResource({arg})"
 
         - name : zeModuleDestroy
+          latency : 0.0
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -3532,6 +3599,7 @@ config :
 #                    kind : pointer
 #
         - name : zeModuleBuildLogDestroy
+          latency : 0.0
           ddi_category :  ModuleBuildLog
           returns :
                     type : ze_result_t
@@ -3547,6 +3615,7 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeModuleBuildLogGetString
+          latency : 0.0
           ddi_category :  ModuleBuildLog
           returns :
                     type : ze_result_t
@@ -3603,6 +3672,7 @@ config :
 #                    kind : pointer
 #
         - name : zeModuleGetGlobalPointer
+          latency : 0.0
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -3650,6 +3720,7 @@ config :
                     translate_after : "command->captures.ret = static_cast<IcdL0Module*>(hModule)->recordGlobalPointer(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
 
         - name : zeModuleGetKernelNames
+          latency : 0.0
           special_handling :
                 icd :
                     dont_generate_handler : True
@@ -3675,6 +3746,7 @@ config :
                     kind : pointer
 
         - name : zeModuleGetKernelNamesRpcHelper
+          latency : 0.0
           special_handling :
                 variant_of : "zeModuleGetKernelNames"
                 icd :
@@ -3719,6 +3791,7 @@ config :
                         server_access : write
 
         - name : zeModuleGetProperties
+          latency : 0.0
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -3743,6 +3816,7 @@ config :
                         server_access : write
 
         - name : zeKernelCreate
+          latency : 0.5
           special_handling :
                   rpc :
                       emit_copy_assignment : True
@@ -3783,6 +3857,7 @@ config :
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
         - name : zeKernelDestroy
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3799,6 +3874,7 @@ config :
 
 
         - name : zeModuleGetFunctionPointer
+          latency : 0.0
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -3833,6 +3909,7 @@ config :
                         server_access : write
 
         - name : zeKernelSetGroupSize
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3858,6 +3935,7 @@ config :
                     kind : scalar
 
         - name : zeKernelSuggestGroupSize
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3916,6 +3994,7 @@ config :
                         server_access : write
 
         - name : zeKernelSuggestMaxCooperativeGroupCount
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3940,6 +4019,7 @@ config :
                         server_access : write
 
         - name : zeKernelSetArgumentValue
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3972,6 +4052,7 @@ config :
                         server_access : read
 
         - name : zeKernelSetIndirectAccess
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -3989,6 +4070,7 @@ config :
                     kind : scalar
 
         - name : zeKernelGetIndirectAccess
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -4033,6 +4115,7 @@ config :
 #                    kind : pointer
 #
         - name : zeKernelSetCacheConfig
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -4050,6 +4133,7 @@ config :
                     kind : scalar
 
         - name : zeKernelGetProperties
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -4074,6 +4158,7 @@ config :
                         server_access : write
 
         - name : zeKernelGetName
+          latency : 0.0
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
@@ -4110,6 +4195,7 @@ config :
                         server_access : write
 
         - name : zeCommandListAppendLaunchKernel
+          latency : 0.0
           ddi_category :  CommandList
           returns :
                     type : ze_result_t

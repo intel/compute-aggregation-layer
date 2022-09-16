@@ -833,6 +833,7 @@ class Function:
     def __init__(self, structures, src: dict):
         self.structures = structures
         self.name = src["name"]
+        self.latency = float(src.get("latency", 0.0))
         self.returns = Returns(src.get("returns", {}))
         args_src = src.get("args", {})
         implicit_args_src = src.get("implicit_args", {})

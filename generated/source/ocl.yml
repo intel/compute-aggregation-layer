@@ -81,6 +81,7 @@ config :
 
     functions :
         - name : clGetPlatformIDs
+          latency : 1.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling as CAL platform name
@@ -134,6 +135,7 @@ config :
                     dont_generate_rpc_message : True
           
         - name : clGetPlatformInfo
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling for get platform name
@@ -180,6 +182,7 @@ config :
                         server_access : write
 
         - name : clGetExtensionFunctionAddress
+          latency : 0.0
           special_handling : 
                 icd : 
                     dont_generate_handler : True
@@ -207,6 +210,7 @@ config :
                         server_access : read
 
         - name : clGetDeviceIDs
+          latency : 0.0
           cacheable :
                     on_server : True
                     on_client : True
@@ -257,6 +261,7 @@ config :
                         server_access : write
                         
         - name : clGetDeviceInfo
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling because of temporary cache implementation
@@ -305,6 +310,7 @@ config :
                         server_access : write
 
         - name : clCreateContext
+          latency : 1.0
           special_handling : 
                 icd : 
                     handler_epilogue : "ret->asLocalObject()->setDevicesList(num_devices, devices);"
@@ -366,6 +372,7 @@ config :
                         server_access : write
 
         - name : clCreateContextFromType
+          latency : 1.0
           returns :
                     type : cl_context
                     kind : scalar
@@ -413,6 +420,7 @@ config :
                         server_access : write
 
         - name : clGetContextInfo
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling because of temporary cache implementation
@@ -462,6 +470,7 @@ config :
                         server_access : write
 
         - name : clCreateSubDevices
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -512,6 +521,7 @@ config :
                         server_access : write
 
         - name : clCreateCommandQueue
+          latency : 1.0
           returns :
                     type : cl_command_queue
                     kind : scalar
@@ -545,6 +555,7 @@ config :
                         server_access : write
                         
         - name : clSetDefaultDeviceCommandQueue
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -567,6 +578,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
 
         - name : clCreateCommandQueueWithProperties
+          latency : 1.0
           returns :
                     type : cl_command_queue
                     kind : scalar
@@ -607,6 +619,7 @@ config :
                         server_access : write
 
         - name : clCreateProgramWithSource
+          latency : 0.5
           returns :
                     type : cl_program
                     kind : scalar
@@ -662,6 +675,7 @@ config :
                         server_access : write
 
         - name : clCreateProgramWithIL
+          latency : 0.5
           returns :
                     type : cl_program
                     kind : scalar
@@ -701,6 +715,7 @@ config :
                         server_access : write
 
         - name : clCreateProgramWithBinary
+          latency : 1.0
           returns :
                     type : cl_program
                     kind : scalar
@@ -779,6 +794,7 @@ config :
                         server_access : write
 
         - name : clCreateProgramWithBuiltInKernels
+          latency : 1.0
           returns :
                     type : cl_program
                     kind : scalar
@@ -830,6 +846,7 @@ config :
                         server_access : write
 
         - name : clUnloadCompiler
+          latency : 0.0
           special_handling : 
                 icd : 
                     intentionally_ignore : True # Would affect whole CAL service
@@ -840,6 +857,7 @@ config :
                     kind : scalar
 
         - name : clUnloadPlatformCompiler
+          latency : 0.0
           special_handling : 
                 icd : 
                     intentionally_ignore : True # Would affect whole CAL service
@@ -856,6 +874,7 @@ config :
                     kind : scalar
 
         - name : clBuildProgram
+          latency : 2.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -907,6 +926,7 @@ config :
                     ignore : True
 
         - name : clCompileProgram
+          latency : 2.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -989,6 +1009,7 @@ config :
                     ignore : True
 
         - name : clLinkProgram
+          latency : 2.0
           returns :
                     type : cl_program
                     kind : scalar
@@ -1068,6 +1089,7 @@ config :
                         server_access : write
 
         - name : clGetProgramBuildInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1115,6 +1137,7 @@ config :
                         server_access : write
 
         - name : clCreateKernel
+          latency : 0.5
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling to query for kernel arg types
@@ -1153,6 +1176,7 @@ config :
                         server_access : write
 
         - name : clCloneKernel
+          latency : 0.5
           returns :
                     type : cl_kernel
                     kind : scalar
@@ -1177,6 +1201,7 @@ config :
                         server_access : write
 
         - name : clCreateKernelsInProgram
+          latency : 1.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper"
@@ -1220,6 +1245,7 @@ config :
                         server_access : write
 
         - name : clGetCommandQueueInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1294,6 +1320,7 @@ config :
       #                   server_access : write
 
         - name : clGetProgramInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1338,6 +1365,7 @@ config :
                         server_access : write
 
         - name : clGetMemObjectInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1381,6 +1409,7 @@ config :
                         server_access : write
 
         - name : clGetImageInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1424,6 +1453,7 @@ config :
                         server_access : write
 
         - name : clGetSamplerInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1467,6 +1497,7 @@ config :
                         server_access : write
 
         - name : clGetKernelInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1510,6 +1541,7 @@ config :
                         server_access : write
 
         - name : clGetKernelWorkGroupInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1557,6 +1589,7 @@ config :
                         server_access : write
 
         - name : clGetKernelArgInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1603,6 +1636,7 @@ config :
                         server_access : write
                         
         - name : clGetKernelSubGroupInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1665,6 +1699,7 @@ config :
                         server_access : write
                         
         - name : clReleaseCommandQueue
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1679,6 +1714,7 @@ config :
                     
 
         - name : clReleaseContext
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_prologue : "context->asLocalObject()->beforeReleaseCallback();"
@@ -1695,6 +1731,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clReleaseDevice
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1709,6 +1746,7 @@ config :
                     
 
         - name : clReleaseKernel
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_prologue : "invalidateKernelArgCache();"
@@ -1725,6 +1763,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clReleaseSampler
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1738,6 +1777,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clReleaseProgram
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1751,6 +1791,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clReleaseMemObject
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_prologue : ["invalidateKernelArgCache();", "if(memobj->asLocalObject()->getContext() && memobj->asLocalObject()->getContext()->tryRecycleClBuffer(memobj)){ return CL_SUCCESS; }"]
@@ -1769,6 +1810,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clReleaseEvent
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1782,6 +1824,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
 
         - name : clRetainCommandQueue
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1795,6 +1838,7 @@ config :
                     translate_after : "static_cast<IcdOclCommandQueue*>({arg})->inc()"
 
         - name : clRetainContext
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1808,6 +1852,7 @@ config :
                     translate_after : "static_cast<IcdOclContext*>({arg})->inc()"
 
         - name : clRetainDevice
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1821,6 +1866,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->inc()"
 
         - name : clRetainProgram
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1834,6 +1880,7 @@ config :
                     translate_after : "static_cast<IcdOclProgram*>({arg})->inc()"
 
         - name : clRetainMemObject
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1847,6 +1894,7 @@ config :
                     translate_after : "static_cast<IcdOclMem*>({arg})->inc()"
 
         - name : clRetainSampler
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1860,6 +1908,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->inc()"
 
         - name : clRetainKernel
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1873,6 +1922,7 @@ config :
                     translate_after : "static_cast<IcdOclKernel*>({arg})->inc()"
 
         - name : clRetainEvent
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1886,6 +1936,7 @@ config :
                     translate_after : "static_cast<IcdOclEvent*>({arg})->inc()"
 
         - name : clFlush
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -1898,6 +1949,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
 
         - name : clFinish
+          latency : 2.0
           special_handling : 
                 icd : 
                     handler_prologue : "if(command_queue->asLocalObject()->isSynchronized()){ return CL_SUCCESS; }\n"
@@ -1914,6 +1966,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
 
         - name : clEnqueueNDRangeKernel
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -1999,6 +2052,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueTask
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2047,6 +2101,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueMarkerWithWaitList
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2090,6 +2145,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueMarker
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2117,6 +2173,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueBarrierWithWaitList
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2160,6 +2217,7 @@ config :
                         server_access : write
 
         - name : clEnqueueBarrier
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2175,6 +2233,7 @@ config :
                     translate_before : "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
                     
         - name : clEnqueueWaitForEvents
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2206,6 +2265,7 @@ config :
                         server_access : read
                         
         - name : clEnqueueMigrateMemObjects
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -2269,6 +2329,7 @@ config :
                         server_access : write
 
         - name : clGetExtensionFunctionAddressForPlatform
+          latency : 0.0
           special_handling : 
                 icd : 
                     dont_generate_handler : True
@@ -2297,6 +2358,7 @@ config :
                         server_access : read
 
         - name : clCreateBuffer
+          latency : 1.0
           special_handling :
                 icd :
                     handler_only_suffix : "RpcHelper" # Dedicated handling due to shmem management
@@ -2367,6 +2429,7 @@ config :
                     server_access : write
                     
         - name : clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem
+          latency : 1.0
           special_handling : 
                 variant_of : "clCreateBuffer"
                 icd : 
@@ -2414,6 +2477,7 @@ config :
                         server_access : write
 
         - name : clCreateSubBuffer
+          latency : 0.0
           returns :
                     type : cl_mem
                     kind : scalar
@@ -2458,6 +2522,7 @@ config :
                         server_access : write
                         
         - name : clCreatePipe
+          latency : 1.0
           returns :
                     type : cl_mem
                     kind : scalar
@@ -2506,6 +2571,7 @@ config :
                         server_access : write
                         
         - name : clGetPipeInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -2549,6 +2615,7 @@ config :
                         server_access : write
 
         - name : clCreateImage
+          latency : 1.0
           returns :
                     type : cl_mem
                     kind : scalar
@@ -2611,6 +2678,7 @@ config :
                         server_access : write
 
         - name : clCreateImage2D
+          latency : 1.0
           returns :
                     type : cl_mem
                     kind : scalar
@@ -2674,6 +2742,7 @@ config :
                         server_access : write
 
         - name : clCreateImage3D
+          latency : 1.0
           returns :
                     type : cl_mem
                     kind : scalar
@@ -2745,6 +2814,7 @@ config :
                         server_access : write
 
         - name : clCreateSampler
+          latency : 1.0
           returns :
                     type : cl_sampler
                     kind : scalar
@@ -2781,6 +2851,7 @@ config :
                         server_access : write
 
         - name : clCreateSamplerWithProperties # OCL 3.0
+          latency : 1.0
           special_handling :
                  optional : True # OCL 3.0
           returns :
@@ -2818,6 +2889,7 @@ config :
                         server_access : write
 
         - name : clCreateImageWithProperties # OCL 3.0
+          latency : 1.0
           special_handling :
                  optional : True # OCL 3.0
           returns :
@@ -2893,6 +2965,7 @@ config :
                         server_access : write
 
         - name : clCreateBufferWithProperties # OCL 3.0
+          latency : 1.0
           special_handling :
                  optional : True # OCL 3.0
           returns :
@@ -2950,6 +3023,7 @@ config :
                         server_access : write
 
         - name : clGetSupportedImageFormats
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -2997,6 +3071,7 @@ config :
                         server_access : write
 
         - name : clSetKernelArg
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling because of temporary cache implementation
@@ -3031,7 +3106,8 @@ config :
                             kind : scalar
                         server_access : read
 
-        - name : clSetProgramSpecializationConstant 
+        - name : clSetProgramSpecializationConstant
+          latency : 0.0
           special_handling :
                  optional : True # OCL 2.2
           returns :
@@ -3065,6 +3141,7 @@ config :
                         server_access : read
 
         - name : clEnqueueWriteBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelperUsmHost" # Dedicated handling due to differnt variants (hostptr from malloc and hostpr from USM)
@@ -3132,6 +3209,7 @@ config :
                         server_access : write
 
         - name : clEnqueueWriteBufferRpcHelperMallocHost
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueWriteBuffer"
                 icd : 
@@ -3205,6 +3283,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueWriteBuffer"
                 icd : 
@@ -3278,6 +3357,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueWriteBufferRect
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelperUsmHost" # Dedicated handling due to different variants (hostptr from malloc and hostpr from USM)
@@ -3386,6 +3466,7 @@ config :
                         server_access : write
 
         - name : clEnqueueWriteBufferRectRpcHelperMallocHost
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueWriteBufferRect"
                 icd : 
@@ -3500,6 +3581,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueWriteBufferRect"
                 icd : 
@@ -3614,6 +3696,7 @@ config :
                         server_access : write
 
         - name : clEnqueueReadBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelperUsmHost" # Dedicated handling due to differnt variants (hostptr from malloc and hostpr from USM)
@@ -3681,6 +3764,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueReadBufferRect
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelperUsmHost" # Dedicated handling due to different variants (hostptr from malloc and hostpr from USM)
@@ -3789,6 +3873,7 @@ config :
                         server_access : write
 
         - name : clEnqueueReadBufferRectRpcHelperMallocHost
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueReadBufferRect"
                 icd : 
@@ -3903,6 +3988,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueReadBufferRect"
                 icd : 
@@ -4017,6 +4103,7 @@ config :
                         server_access : write                     
 
         - name : clEnqueueReadBufferRpcHelperMallocHost
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueReadBuffer"
                 icd : 
@@ -4091,6 +4178,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueReadBufferRpcHelperZeroCopyMallocShmem
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueReadBuffer"
                 icd : 
@@ -4164,6 +4252,7 @@ config :
                         server_access : write                     
                         
         - name : clEnqueueCopyBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4229,6 +4318,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueCopyBufferRect
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4332,6 +4422,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueReadImage
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4426,6 +4517,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueWriteImage
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4519,6 +4611,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueCopyImage
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4605,6 +4698,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueCopyImageToBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4684,6 +4778,7 @@ config :
                         server_access : write
 
         - name : clEnqueueCopyBufferToImage
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4763,6 +4858,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueMapBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4839,6 +4935,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueUnmapMemObject
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4891,6 +4988,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueFillBuffer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -4962,6 +5060,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueFillImage
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -5043,6 +5142,7 @@ config :
                         server_access : write
 
         - name : clWaitForEvents
+          latency : 2.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5066,6 +5166,7 @@ config :
                         server_access : read
 
         - name : clGetEventInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5109,6 +5210,7 @@ config :
                         server_access : write
 
         - name : clGetEventProfilingInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5152,6 +5254,7 @@ config :
                         server_access : write
 
         - name : clCreateUserEvent
+          latency : 1.0
           returns :
                     type : cl_event
                     kind : scalar
@@ -5176,6 +5279,7 @@ config :
                         server_access : write
 
         - name : clSetUserEventStatus
+          latency : 1.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5192,6 +5296,7 @@ config :
                     kind : scalar
 
         - name : clSetEventCallback
+          latency : 0.0
           special_handling : 
                 icd : 
                     unsupported : True
@@ -5223,6 +5328,7 @@ config :
                     ignore : True
 
         - name : clGetDeviceAndHostTimer
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5257,6 +5363,7 @@ config :
                         server_access : write
 
         - name : clGetHostTimer
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper" # Dedicated handling with fast clock getter
@@ -5283,6 +5390,7 @@ config :
                         server_access : write
                         
         - name : clSVMAlloc
+          latency : 1.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelper"
@@ -5328,6 +5436,7 @@ config :
                     server_access : write
                     
         - name : clSVMFree
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_prologue : "invalidateKernelArgCache();"
@@ -5351,6 +5460,7 @@ config :
                         server_access : none
                         
         - name : clEnqueueSVMMap
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -5412,6 +5522,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueSVMUnmap
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -5461,6 +5572,7 @@ config :
                         server_access : write
                         
         - name : clSetKernelArgSVMPointer
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5483,6 +5595,7 @@ config :
                         server_access : read_write
                         
         - name : clSetKernelExecInfo
+          latency : 0.0
           returns :
                     type : cl_int
                     kind : scalar
@@ -5514,6 +5627,7 @@ config :
                         server_access : read
                         
         - name : clEnqueueSVMMemFill
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -5582,6 +5696,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueSVMMigrateMem
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
@@ -5657,6 +5772,7 @@ config :
                         server_access : write
                         
         - name : clEnqueueSVMMemcpy
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_only_suffix : "RpcHelperUsm2Usm" # Dedicated handling due to differnt variants (USM->host host->USM USM->USM)
@@ -5721,6 +5837,7 @@ config :
                         server_access : write
 
         - name : clEnqueueSVMMemcpyRpcHelperMalloc2Usm
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueSVMMemcpy"
                 icd : 
@@ -5791,6 +5908,7 @@ config :
                         server_access : write
 
         - name : clEnqueueSVMMemcpyRpcHelperUsm2Malloc
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueSVMMemcpy"
                 icd : 
@@ -5863,6 +5981,7 @@ config :
                         
 ################### cl_ext_device_fission EXTENSION
         - name : clCreateSubDevicesEXT
+          latency : 0.0
           special_handling :
                  extension_name : "cl_ext_device_fission"
                  icd : 
@@ -5917,6 +6036,7 @@ config :
                         server_access : write
                         
         - name : clReleaseDeviceEXT
+          latency : 0.0
           special_handling :
                  extension_name : "cl_ext_device_fission"
                  icd : 
@@ -5934,6 +6054,7 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
                     
         - name : clRetainDeviceEXT
+          latency : 0.0
           special_handling :
                  extension_name : "cl_ext_device_fission"
                  icd : 
@@ -5952,6 +6073,7 @@ config :
                     
 ################### cl_khr_subgroups EXTENSION
         - name : clGetKernelSubGroupInfoKHR
+          latency : 0.0
           special_handling :
                  extension_name : "cl_khr_subgroups"
                  icd : 
@@ -6019,6 +6141,7 @@ config :
 
 ################### USM EXTENSION
         - name : clEnqueueMemFillINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6090,6 +6213,7 @@ config :
                         server_access : write
 
         - name : clEnqueueMemcpyINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6157,6 +6281,7 @@ config :
                         server_access : write
 
         - name : clEnqueueMemcpyINTELRpcHelperMalloc2Usm
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueMemcpyINTEL"
                 extension_name : "USM"
@@ -6229,6 +6354,7 @@ config :
                         server_access : write
 
         - name : clEnqueueMemcpyINTELRpcHelperUsm2Malloc
+          latency : 0.0
           special_handling : 
                 variant_of : "clEnqueueMemcpyINTEL"
                 extension_name : "USM"
@@ -6302,6 +6428,7 @@ config :
                         server_access : write
 
         - name : clSetKernelArgMemPointerINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6330,6 +6457,7 @@ config :
                         server_access : read_write
 
         - name : clGetMemAllocInfoINTEL
+          latency : 0.0
           special_handling :
                 extension_name : "USM"
                 icd :
@@ -6381,6 +6509,7 @@ config :
                         server_access : write
 
         - name : clDeviceMemAllocINTEL
+          latency : 1.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6434,6 +6563,7 @@ config :
                         server_access : write
 
         - name : clHostMemAllocINTEL
+          latency : 1.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6500,6 +6630,7 @@ config :
                     server_access : write
                     
         - name : clSharedMemAllocINTEL
+          latency : 1.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6571,6 +6702,7 @@ config :
                     server_access : write
 
         - name : clMemFreeINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6598,6 +6730,7 @@ config :
                         server_access : none
 
         - name : clMemBlockingFreeINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6625,6 +6758,7 @@ config :
                         server_access : none
 
         - name : clEnqueueMigrateMemINTEL
+          latency : 0.0
           special_handling : 
                 extension_name : "USM"
                 icd : 
@@ -6686,6 +6820,7 @@ config :
 
 ################### cl_get_device_global_variable_pointer_intel EXTENSION
         - name : clGetDeviceGlobalVariablePointerINTEL
+          latency : 0.0
           special_handling :
                 extension_name : "cl_get_device_global_variable_pointer_intel"
                 icd :
