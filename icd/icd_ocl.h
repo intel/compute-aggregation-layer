@@ -813,6 +813,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
             return;
         }
 
+        case CL_DEVICE_PARENT_DEVICE:
         case CL_QUEUE_DEVICE: {
             translateRemoteObjectToLocalObject<cl_device_id>(dst);
             return;
@@ -835,11 +836,6 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
 
         case CL_KERNEL_PROGRAM: {
             translateRemoteObjectToLocalObject<cl_program>(dst);
-            return;
-        }
-
-        case CL_PROGRAM_DEVICES: {
-            translateRemoteObjectToLocalObject<cl_device_id>(dst);
             return;
         }
         }

@@ -1323,6 +1323,7 @@ config :
                         element :
                             type : void
                             kind : scalar
+                            translate_after : "if((param_name == CL_PROGRAM_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {{\n                *reinterpret_cast<cl_device_id*>(&{dst}) = globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), program);\n            }}"
                         server_access : write
                  4 :
                     name : param_value_size_ret

@@ -637,6 +637,15 @@ cl_int clGetProgramInfo (cl_program program, cl_program_info param_name, size_t 
     command->copyToCaller(dynMemTraits);
     if(param_value)
     {
+        auto baseMutable = mutable_element_cast(param_value);
+
+        auto numEntries = param_value_size;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            if((param_name == CL_PROGRAM_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {
+                *reinterpret_cast<cl_device_id*>(&baseMutable[i]) = globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&baseMutable[i]), program);
+            };
+        }
         globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
     }
     cl_int ret = command->captures.ret;
