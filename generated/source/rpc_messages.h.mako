@@ -26,7 +26,7 @@ namespace ${namespace_part} {
 % endfor
 
 template <typename Ptr>
-void forcePointerWrite(Ptr& p, void* value) {
+inline void forcePointerWrite(Ptr& p, void* value) {
     static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");
     using WritablePtr = std::remove_cv_t<Ptr>;
 
@@ -78,6 +78,7 @@ inline char *asMemcpyDstT(void * ptr) {
 struct ${func.message_name} {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = ${get_message_subtype(func)};
+    static constexpr float latency = ${func.latency};
 
     using ReturnValueT = ${func.returns.type.str};
 

@@ -94,7 +94,11 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %     if is_unsupported(f):
     return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
 %     else : # not is_unsupported(f)
-    if(false == channel.callSynchronous(space)){
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(space, command->header.flags)){
         return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
     }
 %      if func_base.traits.emit_copy_to_caller:

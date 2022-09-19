@@ -96,7 +96,14 @@ void IcdPlatform::initializeConnection() {
 
     log<Verbosity::debug>("Creating RPC channel");
     rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, shmemManager);
-    if (false == rpcChannel->init()) {
+    Cal::Rpc::ChannelClient::ClientSynchronizationMethod clientSynchMethod = Cal::Rpc::ChannelClient::activePolling;
+    if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelClientEnvName, false)) {
+        clientSynchMethod = Cal::Rpc::ChannelClient::semaphores;
+    }
+    if (Cal::Utils::getCalEnvFlag(calUseSemaphoresThresholdInChannelClientEnvName, false)) {
+        clientSynchMethod = Cal::Rpc::ChannelClient::latencyBased;
+    }
+    if (false == rpcChannel->init(clientSynchMethod)) {
         log<Verbosity::critical>("Failed to initialize RPC channel client");
         this->connection.reset();
         return;

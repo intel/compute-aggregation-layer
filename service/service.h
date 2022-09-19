@@ -786,7 +786,7 @@ class Provider {
 
             service.serviceSingleRpcCommand(ctx, header, newCommand.size);
 
-            channel->removeCommand(newCommand);
+            channel->removeCommand(newCommand, header->flags);
 
             if (service.getYieldThreads()) {
                 std::this_thread::yield();

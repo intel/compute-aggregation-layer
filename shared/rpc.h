@@ -261,6 +261,25 @@ class ShmemRingBuffer : public RingBuffer {
 
 class ChannelClient {
   public:
+    enum ClientSynchronizationMethod : uint32_t { unknown,
+                                                  activePolling, // client always polls for command completion status in busy loop
+                                                  semaphores,    // client always requires service to signal completion using semaphore
+                                                  latencyBased   // client uses mixed mode (semaphore+activePolling) based on command latency traits
+    };
+
+    static const char *asCStr(ClientSynchronizationMethod e) {
+        switch (e) {
+        default:
+            return "unknown";
+        case activePolling:
+            return "activePolling";
+        case semaphores:
+            return "semaphores";
+        case latencyBased:
+            return "latencyBased";
+        }
+    }
+
     ChannelClient(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemManager &shmemManager)
         : connection(connection), shmemManager(shmemManager) {
     }
@@ -269,8 +288,26 @@ class ChannelClient {
         this->shmemManager.release(this->ringBufferShmem);
     }
 
-    bool init() {
-        log<Verbosity::debug>("Creating RPC ring buffer");
+    bool init(ClientSynchronizationMethod clientSynchronizationMethod) {
+        if (unknown == clientSynchronizationMethod) {
+            log<Verbosity::critical>("Failed to create RPC ring buffer with invalid client synchronization method : %s", asCStr(clientSynchronizationMethod));
+            return false;
+        }
+        log<Verbosity::debug>("Creating RPC ring buffer with %s client synchronization method", asCStr(clientSynchronizationMethod));
+        this->clientSynchronizationMethod = clientSynchronizationMethod;
+        switch (clientSynchronizationMethod) {
+        default:
+            break;
+        case activePolling:
+            this->semaphoreWaitThreshold = 100.0f; // unreachable threshold (no semaphores)
+            break;
+        case semaphores:
+            this->semaphoreWaitThreshold = -100.0f; // all APIs reach this threshold (always semaphores)
+            break;
+        case latencyBased:
+            this->semaphoreWaitThreshold = 0.0f; // "API latency > 0" will trigger semaphores usage
+            break;
+        }
         this->ringBuffer = createRingBuffer();
         if (nullptr == ringBuffer) {
             log<Verbosity::critical>("Failed to create RPC ring buffer");
@@ -294,7 +331,7 @@ class ChannelClient {
         return ringBuffer->getSpace(sizeof(MessageT));
     }
 
-    bool callSynchronous(RingBuffer::CommandPacket packet /*add timeout*/) {
+    bool callSynchronous(RingBuffer::CommandPacket packet /*add timeout*/, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
         ringBuffer->push(packet);
         if (Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores == serviceSynchronizationMethod) {
             if (false == ringBuffer->signalServiceSemaphore()) {
@@ -302,7 +339,7 @@ class ChannelClient {
                 return false;
             }
         }
-        if (false == wait(packet)) {
+        if (false == wait(packet, messageFlags)) {
             log<Verbosity::critical>("Failed to get response for RPC call");
             return false;
         }
@@ -318,17 +355,46 @@ class ChannelClient {
         return ringBuffer->lock();
     }
 
-    bool wait(RingBuffer::CommandPacket packet) {
-        return activeWait(packet);
+    bool wait(RingBuffer::CommandPacket packet, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
+        if (0 != messageFlags & Cal::Rpc::RpcMessageHeader::FlagsBits::signalSemaphoreOnCompletion) {
+            return semaphoreWait(packet);
+        } else {
+            return activeWait(packet);
+        }
     }
 
     void stop() {
         stopped = true;
     }
 
+    bool shouldSynchronizeNextCommandWithSemaphores(float commandLatency) {
+        return commandLatency > semaphoreWaitThreshold;
+    }
+
   protected:
+    bool semaphoreWait(RingBuffer::CommandPacket packet) {
+        log<Verbosity::bloat>("Waiting for packet to be processed - semaphores");
+        ringBuffer->waitOnClientSemaphore();
+        if (stopped) {
+            log<Verbosity::debug>("Aborting wait for command packet request");
+            return {};
+        }
+        if (ringBuffer->peekHead() < packet.ringOffset + packet.size) {
+            log<Verbosity::error>("Command not processed after woken up from semaphore wait");
+        }
+
+        while (ringBuffer->peekHead() < packet.ringOffset + packet.size) {
+            if (stopped) {
+                log<Verbosity::debug>("Aborting wait for command to be processed");
+                return false;
+            }
+        }
+        log<Verbosity::bloat>("Packet has been processed");
+        return true;
+    }
+
     bool activeWait(RingBuffer::CommandPacket packet) {
-        log<Verbosity::bloat>("Waiting for packet to be processed");
+        log<Verbosity::bloat>("Waiting for packet to be processed - active wait");
         while (ringBuffer->peekHead() < packet.ringOffset + packet.size) {
             if (stopped) {
                 log<Verbosity::debug>("Aborting wait for command to be processed");
@@ -371,8 +437,6 @@ class ChannelClient {
         request.clientSemaphoreOffsetWithinShmem = ringLayout.semClient;
         request.serverSemaphoreOffsetWithinShmem = ringLayout.semServer;
         request.ringStartOffsetWithinShmem = ringLayout.ringStart;
-        request.clientSynchronizationMethod = Cal::Messages::ReqLaunchRpcShmemRingBuffer::activePolling;
-        clientSynchronizationMethod = request.clientSynchronizationMethod;
 
         Cal::Messages::RespLaunchRpcShmemRingBuffer response;
         {
@@ -398,7 +462,8 @@ class ChannelClient {
     Cal::Ipc::Shmem ringBufferShmem;
     std::atomic_bool stopped = false;
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
-    Cal::Messages::ReqLaunchRpcShmemRingBuffer::ClientSynchronizationMethod clientSynchronizationMethod = Cal::Messages::ReqLaunchRpcShmemRingBuffer::unknown;
+    ClientSynchronizationMethod clientSynchronizationMethod = unknown;
+    float semaphoreWaitThreshold = 0.0f;
 };
 
 class ChannelServer {
@@ -408,14 +473,8 @@ class ChannelServer {
     }
 
     bool init(Cal::Ipc::Shmem ringBufferShmem, const Cal::Messages::ReqLaunchRpcShmemRingBuffer &request, Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod) {
-        if (Cal::Messages::ReqLaunchRpcShmemRingBuffer::activePolling != request.clientSynchronizationMethod) {
-            log<Verbosity::error>("Client : %d requested unsupported client synchronization method : %s", connection.getId(), Cal::Messages::ReqLaunchRpcShmemRingBuffer::asCStr(request.clientSynchronizationMethod));
-            return false;
-        }
-
-        log<Verbosity::debug>("Client : %d; client synchronization method : %s; service synchronization method %s", connection.getId(),
-                              Cal::Messages::ReqLaunchRpcShmemRingBuffer::asCStr(request.clientSynchronizationMethod), Cal::Messages::RespLaunchRpcShmemRingBuffer::asCStr(serviceSynchronizationMethod));
-        this->clientSynchronizationMethod = request.clientSynchronizationMethod;
+        log<Verbosity::debug>("Client : %d; service synchronization method %s", connection.getId(),
+                              Cal::Messages::RespLaunchRpcShmemRingBuffer::asCStr(serviceSynchronizationMethod));
         this->serviceSynchronizationMethod = serviceSynchronizationMethod;
 
         auto ringBuffer = std::make_unique<Cal::Rpc::ShmemRingBuffer>();
@@ -461,8 +520,11 @@ class ChannelServer {
         }
     }
 
-    void removeCommand(RingBuffer::CommandPacket command) {
+    void removeCommand(RingBuffer::CommandPacket command, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
         this->ringBuffer->pop(command.size);
+        if (0 != (messageFlags & Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion)) {
+            this->ringBuffer->signalClientSemaphore();
+        }
     }
 
   protected:
@@ -517,7 +579,6 @@ class ChannelServer {
     Cal::Ipc::Shmem ringBufferShmem;
     std::atomic_bool stopped = false;
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
-    Cal::Messages::ReqLaunchRpcShmemRingBuffer::ClientSynchronizationMethod clientSynchronizationMethod = Cal::Messages::ReqLaunchRpcShmemRingBuffer::unknown;
 };
 
 } // namespace Rpc

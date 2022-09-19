@@ -173,11 +173,6 @@ struct ReqLaunchRpcShmemRingBuffer {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 5;
-    enum ClientSynchronizationMethod : uint32_t { unknown,
-                                                  activePolling, // client polls for status in busy loop
-                                                  semaphores,    // client requires service to signal completion using semaphore
-                                                  adaptive       // method differs based on call characterisctics
-    };
 
     ReqLaunchRpcShmemRingBuffer() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -194,24 +189,10 @@ struct ReqLaunchRpcShmemRingBuffer {
         invalid = invalid || (this->iterationOffsetWithinShmem == -1);
         invalid = invalid || (this->clientSemaphoreOffsetWithinShmem == -1);
         invalid = invalid || (this->serverSemaphoreOffsetWithinShmem == -1);
-        invalid = invalid || (this->clientSynchronizationMethod == unknown);
         if (invalid) {
             log<Verbosity::error>("Message ReqLaunchRpcShmemRingBuffer is not valid");
         }
         return invalid;
-    }
-
-    static const char *asCStr(ClientSynchronizationMethod e) {
-        switch (e) {
-        default:
-            return "unknown";
-        case activePolling:
-            return "activePolling";
-        case semaphores:
-            return "semaphores";
-        case adaptive:
-            return "adaptive";
-        }
     }
 
     int ringbufferShmemId = -1;
@@ -221,7 +202,6 @@ struct ReqLaunchRpcShmemRingBuffer {
     int64_t clientSemaphoreOffsetWithinShmem = -1;
     int64_t serverSemaphoreOffsetWithinShmem = -1;
     int64_t ringStartOffsetWithinShmem = -1;
-    ClientSynchronizationMethod clientSynchronizationMethod = unknown;
 };
 static_assert(std::is_standard_layout<ReqLaunchRpcShmemRingBuffer>::value);
 

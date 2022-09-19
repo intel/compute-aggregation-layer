@@ -347,7 +347,7 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
         memcpy(space.hostAccessible, command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
         command = static_cast<CommandT *>(space.hostAccessible);
         commandPtr.reset();
-        if (false == channel.callSynchronous(space)) {
+        if (false == channel.callSynchronous(space, 0U)) {
             return command->returnValue();
         }
     }
@@ -385,7 +385,7 @@ cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t p
         memcpy(space.hostAccessible, command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
         command = static_cast<CommandT *>(space.hostAccessible);
         commandPtr.reset();
-        if (false == channel.callSynchronous(space)) {
+        if (false == channel.callSynchronous(space, 0U)) {
             return command->returnValue();
         }
     }
@@ -437,7 +437,7 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         command->copyFromCaller(dynMemTraits);
         command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
         static_cast<IcdOclKernel *>(kernel)->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
-        if (false == channel.callSynchronous(space)) {
+        if (false == channel.callSynchronous(space, 0U)) {
             return command->returnValue();
         }
         ret = command->captures.ret;
@@ -471,7 +471,7 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
         auto space = channel.getSpace<CommandT>(0);
         auto command = new (space.hostAccessible) CommandT(kernel, argIndex, argValue);
         command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
-        if (false == channel.callSynchronous(space)) {
+        if (false == channel.callSynchronous(space, 0U)) {
             return command->returnValue();
         }
 
