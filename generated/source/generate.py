@@ -6,6 +6,7 @@
 
 import os
 import re
+import sys
 import yaml
 
 from mako.template import Template
@@ -1410,6 +1411,10 @@ def generate(config: Config, out_dir: str) -> str:
 
 def main():
     path = "../cached/"
+
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    
     print(f"output directory : {path}")
     config = load("ocl.yml")
     generate(config, path)
