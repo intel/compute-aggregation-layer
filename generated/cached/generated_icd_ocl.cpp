@@ -713,12 +713,13 @@ cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_i
 
     return ret;
 }
-cl_int clGetProgramInfo (cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
-    log<Verbosity::bloat>("Establishing RPC for clGetProgramInfo");
+ // clGetProgramInfo ignored in generator - based on dont_generate_handler flag
+cl_int clGetProgramInfoRpcHelper (cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    log<Verbosity::bloat>("Establishing RPC for clGetProgramInfoRpcHelper");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();;
     auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClGetProgramInfoRpcM;
+    using CommandT = Cal::Rpc::Ocl::ClGetProgramInfoRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, param_name, param_value_size, param_value, param_value_size_ret);
     auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(space.hostAccessible) CommandT(dynMemTraits, program, param_name, param_value_size, param_value, param_value_size_ret);
@@ -744,6 +745,29 @@ cl_int clGetProgramInfo (cl_program program, cl_program_info param_name, size_t 
         }
         globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
     }
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
+cl_int clGetProgramInfoGetBinariesRpcHelper (cl_program program, size_t total_binaries_size, unsigned char* concatenated_binaries, size_t binaries_count, const size_t* binaries_lengths, size_t* param_value_size_ret) {
+    log<Verbosity::bloat>("Establishing RPC for clGetProgramInfoGetBinariesRpcHelper");
+    auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalOclPlatform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClGetProgramInfoGetBinariesRpcHelperRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, total_binaries_size, concatenated_binaries, binaries_count, binaries_lengths, param_value_size_ret);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, program, total_binaries_size, concatenated_binaries, binaries_count, binaries_lengths, param_value_size_ret);
+    command->copyFromCaller(dynMemTraits);
+    command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(space, command->header.flags)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
     cl_int ret = command->captures.ret;
 
     return ret;

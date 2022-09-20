@@ -422,9 +422,9 @@ inline bool clGetCommandQueueInfoHandler(Provider &service, ClientContext &ctx, 
                                                 );
     return true;
 }
-inline bool clGetProgramInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clGetProgramInfo");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoRpcM*>(command);
+inline bool clGetProgramInfoRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clGetProgramInfoRpcHelper");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoRpcHelperRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetProgramInfo(
                                                 apiCommand->args.program, 
                                                 apiCommand->args.param_name, 
@@ -434,6 +434,7 @@ inline bool clGetProgramInfoHandler(Provider &service, ClientContext &ctx, Cal::
                                                 );
     return true;
 }
+bool clGetProgramInfoGetBinariesRpcHelperHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clGetMemObjectInfoHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetMemObjectInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetMemObjectInfoRpcM*>(command);
@@ -1715,7 +1716,8 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClCloneKernelRpcM::messageSubtype] = clCloneKernelHandler;
     outHandlers[ClCreateKernelsInProgramRpcM::messageSubtype] = clCreateKernelsInProgramHandler;
     outHandlers[ClGetCommandQueueInfoRpcM::messageSubtype] = clGetCommandQueueInfoHandler;
-    outHandlers[ClGetProgramInfoRpcM::messageSubtype] = clGetProgramInfoHandler;
+    outHandlers[ClGetProgramInfoRpcHelperRpcM::messageSubtype] = clGetProgramInfoRpcHelperHandler;
+    outHandlers[ClGetProgramInfoGetBinariesRpcHelperRpcM::messageSubtype] = clGetProgramInfoGetBinariesRpcHelperHandler;
     outHandlers[ClGetMemObjectInfoRpcM::messageSubtype] = clGetMemObjectInfoHandler;
     outHandlers[ClGetImageInfoRpcM::messageSubtype] = clGetImageInfoHandler;
     outHandlers[ClGetSamplerInfoRpcM::messageSubtype] = clGetSamplerInfoHandler;
@@ -2019,15 +2021,6 @@ inline void callDirectly(Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM &apiCommand
 inline void callDirectly(Cal::Rpc::Ocl::ClGetCommandQueueInfoRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clGetCommandQueueInfo(
                                                 apiCommand.args.command_queue, 
-                                                apiCommand.args.param_name, 
-                                                apiCommand.args.param_value_size, 
-                                                apiCommand.args.param_value, 
-                                                apiCommand.args.param_value_size_ret
-                                                );
-}
-inline void callDirectly(Cal::Rpc::Ocl::ClGetProgramInfoRpcM &apiCommand) {
-    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clGetProgramInfo(
-                                                apiCommand.args.program, 
                                                 apiCommand.args.param_name, 
                                                 apiCommand.args.param_value_size, 
                                                 apiCommand.args.param_value, 
@@ -3098,7 +3091,6 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClCloneKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCloneKernelRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetCommandQueueInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetCommandQueueInfoRpcM*>(command)); break;
-        case Cal::Rpc::Ocl::ClGetProgramInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetMemObjectInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetMemObjectInfoRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetImageInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetImageInfoRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetSamplerInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetSamplerInfoRpcM*>(command)); break;

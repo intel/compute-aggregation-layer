@@ -15,6 +15,7 @@
 
 #include <CL/cl_ext.h>
 #include <memory>
+#include <numeric>
 
 extern char *__progname;
 
@@ -87,6 +88,65 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
     }
 
     return clGetPlatformInfoRpcHelper(platform, param_name, param_value_size, param_value, param_value_size_ret);
+}
+
+static cl_int getProgramBinaries(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    auto icdProgram = static_cast<IcdOclProgram *>(program);
+    const auto binariesSizes = icdProgram->getBinariesSizes();
+
+    const auto totalSize = std::accumulate(std::begin(binariesSizes), std::end(binariesSizes), std::size_t{0});
+    std::vector<unsigned char> concatenatedBinaries(totalSize, '\0');
+
+    const auto result = clGetProgramInfoGetBinariesRpcHelper(program, totalSize, concatenatedBinaries.data(), binariesSizes.size(), binariesSizes.data(), param_value_size_ret);
+    if (result != CL_SUCCESS) {
+        return result;
+    }
+
+    auto outputBinaries = reinterpret_cast<unsigned char **>(param_value);
+    auto offset = 0u;
+
+    for (auto i = 0u; i < binariesSizes.size(); ++i) {
+        if (outputBinaries[i] == nullptr) {
+            continue;
+        }
+
+        if (offset >= param_value_size) {
+            log<Verbosity::error>("Invalid offset during retrieval of program binaries!");
+            return CL_INVALID_VALUE;
+        }
+
+        std::memcpy(outputBinaries[i], concatenatedBinaries.data() + offset, binariesSizes[i]);
+        offset += binariesSizes[i];
+    }
+
+    return CL_SUCCESS;
+}
+
+static cl_int getProgramBinariesSizes(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    // Prevent usage of uninitialized values when sizes are stored.
+    std::memset(param_value, 0, param_value_size);
+
+    const auto result = clGetProgramInfoRpcHelper(program, param_name, param_value_size, param_value, param_value_size_ret);
+    if (result != CL_SUCCESS) {
+        return result;
+    }
+
+    auto icdProgram = static_cast<IcdOclProgram *>(program);
+    icdProgram->storeSizesOfBinaries(param_value, param_value_size);
+
+    return CL_SUCCESS;
+}
+
+cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    if (param_name == CL_PROGRAM_BINARIES) {
+        return getProgramBinaries(program, param_name, param_value_size, param_value, param_value_size_ret);
+    }
+
+    if (param_name == CL_PROGRAM_BINARY_SIZES) {
+        return getProgramBinariesSizes(program, param_name, param_value_size, param_value, param_value_size_ret);
+    }
+
+    return clGetProgramInfoRpcHelper(program, param_name, param_value_size, param_value, param_value_size_ret);
 }
 
 void *clGetExtensionFunctionAddress(const char *funcname) {
@@ -620,6 +680,20 @@ bool IcdOclKernel::initTraits() {
 bool IcdOclKernel::initTraits(const IcdOclKernel *sourceKernel) {
     this->argsTraits = sourceKernel->argsTraits;
     return true;
+}
+
+std::vector<size_t> IcdOclProgram::getBinariesSizes() {
+    std::lock_guard lock{binariesSizesMutex};
+    return binariesSizes;
+}
+
+void IcdOclProgram::storeSizesOfBinaries(void *paramValue, size_t paramValueSize) {
+    std::lock_guard lock{binariesSizesMutex};
+
+    auto sizes = reinterpret_cast<size_t *>(paramValue);
+    auto count = paramValueSize / sizeof(size_t);
+
+    binariesSizes.assign(sizes, sizes + count);
 }
 
 void IcdOclProgram::recordGlobalPointer(void *ptr) {

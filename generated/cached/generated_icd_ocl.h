@@ -45,6 +45,8 @@ cl_kernel clCloneKernel (cl_kernel source_kernel, cl_int* errcode_ret);
 cl_int clCreateKernelsInProgramRpcHelper (cl_program program, cl_uint num_kernels, cl_kernel* kernels, cl_uint* num_kernels_ret);
 cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clGetProgramInfo (cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+cl_int clGetProgramInfoRpcHelper (cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+cl_int clGetProgramInfoGetBinariesRpcHelper (cl_program program, size_t total_binaries_size, unsigned char* concatenated_binaries, size_t binaries_count, const size_t* binaries_lengths, size_t* param_value_size_ret);
 cl_int clGetMemObjectInfo (cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clGetImageInfo (cl_mem image, cl_image_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clGetSamplerInfo (cl_sampler sampler, cl_sampler_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);

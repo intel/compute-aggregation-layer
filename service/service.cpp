@@ -145,6 +145,34 @@ bool clGetPlatformIDsHandler(Provider &service, ClientContext &ctx, Cal::Rpc::Rp
     return true;
 };
 
+bool clGetProgramInfoGetBinariesRpcHelperHandler(Cal::Service::Provider &service, Cal::Service::ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramInfoGetBinariesRpcHelperRpcM *>(command);
+
+    const auto binariesCount = apiCommand->args.binaries_count;
+    const auto binariesLengths = apiCommand->captures.getBinaries_lengths();
+
+    auto concatenatedBinaries = apiCommand->captures.getConcatenated_binaries();
+    auto offset = 0u;
+
+    std::vector<unsigned char *> binaries(apiCommand->args.binaries_count, nullptr);
+    for (auto i = 0u; i < binariesCount; ++i) {
+        if (binariesLengths[i] == 0) {
+            continue;
+        }
+
+        binaries[i] = concatenatedBinaries + offset;
+        offset += binariesLengths[i];
+    }
+
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clGetProgramInfo(
+        apiCommand->args.program,
+        CL_PROGRAM_BINARIES,
+        binaries.size() * sizeof(unsigned char *),
+        binaries.data(),
+        apiCommand->args.param_value_size_ret ? &apiCommand->captures.param_value_size_ret : nullptr);
+    return true;
+}
+
 void *getExtensionFuncAddress(const char *funcname) {
     return Cal::Service::Apis::Ocl::Standard::clGetExtensionFunctionAddressForPlatform(globalOclPlatform, funcname);
 }

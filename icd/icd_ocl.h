@@ -170,6 +170,7 @@ namespace Icd {
 namespace Ocl {
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms);
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
+cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 void *clGetExtensionFunctionAddress(const char *funcname);
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret);
 cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret);
@@ -598,12 +599,18 @@ struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclType
         removeGlobalPointer();
     }
 
+    void storeSizesOfBinaries(void *paramValue, size_t paramValueSize);
+    std::vector<size_t> getBinariesSizes();
+
     void recordGlobalPointer(void *ptr);
     void removeGlobalPointer();
 
   protected:
     std::vector<void *> globalPointers{};
     std::mutex globalPointersMutex{};
+
+    std::vector<size_t> binariesSizes;
+    std::mutex binariesSizesMutex;
 };
 
 struct IcdOclEvent : Cal::Shared::RefCountedWithParent<_cl_event, IcdOclTypePrinter> {

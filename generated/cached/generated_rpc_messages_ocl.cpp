@@ -522,7 +522,7 @@ size_t ClGetCommandQueueInfoRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClGetProgramInfoRpcM::Captures::DynamicTraits ClGetProgramInfoRpcM::Captures::DynamicTraits::calculate(cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+ClGetProgramInfoRpcHelperRpcM::Captures::DynamicTraits ClGetProgramInfoRpcHelperRpcM::Captures::DynamicTraits::calculate(cl_program program, cl_program_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     DynamicTraits ret = {};
     ret.param_value.count = param_value_size;
     ret.param_value.size = ret.param_value.count;
@@ -532,13 +532,43 @@ ClGetProgramInfoRpcM::Captures::DynamicTraits ClGetProgramInfoRpcM::Captures::Dy
     return ret;
 }
 
-size_t ClGetProgramInfoRpcM::Captures::getCaptureTotalSize() const {
+size_t ClGetProgramInfoRpcHelperRpcM::Captures::getCaptureTotalSize() const {
      auto size = offsetof(Captures, param_value) + Cal::Utils::alignUpPow2<8>(this->countParam_value);
      return size;
 }
 
-size_t ClGetProgramInfoRpcM::Captures::getCaptureDynMemSize() const {
+size_t ClGetProgramInfoRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countParam_value);
+     return size;
+}
+
+ClGetProgramInfoGetBinariesRpcHelperRpcM::Captures::DynamicTraits ClGetProgramInfoGetBinariesRpcHelperRpcM::Captures::DynamicTraits::calculate(cl_program program, size_t total_binaries_size, unsigned char* concatenated_binaries, size_t binaries_count, const size_t* binaries_lengths, size_t* param_value_size_ret) {
+    DynamicTraits ret = {};
+    ret.concatenated_binaries.count = total_binaries_size;
+    ret.concatenated_binaries.size = ret.concatenated_binaries.count * sizeof(unsigned char);
+
+    ret.binaries_lengths.offset = alignUpPow2<8>(ret.concatenated_binaries.offset + ret.concatenated_binaries.size);
+    ret.binaries_lengths.count = binaries_count;
+    ret.binaries_lengths.size = ret.binaries_lengths.count * sizeof(size_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.binaries_lengths.offset + ret.binaries_lengths.size);
+
+
+    return ret;
+}
+
+size_t ClGetProgramInfoGetBinariesRpcHelperRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetBinaries_lengths;
+     const auto lastMemberArraySize = this->countBinaries_lengths * sizeof(size_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ClGetProgramInfoGetBinariesRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetBinaries_lengths;
+     const auto lastMemberArraySize = this->countBinaries_lengths * sizeof(size_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
      return size;
 }
 

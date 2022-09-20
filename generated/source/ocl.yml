@@ -1321,6 +1321,11 @@ config :
 
         - name : clGetProgramInfo
           latency : 0.0
+          special_handling :
+                icd :
+                    dont_generate_handler : True
+                rpc:
+                    dont_generate_rpc_message : True
           returns :
                     type : cl_int
                     kind : scalar
@@ -1330,10 +1335,45 @@ config :
                     name : program
                     type : cl_program  
                     kind : scalar
-                    translate_before : "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
                  1 :
                     name : param_name
                     type : cl_program_info   
+                    kind : scalar
+                 2 :
+                    name : param_value_size
+                    type : size_t
+                    kind : scalar
+                 3 :
+                    name : param_value
+                    type : "void*"
+                    kind : pointer
+                 4 :
+                    name : param_value_size_ret
+                    type : "size_t*"
+                    kind : pointer
+
+        - name : clGetProgramInfoRpcHelper
+          latency : 0.0
+          special_handling :
+                variant_of : "clGetProgramInfo"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    dont_generate_call_directly : True
+          returns :
+                    type : cl_int
+                    kind : scalar
+                    default : "CL_DEVICE_NOT_AVAILABLE"
+          args :
+                 0 :
+                    name : program
+                    type : cl_program
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+                 1 :
+                    name : param_name
+                    type : cl_program_info
                     kind : scalar
                  2 :
                     name : param_value_size
@@ -1353,6 +1393,68 @@ config :
                             translate_after : "if((param_name == CL_PROGRAM_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {{\n                *reinterpret_cast<cl_device_id*>(&{dst}) = globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), program);\n            }}"
                         server_access : write
                  4 :
+                    name : param_value_size_ret
+                    type : "size_t*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : size_t
+                            kind : scalar
+                        server_access : write
+
+        - name : clGetProgramInfoGetBinariesRpcHelper
+          latency : 0.0
+          special_handling :
+                variant_of : "clGetProgramInfo"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    custom_handler : True
+                    dont_generate_call_directly : True
+          returns :
+                    type : cl_int
+                    kind : scalar
+                    default : "CL_DEVICE_NOT_AVAILABLE"
+          args :
+                 0 :
+                    name : program
+                    type : cl_program
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+                 1 :
+                    name : total_binaries_size
+                    type : size_t
+                    kind : scalar
+                 2 :
+                    name : concatenated_binaries
+                    type : "unsigned char*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "total_binaries_size"
+                        can_be_null : True
+                        element :
+                            type : "unsigned char"
+                            kind : scalar
+                        server_access : write
+                 3 :
+                    name : binaries_count
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : binaries_lengths
+                    type : "const size_t*"
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "binaries_count"
+                        can_be_null : True
+                        element:
+                            type : "size_t"
+                            kind : "scalar"
+                        server_access : read
+                 5 :
                     name : param_value_size_ret
                     type : "size_t*"
                     kind : ptr_array

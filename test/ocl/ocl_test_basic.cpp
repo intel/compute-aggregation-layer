@@ -199,6 +199,58 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Got global pointer for 'my_special_global_var' variable. Size: %d, Addres: %p", globalVarSize, globalVarPtr);
 
+    log<Verbosity::info>("Getting compiled program binaries from service!");
+
+    std::vector<std::vector<unsigned char>> programBinariesStorage(devices.size(), std::vector<unsigned char>{});
+    std::vector<unsigned char *> programBinaries(devices.size(), nullptr);
+    std::vector<size_t> binariesSizes(devices.size(), 0);
+
+    auto clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * devices.size(), binariesSizes.data(), nullptr);
+    if (clGetProgramInfoResult != CL_SUCCESS) {
+        log<Verbosity::error>("Could not get sizes of compiled program binaries from the service!");
+        return -1;
+    }
+
+    for (auto i = 0u; i < binariesSizes.size(); ++i) {
+        programBinariesStorage[i].resize(binariesSizes[i], 'F');
+        programBinaries[i] = programBinariesStorage[i].data();
+    }
+
+    clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARIES, sizeof(char *) * devices.size(), programBinaries.data(), nullptr);
+    if (clGetProgramInfoResult != CL_SUCCESS) {
+        log<Verbosity::error>("Could not get compiled program binaries from the service!");
+        return -1;
+    }
+
+    log<Verbosity::info>("clGetProgramInfo(..., CL_PROGRAM_BINARIES, ...) was successful! Checking binaries...");
+
+    if (programBinaries[0] != programBinariesStorage[0].data()) {
+        log<Verbosity::info>("CAL modified program binaries pointers. This should not be done!");
+        return -1;
+    }
+
+    const std::vector<unsigned char> junkBinaryMem(binariesSizes[0], 'F');
+    if (programBinariesStorage[0] == junkBinaryMem) {
+        log<Verbosity::info>("Binary was not written to its storage!");
+        return -1;
+    }
+
+    log<Verbosity::info>("Binaries passed validation!");
+
+    log<Verbosity::info>("Creating a program from retrieved binary!");
+
+    cl_int binaryStatus{};
+    cl_int createFromBinaryResult{};
+    const auto programFromBinary = clCreateProgramWithBinary(ctx, 1, &devices[0], binariesSizes.data(), const_cast<const unsigned char **>(programBinaries.data()), &binaryStatus, &createFromBinaryResult);
+    if (binaryStatus != CL_SUCCESS || createFromBinaryResult != CL_SUCCESS || programFromBinary == nullptr) {
+        log<Verbosity::error>("Could not create program from retrieved binary! binaryStatus = %d, errorCode = %d",
+                              static_cast<int>(binaryStatus),
+                              static_cast<int>(createFromBinaryResult));
+        return 1;
+    }
+
+    log<Verbosity::info>("Program created successfuly!");
+
     log<Verbosity::info>("Creating kernel object");
     cl_kernel kernel = clCreateKernel(linkedProgram, "k", &cl_err);
     if ((nullptr == kernel) || (CL_SUCCESS != cl_err)) {
@@ -723,6 +775,7 @@ int main(int argc, const char *argv[]) {
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseKernel(kernel));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(linkedProgram));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(program));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(programFromBinary));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(ctx));
     if (false == succesfullyReleasedAllObjects) {
         log<Verbosity::info>("Failed to release one of objects");
