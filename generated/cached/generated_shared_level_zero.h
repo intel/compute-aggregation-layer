@@ -67,7 +67,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("CommandList.zeCommandListAppendLaunchCooperativeKernel");
     ret.push_back("CommandList.zeCommandListAppendLaunchKernelIndirect");
     ret.push_back("CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect");
-    ret.push_back("Device.zeDevicePciGetPropertiesExt");
     ret.push_back("Context.zeContextMakeMemoryResident");
     ret.push_back("Context.zeContextEvictMemory");
     ret.push_back("Context.zeContextMakeImageResident");

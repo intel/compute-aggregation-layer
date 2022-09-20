@@ -97,6 +97,7 @@ ze_result_t (*zeKernelSetCacheConfig)(ze_kernel_handle_t hKernel, ze_cache_confi
 ze_result_t (*zeKernelGetProperties)(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) = nullptr;
 ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* pName) = nullptr;
 ze_result_t (*zeCommandListAppendLaunchKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
+ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) = nullptr;
 
 void *libraryHandle = nullptr;
 
@@ -581,6 +582,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeDevicePciGetPropertiesExt = reinterpret_cast<decltype(zeDevicePciGetPropertiesExt)>(dlsym(libraryHandle, "zeDevicePciGetPropertiesExt"));
+    if(nullptr == zeDevicePciGetPropertiesExt){
+        log<Verbosity::error>("Missing symbol zeDevicePciGetPropertiesExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     return true;
 }
 
@@ -663,6 +670,7 @@ void unloadLevelZeroLibrary() {
     zeKernelGetProperties = nullptr;
     zeKernelGetName = nullptr;
     zeCommandListAppendLaunchKernel = nullptr;
+    zeDevicePciGetPropertiesExt = nullptr;
     if(libraryHandle){
         dlclose(libraryHandle);
     }

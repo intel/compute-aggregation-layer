@@ -320,4 +320,8 @@ ze_result_t zeCommandListAppendLaunchKernel(ze_command_list_handle_t hCommandLis
    return {};
 }
 
+ze_result_t zeDevicePciGetPropertiesExt(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties){
+   return {};
+}
+
 // #### Generated code -- end ####

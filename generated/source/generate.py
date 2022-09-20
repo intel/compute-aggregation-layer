@@ -250,8 +250,7 @@ class StructureTraits:
         if is_copy_required_for_ptr_array_members:
             return True
 
-        capturable_struct_members = [m for m in ptr_array_members if m.kind_details.element.kind.is_struct(
-        ) and m.kind_details.element.type.str in self.struct.all_structures_description]
+        capturable_struct_members = [m for m in ptr_array_members if self.is_non_trivial_struct_dependency(m.kind_details.element)]
         capturable_structs = [self.struct.all_structures_description[m.kind_details.element.type.str] for m in capturable_struct_members]
 
         return any(s.traits.requires_copy_from_caller() for s in capturable_structs if s.name != self.struct.name)
@@ -262,8 +261,7 @@ class StructureTraits:
         if is_copy_required_for_ptr_array_members:
             return True
 
-        capturable_struct_members = [m for m in ptr_array_members if m.kind_details.element.kind.is_struct(
-        ) and m.kind_details.element.type.str in self.struct.all_structures_description]
+        capturable_struct_members = [m for m in ptr_array_members if self.is_non_trivial_struct_dependency(m.kind_details.element)]
         capturable_structs = [self.struct.all_structures_description[m.kind_details.element.type.str] for m in capturable_struct_members]
 
         return any(s.traits.requires_copy_to_caller() for s in capturable_structs if s.name != self.struct.name)
@@ -273,14 +271,24 @@ class StructureTraits:
         ptr_array_members = self.struct.members_to_capture()
         total_count = len(ptr_array_members)
 
-        capturable_struct_members = [m for m in ptr_array_members if m.kind_details.element.kind.is_struct(
-        ) and m.kind_details.element.type.str in self.struct.all_structures_description]
+        capturable_struct_members = [m for m in ptr_array_members if self.is_non_trivial_struct_dependency(m.kind_details.element)]
         capturable_structs = [self.struct.all_structures_description[m.kind_details.element.type.str] for m in capturable_struct_members]
 
         for struct in capturable_structs:
-            total_count += struct.capturable_members_count_including_nested()
+            total_count += struct.traits.capturable_members_count_including_nested()
 
         return total_count
+
+    def is_trivial(self): # struct containing only scalar or trivial struct member variables 
+        trivial = all(member.kind.is_scalar() or (member.kind.is_struct() and not self.is_non_trivial_struct_dependency(member))
+                      for member in self.struct.members)
+        return trivial
+
+    def is_non_trivial_struct_dependency(self, variable):
+        if not (variable.kind.is_struct() and variable.type.str in self.struct.all_structures_description):
+            return False
+        struct_type = self.struct.all_structures_description[variable.type.str]
+        return not struct_type.traits.is_trivial()
 
 
 class Structure:
@@ -372,8 +380,7 @@ class FunctionTraits:
         is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args)
         is_copy_required_for_implicit_args = any(not arg.server_access.write_only() for arg in implicit_args)
 
-        capturable_struct_args = [arg for arg in ptr_array_args if arg.kind_details.element.kind.is_struct(
-        ) and arg.kind_details.element.type.str in self.function.structures]
+        capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
         capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in capturable_struct_args]
         is_copy_required_for_struct_fields = any(struct.traits.requires_copy_from_caller() for struct in capturable_structs)
 
@@ -383,8 +390,7 @@ class FunctionTraits:
         is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.read_only() for arg in ptr_array_args)
         is_copy_required_for_implicit_args = any(not arg.server_access.read_only() for arg in implicit_args)
 
-        capturable_struct_args = [arg for arg in ptr_array_args if arg.kind_details.element.kind.is_struct(
-        ) and arg.kind_details.element.type.str in self.function.structures]
+        capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
         capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in capturable_struct_args]
         is_copy_required_for_struct_fields = any(struct.traits.requires_copy_to_caller() for struct in capturable_structs)
 
@@ -393,11 +399,10 @@ class FunctionTraits:
     def count_of_capturable_struct_members_includig_nested(self, args):
         total_count = 0
 
-        for arg in args:
-            if arg.kind_details.element.kind.is_struct() and arg.kind_details.element.type.str in self.function.structures:
-                struct = self.function.structures[arg.kind_details.element.type.str]
-                total_count += struct.traits.capturable_members_count_including_nested()
-
+        capturable_struct_args = [arg for arg in self.get_ptr_array_args() if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
+        for arg in capturable_struct_args:
+            struct_type = self.function.structures[arg.kind_details.element.type.str]
+            total_count += struct_type.traits.capturable_members_count_including_nested()
         return total_count
 
     def get_ptr_array_args(self):
@@ -415,6 +420,12 @@ class FunctionTraits:
 
     def get_fixed_ptr_array_args(self):
         return [arg for arg in self.function.args if arg.kind.is_pointer_to_array() and arg.kind_details.num_elements.is_constant()]
+
+    def is_non_trivial_struct_dependency(self, variable):
+        if not (variable.kind.is_struct() and variable.type.str in self.function.structures):
+            return False
+        struct_type = self.function.structures[variable.type.str]
+        return not struct_type.traits.is_trivial()
 
 
 class FunctionCaptureLayout:
@@ -711,6 +722,8 @@ class FunctionCaptureLayout:
         for arg in function.traits.get_ptr_array_args():
             # Ensure that capture layout includes nested structure fields.
             if arg.kind_details.element.kind.is_struct() and arg.kind_details.element.type.str in structures:
+                if structures[arg.kind_details.element.type.str].traits.is_trivial():
+                    continue
                 members_to_capture = structures[arg.kind_details.element.type.str].members_to_capture()
                 parent_layout = None
                 self.struct_members_layouts[arg] = [
@@ -753,7 +766,8 @@ class FunctionCaptureLayout:
 
         self.emit_per_arg_dynamic_traits = self.emit_per_arg_dynamic_traits or (len(self.dynamic_ptr_array_args_layouts) > 1)
         self.requires_raw_dynamic_mem = (len(self.dynamic_ptr_array_args_layouts) >
-                                         1) or self.nested_capture_args_layouts or self.struct_members_layouts
+                                         1) or self.nested_capture_args_layouts or self.struct_members_layouts 
+        
 
     def prepare_nested_member_layouts(self, parent, parent_layout, member):
         member_layout = FunctionCaptureLayout.MemberCaptureLayout()
@@ -761,13 +775,16 @@ class FunctionCaptureLayout:
         member_layout.parent = parent
         member_layout.parent_layout = parent_layout
 
-        if member.kind_details.element.kind.is_struct() and member.kind_details.element.type.str in self.structures:
-            members_to_capture = self.structures[member.kind_details.element.type.str].members_to_capture()
-            member_layout.children = [
-                self.prepare_nested_member_layouts(
-                    member,
-                    member_layout,
-                    member_to_capture) for member_to_capture in members_to_capture]
+        if not (member.kind_details.element.kind.is_struct() and member.kind_details.element.type.str in self.structures):
+            return member_layout
+
+        struct_type = self.structures[member.kind_details.element.type.str]
+        members_to_capture = struct_type.members_to_capture()
+        member_layout.children = [
+            self.prepare_nested_member_layouts(
+                member,
+                member_layout,
+                member_to_capture) for member_to_capture in members_to_capture]
 
         return member_layout
 
@@ -976,7 +993,7 @@ class Config:
         self.structures = [Structure(s) for s in src.get("structures", [])]
         self.structures_by_name = {struct.name: struct for struct in self.structures}
         for s in self.structures:
-            s.set_all_structures_description(self.structures)
+            s.set_all_structures_description(self.structures_by_name)
 
         self.functions = [Function(self.structures_by_name, f) for f in src.get("functions", [])]
         self.unimplemented = src.get("unimplemented", [])

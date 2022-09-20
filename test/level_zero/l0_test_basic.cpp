@@ -85,6 +85,32 @@ class DynamicLibrary {
     std::string name{};
 };
 
+bool testZeDevicePciGetProperiesExt(ze_device_handle_t device) {
+    ze_pci_ext_properties_t properties = {ZE_STRUCTURE_TYPE_PCI_EXT_PROPERTIES};
+
+    log<Verbosity::info>("Querying PCI properties using zeDevicePciGetPropertiesExt");
+    auto ret = zeDevicePciGetPropertiesExt(device, &properties);
+    if (ZE_RESULT_SUCCESS != ret) {
+        log<Verbosity::error>("zeDevicePciGetPropertiesExt failed");
+        return false;
+    }
+    log<Verbosity::info>("zeDevicePciGetPropertiesExt succeeded");
+    std::stringstream ss;
+    ss << "Pci properties : \n"
+       << " * address : \n"
+       << "     - domain : " << properties.address.domain << "\n"
+       << "     - bus : " << properties.address.bus << "\n"
+       << "     - device : " << properties.address.device << "\n"
+       << "     - function : " << properties.address.function << "\n"
+       << " * maxSpeed : \n"
+       << "     - genVersion : " << properties.maxSpeed.genVersion << "\n"
+       << "     - width : " << properties.maxSpeed.width << "\n"
+       << "     - maxBandwidth : " << properties.maxSpeed.maxBandwidth << "\n";
+
+    log<Verbosity::info>("%s", ss.str().c_str());
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::bloat);
 
@@ -310,6 +336,10 @@ int main(int argc, const char *argv[]) {
             ss << " * subGroupSizes[" << i << "] : " << computeProperties.subGroupSizes[i] << "\n";
         }
         const auto computeInfoStr = ss.str();
+
+        if (false == testZeDevicePciGetProperiesExt(device)) {
+            return -1;
+        }
 
         log<Verbosity::info>("%s", computeInfoStr.c_str());
 

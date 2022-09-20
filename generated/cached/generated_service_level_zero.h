@@ -105,6 +105,7 @@ extern ze_result_t (*zeKernelSetCacheConfig)(ze_kernel_handle_t hKernel, ze_cach
 extern ze_result_t (*zeKernelGetProperties)(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
 extern ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
 extern ze_result_t (*zeCommandListAppendLaunchKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+extern ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 } // Standard
 
 
@@ -941,10 +942,19 @@ inline bool zeCommandListAppendLaunchKernelHandler(Provider &service, ClientCont
                                                 );
     return true;
 }
+inline bool zeDevicePciGetPropertiesExtHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDevicePciGetPropertiesExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDevicePciGetPropertiesExt(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pPciProperties ? &apiCommand->captures.pPciProperties : nullptr
+                                                );
+    return true;
+}
 
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
-    outHandlers.resize(ZeCommandListAppendLaunchKernelRpcM::messageSubtype + 1);
+    outHandlers.resize(ZeDevicePciGetPropertiesExtRpcM::messageSubtype + 1);
     outHandlers[ZeInitRpcM::messageSubtype] = zeInitHandler;
     outHandlers[ZeCommandListCreateRpcM::messageSubtype] = zeCommandListCreateHandler;
     outHandlers[ZeCommandListCreateImmediateRpcM::messageSubtype] = zeCommandListCreateImmediateHandler;
@@ -1027,6 +1037,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeKernelGetPropertiesRpcM::messageSubtype] = zeKernelGetPropertiesHandler;
     outHandlers[ZeKernelGetNameRpcM::messageSubtype] = zeKernelGetNameHandler;
     outHandlers[ZeCommandListAppendLaunchKernelRpcM::messageSubtype] = zeCommandListAppendLaunchKernelHandler;
+    outHandlers[ZeDevicePciGetPropertiesExtRpcM::messageSubtype] = zeDevicePciGetPropertiesExtHandler;
 }
 
 inline void callDirectly(Cal::Rpc::LevelZero::ZeInitRpcM &apiCommand) {
@@ -1588,6 +1599,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpc
                                                 apiCommand.args.phWaitEvents
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDevicePciGetPropertiesExt(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pPciProperties
+                                                );
+}
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
@@ -1682,6 +1699,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeKernelGetNameRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetNameRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command)); break;
     }
     return true;
 }

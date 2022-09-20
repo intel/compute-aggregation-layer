@@ -72,6 +72,18 @@ struct DynamicStructTraits<ze_kernel_desc_t> {
     int32_t pKernelNameCount{-1};
 };
 
+template <>
+struct DynamicStructTraits<ze_pci_address_ext_t> {
+};
+
+template <>
+struct DynamicStructTraits<ze_pci_speed_ext_t> {
+};
+
+template <>
+struct DynamicStructTraits<ze_pci_ext_properties_t> {
+};
+
 
 template<typename T>
 inline char *asMemcpyDstT(T * ptr) {
@@ -6193,6 +6205,67 @@ struct ZeCommandListAppendLaunchKernelRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeCommandListAppendLaunchKernelRpcM>);
+struct ZeDevicePciGetPropertiesExtRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 82;
+    static constexpr float latency = 0.0;
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_device_handle_t hDevice = {};
+        ze_pci_ext_properties_t* pPciProperties = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hDevice == rhs.hDevice;
+            equal &= this->pPciProperties == rhs.pPciProperties;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        ze_pci_ext_properties_t pPciProperties;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeDevicePciGetPropertiesExtRpcM() = default;
+
+    ZeDevicePciGetPropertiesExtRpcM(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hDevice = hDevice;
+        args.pPciProperties = pPciProperties;
+    }
+    
+    static void fillWithoutCapture(ZeDevicePciGetPropertiesExtRpcM &message, ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hDevice = hDevice;
+        message.args.pPciProperties = pPciProperties;
+    }
+    
+
+    void copyToCaller(){
+        if(args.pPciProperties){
+            *args.pPciProperties = captures.pPciProperties;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeDevicePciGetPropertiesExtRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -6278,6 +6351,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetPropertiesRpcM::messageSubtype).id, "zeKernelGetProperties"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetNameRpcM::messageSubtype).id, "zeKernelGetName"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype).id, "zeCommandListAppendLaunchKernel"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype).id, "zeDevicePciGetPropertiesExt"),
     };
 
     auto it = options.find(callId.id);
@@ -6372,6 +6446,7 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeKernelGetProperties", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetPropertiesRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeKernelGetName", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetNameRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendLaunchKernel", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeDevicePciGetPropertiesExt", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -6464,6 +6539,7 @@ static constexpr RpcCallId zeKernelSetCacheConfig = {Cal::Rpc::RpcMessageHeader:
 static constexpr RpcCallId zeKernelGetProperties = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetPropertiesRpcM::messageSubtype};
 static constexpr RpcCallId zeKernelGetName = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelGetNameRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendLaunchKernel = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype};
+static constexpr RpcCallId zeDevicePciGetPropertiesExt = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -6549,6 +6625,7 @@ using zeKernelSetCacheConfig = ZeKernelSetCacheConfigRpcM;
 using zeKernelGetProperties = ZeKernelGetPropertiesRpcM;
 using zeKernelGetName = ZeKernelGetNameRpcM;
 using zeCommandListAppendLaunchKernel = ZeCommandListAppendLaunchKernelRpcM;
+using zeDevicePciGetPropertiesExt = ZeDevicePciGetPropertiesExtRpcM;
 }
 
 } // namespace LevelZero

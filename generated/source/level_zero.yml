@@ -152,6 +152,59 @@ config :
                             type : "char"
                             kind : "scalar"
                         server_access : read
+                        
+        - name : ze_pci_address_ext_t
+          members : 
+                 0 :          
+                    name : domain
+                    type : uint32_t
+                    kind : scalar
+                 1 :          
+                    name : bus
+                    type : uint32_t
+                    kind : scalar
+                 2 :          
+                    name : device
+                    type : uint32_t
+                    kind : scalar
+                 3 :          
+                    name : function
+                    type : uint32_t
+                    kind : scalar
+                    
+        - name : ze_pci_speed_ext_t
+          members : 
+                 0 :          
+                    name : genVersion
+                    type : int32_t
+                    kind : scalar
+                 1 :          
+                    name : width
+                    type : int32_t
+                    kind : scalar
+                 2 :          
+                    name : maxBandwidth
+                    type : int64_t
+                    kind : scalar
+                        
+        - name : ze_pci_ext_properties_t
+          members : 
+                 0 :          
+                    name : stype
+                    type : ze_structure_type_t
+                    kind : scalar
+                 1 :
+                    name : pNext
+                    type : void*
+                    kind : scalar
+                 2 :
+                    name : address
+                    type : ze_pci_address_ext_t
+                    kind : struct
+                 3 :
+                    name : maxSpeed
+                    type : ze_pci_speed_ext_t
+                    kind : struct
 
     unimplemented:
         - CommandList.zeCommandListAppendMemoryRangesBarrier
@@ -204,7 +257,6 @@ config :
         - CommandList.zeCommandListAppendLaunchCooperativeKernel
         - CommandList.zeCommandListAppendLaunchKernelIndirect
         - CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect
-        - Device.zeDevicePciGetPropertiesExt
         - Context.zeContextMakeMemoryResident
         - Context.zeContextEvictMemory
         - Context.zeContextMakeImageResident
@@ -4351,22 +4403,30 @@ config :
 #                    type : ze_event_handle_t*
 #                    kind : pointer
 #
-#        - name : zeDevicePciGetPropertiesExt
-#          ddi_category :  Device
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : pPciProperties
-#                    type : ze_pci_ext_properties_t*
-#                    kind : pointer
-#
+        - name : zeDevicePciGetPropertiesExt
+          ddi_category :  Device
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 1 :
+                    name : pPciProperties
+                    type : ze_pci_ext_properties_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements : "1"
+                        can_be_null : True
+                        element :
+                            type : ze_pci_ext_properties_t
+                            kind : struct
+                        server_access : write
+
 #        - name : zeContextMakeMemoryResident
 #          ddi_category :  Context
 #          returns :

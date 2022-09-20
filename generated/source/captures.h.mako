@@ -249,7 +249,9 @@ ${member_layout.create_reassemble_nested_structs("currentOffset", member_layout_
 %        endfor # for member_layout in member_layouts
         }
 %      endfor # for arg, member_layouts
+%      if member_layouts:
     }
+%      endif # member_layouts
 %   endif # if cl.struct_members_layouts
 
     }captures;
