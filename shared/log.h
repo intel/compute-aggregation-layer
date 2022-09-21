@@ -14,9 +14,12 @@
 
 #include <cstdio>
 #include <cstring>
+#include <functional>
+#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 namespace Cal {
@@ -87,8 +90,20 @@ class Log {
 #endif
     }
 
+    const char *to_cstring_pid() {
+        static std::string pid = std::invoke([]() {
+            std::ostringstream oss;
+            oss << "[";
+            oss << std::setfill(' ') << std::setw(8) << getpid();
+            oss << "]";
+            return oss.str();
+        });
+
+        return pid.c_str();
+    }
+
     template <Verbosity V, typename... Args>
-    int add(bool useLoggerName, const char *formatString, Args &&...args) {
+    int add(bool useLoggerName, bool appendPID, const char *formatString, Args &&...args) {
         isEmpty = false;
         auto len = snprintf(nullptr, 0, formatString, std::forward<Args>(args)...);
         if (len <= 0) {
@@ -96,7 +111,7 @@ class Log {
         }
         std::vector<char> buff(len + 1);
         snprintf(buff.data(), buff.size(), formatString, std::forward<Args>(args)...);
-        return log(useLoggerName, V, buff.data());
+        return log(useLoggerName, appendPID, V, buff.data());
     }
 
     bool empty() const {
@@ -104,19 +119,15 @@ class Log {
     }
 
   protected:
-    virtual int log(bool useLoggerName, Verbosity verbosity, const char *logMessage) = 0;
+    virtual int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) = 0;
     bool isEmpty = true;
 };
 
 class LogStdout : public Log {
   protected:
-    int log(bool useLoggerName, Verbosity verbosity, const char *logMessage) override {
+    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
         int ret = 0;
-        if (useLoggerName) {
-            printf("%s%s : %s\n", to_cstring_logger(), to_cstring_tag(verbosity), logMessage);
-        } else {
-            printf("%s : %s\n", to_cstring_tag(verbosity), logMessage);
-        }
+        printf("%s%s%s : %s\n", useLoggerName ? to_cstring_logger() : "", appendPID ? to_cstring_pid() : "", to_cstring_tag(verbosity), logMessage);
         fflush(stdout);
         return ret;
     }
@@ -132,10 +143,13 @@ class LogSstream : public Log {
     }
 
   protected:
-    int log(bool useLoggerName, Verbosity verbosity, const char *logMessage) override {
+    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
         auto prevPos = buff.tellp();
         if (useLoggerName) {
             buff << to_cstring_logger();
+        }
+        if (appendPID) {
+            buff << to_cstring_pid();
         }
         buff << to_cstring_tag(verbosity) << " : " << logMessage << "\n";
         fflush(stdout);
@@ -181,6 +195,7 @@ static constexpr bool enablePerformanceLogs = false;
 inline Verbosity minDynamicVerbosity = Verbosity::silent;
 inline Verbosity maxDynamicVerbosity = Verbosity::error;
 inline bool useLoggerName = false;
+inline bool appendPID = false;
 
 inline std::string getListOfAllExistingVerbosityLevels() {
     std::string existing;
@@ -247,6 +262,7 @@ inline void initDynamicVerbosity() { // init from env
     }
 
     useLoggerName = getCalEnvFlag(calUseLoggerNameEnvName);
+    appendPID = getCalEnvFlag(calAppendPIDEnvName);
 
     return;
 }
@@ -273,5 +289,5 @@ int log(const char *formatString, Args &&...args) {
         return 0;
     }
 
-    return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, formatString, std::forward<Args>(args)...);
+    return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, Cal::Utils::appendPID, formatString, std::forward<Args>(args)...);
 }
