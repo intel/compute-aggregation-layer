@@ -69,14 +69,14 @@ int main(int argc, const char *argv[]) {
 
         serviceConfig.runner = runner;
         serviceConfig.listener.socketPath += "runner/" + std::to_string(getpid()) + "/";
-        setenv(calUseLoggerNameEnvName.data(), "1", 1);
+        Cal::Sys::setenv(calUseLoggerNameEnvName.data(), "1", 1);
     }
 
     std::filesystem::create_directories(serviceConfig.listener.socketPath.c_str());
     serviceConfig.listener.socketPath.append("socket");
 
     if (isPersistentMode == false) {
-        setenv(calListenerSocketPathEnvName.data(), serviceConfig.listener.socketPath.c_str(), 1);
+        Cal::Sys::setenv(calListenerSocketPathEnvName.data(), serviceConfig.listener.socketPath.c_str(), 1);
     }
 
     Cal::Utils::initDynamicVerbosity();

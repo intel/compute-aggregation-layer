@@ -1158,9 +1158,9 @@ void checkForRequiredFiles() {
             newLdPath.append(calDir.c_str());
             newLdPath.append(":");
             newLdPath.append(oldLdPath);
-            setenv("LD_LIBRARY_PATH", newLdPath.c_str(), 1);
+            Cal::Sys::setenv("LD_LIBRARY_PATH", newLdPath.c_str(), 1);
         } else {
-            setenv("LD_LIBRARY_PATH", calDir.c_str(), 1);
+            Cal::Sys::setenv("LD_LIBRARY_PATH", calDir.c_str(), 1);
         }
     } else {
         log<Verbosity::critical>("libcal.so not available");
@@ -1172,14 +1172,14 @@ void checkForRequiredFiles() {
         bool isInOpt = std::filesystem::exists(calIcdPath / "cal.icd");
         bool isInCalDir = std::filesystem::exists(calDir / "cal.icd");
         if (isInOpt) {
-            setenv("OCL_ICD_VENDORS", calIcdPath.c_str(), 1);
+            Cal::Sys::setenv("OCL_ICD_VENDORS", calIcdPath.c_str(), 1);
         } else if (isInCalDir) {
-            setenv("OCL_ICD_VENDORS", calDir.c_str(), 1);
+            Cal::Sys::setenv("OCL_ICD_VENDORS", calDir.c_str(), 1);
         } else {
             std::ofstream calIcdFile(calTempFilesDefaultPath.data() + "cal.icd"s);
             if (calIcdFile.is_open()) {
                 calIcdFile << "libcal.so";
-                setenv("OCL_ICD_VENDORS", calTempFilesDefaultPath.data(), 1);
+                Cal::Sys::setenv("OCL_ICD_VENDORS", calTempFilesDefaultPath.data(), 1);
             } else {
                 log<Verbosity::critical>("Fallback path for creating cal.icd file has failed. Please create cal.icd in working directory or set OCL_ICD_VENDORS environment variable");
                 exit(EXIT_FAILURE);
@@ -1188,7 +1188,7 @@ void checkForRequiredFiles() {
     }
 
     if (enableL0) {
-        setenv("ZE_ENABLE_ALT_DRIVERS", libCalPath.c_str(), 1);
+        Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", libCalPath.c_str(), 1);
     }
 }
 

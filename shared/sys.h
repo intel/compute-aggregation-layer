@@ -23,6 +23,7 @@ extern void *(*mmap)(void *addr, size_t length, int prot, int flags, int fd, off
 extern int (*munmap)(void *addr, size_t length);
 
 extern char *(*getenv)(const char *name);
+extern int (*setenv)(const char *name, const char *value, int overwrite);
 
 extern std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, std::ios_base::openmode mode);
 

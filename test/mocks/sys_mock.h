@@ -10,6 +10,7 @@
 #include "shared/sys.h"
 #include "shared/utils.h"
 
+#include <cstring>
 #include <functional>
 #include <mutex>
 #include <optional>
@@ -153,6 +154,15 @@ struct SysCallsContext {
         return sem_postBaseImpl(sem);
     };
 
+    virtual int setenv(const char *name, const char *value, int overwrite) {
+        ++apiConfig.setenv.callCount;
+        if (apiConfig.setenv.returnValue) {
+            return apiConfig.setenv.returnValue.value();
+        }
+
+        return setenvBaseImpl(name, value, overwrite);
+    }
+
     void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
         std::lock_guard<std::mutex> lock(mutex);
         auto addrReceived = addr;
@@ -199,7 +209,22 @@ struct SysCallsContext {
     }
 
     char *getenvBaseImpl(const char *name) {
-        return nullptr;
+        std::lock_guard<std::mutex> lock(mutex);
+        auto it = envVariables.find(name);
+        return (it != envVariables.end()) ? it->second.data() : nullptr;
+    }
+
+    int setenvBaseImpl(const char *name, const char *value, int overwrite) {
+        if ((nullptr == name) || ('\0' == name[0]) || (nullptr != strstr(name, "="))) {
+            return EINVAL;
+        }
+        std::lock_guard<std::mutex> lock(mutex);
+        auto prev = envVariables.find(name);
+        if ((prev != envVariables.end()) && (0 == overwrite)) {
+            return 0;
+        }
+        envVariables[name] = value;
+        return 0;
     }
 
     int sem_initBaseImpl(sem_t *sem, int pshared, unsigned int value) {
@@ -250,6 +275,7 @@ struct SysCallsContext {
 
     Vma vma = {{static_cast<uintptr_t>(0U), static_cast<uintptr_t>(1ULL << 48)}};
     std::unordered_map<sem_t *, std::unique_ptr<PSemaphore>> semaphores;
+    std::unordered_map<std::string, std::string> envVariables;
     std::mutex mutex;
 
     struct {
@@ -270,6 +296,12 @@ struct SysCallsContext {
             std::optional<std::function<char *(const char *name)>> impl;
             uint64_t callCount = 0U;
         } getenv;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *name, const char *value, int overwrite)>> impl;
+            uint64_t callCount = 0U;
+        } setenv;
 
         struct {
             std::unordered_map<std::string, std::string> returnValues;

@@ -15,6 +15,7 @@ void *(*mmap)(void *addr, size_t length, int prot, int flags, int fd, off_t offs
 int (*munmap)(void *addr, size_t length) = ::munmap;
 
 char *(*getenv)(const char *name) = ::getenv;
+int (*setenv)(const char *name, const char *value, int overwrite) = ::setenv;
 
 std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, std::ios_base::openmode mode) = +[](const char *filename, std::ios_base::openmode mode) -> std::unique_ptr<std::istream> {
     return std::make_unique<std::ifstream>(filename, mode);
