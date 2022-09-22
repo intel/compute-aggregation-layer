@@ -6592,6 +6592,7 @@ config :
                     name : param_value
                     type : "void*"
                     kind : ptr_array
+                    translate_after : "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
                     kind_details :
                         num_elements: "param_value_size"
                         can_be_null : True

@@ -3787,6 +3787,10 @@ cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
+    if(param_value)
+    {
+        globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
+    }
     cl_int ret = command->captures.ret;
 
     return ret;
