@@ -916,7 +916,7 @@ T1 *createIfValidCalId(T2 calId) {
 }
 
 inline size_t getSingleSourceLengthForClCreateProgramWithSource(const char **strings, size_t index, const size_t *lengths) {
-    if (lengths) {
+    if (lengths && lengths[index] > 0) {
         return lengths[index];
     }
     return Cal::Utils::countNullterminated(strings[index]);
