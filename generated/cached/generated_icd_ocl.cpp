@@ -531,6 +531,16 @@ cl_int clCompileProgram (cl_program program, cl_uint num_devices, const cl_devic
             baseMutable[i] = static_cast<IcdOclDevice*>(baseMutable[i])->asRemoteObject();
         }
     }
+    if(input_headers)
+    {
+        auto base = command->captures.getInput_headers();
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.input_headers.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdOclProgram*>(baseMutable[i])->asRemoteObject();
+        }
+    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
