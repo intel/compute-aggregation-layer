@@ -5316,6 +5316,9 @@ config :
 
         - name : clGetEventProfilingInfo
           latency : 0.0
+          special_handling : 
+                icd : 
+                    handler_prologue : "if(Cal::Icd::icdGlobalState.getOclPlatform()->overrideEventProfilingInfo(event, param_name, param_value_size, param_value, param_value_size_ret)) { return CL_SUCCESS; }"
           returns :
                     type : cl_int
                     kind : scalar

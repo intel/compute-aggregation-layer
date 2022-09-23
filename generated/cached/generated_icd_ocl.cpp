@@ -3018,6 +3018,7 @@ cl_int clGetEventInfo (cl_event event, cl_event_info param_name, size_t param_va
     return ret;
 }
 cl_int clGetEventProfilingInfo (cl_event event, cl_profiling_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    if(Cal::Icd::icdGlobalState.getOclPlatform()->overrideEventProfilingInfo(event, param_name, param_value_size, param_value, param_value_size_ret)) { return CL_SUCCESS; }
     log<Verbosity::bloat>("Establishing RPC for clGetEventProfilingInfo");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();;

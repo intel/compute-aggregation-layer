@@ -85,6 +85,54 @@ bool testCreateCommandQueueWithProperties(cl_context ctx, cl_device_id dev) {
     return true;
 }
 
+bool testEventProfiling(cl_context ctx, cl_device_id dev) {
+    log<Verbosity::info>("Creating cl_command_queue object with profiling enabled ");
+    cl_int cl_err = CL_SUCCESS;
+    cl_command_queue_properties queueProperties[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
+    auto queue = clCreateCommandQueueWithProperties(ctx, dev, queueProperties, &cl_err);
+    if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
+        log<Verbosity::error>("Failed to create command queue with profiling enabled. Error : %d", cl_err);
+        return false;
+    };
+
+    cl_event ev = {};
+
+    if (CL_SUCCESS != clEnqueueBarrierWithWaitList(queue, 0, nullptr, &ev)) {
+        log<Verbosity::error>("Failed to enqueue barrier with waitlist");
+        return false;
+    }
+    log<Verbosity::info>("Succesfully enqueued barrier with waitlist");
+    if (nullptr == ev) {
+        log<Verbosity::error>("Returned event is empty");
+        return false;
+    }
+
+    cl_ulong info = std::numeric_limits<cl_ulong>::max();
+    cl_err = clGetEventProfilingInfo(ev, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &info, nullptr);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to clGetEventProfilingInfo with error : %d", cl_err);
+        return false;
+    }
+    if (std::numeric_limits<cl_ulong>::max() == info) {
+        log<Verbosity::info>("Event profiling info, CL_PROFILING_COMMAND_QUEUED is invalid : %lu", info);
+        return false;
+    }
+    log<Verbosity::info>("Event profiling info, CL_PROFILING_COMMAND_QUEUED : %lu", info);
+
+    if (CL_SUCCESS != clReleaseEvent(ev)) {
+        log<Verbosity::error>("Failed to release event");
+        return false;
+    }
+
+    if (CL_SUCCESS != clReleaseCommandQueue(queue)) {
+        log<Verbosity::error>("Failed to release command queue");
+        return false;
+    }
+
+    log<Verbosity::info>("Succesfully tested testEventProfiling");
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::bloat);
 
@@ -392,6 +440,10 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully created cl_command_queue : %p", queue);
 
     if (false == testCreateCommandQueueWithProperties(ctx, devices[0])) {
+        return 1;
+    }
+
+    if (false == testEventProfiling(ctx, devices[0])) {
         return 1;
     }
 

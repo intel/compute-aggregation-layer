@@ -909,6 +909,26 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         }
     }
 
+    bool overrideEventProfilingInfo(cl_event event, cl_profiling_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+        if (false == envToggles.disableProfiling) {
+            return false;
+        }
+
+        if (param_value_size < sizeof(cl_ulong)) {
+            log<Verbosity::error>("Can't override event profiling info for unsupported param_value_size : %zu", param_value_size);
+            return false;
+        }
+
+        if (param_value_size_ret) {
+            *param_value_size_ret = sizeof(cl_ulong);
+        }
+
+        log<Verbosity::debug>("Overriding event profiling info based on %s environment variable", calOclDisableProfilingEnvName.data());
+        *reinterpret_cast<ulong *>(param_value) = 0;
+
+        return true;
+    }
+
   protected:
     cl_platform_id calPlatformId{};
 
