@@ -294,6 +294,7 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device, 
     auto command = new(space.hostAccessible) CommandT(context, device, properties, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
+    command->args.properties = globalOclPlatform->translateQueueFlags(properties);
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
@@ -341,6 +342,10 @@ cl_command_queue clCreateCommandQueueWithProperties (cl_context context, cl_devi
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
+    if(properties)
+    {
+        globalOclPlatform->translateQueueFlags(mutable_element_cast(command->captures.properties));
+    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;

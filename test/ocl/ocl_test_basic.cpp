@@ -18,6 +18,73 @@
 #include <unistd.h>
 #include <vector>
 
+bool testCreateCommandQueueWithProperties(cl_context ctx, cl_device_id dev) {
+    auto testAndFreeQueue = [](cl_command_queue queue, cl_command_queue_properties properties, cl_int cl_err) -> bool {
+        if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
+            log<Verbosity::error>("Failed to create command queue with error : %d", cl_err);
+            return false;
+        };
+        cl_command_queue_properties queriedProps = 0;
+        cl_err = clGetCommandQueueInfo(queue, CL_QUEUE_PROPERTIES, sizeof(queriedProps), &queriedProps, nullptr);
+        if (CL_SUCCESS != cl_err) {
+            log<Verbosity::error>("Failed to clGetCommandQueueInfo with error : %d", cl_err);
+            return false;
+        }
+
+        if ((0 != (properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE)) && (0 == (queriedProps & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE))) {
+            log<Verbosity::error>("CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE missing in queue properties");
+        }
+
+        if ((0 != (properties & CL_QUEUE_PROFILING_ENABLE)) && (0 == (queriedProps & CL_QUEUE_PROFILING_ENABLE))) {
+            log<Verbosity::error>("CL_QUEUE_PROFILING_ENABLE missing in queue properties");
+        }
+
+        cl_err = clReleaseCommandQueue(queue);
+        if (CL_SUCCESS != cl_err) {
+            log<Verbosity::error>("Failed to release command queue with error : %d", cl_err);
+            return false;
+        }
+        return true;
+    };
+
+    cl_int cl_err = CL_SUCCESS;
+    cl_command_queue_properties configs[] = {0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, CL_QUEUE_PROFILING_ENABLE, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | CL_QUEUE_PROFILING_ENABLE};
+
+    for (auto c : configs) {
+        log<Verbosity::info>("Creating cl_command_queue object with properties : %llu", c);
+
+        log<Verbosity::info>(" * clCreateCommandQueue");
+        cl_command_queue queue = clCreateCommandQueue(ctx, dev, c, &cl_err);
+        if (false == testAndFreeQueue(queue, c, cl_err)) {
+            return false;
+        }
+
+        log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringSingle");
+        cl_command_queue_properties queuePropertiesStringSingle[] = {CL_QUEUE_PROPERTIES, c, 0};
+        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringSingle, &cl_err);
+        if (false == testAndFreeQueue(queue, c, cl_err)) {
+            return false;
+        }
+
+        log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringMultipleBefore");
+        cl_command_queue_properties queuePropertiesStringMultipleBefore[] = {CL_QUEUE_PROPERTIES, c, CL_QUEUE_THROTTLE_KHR, CL_QUEUE_THROTTLE_HIGH_KHR, 0};
+        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringMultipleBefore, &cl_err);
+        if (false == testAndFreeQueue(queue, c, cl_err)) {
+            return false;
+        }
+
+        log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringMultipleAfter");
+        cl_command_queue_properties queuePropertiesStringMultipleAfter[] = {CL_QUEUE_THROTTLE_KHR, CL_QUEUE_THROTTLE_HIGH_KHR, CL_QUEUE_PROPERTIES, c, 0};
+        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringMultipleAfter, &cl_err);
+        if (false == testAndFreeQueue(queue, c, cl_err)) {
+            return false;
+        }
+    }
+
+    log<Verbosity::info>("Succesfully tested testCreateCommandQueueWithProperties");
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::bloat);
 
@@ -323,6 +390,10 @@ int main(int argc, const char *argv[]) {
         return 1;
     };
     log<Verbosity::info>("Succesfully created cl_command_queue : %p", queue);
+
+    if (false == testCreateCommandQueueWithProperties(ctx, devices[0])) {
+        return 1;
+    }
 
     if (CL_SUCCESS != clFinish(queue)) {
         log<Verbosity::error>("Failed to synchronize the queue");

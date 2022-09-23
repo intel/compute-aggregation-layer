@@ -36,3 +36,5 @@ constexpr std::string_view calEnableAilEnvName = "CAL_USE_AIL";
 constexpr std::string_view calUseSemaphoresInChannelServerEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_SERVER";
 constexpr std::string_view calUseSemaphoresInChannelClientEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_CLIENT";
 constexpr std::string_view calUseSemaphoresThresholdInChannelClientEnvName = "CAL_USE_SEMAPHORES_THRESHOLD_IN_CHANNEL_CLIENT";
+
+constexpr std::string_view calOclDisableProfilingEnvName = "CAL_OCL_DISABLE_PROFILING";

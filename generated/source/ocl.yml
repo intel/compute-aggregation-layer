@@ -541,6 +541,7 @@ config :
                     name : properties
                     type : "cl_command_queue_properties "
                     kind : scalar
+                    translate_before : "{dst} = globalOclPlatform->translateQueueFlags({arg})"
                  3 :
                     name : errcode_ret
                     type : "cl_int*"
@@ -598,6 +599,7 @@ config :
                     name : properties
                     type : "const cl_queue_properties*"
                     kind : ptr_array
+                    translate_before : "globalOclPlatform->translateQueueFlags(mutable_element_cast({dst_mem}))"
                     kind_details :
                         num_elements: "nullterminated"
                         can_be_null : True

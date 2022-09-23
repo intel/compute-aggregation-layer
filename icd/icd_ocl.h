@@ -660,7 +660,9 @@ void objectCleanup(void *remote, void *local);
 
 class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
   public:
-    using IcdPlatform::IcdPlatform;
+    IcdOclPlatform(Cal::Ipc::ShmemManager &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : IcdPlatform(shmemManager, mallocShmemZeroCopyManager) {
+        this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
+    }
 
     void *translateMappedPointer(cl_mem buffer, void *ptr, size_t offset) {
         if (isUsmHostOrShared(ptr)) {
@@ -880,6 +882,33 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         this->calPlatformId = platformId;
     }
 
+    cl_command_queue_properties translateQueueFlags(cl_command_queue_properties in) {
+        if (false == envToggles.disableProfiling) {
+            return in;
+        }
+        if (0 != (in & CL_QUEUE_PROFILING_ENABLE)) {
+            log<Verbosity::debug>("Disabling CL_QUEUE_PROFILING_ENABLE based on %s environment variable", calOclDisableProfilingEnvName.data());
+        }
+        return in & (~CL_QUEUE_PROFILING_ENABLE);
+    }
+
+    void translateQueueFlags(cl_queue_properties *in) {
+        if (false == envToggles.disableProfiling) {
+            return;
+        }
+        while (*in) {
+            if (*in == CL_QUEUE_PROPERTIES) {
+                ++in;
+                if (0 != (*in & CL_QUEUE_PROFILING_ENABLE)) {
+                    log<Verbosity::debug>("Disabling CL_QUEUE_PROFILING_ENABLE based on %s environment variable", calOclDisableProfilingEnvName.data());
+                }
+                *in = *in & (~CL_QUEUE_PROFILING_ENABLE);
+            } else {
+                in += 2;
+            }
+        }
+    }
+
   protected:
     cl_platform_id calPlatformId{};
 
@@ -901,6 +930,10 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         ObjectMap<cl_sampler, IcdOclSampler *> clSamplerMap;
         ObjectMap<cl_device_id, IcdOclDevice *> deviceMap;
     } mappings;
+
+    struct {
+        bool disableProfiling = false;
+    } envToggles;
 
     std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory() {
         log<Verbosity::debug>("Creating connection listener based on local named socket");
