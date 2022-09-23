@@ -4,7 +4,7 @@
 
 config :
     api_name : level_zero
-    loader_lib_names : ["libze_loader.so"]
+    loader_lib_names : ["libze_loader.so.1"]
     icd_namespace : "Cal::Icd::LevelZero"
     rpc_namespace : "Cal::Rpc::LevelZero"
     daemon_namespace : "Cal::Service::Apis::LevelZero"

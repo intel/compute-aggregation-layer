@@ -614,7 +614,7 @@ namespace LevelZero {
 
 bool LevelZeroSharedObjects::init() {
     if (!Cal::Service::Apis::LevelZero::Standard::loadLevelZeroLibrary(std::nullopt)) {
-        log<Verbosity::info>("Could not load LevelZero ICD loader library (libze_loader.so) - LevelZero API will not be available");
+        log<Verbosity::info>("Could not load LevelZero ICD loader library (libze_loader.so.1) - LevelZero API will not be available");
         return false;
     }
 

@@ -106,7 +106,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false == path.has_value();
     }
     
-    std::string loadPath = path.value_or("libze_loader.so");
+    std::string loadPath = path.value_or("libze_loader.so.1");
     libraryHandle = dlopen(loadPath.c_str(), RTLD_NOW);
     
 
