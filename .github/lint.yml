@@ -21,6 +21,11 @@ lint:
     excluded:
       - third_party/*
 
+  python:
+    included:
+      - \.py$
+    venv_name: cal
+
   copyright:
     excluded:
       - third_party/
