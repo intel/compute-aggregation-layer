@@ -659,6 +659,7 @@ ze_result_t zeDeviceGetProperties (ze_device_handle_t hDevice, ze_device_propert
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDevice, pDeviceProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -772,6 +773,7 @@ ze_result_t zeDeviceGetMemoryAccessProperties (ze_device_handle_t hDevice, ze_de
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryAccessPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDevice, pMemAccessProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -816,6 +818,7 @@ ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_im
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetImagePropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDevice, pImageProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -837,6 +840,7 @@ ze_result_t zeDeviceGetExternalMemoryProperties (ze_device_handle_t hDevice, ze_
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDevice, pExternalMemoryProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -964,6 +968,7 @@ ze_result_t zeDriverGetProperties (ze_driver_handle_t hDriver, ze_driver_propert
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDriver, pDriverProperties);
+    command->copyFromCaller();
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -985,6 +990,7 @@ ze_result_t zeDriverGetIpcProperties (ze_driver_handle_t hDriver, ze_driver_ipc_
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetIpcPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDriver, pIpcProperties);
+    command->copyFromCaller();
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1540,6 +1546,7 @@ ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* p
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hContext, ptr, pMemAllocProperties, phDevice);
+    command->copyFromCaller();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1738,6 +1745,7 @@ ze_result_t zeModuleGetProperties (ze_module_handle_t hModule, ze_module_propert
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hModule, pModuleProperties);
+    command->copyFromCaller();
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1977,6 +1985,7 @@ ze_result_t zeKernelGetProperties (ze_kernel_handle_t hKernel, ze_kernel_propert
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hKernel, pKernelProperties);
+    command->copyFromCaller();
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2058,6 +2067,7 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
     using CommandT = Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM;
     auto space = channel.getSpace<CommandT>(0);
     auto command = new(space.hostAccessible) CommandT(hDevice, pPciProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

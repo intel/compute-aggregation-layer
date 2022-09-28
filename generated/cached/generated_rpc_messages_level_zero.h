@@ -1807,6 +1807,12 @@ struct ZeDeviceGetPropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pDeviceProperties){
+            captures.pDeviceProperties = *args.pDeviceProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pDeviceProperties){
             *args.pDeviceProperties = captures.pDeviceProperties;
@@ -2011,6 +2017,9 @@ struct ZeDeviceGetCommandQueueGroupPropertiesRpcM {
         if(args.pCount){
             captures.pCount = *args.pCount;
         }
+        if(args.pCommandQueueGroupProperties){
+            memcpy(asMemcpyDstT(captures.pCommandQueueGroupProperties), args.pCommandQueueGroupProperties, dynMemTraits.pCommandQueueGroupProperties.size);
+        }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
@@ -2098,6 +2107,9 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
         if(args.pCount){
             captures.pCount = *args.pCount;
         }
+        if(args.pMemProperties){
+            memcpy(asMemcpyDstT(captures.pMemProperties), args.pMemProperties, dynMemTraits.pMemProperties.size);
+        }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
@@ -2163,6 +2175,12 @@ struct ZeDeviceGetMemoryAccessPropertiesRpcM {
         message.args.pMemAccessProperties = pMemAccessProperties;
     }
     
+
+    void copyFromCaller(){
+        if(args.pMemAccessProperties){
+            captures.pMemAccessProperties = *args.pMemAccessProperties;
+        }
+    }
 
     void copyToCaller(){
         if(args.pMemAccessProperties){
@@ -2246,6 +2264,9 @@ struct ZeDeviceGetCachePropertiesRpcM {
         if(args.pCount){
             captures.pCount = *args.pCount;
         }
+        if(args.pCacheProperties){
+            memcpy(asMemcpyDstT(captures.pCacheProperties), args.pCacheProperties, dynMemTraits.pCacheProperties.size);
+        }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
@@ -2312,6 +2333,12 @@ struct ZeDeviceGetImagePropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pImageProperties){
+            captures.pImageProperties = *args.pImageProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pImageProperties){
             *args.pImageProperties = captures.pImageProperties;
@@ -2372,6 +2399,12 @@ struct ZeDeviceGetExternalMemoryPropertiesRpcM {
         message.args.pExternalMemoryProperties = pExternalMemoryProperties;
     }
     
+
+    void copyFromCaller(){
+        if(args.pExternalMemoryProperties){
+            captures.pExternalMemoryProperties = *args.pExternalMemoryProperties;
+        }
+    }
 
     void copyToCaller(){
         if(args.pExternalMemoryProperties){
@@ -2762,6 +2795,12 @@ struct ZeDriverGetPropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pDriverProperties){
+            captures.pDriverProperties = *args.pDriverProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pDriverProperties){
             *args.pDriverProperties = captures.pDriverProperties;
@@ -2822,6 +2861,12 @@ struct ZeDriverGetIpcPropertiesRpcM {
         message.args.pIpcProperties = pIpcProperties;
     }
     
+
+    void copyFromCaller(){
+        if(args.pIpcProperties){
+            captures.pIpcProperties = *args.pIpcProperties;
+        }
+    }
 
     void copyToCaller(){
         if(args.pIpcProperties){
@@ -2904,6 +2949,9 @@ struct ZeDriverGetExtensionPropertiesRpcM {
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pCount){
             captures.pCount = *args.pCount;
+        }
+        if(args.pExtensionProperties){
+            memcpy(asMemcpyDstT(captures.pExtensionProperties), args.pExtensionProperties, dynMemTraits.pExtensionProperties.size);
         }
     }
 
@@ -4346,6 +4394,12 @@ struct ZeMemGetAllocPropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pMemAllocProperties){
+            captures.pMemAllocProperties = *args.pMemAllocProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pMemAllocProperties){
             *args.pMemAllocProperties = captures.pMemAllocProperties;
@@ -5187,6 +5241,12 @@ struct ZeModuleGetPropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pModuleProperties){
+            captures.pModuleProperties = *args.pModuleProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pModuleProperties){
             *args.pModuleProperties = captures.pModuleProperties;
@@ -6018,6 +6078,12 @@ struct ZeKernelGetPropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pKernelProperties){
+            captures.pKernelProperties = *args.pKernelProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pKernelProperties){
             *args.pKernelProperties = captures.pKernelProperties;
@@ -6258,6 +6324,12 @@ struct ZeDevicePciGetPropertiesExtRpcM {
         message.args.pPciProperties = pPciProperties;
     }
     
+
+    void copyFromCaller(){
+        if(args.pPciProperties){
+            captures.pPciProperties = *args.pPciProperties;
+        }
+    }
 
     void copyToCaller(){
         if(args.pPciProperties){

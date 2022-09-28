@@ -1690,7 +1690,7 @@ config :
                         element :
                             type : ze_device_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
                     translate_after : "command->captures.ret = static_cast<IcdL0Device*>(hDevice)->patchDeviceName(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST"
 
         - name : zeDeviceGetComputeProperties
@@ -1778,7 +1778,7 @@ config :
                         element :
                             type : ze_command_queue_group_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetMemoryProperties
           latency : 0.0
@@ -1815,7 +1815,7 @@ config :
                         element :
                             type : ze_device_memory_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetMemoryAccessProperties
           latency : 0.0
@@ -1840,7 +1840,7 @@ config :
                         element :
                             type : ze_device_memory_access_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
 
         - name : zeDeviceGetCacheProperties
@@ -1878,7 +1878,7 @@ config :
                         element :
                             type : ze_device_cache_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetImageProperties
           latency : 0.0
@@ -1903,7 +1903,7 @@ config :
                         element :
                             type : ze_device_image_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetExternalMemoryProperties
           latency : 0.0
@@ -1928,7 +1928,7 @@ config :
                         element :
                             type : ze_device_external_memory_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
 #        - name : zeDeviceGetP2PProperties
 #          ddi_category :  Device
@@ -2116,7 +2116,7 @@ config :
                         element :
                             type : ze_driver_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDriverGetIpcProperties
           latency : 0.0
@@ -2141,7 +2141,7 @@ config :
                         element :
                             type : ze_driver_ipc_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDriverGetExtensionProperties
           latency : 0.0
@@ -2178,7 +2178,7 @@ config :
                         element :
                             type : ze_driver_extension_properties_t
                             kind : pointer 
-                        server_access : write                    
+                        server_access : read_write                    
 
         - name : zeDriverGetExtensionFunctionAddress
           latency : 0.0
@@ -3420,7 +3420,7 @@ config :
                         element :
                             type : ze_memory_allocation_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
                  3 :
                     name : phDevice
                     type : ze_device_handle_t*
@@ -3865,7 +3865,7 @@ config :
                         element :
                             type : ze_module_properties_t
                             kind : struct
-                        server_access : write
+                        server_access : read_write
 
         - name : zeKernelCreate
           latency : 0.5
@@ -4207,7 +4207,7 @@ config :
                         element :
                             type : ze_kernel_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeKernelGetName
           latency : 0.0
@@ -4425,7 +4425,7 @@ config :
                         element :
                             type : ze_pci_ext_properties_t
                             kind : struct
-                        server_access : write
+                        server_access : read_write
 
 #        - name : zeContextMakeMemoryResident
 #          ddi_category :  Context
