@@ -969,5 +969,7 @@ int main(int argc, const char *argv[]) {
         log<Verbosity::info>("Exiting parent process");
     }
 
+    log<Verbosity::info>("End of test %s", argv[0]);
+
     return 0;
 }

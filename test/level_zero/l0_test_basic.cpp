@@ -2185,5 +2185,7 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
         log<Verbosity::info>("Exiting parent process");
     }
 
+    log<Verbosity::info>("End of test %s", argv[0]);
+
     return 0;
 }
