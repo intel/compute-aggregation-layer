@@ -24,6 +24,109 @@ namespace Cal {
 
 namespace Rpc {
 
+// Implementation is lock-free for single-producer, single-consumer scenarios
+//    multi-producer/consumer scenarios (multithreading on client/service side)
+//    require external lock of the ring
+//
+// tail modified by producer
+// head modified by consumer
+// head chases tail (tail > head in first iteration)
+template <typename DataType, typename OffsetType>
+class TypedRing final {
+  public:
+    TypedRing() = default;
+
+    TypedRing(DataType *data, size_t capacity,
+              OffsetType *head, OffsetType *tail)
+        : data(data), capacity(capacity), head(head), tail(tail) {
+    }
+
+    void reset() {
+        __atomic_store_n(head, 0U, __ATOMIC_RELAXED);
+        __atomic_store_n(tail, 0U, __ATOMIC_RELAXED);
+    }
+
+    OffsetType peekHeadOffset() const {
+        return __atomic_load_n(head, __ATOMIC_RELAXED);
+    }
+
+    OffsetType peekTailOffset() const {
+        return __atomic_load_n(tail, __ATOMIC_RELAXED);
+    }
+
+    uint64_t peekIteration() const {
+        return iteration;
+    }
+
+    DataType *peekHead() {
+        return &data[__atomic_load_n(head, __ATOMIC_RELAXED)];
+    }
+
+    bool peekEmpty() const {
+        return peekHeadOffset() == peekTailOffset();
+    }
+
+    size_t getCapacity() const {
+        return capacity;
+    }
+
+    bool pop() {
+        if (peekEmpty()) {
+            log<Verbosity::error>("Ring empty");
+            return false;
+        }
+        auto prevHead = peekHeadOffset();
+        auto nextHead = prevHead;
+        if (prevHead + 1 == capacity) {
+            nextHead = 0;
+        } else {
+            nextHead = prevHead + 1;
+        }
+        __atomic_store_n(head, nextHead, __ATOMIC_RELAXED);
+        return true;
+    }
+
+    template <typename T>
+    bool push(T &&el) {
+        auto tailSnapshot = peekTailOffset();
+        auto headSnapshot = peekHeadOffset();
+        if (tailSnapshot >= headSnapshot) {
+            if (capacity > tailSnapshot + 1) {
+                data[tailSnapshot] = std::forward<T>(el);
+                __atomic_store_n(tail, tailSnapshot + 1, __ATOMIC_RELAXED);
+                return true;
+            } else { // loop
+                if (headSnapshot == 0) {
+                    log<Verbosity::error>("Ring full");
+                    return false;
+                }
+                data[tailSnapshot] = std::forward<T>(el);
+                __atomic_store_n(tail, 0, __ATOMIC_RELAXED);
+                ++iteration;
+                log<Verbosity::debug>("Ring looped, iteration %lu", iteration);
+                return true;
+            }
+        } else {
+            if (tailSnapshot + 1 < headSnapshot) { // looped and wrapped
+                data[tailSnapshot] = std::forward<T>(el);
+                __atomic_store_n(tail, tailSnapshot + 1, __ATOMIC_RELAXED);
+                return true;
+            } else {
+                log<Verbosity::error>("Ring full");
+                return false;
+            }
+        }
+    }
+
+  protected:
+    DataType *data = nullptr;
+    size_t capacity = 0U;
+
+    OffsetType *head = nullptr;
+    OffsetType *tail = nullptr;
+    uint64_t iteration = 0;
+};
+
 // ringbuffer_base            head                   tail           ringbuffer_end
 //          | processed commands | unprocessed commands | unused space |
 class RingBuffer {
