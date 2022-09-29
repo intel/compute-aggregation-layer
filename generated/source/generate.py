@@ -60,11 +60,14 @@ class NumElements:
     def is_nullterminated(self) -> bool:
         return self.str == "nullterminated"
 
+    def is_nullterminated_key(self) -> bool:
+        return self.str == "nullterminated_key"
+
     def is_single_element(self) -> bool:
         return self.is_constant and (self.get_constant() == 1)
 
     def is_complex(self):
-        return self.is_nullterminated() or ("(" in self.str)
+        return self.is_nullterminated() or self.is_nullterminated_key() or ("(" in self.str)
 
 
 class Type:
@@ -136,6 +139,8 @@ class Element:
 
         if self.kind_details.num_elements.is_nullterminated():
             return f"Cal::Utils::countNullterminated({name}[{index}])"
+        elif self.kind_details.num_elements.is_nullterminated_key():
+            return f"Cal::Utils::countNullterminatedKey({name}[{index}])"
         elif self.kind_details.num_elements.is_constant():
             return self.kind_details.num_elements.str
         else:
@@ -155,7 +160,6 @@ class UnderlyingType:
     def __init__(self, src: dict):
         self.type = Type(src["type"]) if "type" in src else None
         self.kind = Kind(src["kind"]) if "kind" in src else None
-
 
 class KindDetails:
     def __init__(self, src: dict):
@@ -208,6 +212,8 @@ class Arg:
         assert self.kind.is_pointer_to_array
         if self.kind_details.num_elements.is_nullterminated():
             return f"Cal::Utils::countNullterminated({arg_prefix}{self.name})"
+        elif self.kind_details.num_elements.is_nullterminated_key():
+            return f"Cal::Utils::countNullterminatedKey({arg_prefix}{self.name})"
         elif self.kind_details.num_elements.is_constant():
             return self.kind_details.num_elements.str
         elif self.kind_details.is_num_elements_ptr_to_capturable_arg:
@@ -414,7 +420,7 @@ class FunctionTraits:
                              and not arg.kind_details.num_elements.is_constant()]
 
         def is_costly(arg):
-            return arg.kind_details.num_elements.is_nullterminated() or arg.kind_details.element.kind.is_pointer_to_array()
+            return arg.kind_details.num_elements.is_nullterminated() or arg.kind_details.num_elements.is_nullterminated_key() or arg.kind_details.element.kind.is_pointer_to_array()
 
         # push out nullterminated and nested dynamic args to the end for better packing
         return sorted(dyn_ptr_array_args, key=lambda arg: arg.arg_id + 8192 * is_costly(arg))
@@ -897,6 +903,8 @@ class MemberLayoutFormatter:
         member_access = self.generate_member_access(member_layout, it, prefix)
         if member_layout.member.kind_details.num_elements.is_nullterminated():
             return f"Cal::Utils::countNullterminated({member_access})"
+        elif member_layout.member.kind_details.num_elements.is_nullterminated_key():
+            return f"Cal::Utils::countNullterminatedKey({member_access})"
         else:
             to_strip = member_access.rfind(f".{member_layout.member.name}")
             return member_access[:to_strip] + f".{member_layout.member.kind_details.num_elements.str}"

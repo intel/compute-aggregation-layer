@@ -324,7 +324,7 @@ config :
                     type : "const cl_context_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_context_properties"
@@ -383,7 +383,7 @@ config :
                     type : "const cl_context_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_context_properties"
@@ -486,7 +486,7 @@ config :
                     type : "const cl_device_partition_property*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element :
                             type : cl_device_partition_property
@@ -601,7 +601,7 @@ config :
                     kind : ptr_array
                     translate_before : "globalOclPlatform->translateQueueFlags(mutable_element_cast({dst_mem}))"
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_queue_properties"
@@ -2656,7 +2656,7 @@ config :
                     type : "const cl_pipe_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_pipe_properties"
@@ -2974,7 +2974,7 @@ config :
                     type : "const cl_sampler_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_sampler_properties"
@@ -3012,7 +3012,7 @@ config :
                     type : "const cl_mem_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_mem_properties"
@@ -3088,7 +3088,7 @@ config :
                     type : "const cl_mem_properties*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_mem_properties"
@@ -6109,7 +6109,7 @@ config :
                     type : "const cl_device_partition_property_ext*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element :
                             type : cl_device_partition_property_ext
@@ -6644,7 +6644,7 @@ config :
                     type : "const cl_mem_properties_intel*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_mem_properties_intel"
@@ -6695,7 +6695,7 @@ config :
                     type : "const cl_mem_properties_intel*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_mem_properties_intel"
@@ -6767,7 +6767,7 @@ config :
                     type : "const cl_mem_properties_intel*"
                     kind : ptr_array
                     kind_details :
-                        num_elements: "nullterminated"
+                        num_elements: "nullterminated_key"
                         can_be_null : True
                         element:
                             type : "cl_mem_properties_intel"

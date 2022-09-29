@@ -102,7 +102,7 @@ ClCreateContextRpcM::Captures::DynamicTraits ClCreateContextRpcM::Captures::Dyna
     ret.devices.size = ret.devices.count * sizeof(cl_device_id);
 
     ret.properties.offset = alignUpPow2<8>(ret.devices.offset + ret.devices.size);
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_context_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -128,7 +128,7 @@ size_t ClCreateContextRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateContextFromTypeRpcM::Captures::DynamicTraits ClCreateContextFromTypeRpcM::Captures::DynamicTraits::calculate(const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_context_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -172,7 +172,7 @@ ClCreateSubDevicesRpcM::Captures::DynamicTraits ClCreateSubDevicesRpcM::Captures
     ret.out_devices.size = ret.out_devices.count * sizeof(cl_device_id);
 
     ret.properties.offset = alignUpPow2<8>(ret.out_devices.offset + ret.out_devices.size);
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_device_partition_property);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -198,7 +198,7 @@ size_t ClCreateSubDevicesRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateCommandQueueWithPropertiesRpcM::Captures::DynamicTraits ClCreateCommandQueueWithPropertiesRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_queue_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -912,7 +912,7 @@ size_t ClCreateSubBufferRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreatePipeRpcM::Captures::DynamicTraits ClCreatePipeRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties* properties, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_pipe_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -1012,7 +1012,7 @@ size_t ClCreateImage3DRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateSamplerWithPropertiesRpcM::Captures::DynamicTraits ClCreateSamplerWithPropertiesRpcM::Captures::DynamicTraits::calculate(cl_context context, const cl_sampler_properties* properties, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_sampler_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -1036,7 +1036,7 @@ ClCreateImageWithPropertiesRpcM::Captures::DynamicTraits ClCreateImageWithProper
     ret.host_ptr.size = ret.host_ptr.count;
 
     ret.properties.offset = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_mem_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -1066,7 +1066,7 @@ ClCreateBufferWithPropertiesRpcM::Captures::DynamicTraits ClCreateBufferWithProp
     ret.host_ptr.size = ret.host_ptr.count;
 
     ret.properties.offset = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_mem_properties);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -1950,7 +1950,7 @@ ClCreateSubDevicesEXTRpcM::Captures::DynamicTraits ClCreateSubDevicesEXTRpcM::Ca
     ret.out_devices.size = ret.out_devices.count * sizeof(cl_device_id);
 
     ret.properties.offset = alignUpPow2<8>(ret.out_devices.offset + ret.out_devices.size);
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_device_partition_property_ext);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -2136,7 +2136,7 @@ size_t ClGetMemAllocInfoINTELRpcM::Captures::getCaptureDynMemSize() const {
 
 ClDeviceMemAllocINTELRpcM::Captures::DynamicTraits ClDeviceMemAllocINTELRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_mem_properties_intel);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -2156,7 +2156,7 @@ size_t ClDeviceMemAllocINTELRpcM::Captures::getCaptureDynMemSize() const {
 
 ClHostMemAllocINTELRpcM::Captures::DynamicTraits ClHostMemAllocINTELRpcM::Captures::DynamicTraits::calculate(cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_mem_properties_intel);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 
@@ -2176,7 +2176,7 @@ size_t ClHostMemAllocINTELRpcM::Captures::getCaptureDynMemSize() const {
 
 ClSharedMemAllocINTELRpcM::Captures::DynamicTraits ClSharedMemAllocINTELRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.properties.count = Cal::Utils::countNullterminated(properties);
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
     ret.properties.size = ret.properties.count * sizeof(cl_mem_properties_intel);
     ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
 

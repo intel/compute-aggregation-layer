@@ -166,6 +166,18 @@ size_t countNullterminated(T *array) {
     return it - array + 1; // include nullterminate
 }
 
+template <typename T>
+size_t countNullterminatedKey(T *array) { // key,pair variant, only null key ends sequence
+    if (nullptr == array) {
+        return 0;
+    }
+    auto it = array;
+    while (*it) {
+        (it += 2);
+    }
+    return it - array + 1; // include nullterminate
+}
+
 inline std::string toLower(const std::string &src) {
     std::string ret = src;
     std::transform(src.begin(), src.end(), ret.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -661,6 +673,9 @@ class PartitionedAddressRange {
 
 class Heap {
   public:
+    Heap() : vma({0U, 0U}) {
+    }
+
     Heap(AddressRange vaRange) : vma(vaRange) {
     }
 

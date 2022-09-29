@@ -687,6 +687,14 @@ TEST(PartitionedAddressRange, whenDestroyingSubRangesThenAffectChildSubRangesAsW
     EXPECT_EQ(right, partitionedRange.getSubRanges()[1].getSubRanges()[0].getBoundingRange());
 }
 
+TEST(Heap, whenDefaultInitializedThenRepresentsEmptyRange) {
+    Cal::Utils::AddressRange emptyRange = {0U, 0U};
+    Cal::Utils::Heap heap;
+    EXPECT_EQ(emptyRange, heap.getRange());
+    EXPECT_EQ(0U, heap.getSizeUsed());
+    EXPECT_EQ(0U, heap.getSizeLeft());
+}
+
 TEST(Heap, whenCreatedFromRangeThenRepresentsThatRange) {
     Cal::Utils::AddressRange heapRange = {4096U, 8192U};
     Cal::Utils::Heap heap(heapRange);
@@ -1023,6 +1031,26 @@ TEST(countNullterminated, givenArrayThenReturnsNumberOfNonZeroElementsPlusOneToA
 
 TEST(toLower, givenStringThenReturnsAVersionWithAllUpperCasesChangedToLowerCase) {
     EXPECT_STREQ("words words words", Cal::Utils::toLower("words Words wORDs").c_str());
+}
+
+TEST(countNullterminatedKey, givenNullThenReturnsZero) {
+    const int *array = nullptr;
+    EXPECT_EQ(0U, Cal::Utils::countNullterminatedKey(array));
+}
+
+TEST(countNullterminatedKey, givenEmptyArrayThenReturnsOneToAccountForNullterminate) {
+    EXPECT_EQ(1U, Cal::Utils::countNullterminatedKey(""));
+}
+
+TEST(countNullterminatedKey, givenArrayThenCountsKeyValuePairsTreating0KeyAsTerminatorAndAddsOneForNullterminate) {
+    EXPECT_EQ(3U, Cal::Utils::countNullterminatedKey("a "));
+    EXPECT_EQ(3U, Cal::Utils::countNullterminatedKey("a\0"));
+    EXPECT_EQ(1U, Cal::Utils::countNullterminatedKey("\0a"));
+    EXPECT_EQ(1U, Cal::Utils::countNullterminatedKey("\0abc"));
+
+    EXPECT_EQ(5U, Cal::Utils::countNullterminatedKey("abcd"));
+    EXPECT_EQ(5U, Cal::Utils::countNullterminatedKey("a\0cd"));
+    EXPECT_EQ(3U, Cal::Utils::countNullterminatedKey("ab\0d"));
 }
 
 } // namespace Ult

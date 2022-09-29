@@ -140,7 +140,7 @@ bool getCalEnvFlag(std::string_view name, bool defaultValue) {
     }
 
     if (false == valid) {
-        log<Verbosity::error>("Invalid value for environment variable : %s, expected 1/0", name.data());
+        log<Verbosity::error>("Invalid value for environment variable : %s, expected 1/0, got : %s", name.data(), envStr);
     }
     return value;
 }
