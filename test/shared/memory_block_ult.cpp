@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 #include "shared/shmem.h"
+#include "test/mocks/log_mock.h"
 #include "test/mocks/memory_block_mock.h"
 #include "test/mocks/shmem_manager_mock.h"
 
@@ -260,12 +261,11 @@ TEST_F(MemoryBlockTest, GivenChunkWhenTranslatingOverlappingMemoryThenTranslated
 TEST_F(MemoryBlockTest, GivenChunkWhenTranslatingNonOverlappingMemoryThenErrorIsLoggedAndNullptrIsReturned) {
     const void *nonOverlappingChunkPtr{reinterpret_cast<const void *>(pageBeginning - (2 * chunkSize))};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto mappedPtr = memoryBlock.translate(nonOverlappingChunkPtr);
-    const auto output = ::testing::internal::GetCapturedStdout();
 
     EXPECT_EQ(nullptr, mappedPtr);
-    EXPECT_FALSE(output.empty());
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(MemoryBlockTest, GivenTwoBlocksWithoutHoleBetweenThemWhenMergingThemThenOneConsecutiveBlockIsCreated) {
@@ -651,12 +651,11 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     const void *includedChunk{reinterpret_cast<const void *>(firstPageAddress)};
     const size_t includedChunkSize{pageSize + 128};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto foundMemoryBlock = memoryBlocksManager.getMemoryBlockWhichIncludesChunk(includedChunk, includedChunkSize);
-    const auto output = ::testing::internal::GetCapturedStdout();
 
     EXPECT_NE(nullptr, foundMemoryBlock);
-    EXPECT_TRUE(output.empty()) << output;
+    EXPECT_TRUE(logs.empty()) << logs.str();
 }
 
 TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverlappingMemoryBlocksInManagerWhenGettingBlockForChunkWhichRequiresExtensionThenReturnNullptr) {
@@ -665,9 +664,9 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     const void *chunkWhichRequiresExtension{reinterpret_cast<const void *>(firstPageAddress - 128)};
     const size_t chunkWhichRequiresExtensionSize{2 * pageSize};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto foundMemoryBlock = memoryBlocksManager.getMemoryBlockWhichIncludesChunk(chunkWhichRequiresExtension, chunkWhichRequiresExtensionSize);
-    const auto output = ::testing::internal::GetCapturedStdout();
+    const auto output = logs.str();
 
     EXPECT_EQ(nullptr, foundMemoryBlock);
 
@@ -681,9 +680,9 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     const void *multipleBlocksOverlappingChunk{reinterpret_cast<const void *>(firstPageAddress)};
     const size_t multipleBlocksOverlappingChunkSize{7 * pageSize};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto foundMemoryBlock = memoryBlocksManager.getMemoryBlockWhichIncludesChunk(multipleBlocksOverlappingChunk, multipleBlocksOverlappingChunkSize);
-    const auto output = ::testing::internal::GetCapturedStdout();
+    const auto output = logs.str();
 
     EXPECT_EQ(nullptr, foundMemoryBlock);
 
@@ -701,9 +700,9 @@ TEST_F(MemoryBlocksManagerTest, GivenMemoryBlockInManagerWhenGettingBlockForChun
     const void *nonOverlappingChunk{reinterpret_cast<const void *>(firstPageAddress + (4 * pageSize))};
     const size_t nonOverlappingChunkSize{pageSize};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto foundMemoryBlock = memoryBlocksManager.getMemoryBlockWhichIncludesChunk(nonOverlappingChunk, nonOverlappingChunkSize);
-    const auto output = ::testing::internal::GetCapturedStdout();
+    const auto output = logs.str();
 
     EXPECT_EQ(nullptr, foundMemoryBlock);
 
@@ -721,11 +720,10 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
         {firstSrcAddress, firstChunkSize},
         {thirdSrcAddress, thirdChunkSize}};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto wasCountCalculationSuccessful = memoryBlocksManager.getCountOfRequiredTransferDescs(transferDescsCount, chunksCount, chunks);
-    const auto output = ::testing::internal::GetCapturedStdout();
 
-    EXPECT_TRUE(output.empty()) << output;
+    EXPECT_TRUE(logs.empty()) << logs.str();
     ASSERT_TRUE(wasCountCalculationSuccessful);
     EXPECT_EQ(2u, transferDescsCount);
 }
@@ -750,11 +748,10 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
         {firstSrcAddress, firstChunkSize},
         {thirdSrcAddress, thirdChunkSize}};
 
-    ::testing::internal::CaptureStdout();
+    Cal::Mocks::LogCaptureContext logs;
     const auto enoughSpace = memoryBlocksManager.getRequiredTransferDescs(transferDescsCount, transferDescs, chunksCount, chunks);
-    const auto output = ::testing::internal::GetCapturedStdout();
 
-    EXPECT_TRUE(output.empty()) << output;
+    EXPECT_TRUE(logs.empty()) << logs.str();
     ASSERT_TRUE(enoughSpace);
 
     ASSERT_EQ(2u, transferDescsCount);
