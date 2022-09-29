@@ -199,5 +199,125 @@ TEST(TypedRingPop, whenAtTheEndThenMovesHeadToZero) {
     EXPECT_EQ(5, data[2]);
 }
 
+TEST(StaticLengthBitAllocator, WhenDefaultConstructedThenIsEmpty) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_NE(BitAllocatorT::invalidOffset, bit) << "it : " << i << " bit : " << bit;
+    }
+}
+
+TEST(StaticLengthBitAllocator, WhenFullTheReturnsInvalidOffset) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+    }
+
+    EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+}
+
+TEST(StaticLengthBitAllocator, WhenCopyConstructedThenHoldsTheSameBits) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    std::set<BitAllocatorT::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits / 2; ++i) {
+        auto bit = allocator.allocate();
+        occupiedBits.insert(bit);
+    }
+
+    auto copy = allocator;
+    for (int i = numBits / 2; i < numBits; ++i) {
+        auto bitInOrig = copy.allocate();
+        auto bitInCopy = allocator.allocate();
+        EXPECT_NE(BitAllocatorT::invalidOffset, bitInOrig) << i;
+        EXPECT_EQ(bitInOrig, bitInCopy) << i;
+        EXPECT_EQ(0U, occupiedBits.count(bitInOrig)) << i;
+        occupiedBits.insert(bitInOrig);
+    }
+    EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+    EXPECT_EQ(BitAllocatorT::invalidOffset, copy.allocate());
+}
+
+TEST(StaticLengthBitAllocator, WhenMoveConstructedThenTakesOverTheBits) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    std::set<BitAllocatorT::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits / 2; ++i) {
+        auto bit = allocator.allocate();
+        occupiedBits.insert(bit);
+    }
+
+    auto moved = std::move(allocator);
+    for (int i = numBits / 2; i < numBits; ++i) {
+        auto bit = moved.allocate();
+        EXPECT_NE(BitAllocatorT::invalidOffset, bit) << i;
+        EXPECT_EQ(0U, occupiedBits.count(bit)) << i;
+        occupiedBits.insert(bit);
+    }
+    EXPECT_EQ(BitAllocatorT::invalidOffset, moved.allocate());
+
+    occupiedBits.clear();
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_NE(BitAllocatorT::invalidOffset, bit) << i;
+        EXPECT_EQ(0U, occupiedBits.count(bit)) << i;
+        occupiedBits.insert(bit);
+    }
+    EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+}
+
+TEST(StaticLengthBitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectRangeAndUnique) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    std::set<BitAllocatorT::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
+        EXPECT_LT(bit, numBits) << "it : " << i << " bit : " << bit;
+        EXPECT_EQ(0U, occupiedBits.count(bit));
+        occupiedBits.insert(bit);
+    }
+}
+
+TEST(StaticLengthBitAllocator, WhenFreeingBitsThenTheyCanBeReallocated) {
+    using MaskT = uint64_t;
+    using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
+    BitAllocatorT allocator;
+    auto numBits = std::numeric_limits<MaskT>::digits;
+    std::vector<BitAllocatorT::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        occupiedBits.push_back(bit);
+    }
+    EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+
+    static constexpr int bitsToReuseCount = 4;
+    static constexpr int bitsToReuse[bitsToReuseCount] = {2, 3, 5, 7};
+    std::set<BitAllocatorT::BitOffsetT> freeBits;
+    for (int i = 0; i < bitsToReuseCount; ++i) {
+        allocator.free(occupiedBits[bitsToReuse[i]]);
+        freeBits.insert(occupiedBits[bitsToReuse[i]]);
+    }
+
+    for (int i = 0; i < bitsToReuseCount; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_EQ(1U, freeBits.count(bit)) << "it : " << i << " bit : " << bit;
+        freeBits.erase(bit);
+    }
+    EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+}
+
 } // namespace Ult
 } // namespace Cal
