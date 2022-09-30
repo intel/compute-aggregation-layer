@@ -1686,6 +1686,29 @@ ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuild
 
     return ret;
 }
+ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
+    log<Verbosity::bloat>("Establishing RPC for zeModuleGetNativeBinary");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hModule, pSize, pModuleNativeBinary);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hModule, pSize, pModuleNativeBinary);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(space, command->header.flags)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetGlobalPointer");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2274,6 +2297,9 @@ ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLo
 }
 ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
     return Cal::Icd::LevelZero::zeModuleBuildLogGetString(hModuleBuildLog, pSize, pBuildLog);
+}
+ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
+    return Cal::Icd::LevelZero::zeModuleGetNativeBinary(hModule, pSize, pModuleNativeBinary);
 }
 ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
     return Cal::Icd::LevelZero::zeModuleGetGlobalPointer(hModule, pGlobalName, pSize, pptr);

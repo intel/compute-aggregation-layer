@@ -62,7 +62,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Mem.zeMemCloseIpcHandle");
     ret.push_back("Mem.zeMemFreeExt");
     ret.push_back("Module.zeModuleDynamicLink");
-    ret.push_back("Module.zeModuleGetNativeBinary");
     ret.push_back("Kernel.zeKernelGetSourceAttributes");
     ret.push_back("CommandList.zeCommandListAppendLaunchCooperativeKernel");
     ret.push_back("CommandList.zeCommandListAppendLaunchKernelIndirect");

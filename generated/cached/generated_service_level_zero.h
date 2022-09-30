@@ -89,6 +89,7 @@ extern ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_han
 extern ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule);
 extern ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog);
 extern ze_result_t (*zeModuleBuildLogGetString)(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog);
+extern ze_result_t (*zeModuleGetNativeBinary)(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary);
 extern ze_result_t (*zeModuleGetGlobalPointer)(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr);
 extern ze_result_t (*zeModuleGetKernelNames)(ze_module_handle_t hModule, uint32_t* pCount, const char** pNames);
 extern ze_result_t (*zeModuleGetProperties)(ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties);
@@ -776,6 +777,16 @@ inline bool zeModuleBuildLogGetStringHandler(Provider &service, ClientContext &c
                                                 );
     return true;
 }
+inline bool zeModuleGetNativeBinaryHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeModuleGetNativeBinary");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleGetNativeBinary(
+                                                apiCommand->args.hModule, 
+                                                apiCommand->args.pSize ? &apiCommand->captures.pSize : nullptr, 
+                                                apiCommand->args.pModuleNativeBinary ? apiCommand->captures.pModuleNativeBinary : nullptr
+                                                );
+    return true;
+}
 inline bool zeModuleGetGlobalPointerHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleGetGlobalPointer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM*>(command);
@@ -1021,6 +1032,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeModuleDestroyRpcM::messageSubtype] = zeModuleDestroyHandler;
     outHandlers[ZeModuleBuildLogDestroyRpcM::messageSubtype] = zeModuleBuildLogDestroyHandler;
     outHandlers[ZeModuleBuildLogGetStringRpcM::messageSubtype] = zeModuleBuildLogGetStringHandler;
+    outHandlers[ZeModuleGetNativeBinaryRpcM::messageSubtype] = zeModuleGetNativeBinaryHandler;
     outHandlers[ZeModuleGetGlobalPointerRpcM::messageSubtype] = zeModuleGetGlobalPointerHandler;
     outHandlers[ZeModuleGetKernelNamesRpcHelperRpcM::messageSubtype] = zeModuleGetKernelNamesRpcHelperHandler;
     outHandlers[ZeModuleGetPropertiesRpcM::messageSubtype] = zeModuleGetPropertiesHandler;
@@ -1492,6 +1504,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM &api
                                                 apiCommand.args.pBuildLog
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleGetNativeBinary(
+                                                apiCommand.args.hModule, 
+                                                apiCommand.args.pSize, 
+                                                apiCommand.args.pModuleNativeBinary
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleGetGlobalPointer(
                                                 apiCommand.args.hModule, 
@@ -1684,6 +1703,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeModuleDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeKernelCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelCreateRpcM*>(command)); break;

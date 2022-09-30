@@ -252,7 +252,6 @@ config :
         - Mem.zeMemCloseIpcHandle
         - Mem.zeMemFreeExt
         - Module.zeModuleDynamicLink
-        - Module.zeModuleGetNativeBinary
         - Kernel.zeKernelGetSourceAttributes
         - CommandList.zeCommandListAppendLaunchCooperativeKernel
         - CommandList.zeCommandListAppendLaunchKernelIndirect
@@ -3703,26 +3702,43 @@ config :
                             kind : scalar
                         server_access : write
 
-#        - name : zeModuleGetNativeBinary
-#          ddi_category :  Module
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hModule
-#                    type : ze_module_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : pSize
-#                    type : size_t*
-#                    kind : pointer
-#                 2 :
-#                    name : pModuleNativeBinary
-#                    type : uint8_t*
-#                    kind : pointer
-#
+        - name : zeModuleGetNativeBinary
+          latency : 0.0
+          ddi_category :  Module
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hModule
+                    type : ze_module_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+                 1 :
+                    name : pSize
+                    type : size_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : size_t
+                            kind : scalar
+                        server_access : read_write
+                 2 :
+                    name : pModuleNativeBinary
+                    type : uint8_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "pSize"
+                        is_num_elements_ptr_to_capturable_arg: True
+                        can_be_null : True
+                        element :
+                            type : uint8_t
+                            kind : scalar
+                        server_access : write
+
         - name : zeModuleGetGlobalPointer
           latency : 0.0
           ddi_category :  Module

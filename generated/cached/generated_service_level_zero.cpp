@@ -81,6 +81,7 @@ ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t h
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
 ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog) = nullptr;
 ze_result_t (*zeModuleBuildLogGetString)(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) = nullptr;
+ze_result_t (*zeModuleGetNativeBinary)(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) = nullptr;
 ze_result_t (*zeModuleGetGlobalPointer)(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) = nullptr;
 ze_result_t (*zeModuleGetKernelNames)(ze_module_handle_t hModule, uint32_t* pCount, const char** pNames) = nullptr;
 ze_result_t (*zeModuleGetProperties)(ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) = nullptr;
@@ -486,6 +487,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeModuleGetNativeBinary = reinterpret_cast<decltype(zeModuleGetNativeBinary)>(dlsym(libraryHandle, "zeModuleGetNativeBinary"));
+    if(nullptr == zeModuleGetNativeBinary){
+        log<Verbosity::error>("Missing symbol zeModuleGetNativeBinary in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeModuleGetGlobalPointer = reinterpret_cast<decltype(zeModuleGetGlobalPointer)>(dlsym(libraryHandle, "zeModuleGetGlobalPointer"));
     if(nullptr == zeModuleGetGlobalPointer){
         log<Verbosity::error>("Missing symbol zeModuleGetGlobalPointer in %s", loadPath.c_str());
@@ -654,6 +661,7 @@ void unloadLevelZeroLibrary() {
     zeModuleDestroy = nullptr;
     zeModuleBuildLogDestroy = nullptr;
     zeModuleBuildLogGetString = nullptr;
+    zeModuleGetNativeBinary = nullptr;
     zeModuleGetGlobalPointer = nullptr;
     zeModuleGetKernelNames = nullptr;
     zeModuleGetProperties = nullptr;

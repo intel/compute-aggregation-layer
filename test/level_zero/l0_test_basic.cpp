@@ -830,6 +830,45 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
         return -1;
     }
 
+    log<Verbosity::info>("Getting native binary size from the module!");
+
+    size_t nativeBinarySize{0};
+    auto zeModuleGetNativeBinaryResult = zeModuleGetNativeBinary(moduleHandle, &nativeBinarySize, nullptr);
+    if (zeModuleGetNativeBinaryResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Cannot get the size of native binary from module!");
+        return -1;
+    }
+
+    log<Verbosity::info>("Retrieved size of native binary is : %zd", nativeBinarySize);
+
+    log<Verbosity::info>("Retrieving native binary from module!");
+
+    std::vector<uint8_t> nativeBinary{};
+    nativeBinary.resize(nativeBinarySize);
+
+    zeModuleGetNativeBinaryResult = zeModuleGetNativeBinary(moduleHandle, &nativeBinarySize, nativeBinary.data());
+    if (zeModuleGetNativeBinaryResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Cannot get native binary from module!");
+        return -1;
+    }
+
+    log<Verbosity::info>("Retrieved native binary from module!");
+
+    log<Verbosity::info>("Creating another module from native binary!");
+
+    moduleHandleDescription.format = ZE_MODULE_FORMAT_NATIVE;
+    moduleHandleDescription.inputSize = nativeBinarySize;
+    moduleHandleDescription.pInputModule = nativeBinary.data();
+
+    ze_module_handle_t anotherModuleHandle{};
+    zeModuleCreateResult = zeModuleCreate(contextHandle, device, &moduleHandleDescription, &anotherModuleHandle, nullptr);
+    if (zeModuleCreateResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleCreate() has failed! Error code: %d", static_cast<int>(zeModuleCreateResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Successfully created another module from native binary!");
+
     log<Verbosity::info>("Getting count of available kernels in module!");
 
     uint32_t kernelNamesCount{0};
@@ -2108,15 +2147,21 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Destruction of event pool has been successful!");
 
-    log<Verbosity::info>("Destroying module via zeModuleDestroy()!");
+    log<Verbosity::info>("Destroying modules via zeModuleDestroy()!");
 
     auto zeModuleDestroyResult = zeModuleDestroy(moduleHandle);
     if (zeModuleDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleDestroy() call has failed! Error code = %d", static_cast<int>(zeModuleDestroyResult));
+        log<Verbosity::error>("zeModuleDestroy() call has failed for moduleHandle! Error code = %d", static_cast<int>(zeModuleDestroyResult));
         return -1;
     }
 
-    log<Verbosity::info>("Destruction of L0 module has been successful!");
+    zeModuleDestroyResult = zeModuleDestroy(anotherModuleHandle);
+    if (zeModuleDestroyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleDestroy() call has failed for anotherModuleHandle! Error code = %d", static_cast<int>(zeModuleDestroyResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Destruction of L0 modules has been successful!");
 
     log<Verbosity::info>("Destroying fence via zeFenceDestroy()!");
 

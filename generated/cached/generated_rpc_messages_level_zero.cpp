@@ -524,6 +524,26 @@ size_t ZeModuleBuildLogGetStringRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeModuleGetNativeBinaryRpcM::Captures::DynamicTraits ZeModuleGetNativeBinaryRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
+    DynamicTraits ret = {};
+    ret.pModuleNativeBinary.count = (pSize ? *pSize : 0);
+    ret.pModuleNativeBinary.size = ret.pModuleNativeBinary.count * sizeof(uint8_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pModuleNativeBinary.offset + ret.pModuleNativeBinary.size);
+
+
+    return ret;
+}
+
+size_t ZeModuleGetNativeBinaryRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pModuleNativeBinary) + Cal::Utils::alignUpPow2<8>(this->countPModuleNativeBinary * sizeof(uint8_t));
+     return size;
+}
+
+size_t ZeModuleGetNativeBinaryRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPModuleNativeBinary * sizeof(uint8_t));
+     return size;
+}
+
 ZeModuleGetGlobalPointerRpcM::Captures::DynamicTraits ZeModuleGetGlobalPointerRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
     DynamicTraits ret = {};
     ret.pGlobalName.count = Cal::Utils::countNullterminated(pGlobalName);

@@ -256,6 +256,10 @@ ze_result_t zeModuleBuildLogGetString(ze_module_build_log_handle_t hModuleBuildL
    return {};
 }
 
+ze_result_t zeModuleGetNativeBinary(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary){
+   return {};
+}
+
 ze_result_t zeModuleGetGlobalPointer(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr){
    return {};
 }
