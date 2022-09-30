@@ -234,6 +234,42 @@ class BitAllocator final {
     std::vector<NodeT> nodes;
 };
 
+// Thread-safe
+template <typename TagType>
+class TagAllocator final {
+  public:
+    using TagTypeT = TagType;
+
+    TagAllocator() = default;
+
+    TagAllocator(TagType *underlyingAllocation, size_t capacity)
+        : underlyingAllocation(underlyingAllocation), allocator(capacity) {
+    }
+
+    TagType *allocate() {
+        auto offset = allocator.allocate();
+        if (BitAllocator::invalidOffset == offset) {
+            return nullptr;
+        }
+
+        TagType *ret = &underlyingAllocation[offset];
+        return ret;
+    }
+
+    void free(TagType *tag) {
+        auto offset = tag - underlyingAllocation;
+        allocator.free(offset);
+    }
+
+    size_t getCapacity() const {
+        return allocator.getCapacity();
+    }
+
+  protected:
+    TagType *underlyingAllocation = nullptr;
+    BitAllocator allocator;
+};
+
 // ringbuffer_base            head                   tail           ringbuffer_end
 //          | processed commands | unprocessed commands | unused space |
 class RingBuffer {

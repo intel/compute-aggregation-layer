@@ -285,7 +285,7 @@ TEST(StaticLengthBitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectR
     for (int i = 0; i < numBits; ++i) {
         auto bit = allocator.allocate();
         EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
-        EXPECT_LT(bit, numBits) << "it : " << i << " bit : " << bit;
+        EXPECT_GT(numBits, bit) << "it : " << i << " bit : " << bit;
         EXPECT_EQ(0U, occupiedBits.count(bit));
         occupiedBits.insert(bit);
     }
@@ -325,7 +325,7 @@ TEST(BitAllocator, WhenDefaultInitializedThenHasEmptyCapacity) {
     EXPECT_EQ(Cal::Rpc::BitAllocator::invalidOffset, allocator.allocate());
 }
 
-TEST(BitAllocator, WhenInitializedWithSizeThatIsNotMuiltpleOfNodeSizeThenEmpitsAlignsDownAndEmitsWarning) {
+TEST(BitAllocator, WhenInitializedWithSizeThatIsNotMultipleOfNodeSizeThenAlignsDownAndEmitsWarning) {
     Cal::Mocks::LogCaptureContext logs;
     Cal::Rpc::BitAllocator allocator{65};
     EXPECT_EQ(64U, allocator.getCapacity());
@@ -360,7 +360,7 @@ TEST(BitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectRangeAndUniqu
     for (int i = 0; i < numBits; ++i) {
         auto bit = allocator.allocate();
         EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
-        EXPECT_LT(bit, numBits) << "it : " << i << " bit : " << bit;
+        EXPECT_GT(numBits, bit) << "it : " << i << " bit : " << bit;
         EXPECT_EQ(0U, occupiedBits.count(bit));
         occupiedBits.insert(bit);
     }
@@ -397,6 +397,64 @@ TEST(BitAllocator, WhenFreeingOutOfRangeBitThenEmitsWarning) {
     Cal::Rpc::BitAllocator allocator{256};
     EXPECT_FALSE(allocator.free(257));
     EXPECT_FALSE(logs.empty());
+}
+
+TEST(TagAllocator, WhenDefaultInitializedThenHasEmptyCapacity) {
+    Cal::Rpc::TagAllocator<int> allocator;
+    EXPECT_EQ(0U, allocator.getCapacity());
+    EXPECT_EQ(nullptr, allocator.allocate());
+}
+
+TEST(TagAllocator, WhenInitializedWithUnderlyingBufferThenUsesItForAllocations) {
+    std::vector<int> underlyingData(256);
+    Cal::Rpc::TagAllocator<int> allocator{underlyingData.data(), underlyingData.size()};
+    EXPECT_EQ(underlyingData.size(), allocator.getCapacity());
+    int *tag = allocator.allocate();
+    ASSERT_NE(nullptr, tag);
+    Cal::Utils::AddressRange range{underlyingData.data(), underlyingData.size() * sizeof(int)};
+    EXPECT_TRUE(range.contains(tag));
+}
+
+TEST(TagAllocator, WhenAllocatingTagsThenReturnedValuesAreInCorrectRangeAndUnique) {
+    std::vector<int> underlyingData(256);
+    Cal::Rpc::TagAllocator<int> allocator{underlyingData.data(), underlyingData.size()};
+    auto numTags = allocator.getCapacity();
+    std::set<int *> occupiedTags;
+    Cal::Utils::AddressRange range{underlyingData.data(), underlyingData.size() * sizeof(int)};
+    for (int i = 0; i < numTags; ++i) {
+        auto tag = allocator.allocate();
+        EXPECT_EQ(tag, Cal::Utils::alignUp(tag, sizeof(int))) << "it : " << i << " wrong alignment for tag : " << reinterpret_cast<uintptr_t>(tag) << " [range : " << range.start << "-" << range.end << "]";
+        EXPECT_TRUE(range.contains(tag)) << "it : " << i << " tag : " << reinterpret_cast<uintptr_t>(tag) << " [range : " << range.start << "-" << range.end << "]";
+        EXPECT_EQ(0U, occupiedTags.count(tag));
+        occupiedTags.insert(tag);
+    }
+}
+
+TEST(TagAllocator, WhenFreeingTagsThenTheyCanBeReallocated) {
+    std::vector<int> underlyingData(256);
+    Cal::Rpc::TagAllocator<int> allocator{underlyingData.data(), underlyingData.size()};
+    auto numTags = allocator.getCapacity();
+    std::vector<int *> occupiedTags;
+    for (int i = 0; i < numTags; ++i) {
+        auto tag = allocator.allocate();
+        occupiedTags.push_back(tag);
+    }
+    EXPECT_EQ(nullptr, allocator.allocate());
+
+    static constexpr int tagsToReuseCount = 16;
+    static constexpr int tagsToReuse[tagsToReuseCount] = {2, 3, 5, 7, 73, 79, 83, 89, 137, 139, 149, 151, 197, 199, 211, 223};
+    std::set<int *> freeTags;
+    for (int i = 0; i < tagsToReuseCount; ++i) {
+        allocator.free(occupiedTags[tagsToReuse[i]]);
+        freeTags.insert(occupiedTags[tagsToReuse[i]]);
+    }
+
+    for (int i = 0; i < tagsToReuseCount; ++i) {
+        auto tag = allocator.allocate();
+        EXPECT_EQ(1U, freeTags.count(tag)) << "it : " << i << " tag : " << reinterpret_cast<uintptr_t>(tag);
+        freeTags.erase(tag);
+    }
+    EXPECT_EQ(nullptr, allocator.allocate());
 }
 
 } // namespace Ult
