@@ -171,7 +171,7 @@ class StaticLengthBitAllocator final {
     }
 
     void free(BitOffsetT offset) {
-        auto mask = ~(1 << offset);
+        auto mask = ~(static_cast<MaskT>(1) << offset);
         auto prev = occupied.load();
         while (false == occupied.compare_exchange_weak(prev, prev & mask)) {
         }
@@ -179,6 +179,59 @@ class StaticLengthBitAllocator final {
 
   protected:
     std::atomic<MaskT> occupied = 0U;
+};
+
+// Thread-safe
+class BitAllocator final {
+  public:
+    using NodeT = StaticLengthBitAllocator<uint64_t>;
+    using BitOffsetT = NodeT::BitOffsetT;
+    static constexpr BitOffsetT invalidOffset = NodeT::invalidOffset;
+
+    BitAllocator() = default;
+
+    BitAllocator(size_t capacity) {
+        nodes.resize(capacity / NodeT::capacity);
+        if (0 != (capacity % NodeT::capacity)) {
+            log<Verbosity::error>("BitAllocator capacity not divisible by node size - %zu elements will be wasted", capacity % NodeT::capacity);
+        }
+    }
+
+    BitOffsetT allocate() {
+        auto offset = invalidOffset;
+        constexpr int numTries = 2;
+        for (int tryNum = 0; tryNum < numTries; ++tryNum) {
+            for (size_t i = 0; i < nodes.size(); ++i) {
+                auto localOffset = nodes[i].allocate();
+                if (NodeT::invalidOffset != localOffset) {
+                    offset = localOffset + i * NodeT::capacity;
+                    break;
+                }
+            }
+            if (invalidOffset != offset) {
+                break;
+            }
+        }
+
+        return offset;
+    }
+
+    bool free(BitOffsetT offset) {
+        auto nodeId = offset / NodeT::capacity;
+        if (nodeId >= nodes.size()) {
+            log<Verbosity::error>("Invalid offset %zu >= %zu", offset, getCapacity());
+            return false;
+        }
+        nodes[nodeId].free(offset - nodeId * NodeT::capacity);
+        return true;
+    }
+
+    size_t getCapacity() const {
+        return nodes.size() * NodeT::capacity;
+    }
+
+  protected:
+    std::vector<NodeT> nodes;
 };
 
 // ringbuffer_base            head                   tail           ringbuffer_end

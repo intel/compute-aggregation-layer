@@ -210,7 +210,7 @@ TEST(StaticLengthBitAllocator, WhenDefaultConstructedThenIsEmpty) {
     }
 }
 
-TEST(StaticLengthBitAllocator, WhenFullTheReturnsInvalidOffset) {
+TEST(StaticLengthBitAllocator, WhenFullThenReturnsInvalidOffset) {
     using MaskT = uint64_t;
     using BitAllocatorT = Cal::Rpc::StaticLengthBitAllocator<uint64_t>;
     BitAllocatorT allocator;
@@ -317,6 +317,86 @@ TEST(StaticLengthBitAllocator, WhenFreeingBitsThenTheyCanBeReallocated) {
         freeBits.erase(bit);
     }
     EXPECT_EQ(BitAllocatorT::invalidOffset, allocator.allocate());
+}
+
+TEST(BitAllocator, WhenDefaultInitializedThenHasEmptyCapacity) {
+    Cal::Rpc::BitAllocator allocator;
+    EXPECT_EQ(0U, allocator.getCapacity());
+    EXPECT_EQ(Cal::Rpc::BitAllocator::invalidOffset, allocator.allocate());
+}
+
+TEST(BitAllocator, WhenInitializedWithSizeThatIsNotMuiltpleOfNodeSizeThenEmpitsAlignsDownAndEmitsWarning) {
+    Cal::Mocks::LogCaptureContext logs;
+    Cal::Rpc::BitAllocator allocator{65};
+    EXPECT_EQ(64U, allocator.getCapacity());
+    EXPECT_FALSE(logs.empty());
+}
+
+TEST(BitAllocator, WhenDefaultConstructedThenIsEmpty) {
+    size_t numBits = 256;
+    Cal::Rpc::BitAllocator allocator{numBits};
+    EXPECT_EQ(numBits, allocator.getCapacity());
+    numBits = allocator.getCapacity();
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_NE(Cal::Rpc::BitAllocator::invalidOffset, bit) << "it : " << i << " bit : " << bit;
+    }
+}
+
+TEST(BitAllocator, WhenFullThenReturnsInvalidOffset) {
+    Cal::Rpc::BitAllocator allocator{256};
+    auto numBits = allocator.getCapacity();
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+    }
+
+    EXPECT_EQ(Cal::Rpc::BitAllocator::invalidOffset, allocator.allocate());
+}
+
+TEST(BitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectRangeAndUnique) {
+    Cal::Rpc::BitAllocator allocator{256};
+    auto numBits = allocator.getCapacity();
+    std::set<Cal::Rpc::BitAllocator::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
+        EXPECT_LT(bit, numBits) << "it : " << i << " bit : " << bit;
+        EXPECT_EQ(0U, occupiedBits.count(bit));
+        occupiedBits.insert(bit);
+    }
+}
+
+TEST(BitAllocator, WhenFreeingBitsThenTheyCanBeReallocated) {
+    Cal::Rpc::BitAllocator allocator{256};
+    auto numBits = allocator.getCapacity();
+    std::vector<Cal::Rpc::BitAllocator::BitOffsetT> occupiedBits;
+    for (int i = 0; i < numBits; ++i) {
+        auto bit = allocator.allocate();
+        occupiedBits.push_back(bit);
+    }
+    EXPECT_EQ(Cal::Rpc::BitAllocator::invalidOffset, allocator.allocate());
+
+    static constexpr int bitsToReuseCount = 16;
+    static constexpr int bitsToReuse[bitsToReuseCount] = {2, 3, 5, 7, 73, 79, 83, 89, 137, 139, 149, 151, 197, 199, 211, 223};
+    std::set<Cal::Rpc::BitAllocator::BitOffsetT> freeBits;
+    for (int i = 0; i < bitsToReuseCount; ++i) {
+        EXPECT_TRUE(allocator.free(occupiedBits[bitsToReuse[i]]));
+        freeBits.insert(occupiedBits[bitsToReuse[i]]);
+    }
+
+    for (int i = 0; i < bitsToReuseCount; ++i) {
+        auto bit = allocator.allocate();
+        EXPECT_EQ(1U, freeBits.count(bit)) << "it : " << i << " bit : " << bit;
+        freeBits.erase(bit);
+    }
+    EXPECT_EQ(Cal::Rpc::BitAllocator::invalidOffset, allocator.allocate());
+}
+
+TEST(BitAllocator, WhenFreeingOutOfRangeBitThenEmitsWarning) {
+    Cal::Mocks::LogCaptureContext logs;
+    Cal::Rpc::BitAllocator allocator{256};
+    EXPECT_FALSE(allocator.free(257));
+    EXPECT_FALSE(logs.empty());
 }
 
 } // namespace Ult
