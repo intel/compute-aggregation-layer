@@ -716,5 +716,22 @@ class Heap {
 
 std::string getPathForTempFiles();
 
+inline std::vector<std::string> split(const std::string &input, const char *delimiter) {
+    std::vector<std::string> outVector;
+    size_t pos = 0;
+
+    while (pos < input.size()) {
+        size_t nextDelimiter = input.find_first_of(delimiter, pos);
+        outVector.emplace_back(input.substr(pos, std::min(nextDelimiter, input.size()) - pos));
+
+        pos = nextDelimiter;
+        if (pos != std::string::npos) {
+            pos++;
+        }
+    }
+
+    return outVector;
+}
+
 } // namespace Utils
 } // namespace Cal

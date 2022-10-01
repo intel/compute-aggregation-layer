@@ -100,6 +100,8 @@ namespace LevelZero {
 
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
+ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices);
+ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_handle_t *phDevices);
 ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers);
 ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout);
@@ -210,6 +212,15 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
     using RefCountedWithParent::RefCountedWithParent;
 
     bool patchDeviceName(ze_device_properties_t &properties);
+    void addSubDeviceToFilter(uint32_t subDeviceIndex);
+    bool isZeAffinityMaskPresent();
+    const std::vector<ze_device_handle_t> &getFilteredDevices() const { return filteredDevices; };
+
+  private:
+    bool zeAffinityMaskPresent = false;
+    std::vector<bool> selectedDevices;
+    std::vector<ze_device_handle_t> filteredDevices;
+    std::once_flag parseZeAffinityMaskOnce;
 };
 
 struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, IcdL0TypePrinter> {
@@ -450,6 +461,9 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, fencesMap, fencesMapMutex);
     }
 
+    bool isZeAffinityMaskPresent();
+    const std::vector<ze_device_handle_t> &getFilteredDevices() const { return filteredDevices; };
+
   private:
     template <typename LocalT, typename RemoteT, typename MapT>
     RemoteT translateNewRemoteObjectToLocalObject(RemoteT remoteHandle, RemoteT parent, MapT &mapping, std::mutex &mapMutex) {
@@ -517,6 +531,10 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 
     std::mutex fencesMapMutex;
     std::map<ze_fence_handle_t, IcdL0Fence *> fencesMap;
+
+    bool zeAffinityMaskPresent = false;
+    std::vector<ze_device_handle_t> filteredDevices;
+    std::once_flag parseZeAffinityMaskOnce;
 };
 
 } // namespace LevelZero

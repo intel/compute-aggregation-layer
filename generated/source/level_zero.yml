@@ -1615,6 +1615,9 @@ config :
 #
         - name : zeDeviceGet
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1653,6 +1656,9 @@ config :
 
         - name : zeDeviceGetSubDevices
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t

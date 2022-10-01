@@ -550,6 +550,49 @@ ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
 
     return ZE_RESULT_SUCCESS;
 }
+ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices) {
+    auto platform = Cal::Icd::icdGlobalState.getL0Platform();
+    if (!platform || !platform->valid() || hDriver != static_cast<ze_driver_handle_t>(platform)) {
+        return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
+    }
+
+    if (platform->isZeAffinityMaskPresent()) {
+        auto &availableDevices = platform->getFilteredDevices();
+        auto numAvailableDevices = static_cast<uint32_t>(availableDevices.size());
+        if (phDevices == nullptr) {
+            *pCount = numAvailableDevices;
+        } else {
+            auto numDevices = std::min(*pCount, numAvailableDevices);
+            memcpy(phDevices, availableDevices.data(), numDevices * sizeof(ze_device_handle_t));
+        }
+        return ZE_RESULT_SUCCESS;
+    }
+    return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
+}
+
+ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_handle_t *phDevices) {
+    auto device = static_cast<IcdL0Device *>(hDevice);
+    if (!device) {
+        return Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
+    }
+    device->ensureIsLocalObject();
+
+    if (device->isZeAffinityMaskPresent()) {
+        auto &availableDevices = device->getFilteredDevices();
+        auto numAvailableDevices = static_cast<uint32_t>(availableDevices.size());
+        if (numAvailableDevices == 1u) {
+            numAvailableDevices = 0u;
+        }
+        if (phDevices == nullptr) {
+            *pCount = numAvailableDevices;
+        } else {
+            auto numDevices = std::min(*pCount, numAvailableDevices);
+            memcpy(phDevices, availableDevices.data(), numDevices * sizeof(ze_device_handle_t));
+        }
+        return ZE_RESULT_SUCCESS;
+    }
+    return Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
+}
 
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr) {
     Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::ImplicitArgs implicitArgs;
@@ -972,6 +1015,90 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
     }
 
     return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+}
+
+bool IcdL0Platform::isZeAffinityMaskPresent() {
+    std::call_once(parseZeAffinityMaskOnce, [this]() {
+        auto zeAffinityMask = Cal::Utils::getCalEnv("ZE_AFFINITY_MASK");
+        auto zeAffinityMaskDetected = zeAffinityMask != nullptr && zeAffinityMask[0] != 0;
+
+        if (zeAffinityMaskDetected) {
+            uint32_t numAllDevices = 0;
+            std::vector<ze_device_handle_t> allDevices;
+            std::vector<bool> selectedDevices;
+            auto status = Cal::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, nullptr);
+            if (status != ZE_RESULT_SUCCESS) {
+                return;
+            }
+
+            allDevices.resize(numAllDevices);
+            status = Cal::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, allDevices.data());
+            if (status != ZE_RESULT_SUCCESS) {
+                return;
+            }
+            selectedDevices.resize(numAllDevices);
+            auto affinityMaskEntries = Cal::Utils::split(zeAffinityMask, ",");
+            for (const auto &entry : affinityMaskEntries) {
+                auto subEntries = Cal::Utils::split(entry, ".");
+                auto deviceIndex = static_cast<uint32_t>(std::stoul(subEntries[0], nullptr, 0));
+                if (deviceIndex < numAllDevices) {
+                    selectedDevices[deviceIndex] = true;
+                    if (subEntries.size() > 1) {
+                        auto subDeviceIndex = static_cast<uint32_t>(std::stoul(subEntries[1], nullptr, 0));
+                        auto device = static_cast<IcdL0Device *>(allDevices[deviceIndex]);
+                        device->addSubDeviceToFilter(subDeviceIndex);
+                    }
+                }
+            }
+
+            for (auto i = 0u; i < numAllDevices; i++) {
+
+                if (selectedDevices[i]) {
+                    filteredDevices.push_back(allDevices[i]);
+                }
+            }
+            zeAffinityMaskPresent = zeAffinityMaskDetected;
+        }
+    });
+
+    return zeAffinityMaskPresent;
+}
+
+void IcdL0Device::addSubDeviceToFilter(uint32_t subDeviceIndex) {
+    if (selectedDevices.size() < subDeviceIndex + 1) {
+        selectedDevices.resize(subDeviceIndex + 1);
+    }
+    selectedDevices[subDeviceIndex] = true;
+}
+bool IcdL0Device::isZeAffinityMaskPresent() {
+    std::call_once(parseZeAffinityMaskOnce, [this]() {
+        if (!selectedDevices.empty()) {
+            uint32_t numAllDevices = 0;
+            std::vector<ze_device_handle_t> allDevices;
+            auto status = Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(this, &numAllDevices, nullptr);
+            if (status != ZE_RESULT_SUCCESS) {
+                return;
+            }
+
+            allDevices.resize(numAllDevices);
+            status = Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(this, &numAllDevices, allDevices.data());
+            if (status != ZE_RESULT_SUCCESS) {
+                return;
+            }
+
+            selectedDevices.resize(numAllDevices);
+
+            for (auto i = 0u; i < numAllDevices; i++) {
+
+                if (selectedDevices[i]) {
+                    filteredDevices.push_back(allDevices[i]);
+                }
+            }
+            zeAffinityMaskPresent = true;
+        }
+    });
+
+    return zeAffinityMaskPresent;
 }
 
 ze_result_t IcdL0Module::getKernelNames(uint32_t *pCount, const char **pNames) {

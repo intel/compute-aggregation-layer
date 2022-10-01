@@ -1205,6 +1205,8 @@ bool Provider::runCommand(const ServiceConfig::RunnerConfig &config) {
 }
 
 void Provider::spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
+
+    unsetenv("ZE_AFFINITY_MASK");
     auto childPid = fork();
     if (childPid == -1) {
         log<Verbosity::error>("Failed to create fork");
