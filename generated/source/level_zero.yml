@@ -212,7 +212,6 @@ config :
         - Device.zeDeviceReserveCacheExt
         - Device.zeDeviceSetCacheAdviceExt
         - CommandList.zeCommandListAppendWriteGlobalTimestamp
-        - Context.zeContextCreateEx
         - CommandList.zeCommandListAppendMemoryCopyRegion
         - CommandList.zeCommandListAppendMemoryCopyFromContext
         - CommandList.zeCommandListAppendImageCopy
@@ -809,34 +808,60 @@ config :
                         server_access : write
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
-#        - name : zeContextCreateEx
-#          ddi_category :  Context
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hDriver
-#                    type : ze_driver_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : desc
-#                    type : const ze_context_desc_t*
-#                    kind : pointer
-#                 2 :
-#                    name : numDevices
-#                    type : uint32_t
-#                    kind : scalar
-#                 3 :
-#                    name : phDevices
-#                    type : ze_device_handle_t*
-#                    kind : pointer
-#                 4 :
-#                    name : phContext
-#                    type : ze_context_handle_t*
-#                    kind : pointer
-#
+        - name : zeContextCreateEx
+          latency : 1.0
+          ddi_category :  Context
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hDriver
+                    type : ze_driver_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+                 1 :
+                    name : desc
+                    type : const ze_context_desc_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_context_desc_t
+                            kind : scalar
+                        server_access : read
+                 2 :
+                    name : numDevices
+                    type : uint32_t
+                    kind : scalar
+                 3 :
+                    name : phDevices
+                    type : ze_device_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "numDevices"
+                        can_be_null : True
+                        element :
+                            type : ze_device_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                        server_access : read
+                 4 :
+                    name : phContext
+                    type : ze_context_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_context_handle_t
+                            kind : scalar
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                        server_access : write
+                    daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
+
         - name : zeContextDestroy
           latency : 0.0
           ddi_category :  Context

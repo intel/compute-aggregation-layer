@@ -29,6 +29,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs);
 ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
+ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext);
 ze_result_t zeContextDestroy (ze_context_handle_t hContext);
 ze_result_t zeContextGetStatus (ze_context_handle_t hContext);
 ze_result_t zeCommandListAppendMemoryCopy (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
@@ -125,10 +126,6 @@ inline void zeDeviceSetCacheAdviceExtUnimpl() {
 }
 inline void zeCommandListAppendWriteGlobalTimestampUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendWriteGlobalTimestamp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeContextCreateExUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextCreateEx is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
@@ -377,6 +374,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandQueue.pfnExecuteCommandLists = Cal::Icd::LevelZero::zeCommandQueueExecuteCommandLists;
     dt.CommandQueue.pfnSynchronize = Cal::Icd::LevelZero::zeCommandQueueSynchronize;
     dt.Context.pfnCreate = Cal::Icd::LevelZero::zeContextCreate;
+    dt.Context.pfnCreateEx = Cal::Icd::LevelZero::zeContextCreateEx;
     dt.Context.pfnDestroy = Cal::Icd::LevelZero::zeContextDestroy;
     dt.Context.pfnGetStatus = Cal::Icd::LevelZero::zeContextGetStatus;
     dt.CommandList.pfnAppendMemoryCopy = Cal::Icd::LevelZero::zeCommandListAppendMemoryCopy;
@@ -452,7 +450,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Device.pfnReserveCacheExt = reinterpret_cast<decltype(dt.Device.pfnReserveCacheExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceReserveCacheExtUnimpl);
     dt.Device.pfnSetCacheAdviceExt = reinterpret_cast<decltype(dt.Device.pfnSetCacheAdviceExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceSetCacheAdviceExtUnimpl);
     dt.CommandList.pfnAppendWriteGlobalTimestamp = reinterpret_cast<decltype(dt.CommandList.pfnAppendWriteGlobalTimestamp)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendWriteGlobalTimestampUnimpl);
-    dt.Context.pfnCreateEx = reinterpret_cast<decltype(dt.Context.pfnCreateEx)>(Cal::Icd::LevelZero::Unimplemented::zeContextCreateExUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
     dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);

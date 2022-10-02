@@ -30,6 +30,7 @@ ze_result_t (*zeCommandQueueDestroy)(ze_command_queue_handle_t hCommandQueue) = 
 ze_result_t (*zeCommandQueueExecuteCommandLists)(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeCommandQueueSynchronize)(ze_command_queue_handle_t hCommandQueue, uint64_t timeout) = nullptr;
 ze_result_t (*zeContextCreate)(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) = nullptr;
+ze_result_t (*zeContextCreateEx)(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) = nullptr;
 ze_result_t (*zeContextDestroy)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeContextGetStatus)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryCopy)(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
@@ -178,6 +179,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeContextCreate = reinterpret_cast<decltype(zeContextCreate)>(dlsym(libraryHandle, "zeContextCreate"));
     if(nullptr == zeContextCreate){
         log<Verbosity::error>("Missing symbol zeContextCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeContextCreateEx = reinterpret_cast<decltype(zeContextCreateEx)>(dlsym(libraryHandle, "zeContextCreateEx"));
+    if(nullptr == zeContextCreateEx){
+        log<Verbosity::error>("Missing symbol zeContextCreateEx in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -610,6 +617,7 @@ void unloadLevelZeroLibrary() {
     zeCommandQueueExecuteCommandLists = nullptr;
     zeCommandQueueSynchronize = nullptr;
     zeContextCreate = nullptr;
+    zeContextCreateEx = nullptr;
     zeContextDestroy = nullptr;
     zeContextGetStatus = nullptr;
     zeCommandListAppendMemoryCopy = nullptr;

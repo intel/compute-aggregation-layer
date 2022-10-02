@@ -623,6 +623,18 @@ int main(int argc, const char *argv[]) {
     const auto zeContextGetStatusResult = zeContextGetStatus(contextHandle);
     log<Verbosity::info>("L0 context status is: %d", static_cast<int>(zeContextGetStatusResult));
 
+    log<Verbosity::info>("Creating L0 context via zeContextCreateEx()!");
+
+    ze_context_handle_t contextHandleEx{};
+
+    const auto zeContextCreateExResult = zeContextCreateEx(driver, &contextDescription, numDevices, devices.data(), &contextHandleEx);
+    if (zeContextCreateExResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeContextCreateEx() call has failed! Error code = %d", static_cast<int>(zeContextCreateExResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("L0 context has been created! contextHandleEx = %p", static_cast<void *>(contextHandleEx));
+
     log<Verbosity::info>("Getting command queue properties for device[0] to prepare command queue description!");
     assert(!devices.empty());
 
@@ -2193,7 +2205,7 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("L0 command list immediate has been successfully created!");
 
-    log<Verbosity::info>("Destroying L0 command list immediate via zeCommandQueueDestroy()!");
+    log<Verbosity::info>("Destroying L0 command list immediate via zeCommandListDestroy()!");
     zeCommandListDestroyResult = zeCommandListDestroy(commandListImmediateHandle);
     if (zeCommandListDestroyResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeCommandListDestroy() call has failed! Error code = %d", static_cast<int>(zeCommandListDestroyResult));
@@ -2211,14 +2223,20 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("L0 command queue has been destroyed!");
 
-    log<Verbosity::info>("Destroying L0 context via zeContextDestroy()!");
-    const auto zeContextDestroyResult = zeContextDestroy(contextHandle);
+    log<Verbosity::info>("Destroying L0 contexts via zeContextDestroy()!");
+    auto zeContextDestroyResult = zeContextDestroy(contextHandle);
     if (zeContextDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeContextDestroy() call has failed! Error code = %d", static_cast<int>(zeContextDestroyResult));
+        log<Verbosity::error>("zeContextDestroy() call has failed for contextHandle! Error code = %d", static_cast<int>(zeContextDestroyResult));
         return -1;
     }
 
-    log<Verbosity::info>("L0 context has been destroyed!");
+    zeContextDestroyResult = zeContextDestroy(contextHandleEx);
+    if (zeContextDestroyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeContextDestroy() call has failed for contextHandleEx! Error code = %d", static_cast<int>(zeContextDestroyResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("L0 contexts have been destroyed!");
 
     if (childProcesses.size()) {
         log<Verbosity::info>("Waiting for child processes");

@@ -38,6 +38,7 @@ extern ze_result_t (*zeCommandQueueDestroy)(ze_command_queue_handle_t hCommandQu
 extern ze_result_t (*zeCommandQueueExecuteCommandLists)(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
 extern ze_result_t (*zeCommandQueueSynchronize)(ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 extern ze_result_t (*zeContextCreate)(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
+extern ze_result_t (*zeContextCreateEx)(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext);
 extern ze_result_t (*zeContextDestroy)(ze_context_handle_t hContext);
 extern ze_result_t (*zeContextGetStatus)(ze_context_handle_t hContext);
 extern ze_result_t (*zeCommandListAppendMemoryCopy)(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
@@ -235,6 +236,24 @@ inline bool zeContextCreateHandler(Provider &service, ClientContext &ctx, Cal::R
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreate(
                                                 apiCommand->args.hDriver, 
                                                 apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
+                                                apiCommand->args.phContext ? &apiCommand->captures.phContext : nullptr
+                                                );
+    if(isSuccessful(apiCommand->captures.ret)) {
+        const auto& resource = apiCommand->args.phContext ? &apiCommand->captures.phContext : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+        }
+    }
+    return true;
+}
+inline bool zeContextCreateExHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeContextCreateEx");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateExRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreateEx(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
+                                                apiCommand->args.numDevices, 
+                                                apiCommand->args.phDevices ? apiCommand->captures.phDevices : nullptr, 
                                                 apiCommand->args.phContext ? &apiCommand->captures.phContext : nullptr
                                                 );
     if(isSuccessful(apiCommand->captures.ret)) {
@@ -978,6 +997,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::messageSubtype] = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler;
     outHandlers[ZeCommandQueueSynchronizeRpcM::messageSubtype] = zeCommandQueueSynchronizeHandler;
     outHandlers[ZeContextCreateRpcM::messageSubtype] = zeContextCreateHandler;
+    outHandlers[ZeContextCreateExRpcM::messageSubtype] = zeContextCreateExHandler;
     outHandlers[ZeContextDestroyRpcM::messageSubtype] = zeContextDestroyHandler;
     outHandlers[ZeContextGetStatusRpcM::messageSubtype] = zeContextGetStatusHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2UsmHandler;
@@ -1119,6 +1139,15 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeContextCreateRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreate(
                                                 apiCommand.args.hDriver, 
                                                 apiCommand.args.desc, 
+                                                apiCommand.args.phContext
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeContextCreateExRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreateEx(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.desc, 
+                                                apiCommand.args.numDevices, 
+                                                apiCommand.args.phDevices, 
                                                 apiCommand.args.phContext
                                                 );
 }
@@ -1649,6 +1678,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeContextCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeContextCreateExRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateExRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeContextDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeContextGetStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextGetStatusRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM*>(command)); break;

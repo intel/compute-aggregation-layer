@@ -66,6 +66,26 @@ size_t ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::getCa
      return size;
 }
 
+ZeContextCreateExRpcM::Captures::DynamicTraits ZeContextCreateExRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
+    DynamicTraits ret = {};
+    ret.phDevices.count = numDevices;
+    ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
+
+
+    return ret;
+}
+
+size_t ZeContextCreateExRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phDevices) + Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
+     return size;
+}
+
+size_t ZeContextCreateExRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
+     return size;
+}
+
 ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
     ret.phWaitEvents.count = numWaitEvents;

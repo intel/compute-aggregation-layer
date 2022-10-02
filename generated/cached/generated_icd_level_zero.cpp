@@ -324,6 +324,43 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
 
     return ret;
 }
+ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
+    log<Verbosity::bloat>("Establishing RPC for zeContextCreateEx");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeContextCreateExRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, desc, numDevices, phDevices, phContext);
+    auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(space.hostAccessible) CommandT(dynMemTraits, hDriver, desc, numDevices, phDevices, phContext);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    if(phDevices)
+    {
+        auto base = command->captures.phDevices;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phDevices.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Device*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(space, command->header.flags)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(phContext)
+    {
+        phContext[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phContext[0]);
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     log<Verbosity::bloat>("Establishing RPC for zeContextDestroy");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2144,6 +2181,9 @@ ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, 
 }
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
     return Cal::Icd::LevelZero::zeContextCreate(hDriver, desc, phContext);
+}
+ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
+    return Cal::Icd::LevelZero::zeContextCreateEx(hDriver, desc, numDevices, phDevices, phContext);
 }
 ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     return Cal::Icd::LevelZero::zeContextDestroy(hContext);

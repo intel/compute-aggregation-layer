@@ -52,6 +52,10 @@ ze_result_t zeContextCreate(ze_driver_handle_t hDriver, const ze_context_desc_t*
    return {};
 }
 
+ze_result_t zeContextCreateEx(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext){
+   return {};
+}
+
 ze_result_t zeContextDestroy(ze_context_handle_t hContext){
    return {};
 }
