@@ -691,21 +691,33 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
     if (dstIsUsm && srcIsUsm) {
         return zeCommandListAppendMemoryCopyRpcHelperUsm2Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else if (dstIsUsm) {
-        icdCommandList->registerMemoryToWrite(srcptr, size);
-        return zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        if (icdCommandList->isImmediate()) {
+            return zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        } else {
+            icdCommandList->registerMemoryToWrite(srcptr, size);
+            return zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
     } else if (srcIsUsm) {
-        icdCommandList->registerMemoryToRead(dstptr, size);
-        return zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        if (icdCommandList->isImmediate()) {
+            log<Verbosity::error>("zeCommandListAppendMemoryCopy for USM2M is not supported for immediate command lists yet!");
+        } else {
+            icdCommandList->registerMemoryToRead(dstptr, size);
+            return zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
     } else {
         if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
             log<Verbosity::debug>("zeCommandListAppendMemoryCopy(): host's heap/stack memory blocks overlap!");
             return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
         }
 
-        icdCommandList->registerMemoryToWrite(srcptr, size);
-        icdCommandList->registerMemoryToRead(dstptr, size);
+        if (icdCommandList->isImmediate()) {
+            log<Verbosity::error>("zeCommandListAppendMemoryCopy for M2M is not supported for immediate command lists yet!");
+        } else {
+            icdCommandList->registerMemoryToWrite(srcptr, size);
+            icdCommandList->registerMemoryToRead(dstptr, size);
 
-        return zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+            return zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
     }
 
     return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;

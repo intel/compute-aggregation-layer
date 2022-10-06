@@ -234,6 +234,10 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
+    bool isImmediate() const {
+        return isImmediateList;
+    }
+
     void registerMemoryToWrite(const void *srcPtr, size_t srcSize);
     void registerMemoryToRead(const void *dstPtr, size_t dstSize);
 
@@ -256,9 +260,16 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     }
 
   protected:
+    friend IcdL0Platform;
+
+    void markAsImmediate() {
+        isImmediateList = true;
+    }
+
     void registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory);
     ChunkEntry mergeChunks(const ChunkEntry &first, const ChunkEntry &second);
 
+    bool isImmediateList{false};
     std::mutex memoryToWriteMutex{};
     std::mutex memoryToReadMutex{};
     std::vector<ChunkEntry> memoryToWrite{};
@@ -394,8 +405,14 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, commandQueuesMap, commandQueuesMapMutex);
     }
 
-    ze_command_list_handle_t translateNewRemoteObjectToLocalObject(ze_command_list_handle_t remoteHandle) {
-        return translateNewRemoteObjectToLocalObject<IcdL0CommandList>(remoteHandle, static_cast<ze_command_list_handle_t>(nullptr), commandListsMap, commandListsMapMutex);
+    ze_command_list_handle_t translateNewRemoteObjectToLocalObject(ze_command_list_handle_t remoteHandle, bool isImmediate) {
+        auto commandList = translateNewRemoteObjectToLocalObject<IcdL0CommandList>(remoteHandle, static_cast<ze_command_list_handle_t>(nullptr), commandListsMap, commandListsMapMutex);
+        if (isImmediate && commandList) {
+            auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);
+            icdCommandList->markAsImmediate();
+        }
+
+        return commandList;
     }
 
     void removeObjectFromMap(ze_command_list_handle_t remoteHandle, IcdL0CommandList *localHandle) {

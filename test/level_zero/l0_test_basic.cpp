@@ -2091,7 +2091,7 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Kernel has been successfully destroyed!");
 
-    log<Verbosity::info>("Releasing device memory for buffers via zeMemFree()");
+    log<Verbosity::info>("Releasing memory for buffers via zeMemFree()");
 
     auto zeMemFreeResult = zeMemFree(contextHandle, sourceBuffer);
     if (zeMemFreeResult != ZE_RESULT_SUCCESS) {
@@ -2102,12 +2102,6 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
     zeMemFreeResult = zeMemFree(contextHandle, destinationBuffer);
     if (zeMemFreeResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeMemFree() call has failed for destinationBuffer! Error code: %d", static_cast<int>(zeMemFreeResult));
-        return -1;
-    }
-
-    zeMemFreeResult = zeMemFree(contextHandle, usmHostBuffer);
-    if (zeMemFreeResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeMemFree() call has failed for usmHostBuffer! Error code: %d", static_cast<int>(zeMemFreeResult));
         return -1;
     }
 
@@ -2194,7 +2188,9 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("L0 command list has been destroyed!");
 
-    log<Verbosity::info>("Creating L0 immediate command list via zeCommandListCreateImmediate()!");
+    log<Verbosity::info>("Creating L0 immediate command list via zeCommandListCreateImmediate() working in SYNCHRONOUS mode!");
+
+    queueDescription.mode = ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS;
 
     ze_command_list_handle_t commandListImmediateHandle{};
     const auto zeCommandListCreateImmediateResult = zeCommandListCreateImmediate(contextHandle, device, &queueDescription, &commandListImmediateHandle);
@@ -2205,6 +2201,44 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("L0 command list immediate has been successfully created!");
 
+    log<Verbosity::info>("Setting whole usmHostBuffer to 0xFF");
+    std::memset(usmHostBuffer, 0xFF, bufferSize);
+    log<Verbosity::info>("usmHostBuffer set successfully!");
+
+    log<Verbosity::info>("Appending, submitting and executing memory copy operation for copying source buffer from user's stack to usmHostBuffer via immediate command list!");
+
+    constexpr size_t immediateCommandListCopyBufferSize = 32;
+    unsigned char immediateCommandListCopySourceBuffer[immediateCommandListCopyBufferSize] = {1, 2, 3, 9, 8, 7, 4, 5, 6};
+
+    zeCommandListAppendMemoryCopyResult = zeCommandListAppendMemoryCopy(commandListImmediateHandle,
+                                                                        usmHostBuffer,
+                                                                        immediateCommandListCopySourceBuffer,
+                                                                        immediateCommandListCopyBufferSize,
+                                                                        nullptr,
+                                                                        0,
+                                                                        nullptr);
+    if (zeCommandListAppendMemoryCopyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopy() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryCopyResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Memory copy operation appended, submitted and executed successfully!");
+
+    log<Verbosity::info>("Validating usmHostBuffer after copying via immediate command list!");
+
+    const auto usmHostBufferAsChar = static_cast<const unsigned char *>(usmHostBuffer);
+    for (size_t i = 0u; i < immediateCommandListCopyBufferSize; ++i) {
+        if (usmHostBufferAsChar[i] != immediateCommandListCopySourceBuffer[i]) {
+            log<Verbosity::error>("usmHostBuffer contains invalid value at index: %zd! Expected: %d, Actual: %d",
+                                  i,
+                                  static_cast<int>(immediateCommandListCopySourceBuffer[i]),
+                                  static_cast<int>(usmHostBufferAsChar[i]));
+            return -1;
+        }
+    }
+
+    log<Verbosity::info>("usmHostBuffer has passed validation!");
+
     log<Verbosity::info>("Destroying L0 command list immediate via zeCommandListDestroy()!");
     zeCommandListDestroyResult = zeCommandListDestroy(commandListImmediateHandle);
     if (zeCommandListDestroyResult != ZE_RESULT_SUCCESS) {
@@ -2213,6 +2247,16 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
     }
 
     log<Verbosity::info>("L0 command list immediate has been destroyed!");
+
+    log<Verbosity::info>("Releasing memory for usmHostBuffer via zeMemFree()");
+
+    zeMemFreeResult = zeMemFree(contextHandle, usmHostBuffer);
+    if (zeMemFreeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemFree() call has failed for usmHostBuffer! Error code: %d", static_cast<int>(zeMemFreeResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Memory has been released!");
 
     log<Verbosity::info>("Destroying L0 command queue via zeCommandQueueDestroy()!");
     const auto zeCommandQueueDestroyResult = zeCommandQueueDestroy(commandQueue);

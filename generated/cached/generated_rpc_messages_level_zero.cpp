@@ -126,6 +126,36 @@ size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::Captures::getCaptur
      return size;
 }
 
+ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.srcptr.count = size;
+    ret.srcptr.size = ret.srcptr.count;
+
+    ret.phWaitEvents.offset = alignUpPow2<8>(ret.srcptr.offset + ret.srcptr.size);
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
     ret.phWaitEvents.count = numWaitEvents;

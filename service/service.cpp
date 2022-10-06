@@ -1023,6 +1023,26 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     return true;
 }
 
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
+
+    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.srcptr, apiCommand->args.size);
+    auto mappedSrcPtr = memoryBlock.translate(apiCommand->args.srcptr);
+
+    std::memcpy(mappedSrcPtr, apiCommand->captures.getSrcptr(), apiCommand->args.size);
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
+                                                                                                      apiCommand->args.dstptr,
+                                                                                                      mappedSrcPtr,
+                                                                                                      apiCommand->args.size,
+                                                                                                      apiCommand->args.hSignalEvent,
+                                                                                                      apiCommand->args.numWaitEvents,
+                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
+    return true;
+}
+
 bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM *>(command);

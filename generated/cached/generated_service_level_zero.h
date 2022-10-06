@@ -301,6 +301,7 @@ inline bool zeCommandListAppendMemoryCopyRpcHelperUsm2UsmHandler(Provider &servi
     return true;
 }
 bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListAppendMemoryFillRpcHelperUsm2UsmHandler(Provider &service, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1002,6 +1003,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeContextGetStatusRpcM::messageSubtype] = zeContextGetStatusHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler;
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperUsm2UsmHandler;
@@ -1173,6 +1175,17 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHe
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.srcptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.dstptr, 
@@ -1683,6 +1696,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeContextGetStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextGetStatusRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM*>(command)); break;
