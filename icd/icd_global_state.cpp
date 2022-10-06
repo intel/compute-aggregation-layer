@@ -25,7 +25,7 @@ IcdGlobalState::IcdGlobalState() {
     this->shmemManager = std::make_unique<Cal::Ipc::ShmemManager>();
     this->mallocShmemZeroCopyManager = std::make_unique<Cal::Ipc::MallocShmemZeroCopyManager>();
 
-    this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName);
+    this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
 }
 IcdGlobalState::~IcdGlobalState() {
     this->cache.clear();
