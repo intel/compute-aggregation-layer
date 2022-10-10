@@ -687,7 +687,7 @@ void objectCleanup(void *remote, void *local);
 
 class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
   public:
-    IcdOclPlatform(Cal::Ipc::ShmemManager &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : IcdPlatform(shmemManager, mallocShmemZeroCopyManager) {
+    IcdOclPlatform(Cal::Ipc::ShmemImporter &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : IcdPlatform(shmemManager, mallocShmemZeroCopyManager) {
         this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
     }
 

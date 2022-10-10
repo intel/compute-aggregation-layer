@@ -579,7 +579,7 @@ class ChannelClient : public CommandsChannel {
         }
     }
 
-    ChannelClient(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemManager &shmemManager)
+    ChannelClient(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemImporter &shmemManager)
         : connection(connection), shmemManager(shmemManager) {
     }
 
@@ -777,7 +777,7 @@ class ChannelClient : public CommandsChannel {
             log<Verbosity::debug>("Failed to allocate RPC ring buffer shmem on the service side");
             return false;
         }
-        this->underlyingShmem = shmemManager.get(remoteShmem, nullptr);
+        this->underlyingShmem = shmemManager.open(remoteShmem, nullptr);
         if (nullptr == underlyingShmem.ptr) {
             log<Verbosity::debug>("Failed to map RPC ring buffer shmem on client side");
             return false;
@@ -816,7 +816,7 @@ class ChannelClient : public CommandsChannel {
     }
 
     Cal::Ipc::Connection &connection;
-    Cal::Ipc::ShmemManager &shmemManager;
+    Cal::Ipc::ShmemImporter &shmemManager;
     Cal::Ipc::Shmem underlyingShmem;
     std::atomic_bool stopped = false;
 
@@ -836,7 +836,7 @@ class ChannelServer : public CommandsChannel {
         CompletionStampT *completionStamp = nullptr;
     };
 
-    ChannelServer(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemManager &shmemManager)
+    ChannelServer(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemAllocator &shmemManager)
         : connection(connection), shmemManager(shmemManager) {
     }
 
@@ -939,7 +939,7 @@ class ChannelServer : public CommandsChannel {
     }
 
     Cal::Ipc::Connection &connection;
-    Cal::Ipc::ShmemManager &shmemManager;
+    Cal::Ipc::ShmemAllocator &shmemManager;
     Cal::Ipc::Shmem ringBufferShmem;
     std::atomic_bool stopped = false;
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;

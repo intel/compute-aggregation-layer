@@ -60,52 +60,12 @@ struct Shmem {
     }
 };
 
-class ShmemManager {
+class ShmemAllocator {
   public:
-    ShmemManager() = default;
-    virtual ~ShmemManager() = default;
+    ShmemAllocator() = default;
+    virtual ~ShmemAllocator() = default;
 
-    mockable Shmem get(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
-        if (false == remoteShmem.isValid()) {
-            log<Verbosity::critical>("Request to open invalid remote shmem ");
-            return {};
-        }
-        auto path = basePath + std::to_string(remoteShmem.id);
-        auto shmemSize = remoteShmem.size;
-        static constexpr auto pageSize = Cal::Utils::pageSize4KB;
-        auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(remoteShmem.size);
-        if (enforcedVaForMapping) {
-            if (shmemSize != alignedSize) {
-                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided size is not page-aligned : %zu", enforcedVaForMapping, remoteShmem.size);
-                return {};
-            }
-            if (false == Cal::Utils::isAlignedPow2<pageSize>(enforcedVaForMapping)) {
-                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided pointer is not page-aligned", enforcedVaForMapping);
-                return {};
-            }
-        }
-        int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
-        if (-1 == shmemFd) {
-            log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
-            return {};
-        }
-        void *ptr = Cal::Sys::mmap(enforcedVaForMapping, alignedSize, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMapping ? MAP_FIXED : 0), shmemFd, 0);
-        if (ptr == MAP_FAILED) {
-            log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), alignedSize);
-            shm_unlink(path.c_str());
-            return {};
-        }
-        log<Verbosity::debug>("Created shmem %s of size : %zu and mapped it as %p", path.c_str(), alignedSize, ptr);
-        Shmem ret;
-        ret.fd = shmemFd;
-        ret.ptr = ptr;
-        ret.size = shmemSize;
-        ret.underlyingSize = alignedSize;
-        ret.id = remoteShmem.id;
-        return ret;
-    }
-
-    mockable Shmem get(size_t size, bool dontMap) {
+    mockable Shmem create(size_t size, bool dontMap) {
         auto path = basePath + std::to_string(numShmemFiles);
         log<Verbosity::debug>("Unlinking stale shmem file (if exists) : %s", path.c_str());
         Cal::Sys::shm_unlink(path.c_str());
@@ -167,7 +127,7 @@ class ShmemManager {
             }
         }
 
-        if (shmem.owned && (-1 != shmem.id) && (-1 == shm_unlink(path.c_str()))) {
+        if ((-1 != shmem.id) && (-1 == shm_unlink(path.c_str()))) {
             log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
         } else {
             log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
@@ -184,6 +144,83 @@ class ShmemManager {
 
   protected:
     uint32_t numShmemFiles = 0;
+    std::mutex criticalSection;
+    std::string basePath;
+};
+
+class ShmemImporter {
+  public:
+    ShmemImporter() = default;
+    virtual ~ShmemImporter() = default;
+
+    mockable Shmem open(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
+        if (false == remoteShmem.isValid()) {
+            log<Verbosity::critical>("Request to open invalid remote shmem ");
+            return {};
+        }
+        auto path = basePath + std::to_string(remoteShmem.id);
+        auto shmemSize = remoteShmem.size;
+        static constexpr auto pageSize = Cal::Utils::pageSize4KB;
+        auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(remoteShmem.size);
+        if (enforcedVaForMapping) {
+            if (shmemSize != alignedSize) {
+                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided size is not page-aligned : %zu", enforcedVaForMapping, remoteShmem.size);
+                return {};
+            }
+            if (false == Cal::Utils::isAlignedPow2<pageSize>(enforcedVaForMapping)) {
+                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided pointer is not page-aligned", enforcedVaForMapping);
+                return {};
+            }
+        }
+        int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
+        if (-1 == shmemFd) {
+            log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
+            return {};
+        }
+        void *ptr = Cal::Sys::mmap(enforcedVaForMapping, alignedSize, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMapping ? MAP_FIXED : 0), shmemFd, 0);
+        if (ptr == MAP_FAILED) {
+            log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), alignedSize);
+            shm_unlink(path.c_str());
+            return {};
+        }
+        log<Verbosity::debug>("Created shmem %s of size : %zu and mapped it as %p", path.c_str(), alignedSize, ptr);
+        Shmem ret;
+        ret.fd = shmemFd;
+        ret.ptr = ptr;
+        ret.size = shmemSize;
+        ret.underlyingSize = alignedSize;
+        ret.id = remoteShmem.id;
+        return ret;
+    }
+
+    mockable void release(const Shmem &shmem) {
+        auto path = basePath + std::to_string(shmem.id);
+
+        if ((nullptr != shmem.ptr) && (-1 == Cal::Sys::munmap(shmem.ptr, shmem.underlyingSize))) {
+            log<Verbosity::error>("Failed to munmap %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
+        } else {
+            log<Verbosity::debug>("munmap-ed %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
+        }
+
+        if (-1 != shmem.fd) {
+            if (-1 == close(shmem.fd)) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.fd, path.c_str(), err, strerror(err));
+            } else {
+                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.fd, path.c_str(), shmem.underlyingSize);
+            }
+        }
+    }
+
+    std::unique_lock<std::mutex> lock() {
+        return std::unique_lock<std::mutex>(criticalSection);
+    }
+
+    void setShmemPathBase(const std::string &path) {
+        this->basePath = path;
+    }
+
+  protected:
     std::mutex criticalSection;
     std::string basePath;
 };
@@ -214,7 +251,6 @@ inline RemoteShmem allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
     return ret;
 }
 
-template <typename ShmemManagerT>
 class BasicMemoryBlock {
   protected:
     struct ChunkDescription {
@@ -229,7 +265,7 @@ class BasicMemoryBlock {
         uintptr_t firstClientAddress{};
     };
 
-    BasicMemoryBlock(ShmemManagerT &shmemManager, const void *srcptr, size_t size) : shmemManager{shmemManager} {
+    BasicMemoryBlock(ShmemAllocator &shmemManager, const void *srcptr, size_t size) : shmemManager{shmemManager} {
         auto &firstChunk = chunks.emplace_back();
 
         const auto pageOffset = reinterpret_cast<uintptr_t>(srcptr) % pageSize;
@@ -237,7 +273,7 @@ class BasicMemoryBlock {
 
         const auto requiredSize = pageOffset + size;
         const auto lock = shmemManager.lock();
-        firstChunk.shmem = shmemManager.get(requiredSize, false);
+        firstChunk.shmem = shmemManager.create(requiredSize, false);
     }
 
     ~BasicMemoryBlock() {
@@ -445,7 +481,7 @@ class BasicMemoryBlock {
         constexpr auto dontMap = true;
         const auto requiredSize = blockBegin - srcPageBegin;
         const auto lock = shmemManager.lock();
-        prependedChunk.shmem = shmemManager.get(requiredSize, dontMap);
+        prependedChunk.shmem = shmemManager.create(requiredSize, dontMap);
     }
 
     void appendChunk(uintptr_t blockEnd, uintptr_t srcEnd) {
@@ -455,7 +491,7 @@ class BasicMemoryBlock {
         constexpr auto dontMap = true;
         const auto requiredSize = srcEnd - blockEnd;
         const auto lock = shmemManager.lock();
-        appendedChunk.shmem = shmemManager.get(requiredSize, dontMap);
+        appendedChunk.shmem = shmemManager.create(requiredSize, dontMap);
     }
 
     void preserveExistingMappings() {
@@ -482,16 +518,16 @@ class BasicMemoryBlock {
 
     std::deque<ChunkDescription> chunks{};
     std::vector<std::pair<void *, size_t>> oldMappings{};
-    ShmemManagerT &shmemManager;
+    ShmemAllocator &shmemManager;
 };
 
-template <typename MemoryBlockT, typename ShmemManagerT>
+template <typename BasicMemoryBlockT = BasicMemoryBlock>
 class BasicMemoryBlocksManager {
   protected:
-    using MemoryBlockIterator = typename std::map<uintptr_t, MemoryBlockT>::iterator;
+    using MemoryBlockIterator = typename std::map<uintptr_t, BasicMemoryBlockT>::iterator;
 
   public:
-    const MemoryBlockT &registerMemoryBlock(ShmemManagerT &shmemManager, const void *srcptr, size_t size) {
+    const BasicMemoryBlockT &registerMemoryBlock(ShmemAllocator &shmemManager, const void *srcptr, size_t size) {
         auto *memoryBlock = getMergedOverlappingMemoryBlocks(srcptr, size);
         if (memoryBlock) {
             const auto oldFirstPageAddress = memoryBlock->getFirstPageAddress();
@@ -560,7 +596,7 @@ class BasicMemoryBlocksManager {
     }
 
   protected:
-    MemoryBlockT *getMemoryBlockWhichIncludesChunk(const void *srcptr, size_t size) {
+    BasicMemoryBlockT *getMemoryBlockWhichIncludesChunk(const void *srcptr, size_t size) {
         const auto overlappingBegin = getOverlappingBlocksBegin(srcptr, size);
         if (overlappingBegin == memoryBlocks.end()) {
             log<Verbosity::error>("Queried file descriptors of non-registered chunk!");
@@ -583,7 +619,7 @@ class BasicMemoryBlocksManager {
         return &memoryBlock;
     }
 
-    MemoryBlockT *getMergedOverlappingMemoryBlocks(const void *srcptr, size_t size) {
+    BasicMemoryBlockT *getMergedOverlappingMemoryBlocks(const void *srcptr, size_t size) {
         if (memoryBlocks.empty()) {
             return nullptr;
         }
@@ -619,7 +655,7 @@ class BasicMemoryBlocksManager {
         return &singleBlock;
     }
 
-    auto getOverlappingBlocksBegin(const void *srcptr, size_t size) {
+    MemoryBlockIterator getOverlappingBlocksBegin(const void *srcptr, size_t size) {
         auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         auto overlappingBegin = memoryBlocks.lower_bound(srcBegin);
 
@@ -643,7 +679,7 @@ class BasicMemoryBlocksManager {
         return memoryBlocks.end();
     }
 
-    auto getOverlappingBlocksEnd(const void *srcptr, size_t size) {
+    MemoryBlockIterator getOverlappingBlocksEnd(const void *srcptr, size_t size) {
         const auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         const auto srcEnd = srcBegin + size;
 
@@ -666,11 +702,11 @@ class BasicMemoryBlocksManager {
     }
 
     static constexpr auto pageSize{Cal::Utils::pageSize4KB};
-    std::map<uintptr_t, MemoryBlockT> memoryBlocks{};
+    std::map<uintptr_t, BasicMemoryBlockT> memoryBlocks{};
 };
 
-using MemoryBlock = BasicMemoryBlock<ShmemManager>;
-using MemoryBlocksManager = BasicMemoryBlocksManager<MemoryBlock, ShmemManager>;
+using MemoryBlock = BasicMemoryBlock;
+using MemoryBlocksManager = BasicMemoryBlocksManager<MemoryBlock>;
 
 } // namespace Ipc
 } // namespace Cal

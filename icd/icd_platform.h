@@ -30,7 +30,7 @@ class IcdPlatform {
     using UsmRangeIterator = std::map<const void *, const void *>::iterator;
 
   public:
-    IcdPlatform(Cal::Ipc::ShmemManager &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : shmemManager(shmemManager), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager) {
+    IcdPlatform(Cal::Ipc::ShmemImporter &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : shmemManager(shmemManager), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager) {
         auto cpuInfoOpt = cpuInfo.read();
         if (cpuInfoOpt) {
             this->cpuInfo = cpuInfoOpt.value();
@@ -76,7 +76,7 @@ class IcdPlatform {
                 shmemFromServer.id = shmem_resource;
                 shmemFromServer.size = aligned_size;
                 auto shmemManagerLock = shmemManager.lock();
-                auto shmem = shmemManager.get(shmemFromServer, newUsmAlloc);
+                auto shmem = shmemManager.open(shmemFromServer, newUsmAlloc);
                 if (false == shmem.isValid()) {
                     log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", i);
                     return false;
@@ -251,7 +251,7 @@ class IcdPlatform {
             remoteShmem.id = transfer.shmemId;
             remoteShmem.size = transfer.underlyingSize;
 
-            auto shmem = shmemManager.get(remoteShmem, nullptr);
+            auto shmem = shmemManager.open(remoteShmem, nullptr);
             if (!shmem.isValid()) {
                 log<Verbosity::error>("Cannot map shared memory to perform transfer from client to service!");
                 return false;
@@ -276,7 +276,7 @@ class IcdPlatform {
             remoteShmem.id = transfer.shmemId;
             remoteShmem.size = transfer.underlyingSize;
 
-            auto shmem = shmemManager.get(remoteShmem, nullptr);
+            auto shmem = shmemManager.open(remoteShmem, nullptr);
             if (!shmem.isValid()) {
                 log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
                 return false;
@@ -296,7 +296,7 @@ class IcdPlatform {
   protected:
     Cal::Utils::CpuInfo cpuInfo;
 
-    Cal::Ipc::ShmemManager &shmemManager;
+    Cal::Ipc::ShmemImporter &shmemManager;
     Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager;
     bool allowedToUseZeroCopyForMallocShmem = false;
     std::unique_ptr<Cal::Ipc::Connection> connection;

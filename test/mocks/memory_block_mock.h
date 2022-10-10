@@ -14,7 +14,7 @@
 
 namespace Cal::Mocks {
 
-class MockMemoryBlock : public Cal::Ipc::BasicMemoryBlock<Cal::Mocks::MockShmemManager> {
+class MockMemoryBlock : public Cal::Ipc::BasicMemoryBlock {
   public:
     using BasicMemoryBlock::BasicMemoryBlock;
     using BasicMemoryBlock::chunks;
@@ -22,7 +22,7 @@ class MockMemoryBlock : public Cal::Ipc::BasicMemoryBlock<Cal::Mocks::MockShmemM
     using BasicMemoryBlock::oldMappings;
 };
 
-class MockMemoryBlocksManager : public Cal::Ipc::BasicMemoryBlocksManager<MockMemoryBlock, Cal::Mocks::MockShmemManager> {
+class MockMemoryBlocksManager : public Cal::Ipc::BasicMemoryBlocksManager<MockMemoryBlock> {
   public:
     using BasicMemoryBlocksManager::getMemoryBlockWhichIncludesChunk;
     using BasicMemoryBlocksManager::getOverlappingBlocksBegin;

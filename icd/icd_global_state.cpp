@@ -22,7 +22,7 @@ namespace Icd {
 IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
-    this->shmemManager = std::make_unique<Cal::Ipc::ShmemManager>();
+    this->shmemManager = std::make_unique<Cal::Ipc::ShmemImporter>();
     this->mallocShmemZeroCopyManager = std::make_unique<Cal::Ipc::MallocShmemZeroCopyManager>();
 
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);

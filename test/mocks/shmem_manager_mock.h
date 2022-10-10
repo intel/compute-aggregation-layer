@@ -17,13 +17,13 @@
 
 namespace Cal::Mocks {
 
-class MockShmemManager : public Cal::Ipc::ShmemManager {
+class MockShmemManager : public Cal::Ipc::ShmemAllocator, public Cal::Ipc::ShmemImporter {
   public:
     ~MockShmemManager() override {
         EXPECT_EQ(0u, allocatedShmems.size()) << "Shmems have been leaked!";
     }
 
-    Cal::Ipc::Shmem get(const Cal::Ipc::RemoteShmem &remoteShmem, void *enforcedVaForMapping) override {
+    Cal::Ipc::Shmem open(const Cal::Ipc::RemoteShmem &remoteShmem, void *enforcedVaForMapping) override {
         if (remoteShmem.isValid() == false) {
             return {};
         }
@@ -46,7 +46,7 @@ class MockShmemManager : public Cal::Ipc::ShmemManager {
         return shmem;
     }
 
-    Cal::Ipc::Shmem get(size_t size, bool dontMap) override {
+    Cal::Ipc::Shmem create(size_t size, bool dontMap) override {
         constexpr auto pageSize = Cal::Utils::pageSize4KB;
         const auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(size);
 

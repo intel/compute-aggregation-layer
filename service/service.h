@@ -143,7 +143,7 @@ class ClientContext {
         return it->second;
     }
 
-    void cleanup(Cal::Ipc::ShmemManager &shmemManager) {
+    void cleanup(Cal::Ipc::ShmemAllocator &shmemManager) {
         isStopping = true;
         log<Verbosity::debug>("Performing client RPC channels cleanup (num channels : %zu)", rpcChannels.size());
         for (auto &rpcChannel : rpcChannels) {
@@ -204,7 +204,7 @@ class ClientContext {
         usmSharedHostMap[ptr] = Cal::Usm::UsmSharedHostAlloc{ctx, ptr, alignedSize, shmem, gpuDestructor};
     }
 
-    void reapUsmSharedHostAlloc(void *ptr, Cal::Ipc::ShmemManager &shmemManager, bool callGpuDestructor = true) {
+    void reapUsmSharedHostAlloc(void *ptr, Cal::Ipc::ShmemAllocator &shmemManager, bool callGpuDestructor = true) {
         auto it = usmSharedHostMap.find(ptr);
         if (usmSharedHostMap.end() == it) {
             log<Verbosity::error>("Asked to reap an unknown pointer %p given as USM shared/host allocation", ptr);
@@ -426,7 +426,7 @@ class Provider {
         return config;
     }
 
-    Cal::Ipc::ShmemManager &getShmemManager() {
+    Cal::Ipc::ShmemAllocator &getShmemManager() {
         return shmemManager;
     }
 
@@ -529,7 +529,7 @@ class Provider {
         Cal::Service::Apis::LevelZero::LevelZeroSharedObjects l0;
     } sharedObjects;
     Cal::Messages::RespHandshake config;
-    Cal::Ipc::ShmemManager shmemManager;
+    Cal::Ipc::ShmemAllocator shmemManager;
     Cal::Ipc::MallocShmemZeroCopyManager mallocShmemZeroCopyManager;
     std::vector<RpcSubtypeHandlers> rpcHandlers;
     std::vector<Cal::Rpc::DirectCallCallbackT> directCallCallbacks;
@@ -675,7 +675,7 @@ class Provider {
         Cal::Ipc::Shmem shmem;
         {
             auto lock = shmemManager.lock();
-            shmem = shmemManager.get(size, false);
+            shmem = shmemManager.create(size, false);
         }
 
         if (nullptr == shmem.ptr) {

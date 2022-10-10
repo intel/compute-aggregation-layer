@@ -19,7 +19,7 @@
 
 namespace Cal {
 namespace Ipc {
-class ShmemManager;
+class ShmemImporter;
 class MallocShmemZeroCopyManager;
 } // namespace Ipc
 
@@ -149,7 +149,7 @@ class IcdGlobalState final {
         std::unique_ptr<Cal::Icd::LevelZero::IcdL0Platform> platform;
         std::once_flag onceFlag;
     } l0Platform;
-    std::unique_ptr<Cal::Ipc::ShmemManager> shmemManager;
+    std::unique_ptr<Cal::Ipc::ShmemImporter> shmemManager;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager> mallocShmemZeroCopyManager;
 
     std::mutex cacheMutex;

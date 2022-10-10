@@ -212,7 +212,7 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clHostMemAllocINTEL");
@@ -295,7 +295,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clSharedMemAllocINTEL");
@@ -370,7 +370,7 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clSVMAlloc");
@@ -508,7 +508,7 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for host ptr of clCreateBuffer");
@@ -777,7 +777,7 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
 
     if (false == shmem.isValid()) {
@@ -868,7 +868,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     Cal::Ipc::Shmem shmem;
     {
         auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.get(alignedSize, true);
+        shmem = shmemManager.create(alignedSize, true);
     }
 
     if (false == shmem.isValid()) {
