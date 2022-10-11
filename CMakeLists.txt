@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project(cal)
 
+include(CTest)
+
 file(READ ".branch" BRANCH_TYPE)
 string(STRIP "${BRANCH_TYPE}" BRANCH_TYPE)
 set(BRANCH_DIR_SUFFIX "/${BRANCH_TYPE}")
@@ -54,15 +56,21 @@ include_directories(${OpenCL_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest
 )
 
+add_custom_target(run_unit_tests ALL)
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest)
 macro(macro_add_run_gtest_for target)
+  get_target_property(target_sources ${target} SOURCES)
   if(NOT ${CMAKE_CXX_COMPILER} MATCHES "aarch64")
-    add_custom_command(TARGET ${target}
+    add_custom_target(run_${target} DEPENDS ${target})
+    add_custom_command(TARGET run_${target}
                        POST_BUILD
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                        COMMENT Running ${target} tests
                        COMMAND ${target} --gtest_repeat=1
     )
+    add_dependencies(run_unit_tests run_${target})
+    add_test(NAME ${target} COMMAND ${target} --gtest_repeat=1)
   endif()
 endmacro()
 
