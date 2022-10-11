@@ -1323,6 +1323,66 @@ config :
                             translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
                         server_access : read
 
+        - name : zeCommandListAppendMemoryFillRpcHelperUsm2Malloc
+          latency : 0.0
+          special_handling :
+                variant_of : "zeCommandListAppendMemoryFill"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    custom_handler : True
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : void*
+                    kind : pointer
+                 2 :
+                    name : pattern
+                    type : const void*
+                    kind : pointer
+                 3 :
+                    name : pattern_size
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : size
+                    type : size_t
+                    kind : scalar
+                 5 :
+                    name : hSignalEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    kind_details :
+                        can_be_null : True
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                 6 :
+                    name : numWaitEvents
+                    type : uint32_t
+                    kind : scalar
+                 7 :
+                    name : phWaitEvents
+                    type : ze_event_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: numWaitEvents
+                        can_be_null : True
+                        element :
+                            type : ze_event_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                        server_access : read
+
         - name : zeCommandListAppendMemoryFillRpcHelperMalloc2Usm
           latency : 0.0
           special_handling :
@@ -1330,6 +1390,73 @@ config :
                 icd :
                     not_in_dispatch_table : True
                     dont_generate_stub : True
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : void*
+                    kind : pointer
+                 2 :
+                    name : pattern
+                    type : const void*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "pattern_size"
+                        can_be_null : True
+                        element :
+                            type : void
+                            kind : scalar
+                        server_access : read
+                 3 :
+                    name : pattern_size
+                    type : size_t
+                    kind : scalar
+                 4 :
+                    name : size
+                    type : size_t
+                    kind : scalar
+                 5 :
+                    name : hSignalEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    kind_details :
+                        can_be_null : True
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                 6 :
+                    name : numWaitEvents
+                    type : uint32_t
+                    kind : scalar
+                 7 :
+                    name : phWaitEvents
+                    type : ze_event_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: numWaitEvents
+                        can_be_null : True
+                        element :
+                            type : ze_event_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                        server_access : read
+
+        - name : zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc
+          latency : 0.0
+          special_handling :
+                variant_of : "zeCommandListAppendMemoryFill"
+                icd :
+                    not_in_dispatch_table : True
+                    dont_generate_stub : True
+                rpc :
+                    custom_handler : True
           ddi_category :  CommandList
           returns :
                     type : ze_result_t

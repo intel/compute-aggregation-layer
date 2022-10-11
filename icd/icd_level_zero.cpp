@@ -651,14 +651,24 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
     } else if (dstIsUsm) {
         return zeCommandListAppendMemoryFillRpcHelperMalloc2Usm(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else if (srcIsUsm) {
-        log<Verbosity::debug>("zeCommandListAppendMemoryFill() from USM to host's heap/stack is not supported yet!");
+        if (icdCommandList->isImmediate()) {
+            log<Verbosity::error>("zeCommandListAppendMemoryFill() from USM to host's heap/stack is not supported yet for immediate command lists!");
+        } else {
+            icdCommandList->registerMemoryToRead(ptr, size);
+            return zeCommandListAppendMemoryFillRpcHelperUsm2Malloc(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
     } else {
         if (IcdL0CommandList::rangesOverlap(pattern, pattern_size, ptr, size)) {
             log<Verbosity::debug>("zeCommandListAppendMemoryFill(): host's heap/stack memory blocks overlap!");
             return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
         }
 
-        log<Verbosity::debug>("zeCommandListAppendMemoryFill() from host's heap/stack to host's heap/stack is not supported yet!");
+        if (icdCommandList->isImmediate()) {
+            log<Verbosity::debug>("zeCommandListAppendMemoryFill() from host's heap/stack to host's heap/stack is not supported yet for immediate command lists!");
+        } else {
+            icdCommandList->registerMemoryToRead(ptr, size);
+            return zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
     }
 
     return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;

@@ -1844,6 +1844,8 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Memory fill operation appended successfully!");
 
+    log<Verbosity::info>("Appending barrier to command list!");
+
     auto zeCommandListAppendBarrierResult = zeCommandListAppendBarrier(commandListHandle, nullptr, 0, nullptr);
     if (zeCommandListAppendBarrierResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeCommandListAppendBarrier() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendBarrierResult));
@@ -2232,6 +2234,42 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
             log<Verbosity::error>("usmHostBuffer contains invalid value at index: %zd! Expected: %d, Actual: %d",
                                   i,
                                   static_cast<int>(immediateCommandListCopySourceBuffer[i]),
+                                  static_cast<int>(usmHostBufferAsChar[i]));
+            return -1;
+        }
+    }
+
+    log<Verbosity::info>("usmHostBuffer has passed validation!");
+
+    log<Verbosity::info>("Setting whole usmHostBuffer to 0xFF");
+    std::memset(usmHostBuffer, 0xFF, bufferSize);
+    log<Verbosity::info>("usmHostBuffer set successfully!");
+
+    log<Verbosity::info>("Appending, submitting and executing fill operation for pattern from client's stack buffer to usmHostBuffer via immediate command list!");
+
+    const auto immediateCommandListFillPatternSize = 8;
+    zeCommandListAppendMemoryFillResult = zeCommandListAppendMemoryFill(commandListImmediateHandle,
+                                                                        usmHostBuffer,
+                                                                        immediateCommandListCopySourceBuffer,
+                                                                        immediateCommandListFillPatternSize,
+                                                                        bufferSize,
+                                                                        nullptr,
+                                                                        0,
+                                                                        nullptr);
+    if (zeCommandListAppendMemoryFillResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryFill() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryFillResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Memory fill operation appended successfully!");
+
+    log<Verbosity::info>("Validating usmHostBuffer after filling via immediate command list!");
+
+    for (size_t i = 0u; i < bufferSize; ++i) {
+        if (usmHostBufferAsChar[i] != immediateCommandListCopySourceBuffer[i % immediateCommandListFillPatternSize]) {
+            log<Verbosity::error>("usmHostBuffer contains invalid value at index: %zd! Expected: %d, Actual: %d",
+                                  i,
+                                  static_cast<int>(immediateCommandListCopySourceBuffer[i % immediateCommandListFillPatternSize]),
                                   static_cast<int>(usmHostBufferAsChar[i]));
             return -1;
         }
