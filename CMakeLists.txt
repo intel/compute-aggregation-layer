@@ -9,6 +9,7 @@ cmake_minimum_required(VERSION 3.12)
 project(cal)
 
 include(CTest)
+include(os_release_info.cmake)
 
 file(READ ".branch" BRANCH_TYPE)
 string(STRIP "${BRANCH_TYPE}" BRANCH_TYPE)
@@ -44,6 +45,25 @@ set(common_library_dependencies Threads::Threads rt dl)
 if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
   set(common_library_dependencies ${common_library_dependencies} stdc++fs)
 endif()
+
+set(cal_revision 0)
+find_program(GIT NAMES git)
+if(NOT "${GIT}" STREQUAL "GIT-NOTFOUND")
+  if(IS_DIRECTORY ${cal_source_root_dir}/.git)
+    set(GIT_arg --git-dir=${cal_source_root_dir}/.git rev-parse HEAD)
+    execute_process(
+                    COMMAND ${GIT} ${GIT_arg}
+                    OUTPUT_VARIABLE cal_revision
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  endif()
+endif()
+add_definitions(-DCAL_REVISION=${cal_revision})
+set(distro_id "")
+set(distro_version_id "")
+set(distro_codename "")
+get_os_release_info(distro_id distro_version_id distro_codename)
+add_definitions(-DCAL_BUILD_SYSTEM="${distro_id}-${distro_version_id}-${distro_codename}")
 
 include_directories(${OpenCL_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}

@@ -19,12 +19,14 @@
 #include <string>
 
 void printCalServiceHelp();
+void printCalServiceVersion();
 int printCalUnimplementedApiCalls(const char *arg);
 std::string getFullExePathIfExists(const char *fileName);
 
 constexpr option options[] = {
     {"persistent", no_argument, nullptr, 'p'},
     {"help", no_argument, nullptr, 'h'},
+    {"version", no_argument, nullptr, 'v'},
     {"unimplemented", required_argument, nullptr, 'u'},
     {nullptr, 0, nullptr, 0}};
 
@@ -35,13 +37,16 @@ int main(int argc, const char *argv[]) {
     bool isPersistentMode = false;
 
     int option;
-    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+phu:", options, nullptr)) != -1) {
+    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+phvu:", options, nullptr)) != -1) {
         switch (option) {
         case 'p':
             isPersistentMode = true;
             break;
         case 'h':
             printCalServiceHelp();
+            return 0;
+        case 'v':
+            printCalServiceVersion();
             return 0;
         case 'u':
             return printCalUnimplementedApiCalls(optarg);
@@ -100,6 +105,7 @@ void printCalServiceHelp() {
     printf("    calrun [options] [command] [command_options]\n\n");
     printf("Available command line options:\n");
     printf("   -h  --help                 Show this help\n");
+    printf("   -v  --version              Show version\n");
     printf("   -p  --persistent           Start cal in server mode, that applications can connect to. Running CAL without parameters is identical to running in persistent mode.\n");
     printf("   -u  --unimplemented ocl    List all OCL Api calls that are currently missing in the implementations\n");
     printf("                       l0     List all Level Zero Api calls that are currently missing in the implementations\n");
@@ -162,4 +168,13 @@ std::string getFullExePathIfExists(const char *fileName) {
     }
 
     return std::string();
+}
+
+void printCalServiceVersion() {
+    printf("%s", NAME_TO_STR(CAL_REVISION));
+#ifndef NDEBUG
+    printf("[DEBUG]");
+#endif
+    printf("\n");
+    printf("Built on : %s\n", NAME_TO_STR(CAL_BUILD_SYSTEM));
 }
