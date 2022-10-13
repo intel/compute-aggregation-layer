@@ -9,6 +9,7 @@ add_executable(shared_test_ult # ULTs
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/test/mocks/sys_mock.cpp
 
+               ${CMAKE_CURRENT_SOURCE_DIR}/allocators_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/ref_counted_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/rpc_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/memory_block_ult.cpp

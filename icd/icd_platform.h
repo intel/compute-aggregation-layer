@@ -75,7 +75,6 @@ class IcdPlatform {
                 Cal::Ipc::RemoteShmem shmemFromServer = {};
                 shmemFromServer.id = shmem_resource;
                 shmemFromServer.size = aligned_size;
-                auto shmemManagerLock = shmemManager.lock();
                 auto shmem = shmemManager.open(shmemFromServer, newUsmAlloc);
                 if (false == shmem.isValid()) {
                     log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", i);
@@ -180,7 +179,6 @@ class IcdPlatform {
 
         Cal::Usm::resetUsmCpuRange(descriptor.ptr, descriptor.alignedSize);
         descriptor.shmem.ptr = nullptr;
-        auto shmemManagerLock = shmemManager.lock();
         shmemManager.release(descriptor.shmem);
     }
 
@@ -244,8 +242,6 @@ class IcdPlatform {
     }
 
     bool writeRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
-        auto shmemManagerLock = shmemManager.lock();
-
         for (const auto &transfer : transferDescs) {
             Cal::Ipc::RemoteShmem remoteShmem{};
             remoteShmem.id = transfer.shmemId;
@@ -269,8 +265,6 @@ class IcdPlatform {
     }
 
     bool readRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
-        auto shmemManagerLock = shmemManager.lock();
-
         for (const auto &transfer : transferDescs) {
             Cal::Ipc::RemoteShmem remoteShmem{};
             remoteShmem.id = transfer.shmemId;

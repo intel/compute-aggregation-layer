@@ -172,7 +172,6 @@ class ClientContext {
 
         log<Verbosity::debug>("Performing client shmem cleanup (num allocs : %zu)", shmemMap.size());
         {
-            auto shmemManagerLock = shmemManager.lock();
             for (const auto shmemIt : shmemMap) {
                 shmemManager.release(shmemIt.second);
             }
@@ -215,7 +214,6 @@ class ClientContext {
             alloc.gpuDestructor(alloc.ctx, alloc.ptr);
         }
         Cal::Usm::resetUsmCpuRange(alloc.ptr, alloc.alignedSize);
-        auto shmemManagerLock = shmemManager.lock();
         shmemManager.release(alloc.shmem);
         usmSharedHostMap.erase(it);
     }
@@ -427,7 +425,7 @@ class Provider {
     }
 
     Cal::Ipc::ShmemAllocator &getShmemManager() {
-        return shmemManager;
+        return *shmemManager;
     }
 
     Cal::Service::Apis::Ocl::OclSharedObjects &getOclSharedObjects() {
@@ -529,7 +527,7 @@ class Provider {
         Cal::Service::Apis::LevelZero::LevelZeroSharedObjects l0;
     } sharedObjects;
     Cal::Messages::RespHandshake config;
-    Cal::Ipc::ShmemAllocator shmemManager;
+    std::unique_ptr<Cal::Ipc::ShmemAllocator> shmemManager;
     Cal::Ipc::MallocShmemZeroCopyManager mallocShmemZeroCopyManager;
     std::vector<RpcSubtypeHandlers> rpcHandlers;
     std::vector<Cal::Rpc::DirectCallCallbackT> directCallCallbacks;
@@ -673,10 +671,7 @@ class Provider {
         }
 
         Cal::Ipc::Shmem shmem;
-        {
-            auto lock = shmemManager.lock();
-            shmem = shmemManager.create(size, false);
-        }
+        shmem = shmemManager->create(size, false);
 
         if (nullptr == shmem.ptr) {
             return false;
@@ -709,7 +704,7 @@ class Provider {
             return false;
         }
 
-        auto channelServer = std::make_unique<Cal::Rpc::ChannelServer>(clientConnection, shmemManager);
+        auto channelServer = std::make_unique<Cal::Rpc::ChannelServer>(clientConnection, *shmemManager);
         if (false == channelServer->init(shmem, request, serviceSynchronizationMethod)) {
             log<Verbosity::error>("Failed to initialize channel server for client : %d", clientConnection.getId());
             return false;

@@ -173,14 +173,13 @@ TEST(ShmemImporterOpen, whenOpeningTheShmemFileThenUsesProperPathAndFlags) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
-    Cal::Ipc::ShmemImporter importer;
     Cal::Ipc::RemoteShmem rshmem = {};
     rshmem.id = 7;
     rshmem.size = 16;
     EXPECT_TRUE(rshmem.isValid());
 
     std::string_view testBasePath = "/test_base_path";
-    importer.setShmemPathBase(testBasePath.data());
+    Cal::Ipc::ShmemImporter importer(testBasePath.data());
     std::string capturedName;
     int capturedOflag = {};
     mode_t capturedMode = {};
@@ -255,10 +254,8 @@ TEST(ShmemAllocatorCreate, whenCreatingShmemThenFirstUnlinkStalePath) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
-    Cal::Ipc::ShmemAllocator allocator;
-
     std::string_view testBasePath = "/test_base_path";
-    allocator.setShmemPathBase(testBasePath.data());
+    Cal::Ipc::ShmemAllocator allocator(testBasePath.data());
 
     std::string capturedUnlinkPath;
     tempSysCallsCtx.apiConfig.shm_unlink.impl = [&](const char *path) -> int {
@@ -289,10 +286,9 @@ TEST(ShmemAllocatorCreate, whenOpeningShmemThenProperFlagsAreUsed) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
-    Cal::Ipc::ShmemAllocator allocator;
-
     std::string_view testBasePath = "/test_base_path";
-    allocator.setShmemPathBase(testBasePath.data());
+    Cal::Ipc::ShmemAllocator allocator(testBasePath.data());
+
     std::string capturedName;
     int capturedOflag = {};
     mode_t capturedMode = {};

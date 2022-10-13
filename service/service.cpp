@@ -210,10 +210,7 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
-    {
-        auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.create(alignedSize, true);
-    }
+    shmem = shmemManager.create(alignedSize, true);
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clHostMemAllocINTEL");
         apiCommand->captures.ret = nullptr;
@@ -265,7 +262,6 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -293,10 +289,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
-    {
-        auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.create(alignedSize, true);
-    }
+    shmem = shmemManager.create(alignedSize, true);
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clSharedMemAllocINTEL");
         apiCommand->captures.ret = nullptr;
@@ -347,7 +340,6 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -368,10 +360,7 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
-    {
-        auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.create(alignedSize, true);
-    }
+    shmem = shmemManager.create(alignedSize, true);
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for clSVMAlloc");
         apiCommand->captures.ret = nullptr;
@@ -415,7 +404,6 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
     }
     if (nullptr == apiCommand->captures.ret) {
         log<Verbosity::debug>("None of USM shared/host heaps could acommodate new SVM allocation for GPU");
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -506,10 +494,7 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
-    {
-        auto shmemManagerlock = shmemManager.lock();
-        shmem = shmemManager.create(alignedSize, true);
-    }
+    shmem = shmemManager.create(alignedSize, true);
     if (false == shmem.isValid()) {
         log<Verbosity::error>("Failed to create shmem for host ptr of clCreateBuffer");
         apiCommand->captures.ret = nullptr;
@@ -554,7 +539,6 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -776,7 +760,6 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
     {
-        auto shmemManagerlock = shmemManager.lock();
         shmem = shmemManager.create(alignedSize, true);
     }
 
@@ -839,7 +822,6 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
         }
         apiCommand->captures.pptr = nullptr;
 
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -867,7 +849,6 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     auto &shmemManager = service.getShmemManager();
     Cal::Ipc::Shmem shmem;
     {
-        auto shmemManagerlock = shmemManager.lock();
         shmem = shmemManager.create(alignedSize, true);
     }
 
@@ -931,8 +912,6 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         }
         apiCommand->captures.pptr = nullptr;
-
-        auto shmemManagerlock = shmemManager.lock();
         shmemManager.release(shmem);
     }
 
@@ -1173,7 +1152,7 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
     if (nullptr == this->knownChoreographies) {
         this->knownChoreographies = std::make_unique<ChoreographyLibrary>();
     }
-    this->shmemManager.setShmemPathBase(Cal::Ipc::getCalShmemPathBase(getpid()));
+    this->shmemManager = std::make_unique<Cal::Ipc::ShmemAllocator>(Cal::Ipc::getCalShmemPathBase(getpid()));
     auto requestedDefaultRpcChannelSize = Cal::Utils::getCalEnvI64(calDefaultRpcChannelSizeEnvName, 0);
     if (requestedDefaultRpcChannelSize > 0) {
         log<Verbosity::info>("Changing default rpc message channel size from %dMB to %dMB", this->defaultRpcMessageChannelSizeMB, requestedDefaultRpcChannelSize);

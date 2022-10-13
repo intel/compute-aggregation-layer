@@ -48,7 +48,7 @@ void IcdPlatform::initializeConnection() {
         return;
     }
     log<Verbosity::debug>("Handshake successful (CAL service pid : %d)", serviceConfig.pid);
-    this->shmemManager.setShmemPathBase(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
+    this->shmemManager = Cal::Ipc::ShmemImporter(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
 
     this->mallocShmemZeroCopyManager.loadLibrary(serviceConfig.mallocShmemLibraryPath);
     if (this->mallocShmemZeroCopyManager.isAvailable()) {

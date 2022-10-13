@@ -8,6 +8,7 @@
 #pragma once
 
 #include "include/cal.h"
+#include "shared/allocators.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/shmem_transfer_desc.h"
@@ -60,13 +61,23 @@ struct Shmem {
     }
 };
 
+// thread-safe
 class ShmemAllocator {
   public:
-    ShmemAllocator() = default;
-    virtual ~ShmemAllocator() = default;
+    static constexpr size_t maxShmems = 4096U;
+
+    ShmemAllocator() : shmemIdAllocator(maxShmems) {
+    }
+    ShmemAllocator(const std::string &path) : basePath(path), shmemIdAllocator(maxShmems) {
+    }
+    mockable ~ShmemAllocator() = default;
 
     mockable Shmem create(size_t size, bool dontMap) {
-        auto path = basePath + std::to_string(numShmemFiles);
+        auto shmemId = shmemIdAllocator.allocate();
+        if (Cal::Allocators::BitAllocator::invalidOffset == shmemId) {
+            return {};
+        }
+        auto path = basePath + std::to_string(shmemId);
         log<Verbosity::debug>("Unlinking stale shmem file (if exists) : %s", path.c_str());
         Cal::Sys::shm_unlink(path.c_str());
 
@@ -103,9 +114,8 @@ class ShmemAllocator {
         ret.ptr = ptr;
         ret.size = shmemSize;
         ret.underlyingSize = alignedSize;
-        ret.id = numShmemFiles;
+        ret.id = shmemId;
         ret.owned = true;
-        ++numShmemFiles;
         return ret;
     }
 
@@ -131,27 +141,22 @@ class ShmemAllocator {
             log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
         } else {
             log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
+            shmemIdAllocator.free(shmem.id);
         }
     }
 
-    std::unique_lock<std::mutex> lock() {
-        return std::unique_lock<std::mutex>(criticalSection);
-    }
-
-    void setShmemPathBase(const std::string &path) {
-        this->basePath = path;
-    }
-
   protected:
-    uint32_t numShmemFiles = 0;
-    std::mutex criticalSection;
+    Cal::Allocators::BitAllocator shmemIdAllocator;
     std::string basePath;
 };
 
+// thread-safe
 class ShmemImporter {
   public:
     ShmemImporter() = default;
-    virtual ~ShmemImporter() = default;
+    ShmemImporter(const std::string &path) : basePath(path) {
+    }
+    mockable ~ShmemImporter() = default;
 
     mockable Shmem open(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
         if (false == remoteShmem.isValid()) {
@@ -212,16 +217,7 @@ class ShmemImporter {
         }
     }
 
-    std::unique_lock<std::mutex> lock() {
-        return std::unique_lock<std::mutex>(criticalSection);
-    }
-
-    void setShmemPathBase(const std::string &path) {
-        this->basePath = path;
-    }
-
   protected:
-    std::mutex criticalSection;
     std::string basePath;
 };
 
@@ -272,7 +268,6 @@ class BasicMemoryBlock {
         firstChunk.firstPageAddress = reinterpret_cast<uintptr_t>(srcptr) - pageOffset;
 
         const auto requiredSize = pageOffset + size;
-        const auto lock = shmemManager.lock();
         firstChunk.shmem = shmemManager.create(requiredSize, false);
     }
 
@@ -283,7 +278,6 @@ class BasicMemoryBlock {
             }
         }
 
-        const auto lock = shmemManager.lock();
         for (const auto &chunk : chunks) {
             shmemManager.release(chunk.shmem);
         }
@@ -480,7 +474,6 @@ class BasicMemoryBlock {
 
         constexpr auto dontMap = true;
         const auto requiredSize = blockBegin - srcPageBegin;
-        const auto lock = shmemManager.lock();
         prependedChunk.shmem = shmemManager.create(requiredSize, dontMap);
     }
 
@@ -490,7 +483,6 @@ class BasicMemoryBlock {
 
         constexpr auto dontMap = true;
         const auto requiredSize = srcEnd - blockEnd;
-        const auto lock = shmemManager.lock();
         appendedChunk.shmem = shmemManager.create(requiredSize, dontMap);
     }
 
