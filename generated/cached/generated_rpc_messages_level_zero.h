@@ -5593,6 +5593,9 @@ struct ZeModuleGetGlobalPointerRpcM {
         if(args.pSize){
             captures.pSize = *args.pSize;
         }
+        if(args.pptr){
+            captures.pptr = *args.pptr;
+        }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
