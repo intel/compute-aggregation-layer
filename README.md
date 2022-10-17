@@ -70,13 +70,13 @@ To start the service, simply run `calrun` or `calrun -p`.
 First step is to enable specific api, by scripts available in `/opt/compute-aggregation-layer`. Use `source` to run script for API that you are interesed in:
 ```bash
 # enable cal for Level Zero
-source /opt/compute-aggregation-layer/cal_setenv_l0.sh
+source /opt/compute-aggregation-layer/cal_setvars_l0.sh
 
 # enable cal for OpenCL
-source /opt/compute-aggregation-layer/cal_setenv_ocl.sh
+source /opt/compute-aggregation-layer/cal_setvars_ocl.sh
 
 # enable cal for both APIs
-source /opt/compute-aggregation-layer/cal_setenv.sh
+source /opt/compute-aggregation-layer/cal_setvars.sh
 ```
 
 After that, run target application as you would normally do.
