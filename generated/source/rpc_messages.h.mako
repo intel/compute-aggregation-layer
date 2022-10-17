@@ -25,6 +25,12 @@ ${header}
 namespace ${namespace_part} {
 % endfor
 
+% if config.api_name == 'level_zero':
+    inline bool operator==(const ze_ipc_event_pool_handle_t& lhs, const ze_ipc_event_pool_handle_t& rhs) {
+        return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
+    }
+% endif
+
 template <typename Ptr>
 inline void forcePointerWrite(Ptr& p, void* value) {
     static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");

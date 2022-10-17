@@ -31,9 +31,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("CommandList.zeCommandListAppendMemoryPrefetch");
     ret.push_back("CommandList.zeCommandListAppendMemAdvise");
     ret.push_back("Device.zeDeviceGetP2PProperties");
-    ret.push_back("EventPool.zeEventPoolGetIpcHandle");
-    ret.push_back("EventPool.zeEventPoolOpenIpcHandle");
-    ret.push_back("EventPool.zeEventPoolCloseIpcHandle");
     ret.push_back("Event.zeEventHostSignal");
     ret.push_back("CommandList.zeCommandListAppendEventReset");
     ret.push_back("CommandList.zeCommandListAppendQueryKernelTimestamps");

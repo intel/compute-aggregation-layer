@@ -1225,6 +1225,40 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
 
     log<Verbosity::info>("Host Visible Event pool has been created successfully!");
 
+    log<Verbosity::info>("Getting IPC handle of eventPoolHandle");
+
+    ze_ipc_event_pool_handle_t eventPoolIpcHandle{};
+
+    const auto zeEventPoolGetIpcHandleResult = zeEventPoolGetIpcHandle(eventPoolHandle, &eventPoolIpcHandle);
+    if (zeEventPoolGetIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventPoolGetIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolGetIpcHandleResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Successfully got IPC handle!");
+
+    log<Verbosity::info>("Opening eventPoolIpcHandle via zeEventPoolOpenIpcHandle()");
+
+    ze_event_pool_handle_t eventPoolOpenedFromIpcHandle{};
+
+    const auto zeEventPoolOpenIpcHandleResult = zeEventPoolOpenIpcHandle(contextHandle, eventPoolIpcHandle, &eventPoolOpenedFromIpcHandle);
+    if (zeEventPoolOpenIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventPoolOpenIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolOpenIpcHandleResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Successfully opened IPC handle! Event pool handle = %p", static_cast<void *>(eventPoolOpenedFromIpcHandle));
+
+    log<Verbosity::info>("Closing eventPoolIpcHandle via zeEventPoolCloseIpcHandle()");
+
+    const auto zeEventPoolCloseIpcHandleResult = zeEventPoolCloseIpcHandle(eventPoolOpenedFromIpcHandle);
+    if (zeEventPoolCloseIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventPoolCloseIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolCloseIpcHandleResult));
+        return -1;
+    }
+
+    log<Verbosity::info>("Successfully closed IPC handle!");
+
     log<Verbosity::info>("Setting kernel arguments for CopyBuffer()!");
 
     auto zeKernelSetArgumentValueResult = zeKernelSetArgumentValue(copyBufferKernelHandle, 0, sizeof(usmHostBuffer), &usmHostBuffer);

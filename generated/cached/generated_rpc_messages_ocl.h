@@ -30,6 +30,7 @@ namespace Cal {
 namespace Rpc {
 namespace Ocl {
 
+
 template <typename Ptr>
 inline void forcePointerWrite(Ptr& p, void* value) {
     static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");

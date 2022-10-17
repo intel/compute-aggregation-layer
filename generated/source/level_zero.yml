@@ -221,9 +221,6 @@ config :
         - CommandList.zeCommandListAppendMemoryPrefetch
         - CommandList.zeCommandListAppendMemAdvise
         - Device.zeDeviceGetP2PProperties
-        - EventPool.zeEventPoolGetIpcHandle
-        - EventPool.zeEventPoolOpenIpcHandle
-        - EventPool.zeEventPoolCloseIpcHandle
         - Event.zeEventHostSignal
         - CommandList.zeCommandListAppendEventReset
         - CommandList.zeCommandListAppendQueryKernelTimestamps
@@ -2565,54 +2562,76 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
-#        - name : zeEventPoolGetIpcHandle
-#          ddi_category :  EventPool
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hEventPool
-#                    type : ze_event_pool_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : phIpc
-#                    type : ze_ipc_event_pool_handle_t*
-#                    kind : pointer
-#
-#        - name : zeEventPoolOpenIpcHandle
-#          ddi_category :  EventPool
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hIpc
-#                    type : ze_ipc_event_pool_handle_t
-#                    kind : scalar
-#                 2 :
-#                    name : phEventPool
-#                    type : ze_event_pool_handle_t*
-#                    kind : pointer
-#
-#        - name : zeEventPoolCloseIpcHandle
-#          ddi_category :  EventPool
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hEventPool
-#                    type : ze_event_pool_handle_t
-#                    kind : scalar
-#
+        - name : zeEventPoolGetIpcHandle
+          ddi_category :  EventPool
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hEventPool
+                    type : ze_event_pool_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+                 1 :
+                    name : phIpc
+                    type : ze_ipc_event_pool_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_ipc_event_pool_handle_t
+                            kind : scalar
+                        server_access : write
+
+        - name : zeEventPoolOpenIpcHandle
+          ddi_category :  EventPool
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hIpc
+                    type : ze_ipc_event_pool_handle_t
+                    kind : scalar
+                 2 :
+                    name : phEventPool
+                    type : ze_event_pool_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_event_pool_handle_t
+                            kind : scalar
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                        server_access : write
+                    daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
+
+
+        - name : zeEventPoolCloseIpcHandle
+          ddi_category :  EventPool
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hEventPool
+                    type : ze_event_pool_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+                    translate_after : "{arg}->asLocalObject()->dec()"
+                    daemon_action_on_success : "ctx.removeResourceTracking({arg})"
+
         - name : zeCommandListAppendBarrier
           latency : 0.0
           ddi_category :  CommandList

@@ -168,6 +168,18 @@ ze_result_t zeEventDestroy(ze_event_handle_t hEvent){
    return {};
 }
 
+ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc){
+   return {};
+}
+
+ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool){
+   return {};
+}
+
+ze_result_t zeEventPoolCloseIpcHandle(ze_event_pool_handle_t hEventPool){
+   return {};
+}
+
 ze_result_t zeCommandListAppendBarrier(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
    return {};
 }

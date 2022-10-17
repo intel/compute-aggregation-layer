@@ -59,6 +59,9 @@ ze_result_t (*zeEventPoolCreate)(ze_context_handle_t hContext, const ze_event_po
 ze_result_t (*zeEventPoolDestroy)(ze_event_pool_handle_t hEventPool) = nullptr;
 ze_result_t (*zeEventCreate)(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) = nullptr;
 ze_result_t (*zeEventDestroy)(ze_event_handle_t hEvent) = nullptr;
+ze_result_t (*zeEventPoolGetIpcHandle)(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) = nullptr;
+ze_result_t (*zeEventPoolOpenIpcHandle)(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) = nullptr;
+ze_result_t (*zeEventPoolCloseIpcHandle)(ze_event_pool_handle_t hEventPool) = nullptr;
 ze_result_t (*zeCommandListAppendBarrier)(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendSignalEvent)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) = nullptr;
@@ -356,6 +359,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeEventPoolGetIpcHandle = reinterpret_cast<decltype(zeEventPoolGetIpcHandle)>(dlsym(libraryHandle, "zeEventPoolGetIpcHandle"));
+    if(nullptr == zeEventPoolGetIpcHandle){
+        log<Verbosity::error>("Missing symbol zeEventPoolGetIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeEventPoolOpenIpcHandle = reinterpret_cast<decltype(zeEventPoolOpenIpcHandle)>(dlsym(libraryHandle, "zeEventPoolOpenIpcHandle"));
+    if(nullptr == zeEventPoolOpenIpcHandle){
+        log<Verbosity::error>("Missing symbol zeEventPoolOpenIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeEventPoolCloseIpcHandle = reinterpret_cast<decltype(zeEventPoolCloseIpcHandle)>(dlsym(libraryHandle, "zeEventPoolCloseIpcHandle"));
+    if(nullptr == zeEventPoolCloseIpcHandle){
+        log<Verbosity::error>("Missing symbol zeEventPoolCloseIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeCommandListAppendBarrier = reinterpret_cast<decltype(zeCommandListAppendBarrier)>(dlsym(libraryHandle, "zeCommandListAppendBarrier"));
     if(nullptr == zeCommandListAppendBarrier){
         log<Verbosity::error>("Missing symbol zeCommandListAppendBarrier in %s", loadPath.c_str());
@@ -646,6 +667,9 @@ void unloadLevelZeroLibrary() {
     zeEventPoolDestroy = nullptr;
     zeEventCreate = nullptr;
     zeEventDestroy = nullptr;
+    zeEventPoolGetIpcHandle = nullptr;
+    zeEventPoolOpenIpcHandle = nullptr;
+    zeEventPoolCloseIpcHandle = nullptr;
     zeCommandListAppendBarrier = nullptr;
     zeCommandListAppendSignalEvent = nullptr;
     zeCommandListAppendWaitOnEvents = nullptr;

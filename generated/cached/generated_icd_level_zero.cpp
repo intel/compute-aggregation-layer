@@ -1282,6 +1282,75 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
 
     return ret;
 }
+ze_result_t zeEventPoolGetIpcHandle (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
+    log<Verbosity::bloat>("Establishing RPC for zeEventPoolGetIpcHandle");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeEventPoolGetIpcHandleRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEventPool, phIpc);
+    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeEventPoolOpenIpcHandle (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) {
+    log<Verbosity::bloat>("Establishing RPC for zeEventPoolOpenIpcHandle");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeEventPoolOpenIpcHandleRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hIpc, phEventPool);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    if(phEventPool)
+    {
+        phEventPool[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phEventPool[0]);
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
+    log<Verbosity::bloat>("Establishing RPC for zeEventPoolCloseIpcHandle");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeEventPoolCloseIpcHandleRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hEventPool);
+    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    {
+        hEventPool->asLocalObject()->dec();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2376,6 +2445,15 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
 }
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     return Cal::Icd::LevelZero::zeEventDestroy(hEvent);
+}
+ze_result_t zeEventPoolGetIpcHandle (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
+    return Cal::Icd::LevelZero::zeEventPoolGetIpcHandle(hEventPool, phIpc);
+}
+ze_result_t zeEventPoolOpenIpcHandle (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) {
+    return Cal::Icd::LevelZero::zeEventPoolOpenIpcHandle(hContext, hIpc, phEventPool);
+}
+ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
+    return Cal::Icd::LevelZero::zeEventPoolCloseIpcHandle(hEventPool);
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendBarrier(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
