@@ -1031,12 +1031,106 @@ ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount,
     return icdModule->getKernelNames(pCount, pNames);
 }
 
+ze_result_t ImportedHostPointersManager::importExternalPointer(void *ptr, size_t size) {
+    if (!ptr || size == 0) {
+        log<Verbosity::error>("Tried to import invalid range! ptr = %p, size = %zd", ptr, size);
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
+
+    const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
+    const auto rangeEnd = reinterpret_cast<void *>(rangeBegin + size);
+
+    void *baseAddress{};
+    if (ZE_RESULT_SUCCESS == getHostPointerBaseAddress(ptr, &baseAddress) && baseAddress != nullptr) {
+        log<Verbosity::error>("Tried to import host pointer, which is already registered! ptr = %p, size = %zd", ptr, size);
+        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    }
+
+    const auto [_, isInserted] = importedPointers.emplace(ptr, rangeEnd);
+    return ZE_RESULT_SUCCESS;
+}
+
+ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
+    void *baseAddress{};
+    if (ZE_RESULT_SUCCESS == getHostPointerBaseAddress(ptr, &baseAddress) && baseAddress != nullptr) {
+        importedPointers.erase(baseAddress);
+        return ZE_RESULT_SUCCESS;
+    }
+
+    log<Verbosity::error>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
+    return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+}
+
+ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, void **baseAddress) {
+    if (!baseAddress || !ptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
+
+    *baseAddress = nullptr;
+    if (importedPointers.empty()) {
+        return ZE_RESULT_SUCCESS;
+    }
+
+    // We are looking for the first greater or equal beginning address.
+    auto rangeIt = importedPointers.lower_bound(ptr);
+    if (rangeIt == importedPointers.end() || rangeIt->first != ptr) {
+        // ptr may point inside the range and be greater than its beginning. If possible check earlier range.
+        if (rangeIt != importedPointers.begin()) {
+            std::advance(rangeIt, -1);
+        } else {
+            return ZE_RESULT_SUCCESS;
+        }
+    }
+
+    std::less isLess{};
+    std::less_equal isLessEqual{};
+    const auto &[rangeBegin, rangeEnd] = *rangeIt;
+
+    if (isLessEqual(rangeBegin, ptr) && isLess(ptr, rangeEnd)) {
+        *baseAddress = rangeBegin;
+    }
+
+    return ZE_RESULT_SUCCESS;
+}
+
+static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
+    auto &instance = ImportedHostPointersManager::getInstance();
+    auto instanceLock = instance.lock();
+
+    return instance.importExternalPointer(ptr, size);
+}
+
+static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
+    auto &instance = ImportedHostPointersManager::getInstance();
+    auto instanceLock = instance.lock();
+
+    return instance.releaseImportedPointer(ptr);
+}
+
+static ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
+    auto &instance = ImportedHostPointersManager::getInstance();
+    auto instanceLock = instance.lock();
+
+    return instance.getHostPointerBaseAddress(ptr, baseAddress);
+}
+
 ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, const char *name, void **ppFunctionAddress) {
-    if (ppFunctionAddress) {
+    if (!ppFunctionAddress || !name) {
+        return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
+    }
+
+    if (0 == strcmp(name, "zexDriverImportExternalPointer")) {
+        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverImportExternalPointer);
+    } else if (0 == strcmp(name, "zexDriverReleaseImportedPointer")) {
+        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverReleaseImportedPointer);
+    } else if (0 == strcmp(name, "zexDriverGetHostPointerBaseAddress")) {
+        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
+    } else {
+        log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
         *ppFunctionAddress = nullptr;
     }
 
-    return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;
 }
 
 bool IcdL0Platform::isZeAffinityMaskPresent() {
