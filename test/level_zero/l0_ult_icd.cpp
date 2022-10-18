@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "icd/icd_level_zero.h"
 #include "test/mocks/icd_l0_command_list_mock.h"
+#include "test/mocks/log_mock.h"
 
 #include <cstddef>
 
@@ -124,6 +125,105 @@ TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksAndOneWhichOverlapsTheRest
     const auto &[secondAddress, secondSize] = mockCommandList.memoryToWrite[1];
     EXPECT_EQ(&bytes[0], secondAddress);
     EXPECT_EQ(16, secondSize);
+}
+
+class ImportedHostPointersManagerTest : public ::testing::Test {
+  protected:
+    void *rangeBegin{reinterpret_cast<void *>(0x00FF000000)};
+    size_t rangeSize{8192};
+
+    ImportedHostPointersManager pointersManager{};
+};
+
+TEST_F(ImportedHostPointersManagerTest, GivenNullptrWhenImportingPointerThenResultInvalidNullHandleIsReturned) {
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.importExternalPointer(nullptr, rangeSize));
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenZeroSizeWhenImportingPointerThenResultInvalidNullHandleIsReturned) {
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.importExternalPointer(rangeBegin, 0));
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenEmptyManagerWhenPointerIsImportedThenItsBaseAddressCanBeQueried) {
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(rangeBegin, rangeSize));
+
+    auto uintRangeBegin = reinterpret_cast<uintptr_t>(rangeBegin);
+    auto rangeBeginWithOffset = reinterpret_cast<void *>(uintRangeBegin + 32);
+
+    void *baseAddress{};
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.getHostPointerBaseAddress(rangeBeginWithOffset, &baseAddress));
+
+    EXPECT_EQ(rangeBegin, baseAddress);
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenTwoRangesWithHoleBetweenWhenInsertingOverlappingRangeThenErrorIsReturned) {
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(rangeBegin, rangeSize));
+
+    auto uintRangeBegin = reinterpret_cast<uintptr_t>(rangeBegin);
+    auto secondRangeBegin = reinterpret_cast<void *>(uintRangeBegin + 2 * rangeSize);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(secondRangeBegin, rangeSize));
+
+    Cal::Mocks::LogCaptureContext logs;
+
+    auto thirdRangeBegin = reinterpret_cast<void *>(uintRangeBegin + rangeSize + 1);
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_ARGUMENT, pointersManager.importExternalPointer(thirdRangeBegin, 2 * rangeSize));
+    EXPECT_FALSE(logs.empty());
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenNullptrWhenTryingToGetBaseAddressThenResultInvalidNullHandleIsReturned) {
+    auto baseAddress = reinterpret_cast<void *>(0x00AA);
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.getHostPointerBaseAddress(nullptr, &baseAddress));
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenNullBaseStorageWhenTryingToGetBaseAddressThenResultInvalidNullHandleIsReturned) {
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.getHostPointerBaseAddress(rangeBegin, nullptr));
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenManagerWithPointerWhenTryingToGetBaseAddressOfUnknownPointerThenNullptrIsSetAndResultIsReturned) {
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(rangeBegin, rangeSize));
+
+    auto uintRangeBegin = reinterpret_cast<uintptr_t>(rangeBegin);
+    auto rangeBeginWithOffset = reinterpret_cast<void *>(uintRangeBegin - 128);
+
+    auto baseAddress = reinterpret_cast<void *>(0x00AA);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.getHostPointerBaseAddress(rangeBeginWithOffset, &baseAddress));
+
+    EXPECT_EQ(nullptr, baseAddress);
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenManagerWithPointerWhenTryingToGetBaseAddressOfThatPointerThenItsBaseAddressIsSetAndResultIsReturned) {
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(rangeBegin, rangeSize));
+
+    auto uintRangeBegin = reinterpret_cast<uintptr_t>(rangeBegin);
+    auto rangeBeginWithOffset = reinterpret_cast<void *>(uintRangeBegin + 256);
+
+    auto baseAddress = reinterpret_cast<void *>(0x00AA);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.getHostPointerBaseAddress(rangeBeginWithOffset, &baseAddress));
+
+    EXPECT_EQ(rangeBegin, baseAddress);
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNullptrThenResultInvalidNullHandleIsReturned) {
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.releaseImportedPointer(nullptr));
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNotImportedPointerThenResultInvalidArgumentIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
+    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_ARGUMENT, pointersManager.releaseImportedPointer(rangeBegin));
+
+    EXPECT_FALSE(logs.empty());
+}
+
+TEST_F(ImportedHostPointersManagerTest, GivenEmptyManagerWhenPointerIsImportedAndReleasedThenItsBaseAddressCanNotBeQueried) {
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.importExternalPointer(rangeBegin, rangeSize));
+
+    auto uintRangeBegin = reinterpret_cast<uintptr_t>(rangeBegin);
+    auto rangeBeginWithOffset = reinterpret_cast<void *>(uintRangeBegin + 32);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.releaseImportedPointer(rangeBeginWithOffset));
+
+    auto baseAddress = reinterpret_cast<void *>(0x00AA);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, pointersManager.getHostPointerBaseAddress(rangeBeginWithOffset, &baseAddress));
+
+    EXPECT_EQ(nullptr, baseAddress);
 }
 
 } // namespace Cal::Icd::LevelZero

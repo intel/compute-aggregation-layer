@@ -571,7 +571,7 @@ class ImportedHostPointersManager {
 
   private:
     std::mutex objMutex{};
-    std::map<void *, void *> importedPointers{};
+    Cal::Utils::PartitionedAddressRange<void> importedPointers{Cal::Utils::AddressRange{uintptr_t{0}, uintptr_t{0}}};
 };
 
 } // namespace LevelZero

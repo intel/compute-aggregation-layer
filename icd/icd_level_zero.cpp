@@ -1032,33 +1032,46 @@ ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount,
 }
 
 ze_result_t ImportedHostPointersManager::importExternalPointer(void *ptr, size_t size) {
-    if (!ptr || size == 0) {
-        log<Verbosity::error>("Tried to import invalid range! ptr = %p, size = %zd", ptr, size);
+    if (!ptr || !size) {
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
     const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
-    const auto rangeEnd = reinterpret_cast<void *>(rangeBegin + size);
+    const auto rangeEnd = rangeBegin + size;
 
-    void *baseAddress{};
-    if (ZE_RESULT_SUCCESS == getHostPointerBaseAddress(ptr, &baseAddress) && baseAddress != nullptr) {
+    Cal::Utils::AddressRange rangeToInsert{rangeBegin, rangeEnd};
+    if (importedPointers.intersectsSubRanges(rangeToInsert)) {
         log<Verbosity::error>("Tried to import host pointer, which is already registered! ptr = %p, size = %zd", ptr, size);
         return ZE_RESULT_ERROR_INVALID_ARGUMENT;
     }
 
-    const auto [_, isInserted] = importedPointers.emplace(ptr, rangeEnd);
+    importedPointers.insertSubRange(rangeToInsert);
     return ZE_RESULT_SUCCESS;
 }
 
 ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
-    void *baseAddress{};
-    if (ZE_RESULT_SUCCESS == getHostPointerBaseAddress(ptr, &baseAddress) && baseAddress != nullptr) {
-        importedPointers.erase(baseAddress);
-        return ZE_RESULT_SUCCESS;
+    if (!ptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
-    log<Verbosity::error>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
-    return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
+    const auto rangeEnd = rangeBegin;
+
+    Cal::Utils::AddressRange rangeToSearch{rangeBegin, rangeEnd};
+
+    const auto ranges = importedPointers.getIntersectedSubRanges(rangeToSearch);
+    if (ranges.empty()) {
+        log<Verbosity::error>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
+        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (ranges.size() > 1) {
+        log<Verbosity::error>("More than one range intersects given address! Logic error - this should not happen!");
+        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+    }
+
+    importedPointers.destroySubRange(ranges[0]->getBoundingRange());
+    return ZE_RESULT_SUCCESS;
 }
 
 ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, void **baseAddress) {
@@ -1066,30 +1079,23 @@ ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, vo
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
-    *baseAddress = nullptr;
-    if (importedPointers.empty()) {
+    const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
+    const auto rangeEnd = rangeBegin;
+
+    Cal::Utils::AddressRange rangeToSearch{rangeBegin, rangeEnd};
+
+    const auto ranges = importedPointers.getIntersectedSubRanges(rangeToSearch);
+    if (ranges.empty()) {
+        *baseAddress = nullptr;
         return ZE_RESULT_SUCCESS;
     }
 
-    // We are looking for the first greater or equal beginning address.
-    auto rangeIt = importedPointers.lower_bound(ptr);
-    if (rangeIt == importedPointers.end() || rangeIt->first != ptr) {
-        // ptr may point inside the range and be greater than its beginning. If possible check earlier range.
-        if (rangeIt != importedPointers.begin()) {
-            std::advance(rangeIt, -1);
-        } else {
-            return ZE_RESULT_SUCCESS;
-        }
+    if (ranges.size() > 1) {
+        log<Verbosity::error>("More than one range intersects given address! Logic error - this should not happen!");
+        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
     }
 
-    std::less isLess{};
-    std::less_equal isLessEqual{};
-    const auto &[rangeBegin, rangeEnd] = *rangeIt;
-
-    if (isLessEqual(rangeBegin, ptr) && isLess(ptr, rangeEnd)) {
-        *baseAddress = rangeBegin;
-    }
-
+    *baseAddress = ranges[0]->getBoundingRange().base();
     return ZE_RESULT_SUCCESS;
 }
 
