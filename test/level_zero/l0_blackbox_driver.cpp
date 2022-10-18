@@ -101,12 +101,40 @@ bool getDriverIpcProperties(ze_driver_handle_t driver) {
 }
 
 bool getExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
-    auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
+    const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
     if (zeDriverGetExtensionFunctionAddressResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has failed! Error code = %d", static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
         return false;
     }
 
+    log<Verbosity::info>("zeDriverGetExtensionFunctionAddress() returned success for extensionName = '%s'. Checking passed outFunctionAddress...", extensionName);
+
+    if (*outFunctionAddress == nullptr) {
+        log<Verbosity::error>("Passed outFunctionAddress should not be set to nullptr! Validation failed!");
+        return false;
+    }
+
+    log<Verbosity::info>("*outFunctionAddress is not nullptr as expected! *outFunctionAddress = %p", *outFunctionAddress);
+    return true;
+}
+
+bool getNonexistentExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
+    const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
+    if (zeDriverGetExtensionFunctionAddressResult == ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has returned success for '%s' extension! "
+                              "It should not happen! outFunctionAddress = %p, Error code = %d",
+                              extensionName, *outFunctionAddress, static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeDriverGetExtensionFunctionAddress() failed as expected for extensionName = '%s'. Checking passed outFunctionAddress...", extensionName);
+
+    if (*outFunctionAddress != nullptr) {
+        log<Verbosity::error>("Passed outFunctionAddress should be set to nullptr! Actual value: %p", *outFunctionAddress);
+        return false;
+    }
+
+    log<Verbosity::info>("*outFunctionAddress is nullptr as expected!");
     return true;
 }
 
@@ -126,7 +154,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getDriverIpcProperties(drivers[0]));
 
     void *extensionAddress{nullptr};
-    RUN_OPTIONAL_STEP(getExtensionFunctionAddress(drivers[0], &extensionAddress, "zexDriverImportExternalPointer"));
+    RUN_REQUIRED_STEP(getExtensionFunctionAddress(drivers[0], &extensionAddress, "zexDriverImportExternalPointer"));
+    RUN_REQUIRED_STEP(getNonexistentExtensionFunctionAddress(drivers[0], &extensionAddress, "someNonexistentStrangeFunction"));
 
     return 0;
 }
