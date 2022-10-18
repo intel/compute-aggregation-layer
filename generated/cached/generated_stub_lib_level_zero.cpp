@@ -192,6 +192,10 @@ ze_result_t zeCommandListAppendWaitOnEvents(ze_command_list_handle_t hCommandLis
    return {};
 }
 
+ze_result_t zeEventHostSignal(ze_event_handle_t hEvent){
+   return {};
+}
+
 ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout){
    return {};
 }

@@ -73,6 +73,7 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool);
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
+ze_result_t zeEventHostSignal (ze_event_handle_t hEvent);
 ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent);
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent);
@@ -168,10 +169,6 @@ inline void zeCommandListAppendMemAdviseUnimpl() {
 }
 inline void zeDeviceGetP2PPropertiesUnimpl() {
     log<Verbosity::critical>("Function Device.zeDeviceGetP2PProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeEventHostSignalUnimpl() {
-    log<Verbosity::critical>("Function Event.zeEventHostSignal is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendEventResetUnimpl() {
@@ -403,6 +400,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendBarrier = Cal::Icd::LevelZero::zeCommandListAppendBarrier;
     dt.CommandList.pfnAppendSignalEvent = Cal::Icd::LevelZero::zeCommandListAppendSignalEvent;
     dt.CommandList.pfnAppendWaitOnEvents = Cal::Icd::LevelZero::zeCommandListAppendWaitOnEvents;
+    dt.Event.pfnHostSignal = Cal::Icd::LevelZero::zeEventHostSignal;
     dt.Event.pfnHostSynchronize = Cal::Icd::LevelZero::zeEventHostSynchronize;
     dt.Event.pfnQueryStatus = Cal::Icd::LevelZero::zeEventQueryStatus;
     dt.Event.pfnHostReset = Cal::Icd::LevelZero::zeEventHostReset;
@@ -456,7 +454,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendMemoryPrefetch = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryPrefetch)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryPrefetchUnimpl);
     dt.CommandList.pfnAppendMemAdvise = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemAdvise)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemAdviseUnimpl);
     dt.Device.pfnGetP2PProperties = reinterpret_cast<decltype(dt.Device.pfnGetP2PProperties)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceGetP2PPropertiesUnimpl);
-    dt.Event.pfnHostSignal = reinterpret_cast<decltype(dt.Event.pfnHostSignal)>(Cal::Icd::LevelZero::Unimplemented::zeEventHostSignalUnimpl);
     dt.CommandList.pfnAppendEventReset = reinterpret_cast<decltype(dt.CommandList.pfnAppendEventReset)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendEventResetUnimpl);
     dt.CommandList.pfnAppendQueryKernelTimestamps = reinterpret_cast<decltype(dt.CommandList.pfnAppendQueryKernelTimestamps)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendQueryKernelTimestampsUnimpl);
     dt.EventExp.pfnQueryTimestampsExp = reinterpret_cast<decltype(dt.EventExp.pfnQueryTimestampsExp)>(Cal::Icd::LevelZero::Unimplemented::zeEventQueryTimestampsExpUnimpl);

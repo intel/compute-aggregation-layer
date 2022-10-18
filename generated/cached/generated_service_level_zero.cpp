@@ -65,6 +65,7 @@ ze_result_t (*zeEventPoolCloseIpcHandle)(ze_event_pool_handle_t hEventPool) = nu
 ze_result_t (*zeCommandListAppendBarrier)(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendSignalEvent)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) = nullptr;
+ze_result_t (*zeEventHostSignal)(ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeEventHostSynchronize)(ze_event_handle_t hEvent, uint64_t timeout) = nullptr;
 ze_result_t (*zeEventQueryStatus)(ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeEventHostReset)(ze_event_handle_t hEvent) = nullptr;
@@ -395,6 +396,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeEventHostSignal = reinterpret_cast<decltype(zeEventHostSignal)>(dlsym(libraryHandle, "zeEventHostSignal"));
+    if(nullptr == zeEventHostSignal){
+        log<Verbosity::error>("Missing symbol zeEventHostSignal in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeEventHostSynchronize = reinterpret_cast<decltype(zeEventHostSynchronize)>(dlsym(libraryHandle, "zeEventHostSynchronize"));
     if(nullptr == zeEventHostSynchronize){
         log<Verbosity::error>("Missing symbol zeEventHostSynchronize in %s", loadPath.c_str());
@@ -673,6 +680,7 @@ void unloadLevelZeroLibrary() {
     zeCommandListAppendBarrier = nullptr;
     zeCommandListAppendSignalEvent = nullptr;
     zeCommandListAppendWaitOnEvents = nullptr;
+    zeEventHostSignal = nullptr;
     zeEventHostSynchronize = nullptr;
     zeEventQueryStatus = nullptr;
     zeEventHostReset = nullptr;

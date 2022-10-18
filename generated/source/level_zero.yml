@@ -221,7 +221,6 @@ config :
         - CommandList.zeCommandListAppendMemoryPrefetch
         - CommandList.zeCommandListAppendMemAdvise
         - Device.zeDeviceGetP2PProperties
-        - Event.zeEventHostSignal
         - CommandList.zeCommandListAppendEventReset
         - CommandList.zeCommandListAppendQueryKernelTimestamps
         - EventExp.zeEventQueryTimestampsExp
@@ -2720,18 +2719,19 @@ config :
                             translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
                         server_access : read
 
-#        - name : zeEventHostSignal
-#          ddi_category :  Event
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hEvent
-#                    type : ze_event_handle_t
-#                    kind : scalar
-#
+        - name : zeEventHostSignal
+          ddi_category :  Event
+          returns :
+                   type : ze_result_t
+                   kind : scalar
+                   default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+              0 :
+                   name : hEvent
+                   type : ze_event_handle_t
+                   kind : scalar
+                   translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+
         - name : zeEventHostSynchronize
           latency : 2.0
           special_handling :
