@@ -70,14 +70,13 @@ class IcdPlatform {
         for (size_t i = 0; i < usmHeaps.heaps.size(); ++i) {
             const auto &usmHeap = this->usmHeaps.heaps[i];
             if (usmHeap.contains(newUsmAlloc)) {
-                log<Verbosity::info>("Detected new USM host/shared allocation %p from heap %d", i);
-                log<Verbosity::debug>("Opening new USM host/shared allocation %p from heap %d", i);
+                log<Verbosity::debug>("Opening new USM host/shared allocation %p from heap %d", newUsmAlloc, i);
                 Cal::Ipc::RemoteShmem shmemFromServer = {};
                 shmemFromServer.id = shmem_resource;
                 shmemFromServer.size = aligned_size;
                 auto shmem = shmemManager.open(shmemFromServer, newUsmAlloc);
                 if (false == shmem.isValid()) {
-                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", i);
+                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", newUsmAlloc, i);
                     return false;
                 }
                 usmHeaps.allocations[newUsmAlloc] = Cal::Usm::UsmSharedHostAlloc{ctx, newUsmAlloc, aligned_size, shmem};

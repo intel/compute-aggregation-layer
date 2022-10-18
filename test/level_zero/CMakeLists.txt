@@ -18,6 +18,7 @@ add_l0_blackbox(l0_blackbox_context ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_cont
 add_l0_blackbox(l0_blackbox_device ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_device.cpp)
 add_l0_blackbox(l0_blackbox_driver ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_driver.cpp)
 add_l0_blackbox(l0_blackbox_fence ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_fence.cpp)
+add_l0_blackbox(l0_blackbox_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_memory.cpp)
 add_l0_blackbox(l0_blackbox_module_and_kernel ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_and_kernel.cpp)
 
 add_executable(l0_test_basic

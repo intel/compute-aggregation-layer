@@ -7,8 +7,6 @@
 
 #include "l0_common_steps.h"
 
-#include "shared/log.h"
-
 #include <cstdint>
 
 namespace Cal::Testing::Utils::LevelZero {
@@ -275,7 +273,60 @@ bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t a
         return false;
     }
 
-    log<Verbosity::info>("Allocation has been successful!");
+    log<Verbosity::info>("zeMemAllocHost() returned success. Checking returned pointer...");
+
+    if (usmHostBuffer == nullptr) {
+        log<Verbosity::error>("zeMemAllocHost() returned nullptr! This should not happen! Validation failed!");
+        return false;
+    }
+
+    log<Verbosity::info>("zeMemAllocHost() returned non-null pointer! usmHostBuffer = %p", usmHostBuffer);
+    return true;
+}
+
+bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer) {
+    ze_host_mem_alloc_desc_t hostMemAllocDesc = {ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC};
+
+    ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC};
+    deviceMemAllocDesc.flags = ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_UNCACHED;
+    deviceMemAllocDesc.ordinal = 0;
+
+    const auto zeMemAllocSharedResult = zeMemAllocShared(context, &deviceMemAllocDesc, &hostMemAllocDesc, bufferSize, alignment, device, &usmSharedBuffer);
+    if (zeMemAllocSharedResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemAllocShared() call has failed! Error code: %d", static_cast<int>(zeMemAllocSharedResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeMemAllocShared() returned success. Checking returned pointer...");
+
+    if (usmSharedBuffer == nullptr) {
+        log<Verbosity::error>("zeMemAllocShared() returned nullptr! This should not happen! Validation failed!");
+        return false;
+    }
+
+    log<Verbosity::info>("zeMemAllocShared() returned non-null pointer! usmSharedBuffer = %p", usmSharedBuffer);
+    return true;
+}
+
+bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer) {
+    ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC};
+    deviceMemAllocDesc.flags = ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_UNCACHED;
+    deviceMemAllocDesc.ordinal = 0;
+
+    const auto zeMemAllocDeviceResult = zeMemAllocDevice(context, &deviceMemAllocDesc, bufferSize, alignment, device, &usmDeviceBuffer);
+    if (zeMemAllocDeviceResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemAllocDevice() call has failed! Error code: %d", static_cast<int>(zeMemAllocDeviceResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeMemAllocDevice() returned success. Checking returned pointer...");
+
+    if (usmDeviceBuffer == nullptr) {
+        log<Verbosity::error>("zeMemAllocDevice() returned nullptr! This should not happen! Validation failed!");
+        return false;
+    }
+
+    log<Verbosity::info>("zeMemAllocDevice() returned non-null pointer! usmDeviceBuffer = %p", usmDeviceBuffer);
     return true;
 }
 

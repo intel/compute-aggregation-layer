@@ -8,7 +8,9 @@
 #pragma once
 
 #include "level_zero/ze_api.h"
+#include "shared/log.h"
 
+#include <type_traits>
 #include <vector>
 
 namespace Cal::Testing::Utils::LevelZero {
@@ -39,6 +41,8 @@ bool closeCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
 
 bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer);
+bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer);
+bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer);
 bool freeMemory(ze_context_handle_t context, void *&buffer);
 
 bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_device_handle_t *devices, uint32_t devicesCount, ze_event_pool_handle_t &eventPool);
@@ -50,5 +54,29 @@ bool destroyEvent(ze_event_handle_t &event);
 bool createFence(ze_command_queue_handle_t queue, ze_fence_handle_t &fence);
 bool synchronizeViaFence(ze_fence_handle_t fence);
 bool destroyFence(ze_fence_handle_t &fence);
+
+template <typename T>
+bool ensureNullptr(const T *pointer) {
+    if (pointer == nullptr) {
+        log<Verbosity::info>("Validation passed! Passed pointer is null!");
+        return true;
+    }
+
+    log<Verbosity::error>("Validation failed! Passed pointer is: %p", static_cast<const void *>(pointer));
+    return false;
+}
+
+template <typename T>
+bool ensurePointersEqual(const T *expected, const T *actual) {
+    if (expected == actual) {
+        log<Verbosity::info>("Validation passed! Actual address is equal to the expected one!");
+        return true;
+    }
+
+    log<Verbosity::error>("Validation failed! Addresses are not equal! Expected: %p, Actual: %p",
+                          static_cast<const void *>(expected),
+                          static_cast<const void *>(actual));
+    return false;
+}
 
 } // namespace Cal::Testing::Utils::LevelZero
