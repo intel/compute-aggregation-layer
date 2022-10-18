@@ -206,5 +206,26 @@ std::string getPathForTempFiles() {
     return calTempFilesDefaultPath.data() + std::to_string(geteuid()) + "/"s;
 }
 
+bool isDebuggerConnected() {
+    auto selfStatusFile = Cal::Sys::openFileForRead("/proc/self/status", std::ios::in);
+    if (!(*selfStatusFile)) {
+        log<Verbosity::error>("Could not read /proc/self/status");
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(*selfStatusFile, line)) {
+        Regex regex("TracerPid[\t ]*:[\t ]*([0-9]+)");
+        std::vector<Smatch> match(3);
+        if (false == regex.matches(line.c_str(), match)) {
+            continue;
+        }
+        int tracerPid = stoi(match[1].str());
+        return tracerPid > 0;
+    }
+
+    return false;
+}
+
 } // namespace Utils
 } // namespace Cal

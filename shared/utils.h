@@ -745,5 +745,7 @@ inline std::vector<std::string> split(const std::string &input, const char *deli
     return outVector;
 }
 
+bool isDebuggerConnected();
+
 } // namespace Utils
 } // namespace Cal

@@ -103,6 +103,7 @@ struct RespHandshake {
     }
 
     pid_t pid = 0;
+    uint64_t assignedClientOrdinal = 0;
     char mallocShmemLibraryPath[PATH_MAX] = {};
 };
 static_assert(std::is_standard_layout<RespHandshake>::value);

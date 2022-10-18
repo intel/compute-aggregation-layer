@@ -13,12 +13,34 @@
 #include "include/cal.h"
 #include "shared/log.h"
 #include "shared/usm.h"
+#include "shared/utils.h"
 
 #include <CL/cl_ext.h>
 #include <cstring>
+#include <thread>
 
 namespace Cal {
 namespace Icd {
+
+void serviceDebugBreak(uint64_t thisClientOrdinal) {
+    auto breakOrdinal = Cal::Utils::getCalEnvI64(calDebugBreakClientOrdinalEnvName, -1);
+    if (breakOrdinal < 0) {
+        return;
+    }
+
+    if (static_cast<uint64_t>(breakOrdinal) != thisClientOrdinal) {
+        return;
+    }
+
+    auto pid = getpid();
+    log<Verbosity::critical>("Entering debug break mode for client ordinal : %ldd, pid : %d, (ppid : %d)", thisClientOrdinal, pid, getppid());
+    while (Cal::Utils::isDebuggerConnected() == false) {
+        log<Verbosity::critical>("Waiting for debugger on pid %d (e.g. gdb -p %d)", pid, pid);
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(5s);
+    }
+    log<Verbosity::critical>("Debugger connected");
+}
 
 void IcdPlatform::initializeConnection() {
     auto connectionFactory = createConnectionFactory();
@@ -49,6 +71,8 @@ void IcdPlatform::initializeConnection() {
     }
     log<Verbosity::debug>("Handshake successful (CAL service pid : %d)", serviceConfig.pid);
     this->shmemManager = Cal::Ipc::ShmemImporter(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
+
+    serviceDebugBreak(serviceConfig.assignedClientOrdinal);
 
     this->mallocShmemZeroCopyManager.loadLibrary(serviceConfig.mallocShmemLibraryPath);
     if (this->mallocShmemZeroCopyManager.isAvailable()) {

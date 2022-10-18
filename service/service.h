@@ -392,6 +392,7 @@ class Provider {
                 return FailedToRunSubprocess;
             }
         }
+        uint64_t clientOrdinal = 0U;
         while (this->runInLoop) {
             log<Verbosity::debug>("Waiting for new connection");
             auto newConnection = listener->accept();
@@ -404,7 +405,7 @@ class Provider {
                 continue;
             }
             log<Verbosity::debug>("Spawning thread for new client (number of asynchronous client threads : %d)", static_cast<uint32_t>(clients.size() + 1));
-            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection), std::ref(*this), isPersistentMode));
+            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection), clientOrdinal++, std::ref(*this), isPersistentMode));
         }
         listener->close();
         this->isStopping = true;
@@ -564,8 +565,8 @@ class Provider {
         return ((clientType == Cal::Messages::ReqHandshake::ocl) && systemInfo.availableApis.ocl) || ((clientType == Cal::Messages::ReqHandshake::l0) && systemInfo.availableApis.l0);
     }
 
-    static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, Provider &service, bool isPersistentMode) {
-        log<Verbosity::debug>("Starting to service client : %d", clientConnection->getId());
+    static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, uint64_t clientOrdinal, Provider &service, bool isPersistentMode) {
+        log<Verbosity::debug>("Starting to service client : %d (assigned ordinal : %lld)", clientConnection->getId(), clientOrdinal);
         Cal::Messages::ReqHandshake handshake;
         log<Verbosity::debug>("Performing handshake with client #%d", clientConnection->getId());
         if ((false == clientConnection->receive(handshake)) || handshake.isInvalid()) {
@@ -576,6 +577,8 @@ class Provider {
             log<Verbosity::error>("Client #%d requested %s API which is not available in the system (missing loader)", clientConnection->getId(), handshake.clientTypeStr());
             return;
         }
+        auto handshakeResp = service.getConfig();
+        handshakeResp.assignedClientOrdinal = clientOrdinal;
         if ((false == clientConnection->send(service.getConfig()))) {
             log<Verbosity::error>("Failed to send service config to client #%d", clientConnection->getId());
             return;

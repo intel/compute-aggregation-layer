@@ -38,3 +38,4 @@ constexpr std::string_view calUseSemaphoresInChannelClientEnvName = "CAL_USE_SEM
 constexpr std::string_view calUseSemaphoresThresholdInChannelClientEnvName = "CAL_USE_SEMAPHORES_THRESHOLD_IN_CHANNEL_CLIENT";
 
 constexpr std::string_view calOclDisableProfilingEnvName = "CAL_OCL_DISABLE_PROFILING";
+constexpr std::string_view calDebugBreakClientOrdinalEnvName = "CAL_DEBUG_BREAK_CLIENT_ORDINAL";
