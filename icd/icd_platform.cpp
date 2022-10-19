@@ -33,7 +33,7 @@ void serviceDebugBreak(uint64_t thisClientOrdinal) {
     }
 
     auto pid = getpid();
-    log<Verbosity::critical>("Entering debug break mode for client ordinal : %ldd, pid : %d, (ppid : %d)", thisClientOrdinal, pid, getppid());
+    log<Verbosity::critical>("Entering debug break mode for client ordinal : %lld, pid : %d, (ppid : %d)", thisClientOrdinal, pid, getppid());
     while (Cal::Utils::isDebuggerConnected() == false) {
         log<Verbosity::critical>("Waiting for debugger on pid %d (e.g. gdb -p %d)", pid, pid);
         using namespace std::chrono_literals;

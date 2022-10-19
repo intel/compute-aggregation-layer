@@ -579,7 +579,7 @@ class Provider {
         }
         auto handshakeResp = service.getConfig();
         handshakeResp.assignedClientOrdinal = clientOrdinal;
-        if ((false == clientConnection->send(service.getConfig()))) {
+        if (false == clientConnection->send(handshakeResp)) {
             log<Verbosity::error>("Failed to send service config to client #%d", clientConnection->getId());
             return;
         }
