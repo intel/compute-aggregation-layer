@@ -477,16 +477,16 @@ cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t p
 
 cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value) {
     log<Verbosity::bloat>("Establishing RPC for clSetKernelArg");
-
-    auto cacheRet = static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end();
+    auto oclKernel = static_cast<IcdOclKernel *>(kernel);
+    auto cacheRet = oclKernel->clSetKernelArgCache.cache.end();
 
     if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
-        cacheRet = findCachedKernelArg(kernel, arg_index, arg_size, arg_value);
+        cacheRet = oclKernel->clSetKernelArgCache.findCachedKernelArg(arg_index, arg_size, arg_value);
     }
 
     cl_int ret = CL_SUCCESS;
 
-    if (cacheRet == static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end()) {
+    if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
         auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
         auto &channel = globalOclPlatform->getRpcChannel();
         auto lock = channel.lock();
@@ -495,18 +495,16 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
         auto command = new (space.get()) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
         command->copyFromCaller(dynMemTraits);
-        command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
-        static_cast<IcdOclKernel *>(kernel)->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
+        command->args.kernel = oclKernel->asRemoteObject();
+        oclKernel->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
         if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
         ret = command->captures.ret;
 
         if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
-            cacheKernelArg(kernel, arg_index, arg_size, arg_value, ret);
+            oclKernel->clSetKernelArgCache.cacheKernelArg(arg_index, arg_size, arg_value);
         }
-    } else {
-        ret = CL_SUCCESS;
     }
 
     return ret;
@@ -514,23 +512,23 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
 
 cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const void *argValue) {
     log<Verbosity::bloat>("Establishing RPC for clSetKernelArgMemPointerINTEL");
-
-    auto cacheRet = static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end();
+    auto oclKernel = static_cast<IcdOclKernel *>(kernel);
+    auto cacheRet = oclKernel->clSetKernelArgCache.cache.end();
 
     if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
-        cacheRet = findCachedKernelArg(kernel, argIndex, 0u, argValue);
+        cacheRet = oclKernel->clSetKernelArgCache.findCachedKernelArg(argIndex, 0u, argValue);
     }
 
     cl_int ret = CL_SUCCESS;
 
-    if (cacheRet == static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end()) {
+    if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
         auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
         auto &channel = globalOclPlatform->getRpcChannel();
         auto lock = channel.lock();
         using CommandT = Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM;
         auto space = channel.getSpace<CommandT>(0);
         auto command = new (space.get()) CommandT(kernel, argIndex, argValue);
-        command->args.kernel = static_cast<IcdOclKernel *>(kernel)->asRemoteObject();
+        command->args.kernel = oclKernel->asRemoteObject();
         if (false == channel.callSynchronous(command)) {
             return command->returnValue();
         }
@@ -538,7 +536,7 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
         ret = command->captures.ret;
 
         if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
-            cacheKernelArg(kernel, argIndex, 0u, argValue, ret);
+            oclKernel->clSetKernelArgCache.cacheKernelArg(argIndex, 0u, argValue);
         }
     } else {
         ret = CL_SUCCESS;

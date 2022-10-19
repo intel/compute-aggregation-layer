@@ -108,6 +108,7 @@ ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeInit(ze_init_flags_t flags);
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr);
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t *device_desc, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void **pptr);
+ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue);
 
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local);
@@ -331,6 +332,7 @@ struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_
 
 struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+    KernelArgCache zeKernelSetArgumentValueCache;
 };
 
 struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_t, IcdL0TypePrinter> {
@@ -480,6 +482,13 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 
     bool isZeAffinityMaskPresent();
     const std::vector<ze_device_handle_t> &getFilteredDevices() const { return filteredDevices; };
+
+    void invalidateAllKernelArgCaches() {
+        std::lock_guard<std::mutex> lock(this->kernelsMapMutex);
+        for (auto &kernel : this->kernelsMap) {
+            kernel.second->zeKernelSetArgumentValueCache.invalidateCache();
+        }
+    }
 
   private:
     template <typename LocalT, typename RemoteT, typename MapT>

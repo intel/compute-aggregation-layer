@@ -1752,6 +1752,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     return ret;
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
+    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -2151,7 +2152,7 @@ ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel,
 
     return ret;
 }
-ze_result_t zeKernelSetArgumentValue (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
+ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetArgumentValue");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;

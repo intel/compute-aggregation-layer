@@ -1031,7 +1031,6 @@ cl_int clReleaseDevice (cl_device_id device) {
     return ret;
 }
 cl_int clReleaseKernel (cl_kernel kernel) {
-    invalidateKernelArgCache();
     log<Verbosity::bloat>("Establishing RPC for clReleaseKernel");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();;

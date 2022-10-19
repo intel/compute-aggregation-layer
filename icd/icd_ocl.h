@@ -650,13 +650,6 @@ struct IcdOclSampler : Cal::Shared::RefCountedWithParent<_cl_sampler, IcdOclType
     using RefCountedWithParent::RefCountedWithParent;
 };
 
-struct KernelCache {
-    cl_uint arg_index = {};
-    size_t arg_size = {};
-    const void *arg_value = {};
-    char argValues[8] = {};
-};
-
 struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePrinter> {
     struct ArgTraits {
         bool isPointer = false;
@@ -676,7 +669,7 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
         }
         *static_cast<cl_mem *>(argData) = static_cast<IcdOclMem *>(*(reinterpret_cast<cl_mem *>(argData)))->asRemoteObject();
     }
-    std::vector<KernelCache> clSetKernelArgCache;
+    KernelArgCache clSetKernelArgCache;
 
   protected:
     std::vector<ArgTraits> argsTraits;
@@ -1174,47 +1167,11 @@ inline size_t getSubBufferCreateInfoSize(cl_buffer_create_type type) {
     }
 }
 
-inline auto findCachedKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value) {
-    return std::find_if(static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.begin(), static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end(), [&](const KernelCache &cacheElement) {
-        if (arg_index == cacheElement.arg_index &&
-            arg_size == cacheElement.arg_size) {
-            if (cacheElement.arg_size != 0u) {
-                if (memcmp(arg_value, cacheElement.argValues, arg_size) == 0) {
-                    return true;
-                }
-            } else {
-                if (arg_value == cacheElement.arg_value) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    });
-}
-
-inline void cacheKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value, bool ret) {
-    auto removeIt = std::remove_if(static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.begin(), static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end(), [&](const KernelCache &cacheElement) {
-        if (arg_index == cacheElement.arg_index) {
-            return true;
-        }
-        return false;
-    });
-
-    KernelCache cacheEntry;
-    cacheEntry.arg_index = arg_index;
-    cacheEntry.arg_size = arg_size;
-    cacheEntry.arg_value = arg_value;
-    memcpy(cacheEntry.argValues, arg_value, arg_size);
-    if (removeIt != static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.end())
-        static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.erase(removeIt);
-    static_cast<IcdOclKernel *>(kernel)->clSetKernelArgCache.push_back(cacheEntry);
-}
-
 inline void invalidateKernelArgCache() {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &objectsMap = globalOclPlatform->getObjectsMap<_cl_kernel>();
     for (auto &kernel : objectsMap.map) {
-        kernel.second->clSetKernelArgCache.clear();
+        kernel.second->clSetKernelArgCache.invalidateCache();
     }
 }
 

@@ -1273,6 +1273,14 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
         return -1;
     }
 
+    log<Verbosity::info>("Re-setting kernel argument for CopyBuffer()!");
+
+    zeKernelSetArgumentValueResult = zeKernelSetArgumentValue(copyBufferKernelHandle, 1, sizeof(sourceBuffer), &sourceBuffer);
+    if (zeKernelSetArgumentValueResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeKernelSetArgumentValue() call has failed for sourceBuffer! Error code: %d", static_cast<int>(zeKernelSetArgumentValueResult));
+        return -1;
+    }
+
     log<Verbosity::info>("Arguments have been correctly set!");
 
     log<Verbosity::info>("Creating an event for copying from usmHostBuffer to device source buffer via zeEventCreate()!");

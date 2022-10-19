@@ -674,6 +674,23 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
     return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
 
+ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue) {
+    auto cacheEnabled = Cal::Icd::icdGlobalState.isCacheEnabled();
+    if (!cacheEnabled) {
+        return zeKernelSetArgumentValueRpcHelper(hKernel, argIndex, argSize, pArgValue);
+    }
+
+    auto l0Kernel = static_cast<IcdL0Kernel *>(hKernel);
+
+    auto cacheRet = l0Kernel->zeKernelSetArgumentValueCache.findCachedKernelArg(argIndex, argSize, pArgValue);
+    if (cacheRet != l0Kernel->zeKernelSetArgumentValueCache.cache.end()) {
+        return ZE_RESULT_SUCCESS;
+    }
+
+    l0Kernel->zeKernelSetArgumentValueCache.cacheKernelArg(argIndex, argSize, pArgValue);
+    return zeKernelSetArgumentValueRpcHelper(hKernel, argIndex, argSize, pArgValue);
+}
+
 ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
                                           void *dstptr,
                                           const void *srcptr,

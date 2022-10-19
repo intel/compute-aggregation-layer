@@ -3612,7 +3612,9 @@ config :
 
         - name : zeMemFree
           latency : 0.0
-          special_handling :
+          special_handling : 
+                icd : 
+                    handler_prologue : "Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();"
                 rpc :
                     custom_handler : True
           ddi_category :  Mem
@@ -4328,6 +4330,9 @@ config :
 
         - name : zeKernelSetArgumentValue
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Kernel
           returns :
                     type : ze_result_t
