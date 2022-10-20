@@ -10,7 +10,7 @@ config :
     daemon_namespace : "Cal::Service::Apis::LevelZero"
     icd_dispatch_table_type : ze_dditable_t
     icd_init_dispatch_table_func_name : initL0Ddi
-    icd_get_extenion_func_addr_func_name : ""
+    icd_get_extenion_func_addr_func_name : "getL0ExtensionFuncionAddressRpcHelper"
     icd_acquire_global_object : "auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();"
     icd_acquire_channel : "globalL0Platform->getRpcChannel();"
     result_type: ze_result_t
@@ -242,9 +242,6 @@ config :
         - ImageExp.zeImageViewCreateExp
         - KernelExp.zeKernelSchedulingHintExp
         - Module.zeModuleInspectLinkageExt
-        - Mem.zeMemGetIpcHandle
-        - Mem.zeMemOpenIpcHandle
-        - Mem.zeMemCloseIpcHandle
         - Mem.zeMemFreeExt
         - Module.zeModuleDynamicLink
         - Kernel.zeKernelGetSourceAttributes
@@ -3715,70 +3712,193 @@ config :
                             kind : scalar
                         server_access : write
 
-#        - name : zeMemGetIpcHandle
-#          ddi_category :  Mem
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : ptr
-#                    type : const void*
-#                    kind : pointer
-#                 2 :
-#                    name : pIpcHandle
-#                    type : ze_ipc_mem_handle_t*
-#                    kind : pointer
-#
-#        - name : zeMemOpenIpcHandle
-#          ddi_category :  Mem
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 2 :
-#                    name : handle
-#                    type : ze_ipc_mem_handle_t
-#                    kind : scalar
-#                 3 :
-#                    name : flags
-#                    type : ze_ipc_memory_flags_t
-#                    kind : scalar
-#                 4 :
-#                    name : pptr
-#                    type : void**
-#                    kind : pointer
-#
-#        - name : zeMemCloseIpcHandle
-#          ddi_category :  Mem
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : ptr
-#                    type : const void*
-#                    kind : pointer
-#
+        - name : zeMemGetIpcHandle
+          latency: 0.0
+          special_handling :
+                icd :
+                    handler_prologue : "if (!Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {\n        return ZE_RESULT_ERROR_INVALID_ARGUMENT;\n    }\n"
+          ddi_category :  Mem
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : const void*
+                    kind : pointer
+                 2 :
+                    name : pIpcHandle
+                    type : ze_ipc_mem_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_ipc_mem_handle_t
+                            kind : scalar
+                        server_access : write
+
+        - name : zeMemOpenIpcHandle
+          ddi_category :  Mem
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 2 :
+                    name : handle
+                    type : ze_ipc_mem_handle_t
+                    kind : scalar
+                 3 :
+                    name : flags
+                    type : ze_ipc_memory_flags_t
+                    kind : scalar
+                 4 :
+                    name : pptr
+                    type : void**
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : void*
+                            kind : scalar
+                            translate_after: "{dst} = globalL0Platform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
+                        server_access : write
+
+        - name : zeMemCloseIpcHandle
+          ddi_category :  Mem
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : const void*
+                    kind : pointer
+                    translate_after : "globalL0Platform->destroyUsmDescriptor(const_cast<void*>({arg}))"
+
+        - name : zexMemGetIpcHandles
+          latency : 0.0
+          special_handling :
+                 extension_name : "zex_mem"
+                 icd :
+                     not_in_dispatch_table : True
+                     in_get_extension_function_address : True
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : ptr
+                    type : const void*
+                    kind : pointer
+                 2 :
+                    name : numIpcHandles
+                    type : uint32_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : uint32_t
+                            kind : scalar
+                        server_access : read_write
+                 3 :
+                    name : pIpcHandles
+                    type : ze_ipc_mem_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "numIpcHandles"
+                        is_num_elements_ptr_to_capturable_arg: True
+                        can_be_null : True
+                        element :
+                            type : ze_ipc_mem_handle_t
+                            kind : scalar
+                        server_access : write
+
+        - name : zexMemOpenIpcHandles
+          latency : 0.0
+          special_handling :
+                 extension_name : "zex_mem"
+                 icd :
+                     not_in_dispatch_table : True
+                     in_get_extension_function_address : True
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 2 :
+                    name : numIpcHandles
+                    type : uint32_t
+                    kind : scalar
+                 3 :
+                    name : pIpcHandles
+                    type : ze_ipc_mem_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "numIpcHandles"
+                        can_be_null : True
+                        element :
+                            type : ze_ipc_mem_handle_t
+                            kind : scalar
+                        server_access : read
+                 4 :
+                    name : flags
+                    type : ze_ipc_memory_flags_t
+                    kind : scalar
+                 5 :
+                    name : pptr
+                    type : void**
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : void*
+                            kind : scalar
+                            translate_after: "{dst} = globalL0Platform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
+                        server_access : write
+
 #        - name : zeMemFreeExt
 #          ddi_category :  Mem
 #          returns :

@@ -100,24 +100,6 @@ bool getDriverIpcProperties(ze_driver_handle_t driver) {
     return true;
 }
 
-bool getExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
-    const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
-    if (zeDriverGetExtensionFunctionAddressResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has failed! Error code = %d", static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
-        return false;
-    }
-
-    log<Verbosity::info>("zeDriverGetExtensionFunctionAddress() returned success for extensionName = '%s'. Checking passed outFunctionAddress...", extensionName);
-
-    if (*outFunctionAddress == nullptr) {
-        log<Verbosity::error>("Passed outFunctionAddress should not be set to nullptr! Validation failed!");
-        return false;
-    }
-
-    log<Verbosity::info>("*outFunctionAddress is not nullptr as expected! *outFunctionAddress = %p", *outFunctionAddress);
-    return true;
-}
-
 bool getNonexistentExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
     const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
     if (zeDriverGetExtensionFunctionAddressResult == ZE_RESULT_SUCCESS) {
@@ -140,6 +122,7 @@ bool getNonexistentExtensionFunctionAddress(ze_driver_handle_t driver, void **ou
 
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDrivers;
+    using Cal::Testing::Utils::LevelZero::getExtensionFunctionAddress;
     using Cal::Testing::Utils::LevelZero::initL0;
 
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);

@@ -49,6 +49,24 @@ bool getDrivers(std::vector<ze_driver_handle_t> &drivers) {
     return !drivers.empty();
 }
 
+bool getExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
+    const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
+    if (zeDriverGetExtensionFunctionAddressResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has failed! Error code = %d", static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeDriverGetExtensionFunctionAddress() returned success for extensionName = '%s'. Checking passed outFunctionAddress...", extensionName);
+
+    if (*outFunctionAddress == nullptr) {
+        log<Verbosity::error>("Passed outFunctionAddress should not be set to nullptr! Validation failed!");
+        return false;
+    }
+
+    log<Verbosity::info>("*outFunctionAddress is not nullptr as expected! *outFunctionAddress = %p", *outFunctionAddress);
+    return true;
+}
+
 bool getDevices(ze_driver_handle_t driver, std::vector<ze_device_handle_t> &devices) {
     uint32_t numDevices{0};
 
@@ -340,6 +358,17 @@ bool freeMemory(ze_context_handle_t context, void *&buffer) {
     buffer = nullptr;
     log<Verbosity::info>("Memory has been freed successfuly!");
 
+    return true;
+}
+
+bool closeMemIpcHandle(ze_context_handle_t context, void *ptr) {
+    const auto zeMemCloseIpcHandleResult = zeMemCloseIpcHandle(context, ptr);
+    if (zeMemCloseIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemCloseIpcHandle() failed! Error code: %d", static_cast<int>(zeMemCloseIpcHandleResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully closed the opened IPC handle!");
     return true;
 }
 

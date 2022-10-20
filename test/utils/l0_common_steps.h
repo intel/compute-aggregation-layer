@@ -17,6 +17,7 @@ namespace Cal::Testing::Utils::LevelZero {
 
 bool initL0();
 bool getDrivers(std::vector<ze_driver_handle_t> &drivers);
+bool getExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName);
 
 bool getDevices(ze_driver_handle_t driver, std::vector<ze_device_handle_t> &devices);
 
@@ -44,6 +45,7 @@ bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t a
 bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer);
 bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer);
 bool freeMemory(ze_context_handle_t context, void *&buffer);
+bool closeMemIpcHandle(ze_context_handle_t context, void *ptr);
 
 bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_device_handle_t *devices, uint32_t devicesCount, ze_event_pool_handle_t &eventPool);
 bool destroyEventPool(ze_event_pool_handle_t &eventPool);

@@ -15,6 +15,7 @@
 #include "test/utils/dynamic_library.h"
 #include "test/utils/l0_common_steps.h"
 
+#include <cinttypes>
 #include <cstdint>
 #include <cstring>
 #include <sstream>
@@ -74,9 +75,73 @@ bool ensureSizesEqual(size_t expected, size_t actual) {
     return true;
 }
 
+bool getIpcHandleOfNonUsmDeviceMemory(ze_context_handle_t context, void *nonUsmDeviceBuffer) {
+    log<Verbosity::info>("Trying to get ze_ipc_mem_handle_t of nonUsmDeviceBuffer!");
+
+    ze_ipc_mem_handle_t ipcHandle{};
+
+    const auto zeMemGetIpcHandleResult = zeMemGetIpcHandle(context, nonUsmDeviceBuffer, &ipcHandle);
+    if (zeMemGetIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("zeMemGetIpcHandle() failed as expected for non USM device buffer!");
+        return true;
+    }
+
+    log<Verbosity::error>("Unexpectedly, zeMemGetIpcHandle() returned ZE_RESULT_SUCCESS for non USM device buffer!");
+    return false;
+}
+
+bool getIpcHandle(ze_context_handle_t context, void *usmDeviceBuffer, ze_ipc_mem_handle_t &ipcHandleOfUsmDeviceBuffer) {
+    const auto zeMemGetIpcHandleResult = zeMemGetIpcHandle(context, usmDeviceBuffer, &ipcHandleOfUsmDeviceBuffer);
+    if (zeMemGetIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("zeMemGetIpcHandle() has failed! Error code: %d", static_cast<int>(zeMemGetIpcHandleResult));
+        return false;
+    }
+
+    uint64_t firstBytes{};
+    std::memcpy(&firstBytes, ipcHandleOfUsmDeviceBuffer.data, sizeof(firstBytes));
+
+    log<Verbosity::info>("Successfully got IPC handle of %p! First bytes of handle as u64 = " PRIu64, usmDeviceBuffer, firstBytes);
+    return true;
+}
+
+bool openIpcHandle(ze_context_handle_t context, ze_device_handle_t device, const ze_ipc_mem_handle_t &ipcHandle, void *&outPtr) {
+    ze_ipc_memory_flags_t flags{0};
+
+    const auto zeMemOpenIpcHandleResult = zeMemOpenIpcHandle(context, device, ipcHandle, flags, &outPtr);
+    if (zeMemOpenIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("zeMemOpenIpcHandle() has failed! Error code: %d", static_cast<int>(zeMemOpenIpcHandleResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully opened IPC handle! Returned pointer: %p", outPtr);
+    return true;
+}
+
+bool closeIpcHandle(ze_context_handle_t context, void *ptr) {
+    const auto zeMemCloseIpcHandleResult = zeMemCloseIpcHandle(context, ptr);
+    if (zeMemCloseIpcHandleResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemCloseIpcHandle() failed! Error code: %d", static_cast<int>(zeMemCloseIpcHandleResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully closed the opened IPC handle!");
+    return true;
+}
+
+bool parseSkipIpcHandlesTests(int argc, const char **argv) {
+    for (int i = 0; i < argc; ++i) {
+        if (0 == strcmp(argv[i], "--skip-ipc-handles-tests")) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 int main(int argc, const char *argv[]) {
     using namespace Cal::Testing::Utils::LevelZero;
 
+    bool skipIpcHandlesTests = parseSkipIpcHandlesTests(argc, argv);
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
     std::vector<ze_driver_handle_t> drivers{};
@@ -131,6 +196,17 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getAddressRange(context, usmDeviceBufferWithOffset, basePtrToQuery, sizeOfUsmDeviceBuffer));
     RUN_REQUIRED_STEP(ensurePointersEqual(usmDeviceBuffer, basePtrToQuery));
     RUN_REQUIRED_STEP(ensureSizesEqual(bufferSize, sizeOfUsmDeviceBuffer));
+
+    if (!skipIpcHandlesTests) {
+        RUN_REQUIRED_STEP(getIpcHandleOfNonUsmDeviceMemory(context, usmHostBuffer));
+
+        ze_ipc_mem_handle_t ipcHandleOfUsmDeviceBuffer{};
+        RUN_REQUIRED_STEP(getIpcHandle(context, usmDeviceBuffer, ipcHandleOfUsmDeviceBuffer));
+
+        void *reopenedUsmDeviceBuffer{};
+        RUN_REQUIRED_STEP(openIpcHandle(context, devices[0], ipcHandleOfUsmDeviceBuffer, reopenedUsmDeviceBuffer));
+        RUN_REQUIRED_STEP(closeIpcHandle(context, reopenedUsmDeviceBuffer));
+    }
 
     RUN_REQUIRED_STEP(freeMemory(context, usmDeviceBuffer));
     RUN_REQUIRED_STEP(freeMemory(context, usmSharedBuffer));

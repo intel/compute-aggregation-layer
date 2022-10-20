@@ -1149,8 +1149,10 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
     } else if (0 == strcmp(name, "zexDriverGetHostPointerBaseAddress")) {
         *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
     } else {
-        log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
-        *ppFunctionAddress = nullptr;
+        *ppFunctionAddress = getL0ExtensionFuncionAddressRpcHelper(name);
+        if (*ppFunctionAddress == nullptr) {
+            log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
+        }
     }
 
     return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;

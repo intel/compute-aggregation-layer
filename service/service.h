@@ -88,11 +88,11 @@ class LevelZeroSharedObjects {
   public:
     bool init();
 
-    ze_driver_handle_t getIntelGpuDriver() const {
+    static ze_driver_handle_t getIntelGpuDriver() {
         return intelGpuDriver;
     }
 
-    ze_result_t getZeInitReturnValue() const {
+    static ze_result_t getZeInitReturnValue() {
         return zeInitReturnValue;
     }
 
@@ -101,9 +101,11 @@ class LevelZeroSharedObjects {
     std::optional<std::vector<ze_driver_handle_t>> getDrivers();
     std::optional<std::vector<ze_device_handle_t>> getDevices(ze_driver_handle_t driverHandle);
 
-    ze_result_t zeInitReturnValue{};
-    ze_driver_handle_t intelGpuDriver{};
+    inline static ze_result_t zeInitReturnValue{};
+    inline static ze_driver_handle_t intelGpuDriver{};
 };
+
+void *getExtensionFuncAddress(const char *funcname);
 
 } // namespace LevelZero
 

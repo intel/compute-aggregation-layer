@@ -260,6 +260,18 @@ ze_result_t zeMemGetAddressRange(ze_context_handle_t hContext, const void* ptr, 
    return {};
 }
 
+ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle){
+   return {};
+}
+
+ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr){
+   return {};
+}
+
+ze_result_t zeMemCloseIpcHandle(ze_context_handle_t hContext, const void* ptr){
+   return {};
+}
+
 ze_result_t zeModuleCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog){
    return {};
 }

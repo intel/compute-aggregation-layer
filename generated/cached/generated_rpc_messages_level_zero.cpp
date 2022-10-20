@@ -496,6 +496,46 @@ size_t ZeCommandListAppendWaitOnEventsRpcM::Captures::getCaptureDynMemSize() con
      return size;
 }
 
+ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
+    DynamicTraits ret = {};
+    ret.pIpcHandles.count = (numIpcHandles ? *numIpcHandles : 0);
+    ret.pIpcHandles.size = ret.pIpcHandles.count * sizeof(ze_ipc_mem_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pIpcHandles.offset + ret.pIpcHandles.size);
+
+
+    return ret;
+}
+
+size_t ZexMemGetIpcHandlesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pIpcHandles) + Cal::Utils::alignUpPow2<8>(this->countPIpcHandles * sizeof(ze_ipc_mem_handle_t));
+     return size;
+}
+
+size_t ZexMemGetIpcHandlesRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPIpcHandles * sizeof(ze_ipc_mem_handle_t));
+     return size;
+}
+
+ZexMemOpenIpcHandlesRpcM::Captures::DynamicTraits ZexMemOpenIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) {
+    DynamicTraits ret = {};
+    ret.pIpcHandles.count = numIpcHandles;
+    ret.pIpcHandles.size = ret.pIpcHandles.count * sizeof(ze_ipc_mem_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pIpcHandles.offset + ret.pIpcHandles.size);
+
+
+    return ret;
+}
+
+size_t ZexMemOpenIpcHandlesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pIpcHandles) + Cal::Utils::alignUpPow2<8>(this->countPIpcHandles * sizeof(ze_ipc_mem_handle_t));
+     return size;
+}
+
+size_t ZexMemOpenIpcHandlesRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPIpcHandles * sizeof(ze_ipc_mem_handle_t));
+     return size;
+}
+
 ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     DynamicTraits ret = {};
 

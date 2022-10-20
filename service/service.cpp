@@ -1145,6 +1145,19 @@ bool zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler(Provider &servi
     return true;
 }
 
+void *getExtensionFuncAddress(const char *funcname) {
+    auto driver = LevelZeroSharedObjects::getIntelGpuDriver();
+    void *functionAddress{};
+
+    const auto zeDriverGetExtensionFunctionAddressResult = Cal::Service::Apis::LevelZero::Standard::zeDriverGetExtensionFunctionAddress(driver, funcname, &functionAddress);
+    if (zeDriverGetExtensionFunctionAddressResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDriverGetExtensionFunctionAddress() call has failed! Error code = %d", static_cast<int>(zeDriverGetExtensionFunctionAddressResult));
+        return nullptr;
+    }
+
+    return functionAddress;
+}
+
 } // namespace LevelZero
 } // namespace Apis
 

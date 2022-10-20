@@ -82,6 +82,9 @@ ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_al
 ze_result_t (*zeMemFree)(ze_context_handle_t hContext, void* ptr) = nullptr;
 ze_result_t (*zeMemGetAllocProperties)(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) = nullptr;
 ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) = nullptr;
+ze_result_t (*zeMemGetIpcHandle)(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) = nullptr;
+ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) = nullptr;
+ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
 ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog) = nullptr;
@@ -498,6 +501,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeMemGetIpcHandle = reinterpret_cast<decltype(zeMemGetIpcHandle)>(dlsym(libraryHandle, "zeMemGetIpcHandle"));
+    if(nullptr == zeMemGetIpcHandle){
+        log<Verbosity::error>("Missing symbol zeMemGetIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeMemOpenIpcHandle = reinterpret_cast<decltype(zeMemOpenIpcHandle)>(dlsym(libraryHandle, "zeMemOpenIpcHandle"));
+    if(nullptr == zeMemOpenIpcHandle){
+        log<Verbosity::error>("Missing symbol zeMemOpenIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeMemCloseIpcHandle = reinterpret_cast<decltype(zeMemCloseIpcHandle)>(dlsym(libraryHandle, "zeMemCloseIpcHandle"));
+    if(nullptr == zeMemCloseIpcHandle){
+        log<Verbosity::error>("Missing symbol zeMemCloseIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeModuleCreate = reinterpret_cast<decltype(zeModuleCreate)>(dlsym(libraryHandle, "zeModuleCreate"));
     if(nullptr == zeModuleCreate){
         log<Verbosity::error>("Missing symbol zeModuleCreate in %s", loadPath.c_str());
@@ -697,6 +718,9 @@ void unloadLevelZeroLibrary() {
     zeMemFree = nullptr;
     zeMemGetAllocProperties = nullptr;
     zeMemGetAddressRange = nullptr;
+    zeMemGetIpcHandle = nullptr;
+    zeMemOpenIpcHandle = nullptr;
+    zeMemCloseIpcHandle = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;
     zeModuleBuildLogDestroy = nullptr;
@@ -731,6 +755,34 @@ bool isLevelZeroLibraryLoaded() {
 
 } // namespace Standard
 
+namespace Extensions {
+namespace LazyLoad {
+ze_result_t zexMemGetIpcHandlesLoad(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles){
+    using ExtFuncT = decltype(zexMemGetIpcHandlesLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::LevelZero::getExtensionFuncAddress("zexMemGetIpcHandles"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : zexMemGetIpcHandles");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::LevelZero::Extensions::zexMemGetIpcHandles = extAddr;
+    return extAddr(hContext, ptr, numIpcHandles, pIpcHandles);
+}
+ze_result_t zexMemOpenIpcHandlesLoad(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr){
+    using ExtFuncT = decltype(zexMemOpenIpcHandlesLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::LevelZero::getExtensionFuncAddress("zexMemOpenIpcHandles"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : zexMemOpenIpcHandles");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::LevelZero::Extensions::zexMemOpenIpcHandles = extAddr;
+    return extAddr(hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
+}
+} // namespace Lazy Load
+ze_result_t (*zexMemGetIpcHandles)(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexMemGetIpcHandlesLoad;
+ze_result_t (*zexMemOpenIpcHandles)(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexMemOpenIpcHandlesLoad;
+} // namespace Extensions
 
 bool isSuccessful(ze_result_t result) {
     return result == ZE_RESULT_SUCCESS;

@@ -490,6 +490,17 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         }
     }
 
+    void *openUsmDevicePointerFromIpcHandle(ze_context_handle_t context, void *newUsmPtr) {
+        if (!newUsmPtr || !cpuInfo.isAccessibleByApplication(newUsmPtr)) {
+            return newUsmPtr;
+        }
+
+        log<Verbosity::critical>("Service returned an address, which is not USM device! Aborting...");
+        std::abort();
+
+        return nullptr;
+    }
+
   private:
     template <typename LocalT, typename RemoteT, typename MapT>
     RemoteT translateNewRemoteObjectToLocalObject(RemoteT remoteHandle, RemoteT parent, MapT &mapping, std::mutex &mapMutex) {

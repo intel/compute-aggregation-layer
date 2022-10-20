@@ -90,6 +90,11 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr);
 ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
 ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize);
+ze_result_t zeMemGetIpcHandle (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle);
+ze_result_t zeMemOpenIpcHandle (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
+ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr);
+ze_result_t zexMemGetIpcHandles (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
+ze_result_t zexMemOpenIpcHandles (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog);
@@ -255,18 +260,6 @@ inline void zeModuleInspectLinkageExtUnimpl() {
     log<Verbosity::critical>("Function Module.zeModuleInspectLinkageExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zeMemGetIpcHandleUnimpl() {
-    log<Verbosity::critical>("Function Mem.zeMemGetIpcHandle is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeMemOpenIpcHandleUnimpl() {
-    log<Verbosity::critical>("Function Mem.zeMemOpenIpcHandle is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeMemCloseIpcHandleUnimpl() {
-    log<Verbosity::critical>("Function Mem.zeMemCloseIpcHandle is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zeMemFreeExtUnimpl() {
     log<Verbosity::critical>("Function Mem.zeMemFreeExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -417,6 +410,9 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Mem.pfnFree = Cal::Icd::LevelZero::zeMemFree;
     dt.Mem.pfnGetAllocProperties = Cal::Icd::LevelZero::zeMemGetAllocProperties;
     dt.Mem.pfnGetAddressRange = Cal::Icd::LevelZero::zeMemGetAddressRange;
+    dt.Mem.pfnGetIpcHandle = Cal::Icd::LevelZero::zeMemGetIpcHandle;
+    dt.Mem.pfnOpenIpcHandle = Cal::Icd::LevelZero::zeMemOpenIpcHandle;
+    dt.Mem.pfnCloseIpcHandle = Cal::Icd::LevelZero::zeMemCloseIpcHandle;
     dt.Module.pfnCreate = Cal::Icd::LevelZero::zeModuleCreate;
     dt.Module.pfnDestroy = Cal::Icd::LevelZero::zeModuleDestroy;
     dt.ModuleBuildLog.pfnDestroy = Cal::Icd::LevelZero::zeModuleBuildLogDestroy;
@@ -475,9 +471,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.ImageExp.pfnViewCreateExp = reinterpret_cast<decltype(dt.ImageExp.pfnViewCreateExp)>(Cal::Icd::LevelZero::Unimplemented::zeImageViewCreateExpUnimpl);
     dt.KernelExp.pfnSchedulingHintExp = reinterpret_cast<decltype(dt.KernelExp.pfnSchedulingHintExp)>(Cal::Icd::LevelZero::Unimplemented::zeKernelSchedulingHintExpUnimpl);
     dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
-    dt.Mem.pfnGetIpcHandle = reinterpret_cast<decltype(dt.Mem.pfnGetIpcHandle)>(Cal::Icd::LevelZero::Unimplemented::zeMemGetIpcHandleUnimpl);
-    dt.Mem.pfnOpenIpcHandle = reinterpret_cast<decltype(dt.Mem.pfnOpenIpcHandle)>(Cal::Icd::LevelZero::Unimplemented::zeMemOpenIpcHandleUnimpl);
-    dt.Mem.pfnCloseIpcHandle = reinterpret_cast<decltype(dt.Mem.pfnCloseIpcHandle)>(Cal::Icd::LevelZero::Unimplemented::zeMemCloseIpcHandleUnimpl);
     dt.Mem.pfnFreeExt = reinterpret_cast<decltype(dt.Mem.pfnFreeExt)>(Cal::Icd::LevelZero::Unimplemented::zeMemFreeExtUnimpl);
     dt.Module.pfnDynamicLink = reinterpret_cast<decltype(dt.Module.pfnDynamicLink)>(Cal::Icd::LevelZero::Unimplemented::zeModuleDynamicLinkUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
@@ -501,6 +494,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
 
+void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName);
 } // namespace LevelZero
 } // namespace Icd
 } // namespace Cal
