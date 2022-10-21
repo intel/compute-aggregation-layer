@@ -1753,6 +1753,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
     Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
+    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -1773,7 +1774,7 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
 
     return ret;
 }
-ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
+ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
     log<Verbosity::bloat>("Establishing RPC for zeMemGetAllocProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;

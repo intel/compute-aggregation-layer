@@ -622,6 +622,21 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_a
     return result;
 }
 
+ze_result_t zeMemGetAllocProperties(ze_context_handle_t hContext, const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice) {
+    auto l0Context = static_cast<IcdL0Context *>(hContext);
+    auto found = l0Context->allocPropertiesCache.obtainProperties(ptr, pMemAllocProperties, phDevice);
+    if (found) {
+        return ZE_RESULT_SUCCESS;
+    }
+    ze_device_handle_t localDeviceHandle;
+    auto ret = zeMemGetAllocPropertiesRpcHelper(hContext, ptr, pMemAllocProperties, &localDeviceHandle);
+    l0Context->allocPropertiesCache.cacheProperties(ptr, pMemAllocProperties, &localDeviceHandle);
+    if (phDevice) {
+        phDevice[0] = localDeviceHandle;
+    }
+    return ret;
+}
+
 ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
                                           void *ptr,
                                           const void *pattern,

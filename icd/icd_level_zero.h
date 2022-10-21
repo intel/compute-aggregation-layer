@@ -98,6 +98,7 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 
+ze_result_t zeMemGetAllocProperties(ze_context_handle_t hContext, const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice);
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices);
@@ -226,6 +227,43 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
 
 struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+
+    struct AllocPropertiesCache {
+        struct CacheEntry {
+            const void *ptr;
+            ze_memory_allocation_properties_t memAllocProperties;
+            ze_device_handle_t device;
+        };
+
+        std::vector<CacheEntry> cache;
+        std::shared_mutex mtx;
+
+        bool obtainProperties(const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice) {
+            std::shared_lock lock(mtx);
+            auto propIt = std::find_if(this->cache.begin(), this->cache.end(), [&](CacheEntry &el) {
+                return el.ptr == ptr;
+            });
+            if (propIt == this->cache.end()) {
+                return false;
+            }
+            memcpy(pMemAllocProperties, &propIt->memAllocProperties, sizeof(ze_memory_allocation_properties_t));
+            if (phDevice) {
+                phDevice[0] = propIt->device;
+            }
+            return true;
+        }
+        void cacheProperties(const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice) {
+            std::lock_guard<std::shared_mutex> lock(mtx);
+            auto &propIt = this->cache.emplace_back();
+            propIt.device = phDevice[0];
+            propIt.ptr = ptr;
+            memcpy(&propIt.memAllocProperties, pMemAllocProperties, sizeof(ze_memory_allocation_properties_t));
+        }
+        void invalidateAllocPropertiesCache() {
+            std::lock_guard<std::shared_mutex> lock(mtx);
+            this->cache.clear();
+        }
+    } allocPropertiesCache;
 };
 
 class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, IcdL0TypePrinter> {

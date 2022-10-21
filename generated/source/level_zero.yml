@@ -3611,7 +3611,7 @@ config :
           latency : 0.0
           special_handling : 
                 icd : 
-                    handler_prologue : "Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();"
+                    handler_prologue : "Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
                 rpc :
                     custom_handler : True
           ddi_category :  Mem
@@ -3633,6 +3633,9 @@ config :
 
         - name : zeMemGetAllocProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Mem
           returns :
                     type : ze_result_t
