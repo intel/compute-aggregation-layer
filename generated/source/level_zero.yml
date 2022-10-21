@@ -1882,6 +1882,9 @@ config :
 
         - name : zeDeviceGetProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1908,6 +1911,9 @@ config :
 
         - name : zeDeviceGetComputeProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1933,6 +1939,9 @@ config :
 
         - name : zeDeviceGetModuleProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1958,6 +1967,9 @@ config :
 
         - name : zeDeviceGetCommandQueueGroupProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -1995,6 +2007,9 @@ config :
 
         - name : zeDeviceGetMemoryProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -2032,6 +2047,9 @@ config :
 
         - name : zeDeviceGetMemoryAccessProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -2058,6 +2076,9 @@ config :
 
         - name : zeDeviceGetCacheProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -2095,6 +2116,9 @@ config :
 
         - name : zeDeviceGetImageProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -2120,6 +2144,9 @@ config :
 
         - name : zeDeviceGetExternalMemoryProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Device
           returns :
                     type : ze_result_t
@@ -2308,6 +2335,9 @@ config :
 
         - name : zeDriverGetProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2333,6 +2363,9 @@ config :
 
         - name : zeDriverGetIpcProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -2358,6 +2391,9 @@ config :
 
         - name : zeDriverGetExtensionProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Driver
           returns :
                     type : ze_result_t
@@ -4225,6 +4261,9 @@ config :
 
         - name : zeModuleGetProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Module
           returns :
                     type : ze_result_t
@@ -4570,6 +4609,9 @@ config :
 
         - name : zeKernelGetProperties
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Kernel
           returns :
                     type : ze_result_t

@@ -706,6 +706,49 @@ ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argInd
     return zeKernelSetArgumentValueRpcHelper(hKernel, argIndex, argSize, pArgValue);
 }
 
+ze_result_t zeDriverGetProperties(ze_driver_handle_t hDriver, ze_driver_properties_t *pDriverProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pDriverProperties, zeDriverGetPropertiesRpcHelper);
+}
+ze_result_t zeDriverGetIpcProperties(ze_driver_handle_t hDriver, ze_driver_ipc_properties_t *pIpcProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pIpcProperties, zeDriverGetIpcPropertiesRpcHelper);
+}
+ze_result_t zeDriverGetExtensionProperties(ze_driver_handle_t hDriver, uint32_t *pCount, ze_driver_extension_properties_t *pExtensionProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pCount, pExtensionProperties, zeDriverGetExtensionPropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properties_t *pDeviceProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetComputeProperties(ze_device_handle_t hDevice, ze_device_compute_properties_t *pComputeProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pComputeProperties, zeDeviceGetComputePropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetModuleProperties(ze_device_handle_t hDevice, ze_device_module_properties_t *pModuleProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pModuleProperties, zeDeviceGetModulePropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetMemoryAccessProperties(ze_device_handle_t hDevice, ze_device_memory_access_properties_t *pMemAccessProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pMemAccessProperties, zeDeviceGetMemoryAccessPropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetImageProperties(ze_device_handle_t hDevice, ze_device_image_properties_t *pImageProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pImageProperties, zeDeviceGetImagePropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetExternalMemoryProperties(ze_device_handle_t hDevice, ze_device_external_memory_properties_t *pExternalMemoryProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pExternalMemoryProperties, zeDeviceGetExternalMemoryPropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetCacheProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_cache_properties_t *pCacheProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCacheProperties, zeDeviceGetCachePropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetCommandQueueGroupProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_command_queue_group_properties_t *pCommandQueueGroupProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCommandQueueGroupProperties, zeDeviceGetCommandQueueGroupPropertiesRpcHelper);
+}
+ze_result_t zeDeviceGetMemoryProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_memory_properties_t *pMemProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pMemProperties, zeDeviceGetMemoryPropertiesRpcHelper);
+}
+ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properties_t *pModuleProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Module *>(hModule), pModuleProperties, zeModuleGetPropertiesRpcHelper);
+}
+ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties) {
+    return PropertiesCache::obtainProperties(static_cast<IcdL0Kernel *>(hKernel), pKernelProperties, zeKernelGetPropertiesRpcHelper);
+}
+
 ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
                                           void *dstptr,
                                           const void *srcptr,
@@ -1331,7 +1374,7 @@ bool IcdL0Module::removeGlobalPointer() {
 }
 
 bool IcdL0Module::recordGlobalPointer(void *ptr) {
-    //Add to list if ptr is unique
+    // Add to list if ptr is unique
     auto globalPtrLock = globalPointers.lock();
     if (std::find(globalPointers.ptrList.begin(), globalPointers.ptrList.end(), ptr) == globalPointers.ptrList.end()) {
         globalPointers.ptrList.push_back(ptr);

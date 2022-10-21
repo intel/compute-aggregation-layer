@@ -796,7 +796,7 @@ ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t
 
     return ret;
 }
-ze_result_t zeDeviceGetProperties (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
+ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -822,7 +822,7 @@ ze_result_t zeDeviceGetProperties (ze_device_handle_t hDevice, ze_device_propert
 
     return ret;
 }
-ze_result_t zeDeviceGetComputeProperties (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties) {
+ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetComputeProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -843,7 +843,7 @@ ze_result_t zeDeviceGetComputeProperties (ze_device_handle_t hDevice, ze_device_
 
     return ret;
 }
-ze_result_t zeDeviceGetModuleProperties (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
+ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetModuleProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -864,7 +864,7 @@ ze_result_t zeDeviceGetModuleProperties (ze_device_handle_t hDevice, ze_device_m
 
     return ret;
 }
-ze_result_t zeDeviceGetCommandQueueGroupProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
+ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetCommandQueueGroupProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -887,7 +887,7 @@ ze_result_t zeDeviceGetCommandQueueGroupProperties (ze_device_handle_t hDevice, 
 
     return ret;
 }
-ze_result_t zeDeviceGetMemoryProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
+ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetMemoryProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -910,7 +910,7 @@ ze_result_t zeDeviceGetMemoryProperties (ze_device_handle_t hDevice, uint32_t* p
 
     return ret;
 }
-ze_result_t zeDeviceGetMemoryAccessProperties (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties) {
+ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetMemoryAccessProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -932,7 +932,7 @@ ze_result_t zeDeviceGetMemoryAccessProperties (ze_device_handle_t hDevice, ze_de
 
     return ret;
 }
-ze_result_t zeDeviceGetCacheProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
+ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetCacheProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -955,7 +955,7 @@ ze_result_t zeDeviceGetCacheProperties (ze_device_handle_t hDevice, uint32_t* pC
 
     return ret;
 }
-ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) {
+ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetImageProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -977,7 +977,7 @@ ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_im
 
     return ret;
 }
-ze_result_t zeDeviceGetExternalMemoryProperties (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
+ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetExternalMemoryProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -1105,7 +1105,7 @@ ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t*
 
     return ret;
 }
-ze_result_t zeDriverGetProperties (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) {
+ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -1127,7 +1127,7 @@ ze_result_t zeDriverGetProperties (ze_driver_handle_t hDriver, ze_driver_propert
 
     return ret;
 }
-ze_result_t zeDriverGetIpcProperties (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) {
+ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetIpcProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -1149,7 +1149,7 @@ ze_result_t zeDriverGetIpcProperties (ze_driver_handle_t hDriver, ze_driver_ipc_
 
     return ret;
 }
-ze_result_t zeDriverGetExtensionProperties (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
+ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetExtensionProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -2121,7 +2121,7 @@ ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_
 
     return ret;
 }
-ze_result_t zeModuleGetProperties (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) {
+ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;
@@ -2361,7 +2361,7 @@ ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_
 
     return ret;
 }
-ze_result_t zeKernelGetProperties (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
+ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelGetProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();;

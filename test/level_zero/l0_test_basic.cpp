@@ -293,10 +293,23 @@ int main(int argc, const char *argv[]) {
         log<Verbosity::info>("Reading device properties!");
 
         ze_device_properties_t deviceProperties = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES};
-        const auto zeDeviceGetPropertiesResult = zeDeviceGetProperties(device, &deviceProperties);
+        auto zeDeviceGetPropertiesResult = zeDeviceGetProperties(device, &deviceProperties);
 
         if (zeDeviceGetPropertiesResult != ZE_RESULT_SUCCESS) {
             log<Verbosity::error>("zeDeviceGetProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetPropertiesResult));
+            return -1;
+        }
+
+        ze_device_properties_t deviceProperties2 = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES};
+        zeDeviceGetPropertiesResult = zeDeviceGetProperties(device, &deviceProperties2);
+
+        if (zeDeviceGetPropertiesResult != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zeDeviceGetProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetPropertiesResult));
+            return -1;
+        }
+
+        if (memcmp(&deviceProperties, &deviceProperties2, sizeof(ze_device_properties_t)) != 0) {
+            log<Verbosity::error>("Properties queried twice from zeDeviceGetProperties() are not the same");
             return -1;
         }
 
@@ -447,6 +460,38 @@ int main(int argc, const char *argv[]) {
         if (zeDeviceGetMemoryPropertiesResult != ZE_RESULT_SUCCESS) {
             log<Verbosity::error>("zeDeviceGetMemoryProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetMemoryPropertiesResult));
             return -1;
+        }
+
+        uint32_t memoryPropertiesCount2{0};
+        zeDeviceGetMemoryPropertiesResult = zeDeviceGetMemoryProperties(device, &memoryPropertiesCount2, nullptr);
+        if (zeDeviceGetMemoryPropertiesResult != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zeDeviceGetMemoryProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetMemoryPropertiesResult));
+            return -1;
+        }
+
+        if (memoryPropertiesCount2 != memoryPropertiesCount) {
+            log<Verbosity::error>("Properties count queried twice from zeDeviceGetMemoryProperties() are not the same");
+            return -1;
+        }
+
+        std::vector<ze_device_memory_properties_t> memoryProperties2{};
+        memoryProperties.resize(memoryPropertiesCount2);
+
+        for (auto &memoryProperty : memoryProperties2) {
+            memoryProperty.stype = ZE_STRUCTURE_TYPE_DEVICE_MEMORY_PROPERTIES;
+        }
+
+        zeDeviceGetMemoryPropertiesResult = zeDeviceGetMemoryProperties(device, &memoryPropertiesCount2, memoryProperties2.data());
+        if (zeDeviceGetMemoryPropertiesResult != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zeDeviceGetMemoryProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetMemoryPropertiesResult));
+            return -1;
+        }
+
+        for (uint32_t i = 0; i < memoryPropertiesCount2; i++) {
+            if (memcmp(&memoryProperties2[i], &memoryProperties[i], sizeof(ze_device_memory_properties_t)) != 0) {
+                log<Verbosity::error>("Properties queried twice from zeDeviceGetProperties() are not the same");
+                return -1;
+            }
         }
 
         for (const auto &memoryProperty : memoryProperties) {
