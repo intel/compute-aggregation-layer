@@ -252,7 +252,34 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
         return false;
     }
 
-    log<Verbosity::info>("Command appended successfuly!");
+    log<Verbosity::info>("Memory copy operation appended successfuly!");
+    return true;
+}
+
+bool appendMemoryFill(ze_command_list_handle_t cmdList,
+                      void *destination,
+                      const void *pattern,
+                      size_t patternSize,
+                      size_t bufferSize,
+                      ze_event_handle_t signalEvent,
+                      uint32_t waitEventsCount,
+                      ze_event_handle_t *waitEvents) {
+    log<Verbosity::info>("Appending memory fill operation to command list!");
+
+    const auto zeCommandListAppendMemoryFillResult = zeCommandListAppendMemoryFill(cmdList,
+                                                                                   destination,
+                                                                                   pattern,
+                                                                                   patternSize,
+                                                                                   bufferSize,
+                                                                                   signalEvent,
+                                                                                   waitEventsCount,
+                                                                                   waitEvents);
+    if (zeCommandListAppendMemoryFillResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryFill() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryFillResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Memory fill operation appended successfully!");
     return true;
 }
 
@@ -266,6 +293,19 @@ bool closeCommandList(ze_command_list_handle_t list) {
     }
 
     log<Verbosity::info>("Command list closed succesfully!");
+    return true;
+}
+
+bool resetCommandList(ze_command_list_handle_t list) {
+    log<Verbosity::info>("Resetting command list via zeCommandListReset()!");
+
+    const auto zeCommandListResetResult = zeCommandListReset(list);
+    if (zeCommandListResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListReset() call has failed! Error code = %d", static_cast<int>(zeCommandListResetResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Command list reset succesfully!");
     return true;
 }
 
@@ -463,6 +503,19 @@ bool synchronizeViaFence(ze_fence_handle_t fence) {
     return true;
 }
 
+bool resetFence(ze_fence_handle_t fence) {
+    log<Verbosity::info>("Resetting fence via zeFenceReset()!");
+
+    const auto zeFenceResetResult = zeFenceReset(fence);
+    if (zeFenceResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeFenceReset() call has failed! Error code = %d", static_cast<int>(zeFenceResetResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeFenceReset() has been successful!");
+    return true;
+}
+
 bool destroyFence(ze_fence_handle_t &fence) {
     log<Verbosity::info>("Destroying fence via zeFenceDestroy()!");
 
@@ -475,6 +528,50 @@ bool destroyFence(ze_fence_handle_t &fence) {
     fence = nullptr;
     log<Verbosity::info>("Fence destruction has been successful!");
 
+    return true;
+}
+
+bool fillBufferOnHostViaMemcpy(void *buffer, int value, size_t bufferSize) {
+    log<Verbosity::info>("Filling buffer (%p) of size (%zd) with value (%d)", buffer, bufferSize, value);
+    std::memset(buffer, value, bufferSize);
+
+    log<Verbosity::info>("Fill operation was successful!");
+    return true;
+}
+
+bool verifyMemoryCopyResults(const void *sourceBuffer, const void *destinationBuffer, size_t bufferSize) {
+    log<Verbosity::info>("Validating results of copying buffer!");
+
+    const auto src = static_cast<const char *>(sourceBuffer);
+    const auto dst = static_cast<const char *>(destinationBuffer);
+
+    for (size_t i = 0; i < bufferSize; ++i) {
+        if (src[i] != dst[i]) {
+            log<Verbosity::error>("Destination contains invalid value! Expected: %d, Actual: %d at index %zd.",
+                                  static_cast<int>(src[i]), static_cast<int>(dst[i]), i);
+            return false;
+        }
+    }
+
+    log<Verbosity::info>("Validation passed!");
+    return true;
+}
+
+bool verifyMemoryFillResults(const void *destination, size_t destinationSize, const void *pattern, size_t patternSize) {
+    log<Verbosity::info>("Validating results of filling buffer!");
+
+    const auto src = static_cast<const char *>(pattern);
+    const auto dst = static_cast<const char *>(destination);
+
+    for (size_t i = 0; i < destinationSize; ++i) {
+        if (src[i % patternSize] != dst[i]) {
+            log<Verbosity::error>("Destination contains invalid value! Expected: %d, Actual: %d at index %zd.",
+                                  static_cast<int>(src[i % patternSize]), static_cast<int>(dst[i]), i);
+            return false;
+        }
+    }
+
+    log<Verbosity::info>("Validation passed!");
     return true;
 }
 

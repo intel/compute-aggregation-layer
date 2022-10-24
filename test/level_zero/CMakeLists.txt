@@ -14,6 +14,7 @@ macro(add_l0_blackbox TEST_NAME TEST_FILES)
   target_link_libraries(${TEST_NAME} ze_loader ${common_library_dependencies})
 endmacro()
 
+add_l0_blackbox(l0_blackbox_append_mem_fill_copy_asynchronous_queue ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_append_mem_fill_copy_asynchronous_queue.cpp)
 add_l0_blackbox(l0_blackbox_context ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_context.cpp)
 add_l0_blackbox(l0_blackbox_device ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_device.cpp)
 add_l0_blackbox(l0_blackbox_driver ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_driver.cpp)

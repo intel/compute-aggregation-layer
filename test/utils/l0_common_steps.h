@@ -38,7 +38,18 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       ze_event_handle_t signalEvent = nullptr,
                       uint32_t waitEventsCount = 0,
                       ze_event_handle_t *waitEvents = nullptr);
+
+bool appendMemoryFill(ze_command_list_handle_t cmdList,
+                      void *destination,
+                      const void *pattern,
+                      size_t patternSize,
+                      size_t bufferSize,
+                      ze_event_handle_t signalEvent = nullptr,
+                      uint32_t waitEventsCount = 0,
+                      ze_event_handle_t *waitEvents = nullptr);
+
 bool closeCommandList(ze_command_list_handle_t list);
+bool resetCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
 
 bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer);
@@ -55,7 +66,12 @@ bool destroyEvent(ze_event_handle_t &event);
 
 bool createFence(ze_command_queue_handle_t queue, ze_fence_handle_t &fence);
 bool synchronizeViaFence(ze_fence_handle_t fence);
+bool resetFence(ze_fence_handle_t fence);
 bool destroyFence(ze_fence_handle_t &fence);
+
+bool fillBufferOnHostViaMemcpy(void *buffer, int value, size_t bufferSize);
+bool verifyMemoryCopyResults(const void *sourceBuffer, const void *destinationBuffer, size_t bufferSize);
+bool verifyMemoryFillResults(const void *destination, size_t destinationSize, const void *pattern, size_t patternSize);
 
 template <typename T>
 bool ensureNullptr(const T *pointer) {

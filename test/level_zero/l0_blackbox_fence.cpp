@@ -41,37 +41,6 @@ bool verifyFenceStatus(ze_fence_handle_t fence, FenceStatus status) {
     return true;
 }
 
-bool resetFence(ze_fence_handle_t fence) {
-    log<Verbosity::info>("Resetting fence via zeFenceReset()!");
-
-    const auto zeFenceResetResult = zeFenceReset(fence);
-    if (zeFenceResetResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeFenceReset() call has failed! Error code = %d", static_cast<int>(zeFenceResetResult));
-        return false;
-    }
-
-    log<Verbosity::info>("zeFenceReset() has been successful!");
-    return true;
-}
-
-bool verifyMemoryCopyResults(const void *sourceBuffer, const void *destinationBuffer, size_t bufferSize) {
-    log<Verbosity::info>("Validating results of copying buffer!");
-
-    const auto src = static_cast<const char *>(sourceBuffer);
-    const auto dst = static_cast<const char *>(destinationBuffer);
-
-    for (size_t i = 0; i < bufferSize; ++i) {
-        if (src[i] != dst[i]) {
-            log<Verbosity::error>("Destination contains invalid value! Expected: %d, Actual: %d at index %zd.",
-                                  static_cast<int>(src[i]), static_cast<int>(dst[i]), i);
-            return false;
-        }
-    }
-
-    log<Verbosity::info>("Validation passed!");
-    return true;
-}
-
 int main(int argc, const char *argv[]) {
     using namespace Cal::Testing::Utils::LevelZero;
 

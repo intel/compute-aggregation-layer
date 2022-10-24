@@ -22,14 +22,6 @@
 #include <string>
 #include <vector>
 
-bool fillBufferOnHostViaMemcpy(void *buffer, int value, size_t bufferSize) {
-    log<Verbosity::info>("Filling buffer (%p) of size (%zd) with value (%d)", buffer, bufferSize, value);
-    std::memset(buffer, value, bufferSize);
-
-    log<Verbosity::info>("Fill operation was successful!");
-    return true;
-}
-
 bool getAllocationProperties(ze_context_handle_t context, void *buffer, ze_memory_allocation_properties_t &outProperties, ze_device_handle_t &outDevice) {
     const auto zeMemGetAllocPropertiesResult = zeMemGetAllocProperties(context, buffer, &outProperties, &outDevice);
     if (zeMemGetAllocPropertiesResult != ZE_RESULT_SUCCESS) {
