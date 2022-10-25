@@ -1108,6 +1108,7 @@ ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount,
 
 ze_result_t ImportedHostPointersManager::importExternalPointer(void *ptr, size_t size) {
     if (!ptr || !size) {
+        log<Verbosity::error>("ImportedHostPointersManager::importExternalPointer(): passed NULL! ptr = %p, size = %zd", ptr, size);
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
@@ -1126,6 +1127,7 @@ ze_result_t ImportedHostPointersManager::importExternalPointer(void *ptr, size_t
 
 ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
     if (!ptr) {
+        log<Verbosity::error>("ImportedHostPointersManager::releaseImportedPointer(): passed NULL! ptr = %p", ptr);
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
@@ -1151,6 +1153,7 @@ ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
 
 ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, void **baseAddress) {
     if (!baseAddress || !ptr) {
+        log<Verbosity::error>("ImportedHostPointersManager::getHostPointerBaseAddress(): passed NULL! ptr = %p, baseAddress = %p", ptr, static_cast<void *>(baseAddress));
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
@@ -1175,6 +1178,8 @@ ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, vo
 }
 
 static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
+    log<Verbosity::bloat>("Handling zexDriverImportExternalPointer() solely via ICD!");
+
     auto &instance = ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
@@ -1182,6 +1187,8 @@ static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, vo
 }
 
 static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
+    log<Verbosity::bloat>("Handling zexDriverReleaseImportedPointer() solely via ICD!");
+
     auto &instance = ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
@@ -1189,6 +1196,8 @@ static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, v
 }
 
 static ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
+    log<Verbosity::bloat>("Handling zexDriverGetHostPointerBaseAddress() solely via ICD!");
+
     auto &instance = ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
@@ -1197,6 +1206,10 @@ static ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver
 
 ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, const char *name, void **ppFunctionAddress) {
     if (!ppFunctionAddress || !name) {
+        log<Verbosity::error>("zeDriverGetExtensionFunctionAddress(): Null passed! name = %p, ppFunctionAddress = %p",
+                              static_cast<const void *>(name),
+                              static_cast<void *>(ppFunctionAddress));
+
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 

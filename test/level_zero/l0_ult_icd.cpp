@@ -136,11 +136,17 @@ class ImportedHostPointersManagerTest : public ::testing::Test {
 };
 
 TEST_F(ImportedHostPointersManagerTest, GivenNullptrWhenImportingPointerThenResultInvalidNullHandleIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
     EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.importExternalPointer(nullptr, rangeSize));
+
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenZeroSizeWhenImportingPointerThenResultInvalidNullHandleIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
     EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.importExternalPointer(rangeBegin, 0));
+
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenEmptyManagerWhenPointerIsImportedThenItsBaseAddressCanBeQueried) {
@@ -170,12 +176,19 @@ TEST_F(ImportedHostPointersManagerTest, GivenTwoRangesWithHoleBetweenWhenInserti
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenNullptrWhenTryingToGetBaseAddressThenResultInvalidNullHandleIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
+
     auto baseAddress = reinterpret_cast<void *>(0x00AA);
     EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.getHostPointerBaseAddress(nullptr, &baseAddress));
+
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenNullBaseStorageWhenTryingToGetBaseAddressThenResultInvalidNullHandleIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
     EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.getHostPointerBaseAddress(rangeBegin, nullptr));
+
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenManagerWithPointerWhenTryingToGetBaseAddressOfUnknownPointerThenNullptrIsSetAndResultIsReturned) {
@@ -203,7 +216,10 @@ TEST_F(ImportedHostPointersManagerTest, GivenManagerWithPointerWhenTryingToGetBa
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNullptrThenResultInvalidNullHandleIsReturned) {
+    Cal::Mocks::LogCaptureContext logs;
     EXPECT_EQ(ZE_RESULT_ERROR_INVALID_NULL_HANDLE, pointersManager.releaseImportedPointer(nullptr));
+
+    EXPECT_FALSE(logs.empty());
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNotImportedPointerThenResultInvalidArgumentIsReturned) {
