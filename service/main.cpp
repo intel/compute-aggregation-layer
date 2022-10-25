@@ -15,8 +15,10 @@
 
 #include <cstdio>
 #include <cstring>
+#include <functional>
 #include <getopt.h>
 #include <string>
+#include <sys/file.h>
 
 void printCalServiceHelp();
 void printCalServiceVersion();
@@ -25,6 +27,7 @@ std::string getFullExePathIfExists(const char *fileName);
 
 constexpr option options[] = {
     {"persistent", no_argument, nullptr, 'p'},
+    {"shared", no_argument, nullptr, 's'},
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
     {"unimplemented", required_argument, nullptr, 'u'},
@@ -34,13 +37,17 @@ int main(int argc, const char *argv[]) {
     std::string choreographiesPath = ".";
 
     Cal::Service::ServiceConfig serviceConfig;
-    bool isPersistentMode = false;
+    bool isExplicitPersistentMode = false;
+    bool isExplicitSharedRunnerMode = false;
 
     int option;
-    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+phvu:", options, nullptr)) != -1) {
+    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+pshvu:", options, nullptr)) != -1) {
         switch (option) {
         case 'p':
-            isPersistentMode = true;
+            isExplicitPersistentMode = true;
+            break;
+        case 's':
+            isExplicitSharedRunnerMode = true;
             break;
         case 'h':
             printCalServiceHelp();
@@ -56,11 +63,22 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    if (argc == 1) {
-        isPersistentMode = true;
+    if (isExplicitPersistentMode && isExplicitSharedRunnerMode) {
+        fprintf(stderr, "Calrun cannot be in both persistent (-p) and shared_runner (-s) mode\n");
+        return 1;
     }
 
-    if (isPersistentMode == false) {
+    if ((argc == 1) || isExplicitPersistentMode) {
+        serviceConfig.mode = Cal::Service::ServiceConfig::Mode::persistent;
+    } else {
+        serviceConfig.mode = Cal::Service::ServiceConfig::Mode::runner;
+    }
+
+    if (isExplicitSharedRunnerMode) {
+        serviceConfig.mode = Cal::Service::ServiceConfig::Mode::sharedRunner;
+    }
+
+    if (serviceConfig.isAnyRunnerMode()) {
         Cal::Service::ServiceConfig::RunnerConfig runner;
 
         runner.command = getFullExePathIfExists(argv[optind]);
@@ -73,24 +91,72 @@ int main(int argc, const char *argv[]) {
         runner.args.push_back(nullptr);
 
         serviceConfig.runner = runner;
-        serviceConfig.listener.socketPath += "runner/" + std::to_string(getpid()) + "/";
         Cal::Sys::setenv(calUseLoggerNameEnvName.data(), "1", 1);
+        if (Cal::Service::ServiceConfig::Mode::sharedRunner == serviceConfig.mode) {
+            std::string commandLine = Cal::Utils::concatenate(&argv[optind], &argv[argc], "");
+            size_t commandLineHash = std::hash<std::string>()(commandLine);
+            serviceConfig.listener.socketPath += "shared_runner/" + std::to_string(commandLineHash) + "/";
+        } else {
+            serviceConfig.listener.socketPath += "runner/" + std::to_string(getpid()) + "/";
+        }
     }
 
     std::filesystem::create_directories(serviceConfig.listener.socketPath.c_str());
     serviceConfig.listener.socketPath.append("socket");
 
-    if (isPersistentMode == false) {
+    if (serviceConfig.isAnyRunnerMode()) {
         Cal::Sys::setenv(calListenerSocketPathEnvName.data(), serviceConfig.listener.socketPath.c_str(), 1);
     }
 
     Cal::Utils::initDynamicVerbosity();
-    auto chrLib = Cal::Service::ChoreographyLibrary::create();
-    if (Cal::Utils::getCalEnvFlag(calEnableAilEnvName)) {
-        chrLib->load(".");
+
+    std::unique_ptr<Cal::Ipc::Connection> existingSharedCalConnection = nullptr;
+    if (Cal::Service::ServiceConfig::Mode::sharedRunner == serviceConfig.mode) {
+        auto connectionFactory = std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
+        existingSharedCalConnection = connectionFactory->connect(serviceConfig.listener.socketPath.c_str());
+        if (existingSharedCalConnection && (false == existingSharedCalConnection->isAlive())) {
+            log<Verbosity::debug>("Existing service is not responsive\n");
+            existingSharedCalConnection.reset();
+        }
+        if (nullptr == existingSharedCalConnection) {
+            auto lockPath = serviceConfig.listener.socketPath;
+            lockPath = serviceConfig.listener.socketPath + "_lock";
+            serviceConfig.sharedRunnerLockFd = open(lockPath.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+            if (-1 == serviceConfig.sharedRunnerLockFd) {
+                log<Verbosity::critical>("Could not open %s\n", lockPath.c_str());
+                return -1;
+            }
+            if (0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_EX)) {
+                log<Verbosity::critical>("Could not lock %s\n", lockPath.c_str());
+                return -1;
+            }
+            existingSharedCalConnection = connectionFactory->connect(serviceConfig.listener.socketPath.c_str());
+            if (existingSharedCalConnection && (false == existingSharedCalConnection->isAlive())) {
+                log<Verbosity::debug>("Existing service is not responsive\n");
+                existingSharedCalConnection.reset();
+            }
+            if (nullptr != existingSharedCalConnection) {
+                if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != close(serviceConfig.sharedRunnerLockFd))) {
+                    log<Verbosity::critical>("Could not unlock %s\n", lockPath.c_str());
+                }
+            }
+        }
     }
-    Cal::Service::Provider service(std::move(chrLib), std::move(serviceConfig));
-    return service.run(isPersistentMode);
+
+    if (existingSharedCalConnection) {
+        log<Verbosity::debug>("Establishing pass-through connection");
+        Cal::Service::checkForRequiredFiles();
+        Cal::Service::spawnProcessAndWait(serviceConfig.runner.value());
+        return 0;
+    } else { // new service
+        log<Verbosity::debug>("Establishing new service instance");
+        auto chrLib = Cal::Service::ChoreographyLibrary::create();
+        if (Cal::Utils::getCalEnvFlag(calEnableAilEnvName)) {
+            chrLib->load(".");
+        }
+        Cal::Service::Provider service(std::move(chrLib), std::move(serviceConfig));
+        return service.run();
+    }
 }
 
 void printCalServiceHelp() {
@@ -107,6 +173,7 @@ void printCalServiceHelp() {
     printf("   -h  --help                 Show this help\n");
     printf("   -v  --version              Show version\n");
     printf("   -p  --persistent           Start cal in server mode, that applications can connect to. Running CAL without parameters is identical to running in persistent mode.\n");
+    printf("   -s  --shared               Start cal in shared runner mode. In this mode, identical parallel workload invocations will share a single CAL service which will be started on demand and kept alive no longer than needed.\n");
     printf("   -u  --unimplemented ocl    List all OCL Api calls that are currently missing in the implementations\n");
     printf("                       l0     List all Level Zero Api calls that are currently missing in the implementations\n");
 

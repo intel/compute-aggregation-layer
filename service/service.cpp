@@ -1244,20 +1244,7 @@ void checkForRequiredFiles() {
     }
 }
 
-bool Provider::runCommand(const ServiceConfig::RunnerConfig &config) {
-    runnerConfig.subprocess = std::async(std::launch::async, [&] {
-        checkForRequiredFiles();
-        spawnProcessAndWait(config);
-
-        this->runInLoop = false;
-        this->listener->shutdown();
-    });
-
-    return true;
-}
-
-void Provider::spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
-
+void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
     unsetenv("ZE_AFFINITY_MASK");
     auto childPid = fork();
     if (childPid == -1) {
@@ -1275,6 +1262,18 @@ void Provider::spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
             exit(EXIT_FAILURE);
         }
     }
+}
+
+bool Provider::runCommand(const ServiceConfig::RunnerConfig &config) {
+    runnerConfig.subprocess = std::async(std::launch::async, [&] {
+        checkForRequiredFiles();
+        spawnProcessAndWait(config);
+
+        this->runInLoop = false;
+        this->listener->shutdown();
+    });
+
+    return true;
 }
 
 template <typename TrackingT, typename DestroyFunctionT>

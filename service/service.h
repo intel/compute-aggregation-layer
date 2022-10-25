@@ -28,6 +28,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <sys/file.h>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
@@ -52,6 +53,19 @@ struct ServiceConfig {
         }
         std::string socketPath;
     } listener;
+
+    enum class Mode : uint32_t {
+        persistent,
+        runner,
+        sharedRunner
+    };
+
+    Mode mode = Mode::persistent;
+    int sharedRunnerLockFd = -1;
+
+    bool isAnyRunnerMode() const {
+        return (this->mode == Mode::runner) || (this->mode == Mode::sharedRunner);
+    }
 };
 
 namespace Apis {
@@ -338,7 +352,7 @@ class Provider {
 
     Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, ServiceConfig &&serviceConfig);
 
-    int run(bool isPersistentMode) {
+    int run() {
         if (this->isRunning) {
             log<Verbosity::critical>("Service is already running");
             return -1;
@@ -388,6 +402,11 @@ class Provider {
             log<Verbosity::critical>("Failed to start connection listener");
             return -1;
         }
+        if (-1 != serviceConfig.sharedRunnerLockFd) {
+            if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != close(serviceConfig.sharedRunnerLockFd))) {
+                log<Verbosity::error>("Could not unlock shared runner lock for socket %s\n", serviceConfig.listener.socketPath.c_str());
+            }
+        }
         this->runInLoop = true;
         if (this->serviceConfig.runner.has_value()) {
             if (false == this->runCommand(this->serviceConfig.runner.value())) {
@@ -407,7 +426,8 @@ class Provider {
                 continue;
             }
             log<Verbosity::debug>("Spawning thread for new client (number of asynchronous client threads : %d)", static_cast<uint32_t>(clients.size() + 1));
-            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection), clientOrdinal++, std::ref(*this), isPersistentMode));
+            clients.push_back(std::async(std::launch::async, Provider::serviceSingleClient, std::move(newConnection),
+                                         clientOrdinal++, std::ref(*this), ServiceConfig::Mode::persistent == this->serviceConfig.mode));
         }
         listener->close();
         this->isStopping = true;
@@ -525,6 +545,7 @@ class Provider {
     std::atomic_bool runInLoop = false;
     std::atomic_bool isRunning = false;
     std::atomic_bool isStopping = false;
+    std::atomic_int activeClients = 0;
     struct {
         Cal::Service::Apis::Ocl::OclSharedObjects ocl;
         Cal::Service::Apis::LevelZero::LevelZeroSharedObjects l0;
@@ -568,7 +589,31 @@ class Provider {
     }
 
     static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, uint64_t clientOrdinal, Provider &service, bool isPersistentMode) {
+        ++service.activeClients;
+        struct ActiveClientGuard {
+            ~ActiveClientGuard() {
+                if (0 == service.activeClients--) {
+                    if (ServiceConfig::Mode::sharedRunner == service.serviceConfig.mode) {
+                        if (service.runInLoop) {
+                            service.runInLoop = false;
+                            service.listener->shutdown();
+                        }
+                    }
+                }
+            }
+            Provider &service;
+        } activeClientGuard{service};
         log<Verbosity::debug>("Starting to service client : %d (assigned ordinal : %lld)", clientConnection->getId(), clientOrdinal);
+
+        Cal::Ipc::ControlMessageHeader pingMessageHeader;
+        while (clientConnection->peek(pingMessageHeader) && (Cal::Ipc::ControlMessageHeader::messageTypePing == pingMessageHeader.type)) {
+            clientConnection->receive(pingMessageHeader);
+            log<Verbosity::debug>("Client : %d sent ping request", clientConnection->getId());
+            if (false == clientConnection->send(pingMessageHeader)) {
+                log<Verbosity::error>("Could not send response ping response to client : %d", clientConnection->getId());
+            }
+        }
+
         Cal::Messages::ReqHandshake handshake;
         log<Verbosity::debug>("Performing handshake with client #%d", clientConnection->getId());
         if ((false == clientConnection->receive(handshake)) || handshake.isInvalid()) {
@@ -606,8 +651,11 @@ class Provider {
                 brokenConnection = true;
                 break;
 
-            case Cal::Ipc::ControlMessageHeader::messageTypeHeartbeat:
-                log<Verbosity::debug>("Client : %d sent heartbeat", clientConnection->getId());
+            case Cal::Ipc::ControlMessageHeader::messageTypePing:
+                log<Verbosity::debug>("Client : %d sent ping request", clientConnection->getId());
+                if (false == clientConnection->send(messageHeader)) {
+                    log<Verbosity::error>("Could not send response ping response to client : %d", clientConnection->getId());
+                }
                 break;
 
             case Cal::Ipc::ControlMessageHeader::messageTypeRequest:
@@ -822,9 +870,10 @@ class Provider {
     }
 
     bool runCommand(const ServiceConfig::RunnerConfig &config);
-
-    void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 };
+
+void checkForRequiredFiles();
+void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 
 } // namespace Service
 

@@ -99,7 +99,7 @@ class ConnectionListener {
 struct ControlMessageHeader {
     static constexpr uint16_t messageTypeUnknown = 1U;
     static constexpr uint16_t messageTypeNop = 0U;
-    static constexpr uint16_t messageTypeHeartbeat = 2U;
+    static constexpr uint16_t messageTypePing = 2U;
     static constexpr uint16_t messageTypeRequest = 3U;
     uint16_t type = messageTypeUnknown;
     uint16_t subtype = messageTypeUnknown;
@@ -153,12 +153,17 @@ class Socket : public Connection {
     }
 
     bool isAlive() override {
-        ControlMessageHeader hearbeat{ControlMessageHeader::messageTypeHeartbeat};
-        bool alive = (sizeof(hearbeat) == this->send(&hearbeat, sizeof(hearbeat)));
-        if (false == alive) {
-            log<Verbosity::debug>("Detected that socket is dead");
+        ControlMessageHeader pingMessage{ControlMessageHeader::messageTypePing};
+        if ((sizeof(pingMessage) != this->send(&pingMessage, sizeof(pingMessage)))) {
+            log<Verbosity::debug>("Detected that socket is dead - can't send ping request");
+            return false;
         }
-        return alive;
+        pingMessage = {};
+        if (((sizeof(pingMessage) != this->receive(&pingMessage, sizeof(pingMessage)))) || (ControlMessageHeader::messageTypePing != pingMessage.type)) {
+            log<Verbosity::debug>("Detected that socket is dead - didn't receive ping response");
+            return false;
+        }
+        return true;
     }
 
     int getId() override {
@@ -193,7 +198,7 @@ class NamedSocketClientConnectionFactory : public ClientConnectionFactory {
 
         log<Verbosity::debug>("Connecting to service through socket at address (family : AF_UNIX) : %s", socketAddress.sun_path);
         if (0 != ::connect(socketFd, reinterpret_cast<const sockaddr *>(&socketAddress), sizeof(socketAddress))) {
-            log<Verbosity::error>("Failed to connect to service through socket at address (family : AF_UNIX) : %s - error : %s", socketAddress.sun_path, Connection::connectionErrnoToError(errno).c_str());
+            log<Verbosity::debug>("Failed to connect to service through socket at address (family : AF_UNIX) : %s - error : %s", socketAddress.sun_path, Connection::connectionErrnoToError(errno).c_str());
             ::close(socketFd);
             return nullptr;
         }

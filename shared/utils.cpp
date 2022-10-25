@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <numeric>
 #include <optional>
 #include <pwd.h>
 #include <stdexcept>
@@ -225,6 +226,23 @@ bool isDebuggerConnected() {
     }
 
     return false;
+}
+
+std::string concatenate(const char **beg, const char **end, const char *separator) {
+    auto len = std::accumulate(beg, end, static_cast<size_t>(0U),
+                               [](size_t prev, const char *str) { return prev + strlen(str); });
+    auto sepLen = strlen(separator);
+    len += (end - beg) * sepLen;
+    std::string ret;
+    ret.reserve(len);
+    while (beg != end) {
+        ret.append(*beg);
+        ++beg;
+        if (beg != end) {
+            ret.append(separator);
+        }
+    }
+    return ret;
 }
 
 } // namespace Utils

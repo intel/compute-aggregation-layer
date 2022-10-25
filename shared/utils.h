@@ -745,6 +745,8 @@ inline std::vector<std::string> split(const std::string &input, const char *deli
     return outVector;
 }
 
+std::string concatenate(const char **beg, const char **end, const char *separator);
+
 bool isDebuggerConnected();
 
 } // namespace Utils
