@@ -70,7 +70,7 @@ void IcdPlatform::initializeConnection() {
         return;
     }
     log<Verbosity::debug>("Handshake successful (CAL service pid : %d)", serviceConfig.pid);
-    this->shmemManager = Cal::Ipc::ShmemImporter(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
+    this->shmemImporter = Cal::Ipc::ShmemImporter(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
 
     serviceDebugBreak(serviceConfig.assignedClientOrdinal);
 
@@ -119,7 +119,7 @@ void IcdPlatform::initializeConnection() {
     log<Verbosity::info>("USM HEAP : %p - %p (size : %zx)", this->usmHeaps.heaps[0].base(), Cal::Utils::moveByBytes(this->usmHeaps.heaps[0].base(), this->usmHeaps.heaps[0].size()), this->usmHeaps.heaps[0].size());
 
     log<Verbosity::debug>("Creating RPC channel");
-    rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, shmemManager);
+    rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, shmemImporter);
     Cal::Rpc::ChannelClient::ClientSynchronizationMethod clientSynchMethod = Cal::Rpc::ChannelClient::activePolling;
     if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelClientEnvName, false)) {
         clientSynchMethod = Cal::Rpc::ChannelClient::semaphores;

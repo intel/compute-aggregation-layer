@@ -73,19 +73,16 @@ TEST_F(MemoryBlockTest, GivenInputChunkWhenConstructingMemoryBlockThenChunkIsAdd
     EXPECT_EQ(pageBeginning, firstChunk.firstPageAddress);
 
     constexpr auto expectedShmemFd = 7;
-    EXPECT_EQ(expectedShmemFd, firstChunk.shmem.fd);
+    EXPECT_EQ(expectedShmemFd, firstChunk.shmem.getFd());
 
     constexpr auto expectedShmemId = 0;
-    EXPECT_EQ(expectedShmemId, firstChunk.shmem.id);
+    EXPECT_EQ(expectedShmemId, firstChunk.shmem.getShmemId());
 
-    EXPECT_TRUE(firstChunk.shmem.owned);
-    EXPECT_NE(nullptr, firstChunk.shmem.ptr);
-
-    const auto expectedRequestedSize = chunkSize + pageOffset;
-    EXPECT_EQ(expectedRequestedSize, firstChunk.shmem.size);
+    EXPECT_TRUE(firstChunk.shmem.isOwnerOfShmem());
+    EXPECT_NE(nullptr, firstChunk.shmem.getMmappedPtr());
 
     const auto expectedUnderlyingSize = 2 * Cal::Utils::pageSize4KB;
-    EXPECT_EQ(expectedUnderlyingSize, firstChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedUnderlyingSize, firstChunk.shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlockTest, GivenLongerBlockWhichIncludesShorterChunkWhenTryingToExtendLongerByShorterThenNothingIsDone) {
@@ -93,13 +90,13 @@ TEST_F(MemoryBlockTest, GivenLongerBlockWhichIncludesShorterChunkWhenTryingToExt
     const size_t shorterChunkSize{chunkSize / 2};
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.ptr;
+    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.getMmappedPtr();
     const auto oldPageBeginning = memoryBlock.chunks[0].firstPageAddress;
 
     memoryBlock.extendBlockIfRequired(shorterChunkPtr, shorterChunkSize);
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    EXPECT_EQ(oldMappedAddress, memoryBlock.chunks[0].shmem.ptr);
+    EXPECT_EQ(oldMappedAddress, memoryBlock.chunks[0].shmem.getMmappedPtr());
     EXPECT_EQ(oldPageBeginning, memoryBlock.chunks[0].firstPageAddress);
 }
 
@@ -108,7 +105,7 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheEndWhenTryin
     const size_t longerChunkSize{chunkSize * 2};
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.ptr;
+    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.getMmappedPtr();
     const auto oldPageBeginning = memoryBlock.chunks[0].firstPageAddress;
 
     memoryBlock.extendBlockIfRequired(longerChunkPtr, longerChunkSize);
@@ -118,18 +115,18 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheEndWhenTryin
     EXPECT_EQ(expectedTotalContiguousSize, memoryBlock.getTotalContiguousSize());
 
     const auto &firstChunk = memoryBlock.chunks[0];
-    EXPECT_NE(oldMappedAddress, firstChunk.shmem.ptr);
+    EXPECT_NE(oldMappedAddress, firstChunk.shmem.getMmappedPtr());
     EXPECT_EQ(oldPageBeginning, firstChunk.firstPageAddress);
 
     const auto &secondChunk = memoryBlock.chunks[1];
-    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.underlyingSize;
+    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.getMmappedSize();
     EXPECT_EQ(expectedContiguousFirstPage, secondChunk.firstPageAddress);
 
-    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.ptr) + firstChunk.shmem.underlyingSize;
-    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.ptr));
+    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.getMmappedPtr()) + firstChunk.shmem.getMmappedSize();
+    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.getMmappedPtr()));
 
     const auto expectedSize = pageSize;
-    EXPECT_EQ(expectedSize, secondChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedSize, secondChunk.shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningWhenTryingToExtendBlockThenChunkIsAddedAtBeginningAndMemoryIsRemapped) {
@@ -137,7 +134,7 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningWhe
     const size_t longerChunkSize{chunkSize + 1024};
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.ptr;
+    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.getMmappedPtr();
     const auto oldPageBeginning = memoryBlock.chunks[0].firstPageAddress;
 
     memoryBlock.extendBlockIfRequired(longerChunkPtr, longerChunkSize);
@@ -147,26 +144,26 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningWhe
     EXPECT_EQ(expectedTotalContiguousSize, memoryBlock.getTotalContiguousSize());
 
     const auto &firstChunk = memoryBlock.chunks[0];
-    EXPECT_NE(nullptr, firstChunk.shmem.ptr);
+    EXPECT_NE(nullptr, firstChunk.shmem.getMmappedPtr());
 
     const auto expectedFirstPageAddress = pageBeginning - (2 * pageSize);
     EXPECT_EQ(expectedFirstPageAddress, firstChunk.firstPageAddress);
 
     const auto expectedFirstSize = 2 * pageSize;
-    EXPECT_EQ(expectedFirstSize, firstChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedFirstSize, firstChunk.shmem.getMmappedSize());
 
     const auto &secondChunk = memoryBlock.chunks[1];
-    EXPECT_NE(oldMappedAddress, secondChunk.shmem.ptr);
+    EXPECT_NE(oldMappedAddress, secondChunk.shmem.getMmappedPtr());
     EXPECT_EQ(oldPageBeginning, secondChunk.firstPageAddress);
 
-    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.underlyingSize;
+    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.getMmappedSize();
     EXPECT_EQ(expectedContiguousFirstPage, secondChunk.firstPageAddress);
 
-    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.ptr) + firstChunk.shmem.underlyingSize;
-    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.ptr));
+    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.getMmappedPtr()) + firstChunk.shmem.getMmappedSize();
+    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.getMmappedPtr()));
 
     const auto expectedOldSize = (2 * pageSize);
-    EXPECT_EQ(expectedOldSize, secondChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedOldSize, secondChunk.shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningAndEndWhenTryingToExtendBlockThenChunksAreAddedAtBeginningAndEndAndMemoryIsRemapped) {
@@ -174,7 +171,7 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningAnd
     const size_t longerChunkSize{4 * chunkSize};
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.ptr;
+    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.getMmappedPtr();
     const auto oldPageBeginning = memoryBlock.chunks[0].firstPageAddress;
 
     memoryBlock.extendBlockIfRequired(longerChunkPtr, longerChunkSize);
@@ -184,38 +181,38 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningAnd
     EXPECT_EQ(expectedTotalContiguousSize, memoryBlock.getTotalContiguousSize());
 
     const auto &firstChunk = memoryBlock.chunks[0];
-    EXPECT_NE(nullptr, firstChunk.shmem.ptr);
+    EXPECT_NE(nullptr, firstChunk.shmem.getMmappedPtr());
 
     const auto expectedFirstPageAddress = pageBeginning - (2 * pageSize);
     EXPECT_EQ(expectedFirstPageAddress, firstChunk.firstPageAddress);
 
     const auto expectedFirstSize = 2 * pageSize;
-    EXPECT_EQ(expectedFirstSize, firstChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedFirstSize, firstChunk.shmem.getMmappedSize());
 
     const auto &secondChunk = memoryBlock.chunks[1];
-    EXPECT_NE(oldMappedAddress, secondChunk.shmem.ptr);
+    EXPECT_NE(oldMappedAddress, secondChunk.shmem.getMmappedPtr());
     EXPECT_EQ(oldPageBeginning, secondChunk.firstPageAddress);
 
-    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.underlyingSize;
+    const auto expectedContiguousFirstPage = firstChunk.firstPageAddress + firstChunk.shmem.getMmappedSize();
     EXPECT_EQ(expectedContiguousFirstPage, secondChunk.firstPageAddress);
 
-    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.ptr) + firstChunk.shmem.underlyingSize;
-    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.ptr));
+    const auto expectedContiguousMappedAddress = reinterpret_cast<uintptr_t>(firstChunk.shmem.getMmappedPtr()) + firstChunk.shmem.getMmappedSize();
+    EXPECT_EQ(expectedContiguousMappedAddress, reinterpret_cast<uintptr_t>(secondChunk.shmem.getMmappedPtr()));
 
     const auto expectedOldSize = 2 * pageSize;
-    EXPECT_EQ(expectedOldSize, secondChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedOldSize, secondChunk.shmem.getMmappedSize());
 
     const auto &thirdChunk = memoryBlock.chunks[2];
-    EXPECT_NE(nullptr, thirdChunk.shmem.ptr);
+    EXPECT_NE(nullptr, thirdChunk.shmem.getMmappedPtr());
 
-    const auto expectedContiguousSecondPage = secondChunk.firstPageAddress + secondChunk.shmem.underlyingSize;
+    const auto expectedContiguousSecondPage = secondChunk.firstPageAddress + secondChunk.shmem.getMmappedSize();
     EXPECT_EQ(expectedContiguousSecondPage, thirdChunk.firstPageAddress);
 
-    const auto expectedContiguousMappedAddressOfThird = reinterpret_cast<uintptr_t>(secondChunk.shmem.ptr) + secondChunk.shmem.underlyingSize;
-    EXPECT_EQ(expectedContiguousMappedAddressOfThird, reinterpret_cast<uintptr_t>(thirdChunk.shmem.ptr));
+    const auto expectedContiguousMappedAddressOfThird = reinterpret_cast<uintptr_t>(secondChunk.shmem.getMmappedPtr()) + secondChunk.shmem.getMmappedSize();
+    EXPECT_EQ(expectedContiguousMappedAddressOfThird, reinterpret_cast<uintptr_t>(thirdChunk.shmem.getMmappedPtr()));
 
     const auto expectedThirdSize = 3 * pageSize;
-    EXPECT_EQ(expectedThirdSize, thirdChunk.shmem.underlyingSize);
+    EXPECT_EQ(expectedThirdSize, thirdChunk.shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningAndEndWhenTryingToExtendBlockThenBlockIsExtendedAndOldMappingsArePreserved) {
@@ -223,17 +220,17 @@ TEST_F(MemoryBlockTest, GivenShorterBlockAndChunkWhichExtendsItAtTheBeginningAnd
     const size_t longerChunkSize{4 * chunkSize};
 
     ASSERT_EQ(1u, memoryBlock.chunks.size());
-    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.ptr;
+    const auto oldMappedAddress = memoryBlock.chunks[0].shmem.getMmappedPtr();
 
     memoryBlock.extendBlockIfRequired(longerChunkPtr, longerChunkSize);
     ASSERT_EQ(3u, memoryBlock.chunks.size());
 
     const auto &oldChunk = memoryBlock.chunks[1];
-    EXPECT_NE(oldMappedAddress, oldChunk.shmem.ptr);
+    EXPECT_NE(oldMappedAddress, oldChunk.shmem.getMmappedPtr());
 
     ASSERT_EQ(1u, memoryBlock.oldMappings.size());
     EXPECT_EQ(oldMappedAddress, memoryBlock.oldMappings[0].first);
-    EXPECT_EQ(oldChunk.shmem.underlyingSize, memoryBlock.oldMappings[0].second);
+    EXPECT_EQ(oldChunk.shmem.getMmappedSize(), memoryBlock.oldMappings[0].second);
 }
 
 TEST_F(MemoryBlockTest, GivenChunkAndOverlappingMemoryWhenCheckingForOverlappingThenTrueIsReturned) {
@@ -254,7 +251,7 @@ TEST_F(MemoryBlockTest, GivenChunkWhenTranslatingOverlappingMemoryThenTranslated
     const void *overlappingChunkPtr{reinterpret_cast<const void *>(pageBeginning + pageOffset + 8)};
     const auto mappedPtr = reinterpret_cast<uintptr_t>(memoryBlock.translate(overlappingChunkPtr));
 
-    const auto expectedMappedPtr = reinterpret_cast<uintptr_t>(memoryBlock.chunks[0].shmem.ptr) + pageOffset + 8;
+    const auto expectedMappedPtr = reinterpret_cast<uintptr_t>(memoryBlock.chunks[0].shmem.getMmappedPtr()) + pageOffset + 8;
     EXPECT_EQ(expectedMappedPtr, mappedPtr);
 }
 
@@ -317,9 +314,9 @@ TEST_F(MemoryBlockTest, GivenTwoBlocksWithHoleBetweenThemWhenMergingThemThenOneC
 
     EXPECT_EQ(oldMappingsOfSecondBlock, memoryBlock.oldMappings);
 
-    const auto expectedContiguousAddress = oldFirstPageAddress + memoryBlock.chunks[0].shmem.underlyingSize;
+    const auto expectedContiguousAddress = oldFirstPageAddress + memoryBlock.chunks[0].shmem.getMmappedSize();
     EXPECT_EQ(expectedContiguousAddress, memoryBlock.chunks[1].firstPageAddress);
-    EXPECT_EQ(pageSize, memoryBlock.chunks[1].shmem.underlyingSize);
+    EXPECT_EQ(pageSize, memoryBlock.chunks[1].shmem.getFileSize());
 }
 
 TEST_F(MemoryBlockTest, GivenMemoryBlockWhichConsistsOfThreeChunksWhenGettingCountOfOverlappingChunksThenCorrectResultsAreReturned) {
@@ -404,14 +401,14 @@ TEST_F(MemoryBlockTest, GivenMemoryBlockWhichConsistsOfThreeChunksWhenGettingTwo
                                                     transferDescs,
                                                     transferDescsCount));
 
-    EXPECT_EQ(memoryBlock.chunks[0].shmem.id, transferDescs[0].shmemId);
-    EXPECT_EQ(memoryBlock.chunks[0].shmem.underlyingSize, transferDescs[0].underlyingSize);
+    EXPECT_EQ(memoryBlock.chunks[0].shmem.getShmemId(), transferDescs[0].shmemId);
+    EXPECT_EQ(memoryBlock.chunks[0].shmem.getMmappedSize(), transferDescs[0].underlyingSize);
     EXPECT_EQ(chunkSize, transferDescs[0].bytesCountToCopy);
     EXPECT_EQ(pageSize / 2, transferDescs[0].offsetFromMapping);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(twoChunksOverlappingPtr), transferDescs[0].transferStart);
 
-    EXPECT_EQ(memoryBlock.chunks[1].shmem.id, transferDescs[1].shmemId);
-    EXPECT_EQ(memoryBlock.chunks[1].shmem.underlyingSize, transferDescs[1].underlyingSize);
+    EXPECT_EQ(memoryBlock.chunks[1].shmem.getShmemId(), transferDescs[1].shmemId);
+    EXPECT_EQ(memoryBlock.chunks[1].shmem.getMmappedSize(), transferDescs[1].underlyingSize);
     EXPECT_EQ(chunkSize, transferDescs[1].bytesCountToCopy);
     EXPECT_EQ(0u, transferDescs[1].offsetFromMapping);
     EXPECT_EQ(memoryBlock.chunks[1].firstPageAddress, transferDescs[1].transferStart);
@@ -438,13 +435,13 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringNonOverlapingChu
     ASSERT_EQ(&realFirstMemoryBlock, &firstRegisteredMemoryBlock);
 
     EXPECT_EQ(firstPageAddress, realFirstMemoryBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.getMmappedSize());
 
     auto &realSecondMemoryBlock = memoryBlocksManager.memoryBlocks.at(firstPageOfSecondChunk);
     ASSERT_EQ(&realSecondMemoryBlock, &secondRegisteredMemoryBlock);
 
     EXPECT_EQ(firstPageOfSecondChunk, realSecondMemoryBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringNonOverlapingChunksInReversedOrderThenTheyAreRegisteredAsSeparateMemoryBlocks) {
@@ -464,13 +461,13 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringNonOverlapingChu
     ASSERT_EQ(&realFirstMemoryBlock, &firstRegisteredMemoryBlock);
 
     EXPECT_EQ(firstPageAddress, realFirstMemoryBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.getMmappedSize());
 
     auto &realSecondMemoryBlock = memoryBlocksManager.memoryBlocks.at(firstPageOfSecondChunk);
     ASSERT_EQ(&realSecondMemoryBlock, &secondRegisteredMemoryBlock);
 
     EXPECT_EQ(firstPageOfSecondChunk, realSecondMemoryBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(3 * pageSize, realSecondMemoryBlock.chunks[0].shmem.getMmappedSize());
 }
 
 TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringChunkWhichIsIncludedByAnotherThenOnlySingleMemoryBlockIsRegistered) {
@@ -491,7 +488,7 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringChunkWhichIsIncl
     ASSERT_EQ(&realFirstMemoryBlock, &firstRegisteredMemoryBlock);
 
     EXPECT_EQ(firstPageAddress, realFirstMemoryBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, realFirstMemoryBlock.chunks[0].shmem.getMmappedSize());
 
     // Remapping should not be done.
     EXPECT_TRUE(realFirstMemoryBlock.oldMappings.empty());
@@ -535,45 +532,45 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringSeveralChunksAnd
     // Verify short block.
     ASSERT_EQ(1u, shortBlock.chunks.size());
     EXPECT_EQ(firstPageOfThirdChunk, shortBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(thirdChunkSize, shortBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(thirdChunkSize, shortBlock.chunks[0].shmem.getMmappedSize());
 
     // Verify long block.
     ASSERT_EQ(5u, longBlock.chunks.size());
 
     // Prepended chunk.
     EXPECT_EQ(firstPageOfFourthChunk, longBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(pageSize, longBlock.chunks[0].shmem.underlyingSize);
-    EXPECT_NE(nullptr, longBlock.chunks[0].shmem.ptr);
+    EXPECT_EQ(pageSize, longBlock.chunks[0].shmem.getMmappedSize());
+    EXPECT_NE(nullptr, longBlock.chunks[0].shmem.getMmappedPtr());
 
     // A chunk, which was originally the first one.
     EXPECT_EQ(firstPageAddress, longBlock.chunks[1].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, longBlock.chunks[1].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, longBlock.chunks[1].shmem.getMmappedSize());
 
-    auto expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[0].shmem.ptr) + pageSize;
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.ptr));
+    auto expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[0].shmem.getMmappedPtr()) + pageSize;
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.getMmappedPtr()));
 
     // Chunk, which fills gap between the original first and the original second.
     const auto expectedGapChunkFirstPageAddress = firstPageAddress + (2 * pageSize);
     EXPECT_EQ(expectedGapChunkFirstPageAddress, longBlock.chunks[2].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, longBlock.chunks[2].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, longBlock.chunks[2].shmem.getMmappedSize());
 
-    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.ptr) + (2 * pageSize);
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.ptr));
+    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.getMmappedPtr()) + (2 * pageSize);
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.getMmappedPtr()));
 
     // A chunk, which was originally the second one.
     EXPECT_EQ(firstPageOfSecondChunk, longBlock.chunks[3].firstPageAddress);
-    EXPECT_EQ(secondChunkSize, longBlock.chunks[3].shmem.underlyingSize);
+    EXPECT_EQ(secondChunkSize, longBlock.chunks[3].shmem.getMmappedSize());
 
-    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.ptr) + (2 * pageSize);
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[3].shmem.ptr));
+    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.getMmappedPtr()) + (2 * pageSize);
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[3].shmem.getMmappedPtr()));
 
     // Appended chunk.
     const auto expectedAppendedChunkFirstPageAddress = firstPageOfSecondChunk + secondChunkSize;
     EXPECT_EQ(expectedAppendedChunkFirstPageAddress, longBlock.chunks[4].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, longBlock.chunks[4].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, longBlock.chunks[4].shmem.getMmappedSize());
 
-    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[3].shmem.ptr) + secondChunkSize;
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[4].shmem.ptr));
+    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[3].shmem.getMmappedPtr()) + secondChunkSize;
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[4].shmem.getMmappedPtr()));
 
     // Long block should contain old mappings for the original first and second blocks.
     EXPECT_EQ(2u, longBlock.oldMappings.size());
@@ -616,30 +613,30 @@ TEST_F(MemoryBlocksManagerTest, GivenEmptyManagerWhenRegisteringSeveralChunksAnd
     // Verify short block.
     ASSERT_EQ(1u, shortBlock.chunks.size());
     EXPECT_EQ(firstPageOfThirdChunk, shortBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(thirdChunkSize, shortBlock.chunks[0].shmem.underlyingSize);
+    EXPECT_EQ(thirdChunkSize, shortBlock.chunks[0].shmem.getMmappedSize());
 
     // Verify long block.
     ASSERT_EQ(3u, longBlock.chunks.size());
 
     // Prepended chunk.
     EXPECT_EQ(firstPageOfFourthChunk, longBlock.chunks[0].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, longBlock.chunks[0].shmem.underlyingSize);
-    EXPECT_NE(nullptr, longBlock.chunks[0].shmem.ptr);
+    EXPECT_EQ(2 * pageSize, longBlock.chunks[0].shmem.getMmappedSize());
+    EXPECT_NE(nullptr, longBlock.chunks[0].shmem.getMmappedPtr());
 
     // Chunk, which fills gap between the original first and the original second.
     const auto expectedGapChunkFirstPageAddress = firstPageAddress + (2 * pageSize);
     EXPECT_EQ(expectedGapChunkFirstPageAddress, longBlock.chunks[1].firstPageAddress);
-    EXPECT_EQ(2 * pageSize, longBlock.chunks[1].shmem.underlyingSize);
+    EXPECT_EQ(2 * pageSize, longBlock.chunks[1].shmem.getMmappedSize());
 
-    auto expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[0].shmem.ptr) + (2 * pageSize);
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.ptr));
+    auto expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[0].shmem.getMmappedPtr()) + (2 * pageSize);
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.getMmappedPtr()));
 
     // A chunk, which was originally the second one.
     EXPECT_EQ(firstPageOfSecondChunk, longBlock.chunks[2].firstPageAddress);
-    EXPECT_EQ(secondChunkSize, longBlock.chunks[2].shmem.underlyingSize);
+    EXPECT_EQ(secondChunkSize, longBlock.chunks[2].shmem.getMmappedSize());
 
-    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.ptr) + (2 * pageSize);
-    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.ptr));
+    expectedBeginningOfNextMapping = reinterpret_cast<uintptr_t>(longBlock.chunks[1].shmem.getMmappedPtr()) + (2 * pageSize);
+    EXPECT_EQ(expectedBeginningOfNextMapping, reinterpret_cast<uintptr_t>(longBlock.chunks[2].shmem.getMmappedPtr()));
 
     // Long block should contain old mappings for the original first and second blocks.
     EXPECT_EQ(2u, longBlock.oldMappings.size());
@@ -757,14 +754,14 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     ASSERT_EQ(2u, transferDescsCount);
 
     // Validate transfers
-    EXPECT_EQ(firstBlock.chunks[0].shmem.id, transferDescs[0].shmemId);
-    EXPECT_EQ(firstBlock.chunks[0].shmem.underlyingSize, transferDescs[0].underlyingSize);
+    EXPECT_EQ(firstBlock.chunks[0].shmem.getShmemId(), transferDescs[0].shmemId);
+    EXPECT_EQ(firstBlock.chunks[0].shmem.getMmappedSize(), transferDescs[0].underlyingSize);
     EXPECT_EQ(firstChunkSize, transferDescs[0].bytesCountToCopy);
     EXPECT_EQ(64u, transferDescs[0].offsetFromMapping);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(firstSrcAddress), transferDescs[0].transferStart);
 
-    EXPECT_EQ(thirdBlock.chunks[0].shmem.id, transferDescs[1].shmemId);
-    EXPECT_EQ(thirdBlock.chunks[0].shmem.underlyingSize, transferDescs[1].underlyingSize);
+    EXPECT_EQ(thirdBlock.chunks[0].shmem.getShmemId(), transferDescs[1].shmemId);
+    EXPECT_EQ(thirdBlock.chunks[0].shmem.getMmappedSize(), transferDescs[1].underlyingSize);
     EXPECT_EQ(thirdChunkSize, transferDescs[1].bytesCountToCopy);
     EXPECT_EQ(0u, transferDescs[1].offsetFromMapping);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(thirdSrcAddress), transferDescs[1].transferStart);

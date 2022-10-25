@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "shared/allocators.h"
 #include "shared/sys.h"
 #include "shared/utils.h"
 
@@ -15,12 +16,13 @@
 #include <mutex>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace Cal {
 
 namespace Mocks {
 
-struct MmapTraits {
+struct MmapOpArgs {
     void *addr;
     size_t length;
     int prot;
@@ -29,12 +31,18 @@ struct MmapTraits {
     off_t offset;
 };
 
+struct FileOpenArgs {
+    std::string name;
+    int oflag = {};
+    mode_t mode = {};
+};
+
 struct PSemaphore {
     Utils::CountingSemaphore cs;
 };
 
 struct SysCallsContext {
-    using Vma = Cal::Utils::PartitionedAddressRange<MmapTraits>;
+    using Vma = Cal::Utils::PartitionedAddressRange<MmapOpArgs>;
 
     SysCallsContext();
     virtual ~SysCallsContext();
@@ -96,7 +104,7 @@ struct SysCallsContext {
         if (apiConfig.shm_open.impl) {
             return apiConfig.shm_open.impl.value()(name, oflag, mode);
         }
-        return -1;
+        return shm_openBaseImpl(name, oflag, mode);
     }
 
     virtual int shm_unlink(const char *name) {
@@ -107,7 +115,7 @@ struct SysCallsContext {
         if (apiConfig.shm_unlink.impl) {
             return apiConfig.shm_unlink.impl.value()(name);
         }
-        return -1;
+        return shm_unlinkBaseImpl(name);
     }
 
     virtual int sem_init(sem_t *sem, int pshared, unsigned int value) {
@@ -159,7 +167,9 @@ struct SysCallsContext {
         if (apiConfig.setenv.returnValue) {
             return apiConfig.setenv.returnValue.value();
         }
-
+        if (apiConfig.setenv.impl) {
+            return apiConfig.setenv.impl.value()(name, value, overwrite);
+        }
         return setenvBaseImpl(name, value, overwrite);
     }
 
@@ -168,8 +178,32 @@ struct SysCallsContext {
         if (apiConfig.unsetenv.returnValue) {
             return apiConfig.unsetenv.returnValue.value();
         }
-
+        if (apiConfig.unsetenv.impl) {
+            return apiConfig.unsetenv.impl.value()(name);
+        }
         return unsetenvBaseImpl(name);
+    }
+
+    virtual int close(int fd) {
+        ++apiConfig.close.callCount;
+        if (apiConfig.close.returnValue) {
+            return apiConfig.close.returnValue.value();
+        }
+        if (apiConfig.close.impl) {
+            return apiConfig.close.impl.value()(fd);
+        }
+        return closeBaseImpl(fd);
+    }
+
+    virtual int ftruncate(int fd, off_t length) {
+        ++apiConfig.ftruncate.callCount;
+        if (apiConfig.ftruncate.returnValue) {
+            return apiConfig.ftruncate.returnValue.value();
+        }
+        if (apiConfig.ftruncate.impl) {
+            return apiConfig.ftruncate.impl.value()(fd, length);
+        }
+        return ftruncateBaseImpl(fd, length);
     }
 
     void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
@@ -186,16 +220,16 @@ struct SysCallsContext {
             }
 
             vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                           MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+                                           MmapOpArgs{addrReceived, length, prot, flags, fd, offset}));
         } else {
             auto intersection = vma.getIntersectedSubRanges({addr, length});
             if (intersection.empty()) {
                 vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+                                               MmapOpArgs{addrReceived, length, prot, flags, fd, offset}));
             } else if (flags & MAP_FIXED) {
                 vma.destroySubRange({addr, length});
                 vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+                                               MmapOpArgs{addrReceived, length, prot, flags, fd, offset}));
             } else if (flags & MAP_FIXED_NOREPLACE) {
                 return MAP_FAILED;
             } else {
@@ -204,7 +238,7 @@ struct SysCallsContext {
                     return MAP_FAILED;
                 }
                 vma.insertSubRange(Vma::tagged(Cal::Utils::AddressRange{addr, length},
-                                               MmapTraits{addrReceived, length, prot, flags, fd, offset}));
+                                               MmapOpArgs{addrReceived, length, prot, flags, fd, offset}));
             }
         }
 
@@ -242,6 +276,39 @@ struct SysCallsContext {
         }
         std::lock_guard<std::mutex> lock(mutex);
         envVariables.erase(name);
+        return 0;
+    }
+
+    int shm_openBaseImpl(const char *name, int oflag, mode_t mode) {
+        auto fd = fds.allocate();
+        if (Cal::Allocators::BitAllocator::invalidOffset == fd) {
+            return -1;
+        }
+        std::lock_guard<std::mutex> lock(mutex);
+        openFiles[fd] = FileOpenArgs{name, oflag, mode};
+        auto descIt = shmems.find(name);
+        if (shmems.end() == descIt) {
+            if (0 == (oflag & O_CREAT)) {
+                fds.free(fd);
+                return ENOENT;
+            }
+            shmems.emplace(name);
+        } else {
+            if (0 != (oflag & O_EXCL)) {
+                fds.free(fd);
+                return EEXIST;
+            }
+        }
+
+        return fd;
+    }
+
+    int shm_unlinkBaseImpl(const char *name) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto descIt = shmems.find(name);
+        if (shmems.end() == descIt) {
+            return ENOENT;
+        }
         return 0;
     }
 
@@ -291,9 +358,27 @@ struct SysCallsContext {
         return 0;
     }
 
+    int closeBaseImpl(int fd) {
+        fds.free(fd);
+        std::lock_guard<std::mutex> lock(mutex);
+        auto descIt = openFiles.find(fd);
+        if (openFiles.end() == descIt) {
+            return EBADF;
+        }
+        openFiles.erase(descIt);
+        return 0;
+    }
+
+    int ftruncateBaseImpl(int fd, off_t length) {
+        return 0;
+    }
+
     Vma vma = {{static_cast<uintptr_t>(0U), static_cast<uintptr_t>(1ULL << 48)}};
     std::unordered_map<sem_t *, std::unique_ptr<PSemaphore>> semaphores;
     std::unordered_map<std::string, std::string> envVariables;
+    Cal::Allocators::BitAllocator fds;
+    std::unordered_map<int, FileOpenArgs> openFiles;
+    std::unordered_set<std::string> shmems;
     std::mutex mutex;
 
     struct {
@@ -368,6 +453,18 @@ struct SysCallsContext {
             std::optional<std::function<int(sem_t *sem)>> impl;
             uint64_t callCount = 0U;
         } sem_post;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int fd)>> impl;
+            uint64_t callCount = 0U;
+        } close;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int fd, off_t length)>> impl;
+            uint64_t callCount = 0U;
+        } ftruncate;
     } apiConfig;
 };
 

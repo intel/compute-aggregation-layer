@@ -815,9 +815,9 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
     std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
     Cal::Mocks::MockShmemManager shmemManager;
-    auto shmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto shmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
     ChannelClientMockFailPartition channelClient{connection, shmemManager};
-    std::get<0>(connection.inMessages).id = shmem.id;
+    std::get<0>(connection.inMessages).id = shmem.getShmemId();
     EXPECT_EQ(0U, shmemManager.remoteShmemsLog.size());
     EXPECT_EQ(0, channelClient.failedPartitionCallsCounter);
     EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
@@ -856,10 +856,10 @@ TEST(ChannelClientInit, whenFailedToLaunchTheCommandsChannelThenFailsAndEmitsErr
 
     Cal::Mocks::MockShmemManager shmemManager;
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
 
     using namespace Cal::Messages;
-    auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.id, commandsChannelShmem.ptr, commandsChannelShmem.size);
+    auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
     std::get<1>(connection.inMessages).serviceSynchronizationMethod = RespLaunchRpcShmemRingBuffer::unknown;
 
     ChannelClientWhiteBox channelClient{connection, shmemManager};
@@ -875,8 +875,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
 
     Cal::Mocks::MockShmemManager shmemManager;
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
-    auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.id, commandsChannelShmem.ptr, commandsChannelShmem.size);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     {
         auto connection = connectionTemplate;
@@ -912,10 +912,10 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
 
     Cal::Mocks::MockShmemManager shmemManager;
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
 
     using namespace Cal::Messages;
-    auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.id, commandsChannelShmem.ptr, commandsChannelShmem.size);
+    auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     {
         auto connection = connectionTemplate;
@@ -945,8 +945,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
 
     Cal::Mocks::MockShmemManager shmemManager;
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
-    auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.id, commandsChannelShmem.ptr, commandsChannelShmem.size);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     ChannelClientWhiteBox channelClient{connection, shmemManager};
     EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
@@ -970,7 +970,7 @@ TEST(ChannelClient, WhenBeingDestroyedThenReleasesUnderlyingShmem) {
     Cal::Mocks::MockShmemManager shmemManager;
     {
         ChannelClientWhiteBox channelClient{connection, shmemManager};
-        channelClient.underlyingShmem = shmemManager.create(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+        channelClient.underlyingShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
         EXPECT_FALSE(shmemManager.allocatedShmems.empty());
     }
     EXPECT_TRUE(shmemManager.allocatedShmems.empty());

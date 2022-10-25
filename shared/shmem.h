@@ -32,49 +32,74 @@
 
 namespace Cal {
 namespace Ipc {
-
-static constexpr int invalidShmemId = -1;
-
 inline std::string getCalShmemPathBase(pid_t servicePid) {
     return calShmemPathPrefix.data() + std::to_string(servicePid) + "_";
 }
 
-/// Shmem descriptor received from service
-struct RemoteShmem {
-    size_t size = 0U;        // size of shmem to be mapped
-    int id = invalidShmemId; // id of this shmem within CAL
-    bool isValid() const {
-        return invalidShmemId != id;
-    }
-};
+using ShmemIdT = int;
+static constexpr ShmemIdT invalidShmemId = -1;
 
-/// Descriptor of shmem opened in this process
-struct Shmem {
-    void *ptr = nullptr;        // mapped VA
-    size_t size = 0U;           // requested size
-    size_t underlyingSize = 0U; // actual size (includes page alignments)
-    int id = invalidShmemId;    // id of this shmem within CAL
-    int fd = -1;                // opened FD
-    bool owned = false;         // true for process that created shmem (not just opened)
-    bool isValid() {
-        return (invalidShmemId != id) && ((nullptr != ptr) || (fd != -1));
+// thread-safe
+template <typename BaseAllocationType = Cal::Allocators::BaseAllocation>
+class ShmemAllocation : public BaseAllocationType {
+  public:
+    static constexpr bool isThreadSafe = true && BaseAllocationType::isThreadSafe;
+    static constexpr bool isShmemAllocation = true;
+
+    template <typename BaseAllocationTypeInitT>
+    ShmemAllocation(BaseAllocationTypeInitT &&baseAllocation, ShmemIdT shmemId, bool isShmemOwner)
+        : BaseAllocationType(std::forward<BaseAllocationTypeInitT>(baseAllocation)), shmemId(shmemId), isShmemOwner(isShmemOwner) {
     }
+
+    ShmemAllocation(ShmemIdT shmemId, bool isShmemOwner)
+        : shmemId(shmemId), isShmemOwner(isShmemOwner) {
+    }
+
+    ShmemAllocation() = default;
+
+    ShmemIdT getShmemId() const {
+        return shmemId;
+    }
+
+    bool isOwnerOfShmem() const {
+        return isShmemOwner;
+    }
+
+    bool isValid() const {
+        return (invalidShmemId != shmemId) && BaseAllocationType::isValid();
+    }
+
+  protected:
+    ShmemIdT shmemId = invalidShmemId; // id of this shmem within CAL
+    bool isShmemOwner = false;         // true for process that created shmem (not just opened)
 };
 
 // thread-safe
-class ShmemAllocator {
+using OpenedShmemAllocationT = Cal::Allocators::FdAllocation<ShmemAllocation<>>;
+using MmappedShmemAllocationT = Cal::Allocators::MmappedAllocation<OpenedShmemAllocationT>;
+
+// thread-safe
+class ShmemAllocator final {
   public:
     static constexpr size_t maxShmems = 4096U;
+    static constexpr bool isThreadSafe = true;
+    using AllocationT = OpenedShmemAllocationT;
+    static constexpr size_t minAlignment = Cal::Utils::pageSize4KB;
 
     ShmemAllocator() : shmemIdAllocator(maxShmems) {
     }
     ShmemAllocator(const std::string &path) : shmemIdAllocator(maxShmems), basePath(path) {
     }
+
     mockable ~ShmemAllocator() = default;
 
-    mockable Shmem create(size_t size, bool dontMap) {
+    mockable AllocationT allocate(size_t size, size_t alignment) {
+        if (false == Cal::Allocators::adjustSizeAndAlignment<Cal::Utils::pageSize4KB>(size, alignment)) {
+            return {};
+        }
         auto shmemId = shmemIdAllocator.allocate();
         if (Cal::Allocators::BitAllocator::invalidOffset == shmemId) {
+            log<Verbosity::error>("Maximum number of shmems reached : %zu", shmemIdAllocator.getCapacity());
             return {};
         }
         auto path = basePath + std::to_string(shmemId);
@@ -86,62 +111,42 @@ class ShmemAllocator {
 
         if (-1 == shmemFd) {
             auto err = errno;
-            log<Verbosity::error>("Failed to create shmem object for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
+            log<Verbosity::error>("Failed to create shmem for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
             return {};
         }
-        auto shmemSize = size;
-        static constexpr auto pageSize = Cal::Utils::pageSize4KB;
-        auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(shmemSize);
-        if (-1 == ftruncate(shmemFd, alignedSize)) {
-            log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", path.c_str(), alignedSize);
-            shm_unlink(path.c_str());
+        if (-1 == Cal::Sys::ftruncate(shmemFd, size)) {
+            log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", path.c_str(), size);
+            Cal::Sys::close(shmemFd);
+            Cal::Sys::shm_unlink(path.c_str());
             return {};
         }
-        void *ptr = nullptr;
-        if (dontMap) {
-            log<Verbosity::debug>("Created shmem %s of size : %zu and left it unmapped", path.c_str(), alignedSize);
-        } else {
-            ptr = Cal::Sys::mmap(nullptr, alignedSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmemFd, 0);
-            if (ptr == MAP_FAILED) {
-                log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), alignedSize);
-                shm_unlink(path.c_str());
-                return {};
-            }
-            log<Verbosity::debug>("Created shmem %s of size : %zu and mapped it as : %p", path.c_str(), alignedSize, ptr);
-        }
-        Shmem ret;
-        ret.fd = shmemFd;
-        ret.ptr = ptr;
-        ret.size = shmemSize;
-        ret.underlyingSize = alignedSize;
-        ret.id = shmemId;
-        ret.owned = true;
-        return ret;
+
+        return AllocationT(ShmemAllocation<>(shmemId, true), shmemFd, size, true);
     }
 
-    mockable void release(const Shmem &shmem) {
-        auto path = basePath + std::to_string(shmem.id);
+    mockable AllocationT allocate(size_t size) {
+        return this->allocate(size, minAlignment);
+    }
 
-        if ((nullptr != shmem.ptr) && (-1 == Cal::Sys::munmap(shmem.ptr, shmem.underlyingSize))) {
-            log<Verbosity::error>("Failed to munmap %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
-        } else {
-            log<Verbosity::debug>("munmap-ed %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
-        }
+    mockable void free(const AllocationT &alloc) {
+        auto path = basePath + std::to_string(alloc.getShmemId());
 
-        if (-1 != shmem.fd) {
-            if (-1 == close(shmem.fd)) {
+        if (alloc.isOwnerOfFd()) {
+            if (-1 == Cal::Sys::close(alloc.getFd())) {
                 auto err = errno;
-                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.fd, path.c_str(), err, strerror(err));
+                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", alloc.getFd(), path.c_str(), err, strerror(err));
             } else {
-                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.fd, path.c_str(), shmem.underlyingSize);
+                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", alloc.getFd(), path.c_str(), alloc.getFileSize());
             }
         }
 
-        if ((-1 != shmem.id) && (-1 == shm_unlink(path.c_str()))) {
-            log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
-        } else {
-            log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), shmem.underlyingSize);
-            shmemIdAllocator.free(shmem.id);
+        if (alloc.isOwnerOfShmem()) {
+            if (-1 == Cal::Sys::shm_unlink(path.c_str())) {
+                log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu", path.c_str(), alloc.getFileSize());
+            } else {
+                log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), alloc.getFileSize());
+                shmemIdAllocator.free(alloc.getShmemId());
+            }
         }
     }
 
@@ -150,83 +155,106 @@ class ShmemAllocator {
     std::string basePath;
 };
 
+struct RemoteShmemDesc {
+    ShmemIdT id = invalidShmemId;
+    size_t size = 0U;
+
+    bool isValid() const {
+        return invalidShmemId != this->id;
+    }
+};
+
 // thread-safe
 class ShmemImporter {
   public:
+    static constexpr bool isThreadSafe = true;
+
+    using AllocationT = MmappedShmemAllocationT;
+
     ShmemImporter() = default;
     ShmemImporter(const std::string &path) : basePath(path) {
     }
     mockable ~ShmemImporter() = default;
 
-    mockable Shmem open(const RemoteShmem &remoteShmem, void *enforcedVaForMapping) {
-        if (false == remoteShmem.isValid()) {
-            log<Verbosity::critical>("Request to open invalid remote shmem ");
+    mockable AllocationT open(ShmemIdT id, size_t size, void *enforcedVaForMmap) {
+        if (invalidShmemId == id) {
+            log<Verbosity::critical>("Request to open invalid remote shmem");
             return {};
         }
-        auto path = basePath + std::to_string(remoteShmem.id);
-        auto shmemSize = remoteShmem.size;
-        static constexpr auto pageSize = Cal::Utils::pageSize4KB;
-        auto alignedSize = Cal::Utils::alignUpPow2<pageSize>(remoteShmem.size);
-        if (enforcedVaForMapping) {
-            if (shmemSize != alignedSize) {
-                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided size is not page-aligned : %zu", enforcedVaForMapping, remoteShmem.size);
-                return {};
-            }
-            if (false == Cal::Utils::isAlignedPow2<pageSize>(enforcedVaForMapping)) {
-                log<Verbosity::error>("Shmem requires fixed pointer : %p but provided pointer is not page-aligned", enforcedVaForMapping);
+        auto path = basePath + std::to_string(id);
+        if (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(size)) {
+            log<Verbosity::critical>("Request to open misaligned shmem %zu", size);
+            return {};
+        }
+
+        if (enforcedVaForMmap) {
+            if (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(enforcedVaForMmap)) {
+                log<Verbosity::critical>("Request to map to misaligned ptr %p", enforcedVaForMmap);
                 return {};
             }
         }
+
         int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
         if (-1 == shmemFd) {
             log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
             return {};
         }
-        void *ptr = Cal::Sys::mmap(enforcedVaForMapping, alignedSize, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMapping ? MAP_FIXED : 0), shmemFd, 0);
+        void *ptr = Cal::Sys::mmap(enforcedVaForMmap, size, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMmap ? MAP_FIXED : 0), shmemFd, 0);
         if (ptr == MAP_FAILED) {
-            log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), alignedSize);
-            shm_unlink(path.c_str());
+            log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), size);
+            Cal::Sys::shm_unlink(path.c_str());
             return {};
         }
-        log<Verbosity::debug>("Created shmem %s of size : %zu and mapped it as %p", path.c_str(), alignedSize, ptr);
-        Shmem ret;
-        ret.fd = shmemFd;
-        ret.ptr = ptr;
-        ret.size = shmemSize;
-        ret.underlyingSize = alignedSize;
-        ret.id = remoteShmem.id;
-        return ret;
+        log<Verbosity::debug>("Opened shmem %s of size : %zu and mapped it as %p", path.c_str(), size, ptr);
+        using namespace Cal::Allocators;
+        return AllocationT(FdAllocation<ShmemAllocation<>>(ShmemAllocation<>(id, false), shmemFd, size, true), ptr, size);
     }
 
-    mockable void release(const Shmem &shmem) {
-        auto path = basePath + std::to_string(shmem.id);
+    AllocationT open(const RemoteShmemDesc &desc, void *enforcedVaForMmap) {
+        return this->open(desc.id, desc.size, enforcedVaForMmap);
+    }
 
-        if ((nullptr != shmem.ptr) && (-1 == Cal::Sys::munmap(shmem.ptr, shmem.underlyingSize))) {
-            log<Verbosity::error>("Failed to munmap %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
-        } else {
-            log<Verbosity::debug>("munmap-ed %p for shmem %s of size : %zu", shmem.ptr, path.c_str(), shmem.underlyingSize);
-        }
+    AllocationT open(const RemoteShmemDesc &desc) {
+        return this->open(desc, nullptr);
+    }
 
-        if (-1 != shmem.fd) {
-            if (-1 == close(shmem.fd)) {
-                auto err = errno;
-                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.fd, path.c_str(), err, strerror(err));
+    mockable void release(const AllocationT &shmem) {
+        auto path = basePath + std::to_string(shmem.getShmemId());
+
+        if (nullptr != shmem.getMmappedPtr()) {
+            if (-1 == Cal::Sys::munmap(shmem.getMmappedPtr(), shmem.getMmappedSize())) {
+                log<Verbosity::error>("Failed to munmap %p for shmem %s of size : %zu", shmem.getMmappedPtr(), path.c_str(), shmem.getMmappedSize());
             } else {
-                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.fd, path.c_str(), shmem.underlyingSize);
+                log<Verbosity::debug>("munmap-ed %p for shmem %s of size : %zu", shmem.getMmappedPtr(), path.c_str(), shmem.getMmappedSize());
             }
         }
+
+        if (shmem.isOwnerOfFd()) {
+            if (-1 == Cal::Sys::close(shmem.getFd())) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.getFd(), path.c_str(), err, strerror(err));
+            } else {
+                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.getFd(), path.c_str(), shmem.getMmappedSize());
+            }
+        }
+    }
+
+    const std::string &getBasePath() {
+        return this->basePath;
     }
 
   protected:
     std::string basePath;
 };
 
-inline RemoteShmem allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection, Cal::Messages::ReqAllocateShmem::AllocationPurpose purpose,
-                                         size_t minSize, size_t size) {
+inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
+                                             Cal::Messages::ReqAllocateShmem::AllocationPurpose purpose,
+                                             size_t minSize) {
+    auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(minSize);
     Cal::Messages::ReqAllocateShmem request;
     Cal::Messages::RespAllocateShmem response;
     request.purpose = Cal::Messages::ReqAllocateShmem::rpcMessageChannel;
-    request.size = size;
+    request.size = alignedSize;
     request.purpose = purpose;
     {
         auto lock = remoteConnection.lock();
@@ -241,17 +269,78 @@ inline RemoteShmem allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
         }
         log<Verbosity::debug>("Returned shmem from service : (id : %d, size : %zu)", response.id, response.size);
     }
-    RemoteShmem ret;
+
+    RemoteShmemDesc ret;
     ret.size = response.size;
     ret.id = response.id;
     return ret;
 }
 
+// thread-safe
+using NonUsmMmappedShmemAllocatorBaseT = Cal::Allocators::AllocatorWithGlobalMmapToFd<Cal::Ipc::ShmemAllocator, true>;
+class NonUsmMmappedShmemAllocator : public NonUsmMmappedShmemAllocatorBaseT {
+  public:
+    static_assert(NonUsmMmappedShmemAllocatorBaseT::isThreadSafe);
+
+    static constexpr Cal::Allocators::MmapConfig mmapConfig = {
+        PROT_READ | PROT_WRITE, // prot
+        MAP_SHARED              // flags;
+    };
+
+    NonUsmMmappedShmemAllocator(ShmemAllocator &shmemAllocator)
+        : NonUsmMmappedShmemAllocatorBaseT(shmemAllocator, mmapConfig) {
+    }
+};
+
+// thread-safe
+class GlobalShmemAllocators {
+    static_assert(Cal::Ipc::ShmemAllocator::isThreadSafe);
+    static_assert(Cal::Ipc::NonUsmMmappedShmemAllocator::isThreadSafe);
+    static constexpr bool isThreadSafe = true;
+
+  public:
+    GlobalShmemAllocators(const std::string &basePath)
+        : baseAllocator(basePath), nonUsmMmappedShmemAllocator(baseAllocator) {
+    }
+
+    Cal::Ipc::ShmemAllocator &getBaseAllocator() {
+        return baseAllocator;
+    }
+
+    Cal::Ipc::NonUsmMmappedShmemAllocator &getNonUsmMmappedAllocator() {
+        return nonUsmMmappedShmemAllocator;
+    }
+
+  protected:
+    ShmemAllocator baseAllocator;
+    NonUsmMmappedShmemAllocator nonUsmMmappedShmemAllocator;
+};
+
 class BasicMemoryBlock {
   protected:
+    class RemmapableShmemAllocation : public MmappedShmemAllocationT {
+      public:
+        RemmapableShmemAllocation &operator=(const MmappedShmemAllocationT &rhs) {
+            this->MmappedShmemAllocationT::operator=(rhs);
+            return *this;
+        }
+        RemmapableShmemAllocation &operator=(const OpenedShmemAllocationT &rhs) {
+            this->OpenedShmemAllocationT::operator=(rhs);
+            this->mmappedPtr = nullptr;
+            this->mmappedSize = 0U;
+            return *this;
+        }
+        void remap(void *va, size_t size) {
+            this->mmappedPtr = va;
+            this->mmappedSize = size;
+            if (static_cast<bool>(va) != static_cast<bool>(size)) {
+                log<Verbosity::error>("Invalid remap as va=%p and size=%zu", va, size);
+            }
+        }
+    };
     struct ChunkDescription {
-        uintptr_t firstPageAddress{}; // First client page VA.
-        Shmem shmem{};                // Shmem block.
+        uintptr_t firstPageAddress{};      // First client page VA.
+        RemmapableShmemAllocation shmem{}; // Shmem block.
     };
 
   public:
@@ -261,14 +350,14 @@ class BasicMemoryBlock {
         uintptr_t firstClientAddress{};
     };
 
-    BasicMemoryBlock(ShmemAllocator &shmemManager, const void *srcptr, size_t size) : shmemManager{shmemManager} {
+    BasicMemoryBlock(NonUsmMmappedShmemAllocator &shmemAllocator, const void *srcptr, size_t size) : shmemAllocator{shmemAllocator} {
         auto &firstChunk = chunks.emplace_back();
 
         const auto pageOffset = reinterpret_cast<uintptr_t>(srcptr) % pageSize;
         firstChunk.firstPageAddress = reinterpret_cast<uintptr_t>(srcptr) - pageOffset;
 
         const auto requiredSize = pageOffset + size;
-        firstChunk.shmem = shmemManager.create(requiredSize, false);
+        firstChunk.shmem = shmemAllocator.allocate(requiredSize);
     }
 
     ~BasicMemoryBlock() {
@@ -279,7 +368,7 @@ class BasicMemoryBlock {
         }
 
         for (const auto &chunk : chunks) {
-            shmemManager.release(chunk.shmem);
+            shmemAllocator.free(chunk.shmem);
         }
     }
 
@@ -293,7 +382,7 @@ class BasicMemoryBlock {
         const auto srcEnd = srcBegin + size;
 
         const auto blockBegin = chunks.front().firstPageAddress;
-        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
 
         return overlaps(srcBegin, srcEnd, blockBegin, blockEnd);
     }
@@ -312,7 +401,7 @@ class BasicMemoryBlock {
             shouldRemapChunks = true;
         }
 
-        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
         if (blockEnd < srcEnd) {
             appendChunk(blockEnd, srcEnd);
             shouldRemapChunks = true;
@@ -343,15 +432,15 @@ class BasicMemoryBlock {
             const auto offsetToFirstPage = chunk.firstPageAddress - blockBegin;
             auto destAddress = reinterpret_cast<void *>(mappedSpaceBegin + offsetToFirstPage);
 
-            auto mappedChunk = Cal::Sys::mmap(destAddress, chunk.shmem.underlyingSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, chunk.shmem.fd, 0);
+            auto mappedChunk = Cal::Sys::mmap(destAddress, chunk.shmem.getFileSize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, chunk.shmem.getFd(), 0);
             if (mappedChunk == MAP_FAILED) {
                 log<Verbosity::error>("mmap() failed for chunk! destAddress = %p, size = %zu, fd = %d, id = %d",
                                       destAddress,
-                                      chunk.shmem.underlyingSize,
-                                      chunk.shmem.fd,
-                                      chunk.shmem.id);
+                                      chunk.shmem.getFileSize(),
+                                      chunk.shmem.getFd(),
+                                      chunk.shmem.getShmemId());
             } else {
-                chunk.shmem.ptr = mappedChunk;
+                chunk.shmem.remap(mappedChunk, chunk.shmem.getFileSize());
             }
         }
     }
@@ -359,10 +448,10 @@ class BasicMemoryBlock {
     void *translate(const void *srcptr) const {
         const auto src = reinterpret_cast<uintptr_t>(srcptr);
         const auto blockBegin = chunks.front().firstPageAddress;
-        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
 
         if (blockBegin <= src && src < blockEnd) {
-            const auto mappedBegin = reinterpret_cast<uintptr_t>(chunks.front().shmem.ptr);
+            const auto mappedBegin = reinterpret_cast<uintptr_t>(chunks.front().shmem.getMmappedPtr());
             const auto offset = src - blockBegin;
 
             return reinterpret_cast<void *>(mappedBegin + offset);
@@ -373,7 +462,7 @@ class BasicMemoryBlock {
     }
 
     void merge(BasicMemoryBlock &&rhs) {
-        const auto lhsEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto lhsEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
         const auto rhsBegin = rhs.chunks.front().firstPageAddress;
 
         assert(lhsEnd <= rhsBegin && "Logic error! Currently only greater rhs can be merged!");
@@ -407,7 +496,7 @@ class BasicMemoryBlock {
         const auto srcPageBegin = srcBegin - pageOffset;
 
         const auto blockBegin = chunks.front().firstPageAddress;
-        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
 
         return (srcPageBegin < blockBegin) || (blockEnd < srcEnd);
     }
@@ -418,7 +507,7 @@ class BasicMemoryBlock {
 
         const auto chunkOverlaps = [this, srcBegin, srcEnd](const auto &chunk) {
             const auto chunkBegin = chunk.firstPageAddress;
-            const auto chunkEnd = chunkBegin + chunk.shmem.underlyingSize;
+            const auto chunkEnd = chunkBegin + chunk.shmem.getFileSize();
 
             return overlaps(srcBegin, srcEnd, chunkBegin, chunkEnd);
         };
@@ -436,7 +525,7 @@ class BasicMemoryBlock {
 
         for (const auto &chunk : chunks) {
             const auto chunkBegin = chunk.firstPageAddress;
-            const auto chunkEnd = chunkBegin + chunk.shmem.underlyingSize;
+            const auto chunkEnd = chunkBegin + chunk.shmem.getFileSize();
 
             if (overlaps(srcBegin, srcEnd, chunkBegin, chunkEnd)) {
                 // Not enough space.
@@ -444,8 +533,8 @@ class BasicMemoryBlock {
                     return false;
                 }
 
-                transferDescs[appendedTransfersCount].shmemId = chunk.shmem.id;
-                transferDescs[appendedTransfersCount].underlyingSize = chunk.shmem.underlyingSize;
+                transferDescs[appendedTransfersCount].shmemId = chunk.shmem.getShmemId();
+                transferDescs[appendedTransfersCount].underlyingSize = chunk.shmem.getFileSize();
 
                 const auto copyBegin = std::max(chunkBegin, srcBegin);
                 const auto copyEnd = std::min(chunkEnd, srcEnd);
@@ -469,32 +558,30 @@ class BasicMemoryBlock {
         auto &prependedChunk = chunks.emplace_front();
         prependedChunk.firstPageAddress = srcPageBegin;
 
-        constexpr auto dontMap = true;
         const auto requiredSize = blockBegin - srcPageBegin;
-        prependedChunk.shmem = shmemManager.create(requiredSize, dontMap);
+        prependedChunk.shmem = shmemAllocator.getUnderlyingAllocator().allocate(requiredSize);
     }
 
     void appendChunk(uintptr_t blockEnd, uintptr_t srcEnd) {
         auto &appendedChunk = chunks.emplace_back();
         appendedChunk.firstPageAddress = blockEnd;
 
-        constexpr auto dontMap = true;
         const auto requiredSize = srcEnd - blockEnd;
-        appendedChunk.shmem = shmemManager.create(requiredSize, dontMap);
+        appendedChunk.shmem = shmemAllocator.getUnderlyingAllocator().allocate(requiredSize);
     }
 
     void preserveExistingMappings() {
         for (auto &chunk : chunks) {
-            if (chunk.shmem.ptr) {
-                oldMappings.emplace_back(chunk.shmem.ptr, chunk.shmem.underlyingSize);
-                chunk.shmem.ptr = nullptr;
+            if (chunk.shmem.getMmappedPtr()) {
+                oldMappings.emplace_back(chunk.shmem.getMmappedPtr(), chunk.shmem.getFileSize());
+                chunk.shmem.remap(nullptr, 0U);
             }
         }
     }
 
     size_t getTotalContiguousSize() const {
         const auto blockBegin = chunks.front().firstPageAddress;
-        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
+        const auto blockEnd = chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
 
         return blockEnd - blockBegin;
     }
@@ -507,7 +594,7 @@ class BasicMemoryBlock {
 
     std::deque<ChunkDescription> chunks{};
     std::vector<std::pair<void *, size_t>> oldMappings{};
-    ShmemAllocator &shmemManager;
+    NonUsmMmappedShmemAllocator &shmemAllocator;
 };
 
 template <typename BasicMemoryBlockT = BasicMemoryBlock>
@@ -516,7 +603,7 @@ class BasicMemoryBlocksManager {
     using MemoryBlockIterator = typename std::map<uintptr_t, BasicMemoryBlockT>::iterator;
 
   public:
-    const BasicMemoryBlockT &registerMemoryBlock(ShmemAllocator &shmemManager, const void *srcptr, size_t size) {
+    const BasicMemoryBlockT &registerMemoryBlock(NonUsmMmappedShmemAllocator &shmemAllocator, const void *srcptr, size_t size) {
         auto *memoryBlock = getMergedOverlappingMemoryBlocks(srcptr, size);
         if (memoryBlock) {
             const auto oldFirstPageAddress = memoryBlock->getFirstPageAddress();
@@ -534,7 +621,7 @@ class BasicMemoryBlocksManager {
         const auto pageOffset = reinterpret_cast<uintptr_t>(srcptr) % pageSize;
         const auto srcPageBegin = srcBegin - pageOffset;
 
-        auto [insertedBlockIt, wasInserted] = memoryBlocks.try_emplace(srcPageBegin, shmemManager, srcptr, size);
+        auto [insertedBlockIt, wasInserted] = memoryBlocks.try_emplace(srcPageBegin, shmemAllocator, srcptr, size);
         if (!wasInserted) {
             log<Verbosity::critical>("Could not insert block! Aborting...");
             std::abort();

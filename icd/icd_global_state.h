@@ -24,6 +24,10 @@ class ShmemImporter;
 class MallocShmemZeroCopyManager;
 } // namespace Ipc
 
+namespace Usm {
+class UsmShmemImporter;
+}
+
 namespace Icd {
 
 namespace Ocl {
@@ -199,7 +203,8 @@ class IcdGlobalState final {
         std::unique_ptr<Cal::Icd::LevelZero::IcdL0Platform> platform;
         std::once_flag onceFlag;
     } l0Platform;
-    std::unique_ptr<Cal::Ipc::ShmemImporter> shmemManager;
+    std::unique_ptr<Cal::Ipc::ShmemImporter> globalShmemImporter;
+    std::unique_ptr<Cal::Usm::UsmShmemImporter> usmShmemImporter;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager> mallocShmemZeroCopyManager;
 
     std::mutex cacheMutex;

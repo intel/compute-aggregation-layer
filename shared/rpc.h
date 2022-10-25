@@ -481,13 +481,13 @@ class ChannelClient : public CommandsChannel {
         }
 
         this->completionStamps = CompletionStampBufferT(getAsLocalAddress<CompletionStampT>(this->layout.completionStampsStart), this->layout.completionStampsCapacity);
-        this->heap = Cal::Utils::Heap(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), this->layout.heapEnd - this->layout.heapStart));
+        this->heap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), this->layout.heapEnd - this->layout.heapStart));
 
         return true;
     }
 
     std::unique_ptr<void, ChannelSpaceDeleter> getSpaceAligned(size_t size, size_t alignment) {
-        auto addr = heap.alloc(size, alignment);
+        auto addr = heap.allocate(size, alignment);
         if (nullptr == addr) {
             log<Verbosity::critical>("Command channel's heap is full");
             std::abort();
@@ -575,7 +575,7 @@ class ChannelClient : public CommandsChannel {
     }
 
     int32_t getId() const {
-        return underlyingShmem.id;
+        return underlyingShmem.getShmemId();
     }
 
     bool wait(CompletionStampT *completionStamp, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
@@ -631,20 +631,19 @@ class ChannelClient : public CommandsChannel {
     }
 
     bool createRingBuffer() {
-        auto remoteShmem = Cal::Ipc::allocateShmemOnRemote(this->connection, Cal::Messages::ReqAllocateShmem::rpcMessageChannel,
-                                                           0U, 0U); // let service choose size
+        auto remoteShmem = Cal::Ipc::allocateShmemOnRemote(this->connection, Cal::Messages::ReqAllocateShmem::rpcMessageChannel, 0U); // let service choose size
         if (false == remoteShmem.isValid()) {
             log<Verbosity::debug>("Failed to allocate RPC ring buffer shmem on the service side");
             return false;
         }
         this->underlyingShmem = shmemManager.open(remoteShmem, nullptr);
-        if (nullptr == underlyingShmem.ptr) {
+        if (nullptr == underlyingShmem.getMmappedPtr()) {
             log<Verbosity::debug>("Failed to map RPC ring buffer shmem on client side");
             return false;
         }
-        log<Verbosity::debug>("Succesfully allocated RPC ring buffer shmem : %p, size : %zu", underlyingShmem.ptr, underlyingShmem.size);
+        log<Verbosity::debug>("Succesfully allocated RPC ring buffer shmem : %p, size : %zu", underlyingShmem.getMmappedPtr(), underlyingShmem.getMmappedSize());
 
-        if (false == this->partition(underlyingShmem.ptr, underlyingShmem.size, true)) {
+        if (false == this->partition(underlyingShmem.getMmappedPtr(), underlyingShmem.getMmappedSize(), true)) {
             log<Verbosity::error>("Failed to partition the RPC ring buffer");
             return false;
         }
@@ -654,7 +653,7 @@ class ChannelClient : public CommandsChannel {
 
     bool enableRpc() {
         Cal::Messages::ReqLaunchRpcShmemRingBuffer request;
-        request.ringbufferShmemId = underlyingShmem.id;
+        request.ringbufferShmemId = underlyingShmem.getShmemId();
         request.layout = this->layout;
 
         Cal::Messages::RespLaunchRpcShmemRingBuffer response;
@@ -677,11 +676,11 @@ class ChannelClient : public CommandsChannel {
 
     Cal::Ipc::Connection &connection;
     Cal::Ipc::ShmemImporter &shmemManager;
-    Cal::Ipc::Shmem underlyingShmem;
+    Cal::Ipc::ShmemImporter::AllocationT underlyingShmem;
     std::atomic_bool stopped = false;
 
     CompletionStampBufferT completionStamps;
-    Cal::Utils::Heap heap;
+    Cal::Allocators::AddressRangeAllocator heap;
 
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
     ClientSynchronizationMethod clientSynchronizationMethod = unknown;
@@ -696,16 +695,16 @@ class ChannelServer : public CommandsChannel {
         CompletionStampT *completionStamp = nullptr;
     };
 
-    ChannelServer(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemAllocator &shmemManager)
-        : connection(connection), shmemManager(shmemManager) {
+    ChannelServer(Cal::Ipc::Connection &connection, Cal::Ipc::NonUsmMmappedShmemAllocator &shmemAllocator)
+        : connection(connection), shmemAllocator(shmemAllocator) {
     }
 
-    bool init(Cal::Ipc::Shmem ringBufferShmem, const Cal::Messages::ReqLaunchRpcShmemRingBuffer &request, Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod) {
+    bool init(Cal::Ipc::MmappedShmemAllocationT ringBufferShmem, const Cal::Messages::ReqLaunchRpcShmemRingBuffer &request, Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod) {
         log<Verbosity::debug>("ChannelServer - new client : %d; service synchronization method %s", connection.getId(),
                               Cal::Messages::RespLaunchRpcShmemRingBuffer::asCStr(serviceSynchronizationMethod));
         this->serviceSynchronizationMethod = serviceSynchronizationMethod;
 
-        if (false == this->partition(ringBufferShmem.ptr, ringBufferShmem.size, request.layout, false)) {
+        if (false == this->partition(ringBufferShmem.getMmappedPtr(), ringBufferShmem.getMmappedSize(), request.layout, false)) {
             log<Verbosity::error>("ChannelServer - failed to partition RPC ring buffer using layout provided by client : %d", connection.getId());
             return false;
         }
@@ -715,7 +714,7 @@ class ChannelServer : public CommandsChannel {
     }
 
     int32_t getId() const {
-        return ringBufferShmem.id;
+        return ringBufferShmem.getShmemId();
     }
 
     CommandPacket wait(bool yieldThread) {
@@ -799,8 +798,8 @@ class ChannelServer : public CommandsChannel {
     }
 
     Cal::Ipc::Connection &connection;
-    Cal::Ipc::ShmemAllocator &shmemManager;
-    Cal::Ipc::Shmem ringBufferShmem;
+    Cal::Ipc::NonUsmMmappedShmemAllocator &shmemAllocator;
+    Cal::Ipc::MmappedShmemAllocationT ringBufferShmem;
     std::atomic_bool stopped = false;
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
 };

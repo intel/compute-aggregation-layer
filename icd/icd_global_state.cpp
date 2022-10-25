@@ -22,7 +22,8 @@ namespace Icd {
 IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
-    this->shmemManager = std::make_unique<Cal::Ipc::ShmemImporter>();
+    this->globalShmemImporter = std::make_unique<Cal::Ipc::ShmemImporter>();
+    this->usmShmemImporter = std::make_unique<Cal::Usm::UsmShmemImporter>(*this->globalShmemImporter);
     this->mallocShmemZeroCopyManager = std::make_unique<Cal::Ipc::MallocShmemZeroCopyManager>();
 
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
@@ -36,7 +37,7 @@ Cal::Icd::Ocl::IcdOclPlatform *IcdGlobalState::getOclPlatform() {
         Cal::Utils::initDynamicVerbosity();
         Cal::Icd::Ocl::initOclIcdDispatchTable(clIcdDispatchTable);
         log<Verbosity::info>("Creating Compute Aggregation Layer OCL platform from pid : %d", getpid());
-        this->oclPlatform.platform = std::make_unique<Icd::Ocl::IcdOclPlatform>(*shmemManager, *mallocShmemZeroCopyManager);
+        this->oclPlatform.platform = std::make_unique<Icd::Ocl::IcdOclPlatform>(*globalShmemImporter, *usmShmemImporter, *mallocShmemZeroCopyManager);
         if (false == this->oclPlatform.platform->valid()) {
             this->oclPlatform.platform.reset();
         }
@@ -49,7 +50,7 @@ Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
         Cal::Utils::initDynamicVerbosity();
         Cal::Icd::LevelZero::initL0Ddi(l0Ddi);
         log<Verbosity::info>("Creating Compute Aggregation Layer Level Zero platform from pid : %d", getpid());
-        this->l0Platform.platform = std::make_unique<Icd::LevelZero::IcdL0Platform>(*shmemManager, *mallocShmemZeroCopyManager);
+        this->l0Platform.platform = std::make_unique<Icd::LevelZero::IcdL0Platform>(*globalShmemImporter, *usmShmemImporter, *mallocShmemZeroCopyManager);
         if (false == this->l0Platform.platform->valid()) {
             this->l0Platform.platform.reset();
         }

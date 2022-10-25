@@ -141,7 +141,7 @@ int main(int argc, const char *argv[]) {
                 existingSharedCalConnection.reset();
             }
             if (nullptr != existingSharedCalConnection) {
-                if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != close(serviceConfig.sharedRunnerLockFd))) {
+                if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
                     log<Verbosity::critical>("Could not unlock %s\n", lockPath.c_str());
                 }
             }

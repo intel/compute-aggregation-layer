@@ -12,6 +12,7 @@ add_executable(calrun # SERVICE
                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}${BRANCH_DIR_SUFFIX}/cochoreographer.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/service.cpp
+               ${cal_source_root_dir}/shared/allocators.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp

@@ -399,8 +399,12 @@ struct AddressRange {
         : start(reinterpret_cast<uintptr_t>(start)), end(reinterpret_cast<uintptr_t>(start) + 1) {
     }
 
-    AddressRange(uintptr_t start)
-        : start(start), end(start + 1) {
+    static AddressRange withinSize(size_t size) {
+        return AddressRange(uintptr_t(0U), uintptr_t(size));
+    }
+
+    static AddressRange empty() {
+        return AddressRange(uintptr_t(0U), uintptr_t(0U));
     }
 
     bool contains(AddressRange el) const {
@@ -426,6 +430,8 @@ struct AddressRange {
     uintptr_t start = 0;
     uintptr_t end = std::numeric_limits<uintptr_t>::max();
 };
+
+using OffsetRange = AddressRange;
 
 inline bool operator==(const AddressRange &lhs, const AddressRange &rhs) {
     return (lhs.start == rhs.start) && (lhs.end == rhs.end);
@@ -683,49 +689,6 @@ class PartitionedAddressRange {
     TagT tag;
 };
 
-class Heap {
-  public:
-    Heap() : vma({0U, 0U}) {
-    }
-
-    Heap(AddressRange vaRange) : vma(vaRange) {
-    }
-
-    void *alloc(size_t sizeInBytes, size_t alignment);
-
-    void *alloc(size_t sizeInBytes) {
-        return alloc(sizeInBytes, 16);
-    }
-
-    void free(void *addr);
-
-    AddressRange getRange() const {
-        return vma.getBoundingRange();
-    }
-
-    size_t getSizeUsed() const {
-        return sizeUsed;
-    }
-
-    size_t getSizeLeft() const {
-        return vma.getBoundingRange().size() - sizeUsed;
-    }
-
-  protected:
-    void commitRange(AddressRange range) {
-        vma.insertSubRange(range);
-        sizeUsed += range.size();
-    }
-
-    void freeRange(AddressRange range) {
-        vma.destroySubRange(range);
-        sizeUsed -= range.size();
-    }
-
-    PartitionedAddressRange<void> vma;
-    size_t sizeUsed = 0U;
-};
-
 std::string getPathForTempFiles();
 
 inline std::vector<std::string> split(const std::string &input, const char *delimiter) {
@@ -755,6 +718,45 @@ void enforceNullWithWarning(const char *sourceLocation, const void *&pointer);
 void enforceNullWithWarning(const char *sourceLocation, void *&pointer);
 
 void ensureNull(const char *sourceLocation, const void *pointer);
+
+template <typename ObjT>
+class Lockable {
+  public:
+    using ThisT = Lockable<ObjT>;
+
+    Lockable() = default;
+
+    template <typename... Args>
+    Lockable(Args &&...args)
+        : obj(std::forward<Args>(args)...) {
+    }
+
+    Lockable(ThisT &&rhs) {
+        auto rhsLock = rhs.lock();
+        this->obj = std::move(rhs.obj);
+    }
+
+    Lockable(const ThisT &rhs) {
+        auto rhsLock = rhs.lock();
+        this->obj = rhs.obj;
+    }
+
+    [[nodiscard]] std::unique_lock<std::mutex> lock() const {
+        return std::unique_lock<std::mutex>(mutex);
+    }
+
+    ObjT *operator->() {
+        return &obj;
+    }
+
+    const ObjT *operator->() const {
+        return &obj;
+    }
+
+  protected:
+    mutable std::mutex mutex;
+    ObjT obj = {};
+};
 
 } // namespace Utils
 } // namespace Cal

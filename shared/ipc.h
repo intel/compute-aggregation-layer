@@ -227,7 +227,7 @@ class Socket : public Connection {
     int close() override {
         if (-1 != this->socketFd) {
             log<Verbosity::debug>("Closing socket %d", socket);
-            if (0 != ::close(this->socketFd)) {
+            if (0 != Cal::Sys::close(this->socketFd)) {
                 log<Verbosity::error>("Failed to close socket %d", socket);
                 return -1;
             } else {
@@ -284,7 +284,7 @@ class NamedSocketClientConnectionFactory : public ClientConnectionFactory {
         log<Verbosity::debug>("Connecting to service through socket at address (family : AF_UNIX) : %s", socketAddress.sun_path);
         if (0 != ::connect(socketFd, reinterpret_cast<const sockaddr *>(&socketAddress), sizeof(socketAddress))) {
             log<Verbosity::debug>("Failed to connect to service through socket at address (family : AF_UNIX) : %s - error : %s", socketAddress.sun_path, Connection::connectionErrnoToError(errno).c_str());
-            ::close(socketFd);
+            Cal::Sys::close(socketFd);
             return nullptr;
         }
 
@@ -369,7 +369,7 @@ class NamedSocketConnectionListener : public ConnectionListener {
             return 0;
         }
         log<Verbosity::debug>("Closing listener socket %s", path.c_str());
-        if (0 != ::close(this->listenerSocketFd)) {
+        if (0 != Cal::Sys::close(this->listenerSocketFd)) {
             log<Verbosity::error>("Failed to close listener socket");
             return -1;
         }

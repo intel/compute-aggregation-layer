@@ -14,7 +14,9 @@ namespace Mocks {
 SysCallsContext defaultSysCallsContext;
 SysCallsContext *sysCallsContext = &defaultSysCallsContext;
 
-SysCallsContext::SysCallsContext() {
+SysCallsContext::SysCallsContext()
+    : fds(8192) {
+    fds.allocate(); // reserve 0
     sysCallsContext = this;
 }
 SysCallsContext::~SysCallsContext() {
@@ -71,6 +73,14 @@ int (*sem_wait)(sem_t *sem) = +[](sem_t *sem) -> int {
 
 int (*sem_post)(sem_t *sem) = +[](sem_t *sem) -> int {
     return Cal::Mocks::sysCallsContext->sem_post(sem);
+};
+
+int (*close)(int fd) = +[](int fd) -> int {
+    return Cal::Mocks::sysCallsContext->close(fd);
+};
+
+int (*ftruncate)(int fd, off_t length) = +[](int fd, off_t length) -> int {
+    return Cal::Mocks::sysCallsContext->ftruncate(fd, length);
 };
 
 } // namespace Sys

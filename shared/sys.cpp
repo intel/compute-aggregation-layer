@@ -30,6 +30,9 @@ int (*sem_destroy)(sem_t *sem) = ::sem_destroy;
 int (*sem_wait)(sem_t *sem) = ::sem_wait;
 int (*sem_post)(sem_t *sem) = ::sem_post;
 
+int (*close)(int fd) = ::close;
+int (*ftruncate)(int fd, off_t length) = ::ftruncate;
+
 } // namespace Sys
 
 } // namespace Cal

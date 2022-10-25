@@ -135,39 +135,38 @@ void *getExtensionFuncAddress(const char *funcname);
 
 class ClientContext {
   public:
-    int32_t mutexIndex = -1;
-    int32_t subDeviceIndex = 0u;
-    bool isPersistentMode;
-
     struct ChoreographyAssignment {
         ISpectacle *spectacle = nullptr;
         IMember *member = nullptr;
     };
 
-    ClientContext(bool isPersistentMode) : isPersistentMode(isPersistentMode) {}
+    ClientContext(Cal::Ipc::GlobalShmemAllocators &globalShmemAllocators, bool automaticCleanupOfApiHandles)
+        : globalShmemAllocators(globalShmemAllocators), automaticCleanupOfApiHandles(automaticCleanupOfApiHandles) {
+        this->usmHeaps.reserve(4);
+    }
 
     std::unique_lock<std::mutex> lock() {
         return std::unique_lock<std::mutex>(criticalSection);
     }
 
-    void registerShmem(const Cal::Ipc::Shmem &shmem) {
-        shmemMap[shmem.id] = shmem;
+    void registerShmem(const Cal::Ipc::MmappedShmemAllocationT &shmem) {
+        globalShmemsMap[shmem.getShmemId()] = shmem;
     }
 
     void registerRpcChannel(std::future<void> worker, std::unique_ptr<Cal::Rpc::ChannelServer> channel) {
         rpcChannels.push_back(std::make_pair(std::move(worker), std::move(channel)));
     }
 
-    Cal::Ipc::Shmem getShmemById(int id) {
-        auto it = shmemMap.find(id);
-        if (it == shmemMap.end()) {
-            log<Verbosity::debug>("Asked for unknown shmem id %d (this context knows %zu shmems)", id, shmemMap.size());
+    Cal::Ipc::MmappedShmemAllocationT getShmemById(int id) const {
+        auto it = globalShmemsMap.find(id);
+        if (it == globalShmemsMap.end()) {
+            log<Verbosity::debug>("Asked for unknown shmem id %d (this context knows %zu shmems)", id, globalShmemsMap.size());
             return {};
         }
         return it->second;
     }
 
-    void cleanup(Cal::Ipc::ShmemAllocator &shmemManager) {
+    void cleanup() {
         isStopping = true;
         log<Verbosity::debug>("Performing client RPC channels cleanup (num channels : %zu)", rpcChannels.size());
         for (auto &rpcChannel : rpcChannels) {
@@ -177,33 +176,33 @@ class ClientContext {
         rpcChannels.clear();
 
         log<Verbosity::debug>("Performing USM shared/host allocations cleanup (num allocations leaked by client : %zu)", usmSharedHostMap.size());
-        std::vector<Cal::Ipc::Shmem> usmShmemToRelease;
+        std::vector<Cal::Ipc::ShmemAllocator::AllocationT> usmShmemToRelease;
         for (const auto &alloc : usmSharedHostMap) {
             if (alloc.second.gpuDestructor) {
                 alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.ptr);
             }
-            Cal::Usm::resetUsmCpuRange(alloc.second.ptr, alloc.second.alignedSize);
-            usmShmemToRelease.push_back(alloc.second.shmem);
+            for (auto &heap : usmHeaps) {
+                if (heap.getMmapRange().contains(alloc.second.ptr)) {
+                    heap.free(alloc.second.shmem);
+                }
+            }
         }
         usmSharedHostMap.clear();
 
         log<Verbosity::debug>("Performing USM heaps cleanup (num heaps : %zu)", usmHeaps.size());
         for (const auto &heap : usmHeaps) {
-            if (-1 == Cal::Sys::munmap(heap.getRange().base(), heap.getRange().size())) {
-                log<Verbosity::error>("Failed to munamp USM heap (base : %p, size : %zu)", heap.getRange().base(), heap.getRange().size());
+            if (-1 == Cal::Sys::munmap(heap.getMmapRange().base(), heap.getMmapRange().size())) {
+                log<Verbosity::error>("Failed to munamp USM heap (base : %p, size : %zu)", heap.getMmapRange().base(), heap.getMmapRange().size());
             }
         }
 
-        log<Verbosity::debug>("Performing client shmem cleanup (num allocs : %zu)", shmemMap.size());
+        log<Verbosity::debug>("Performing client global shmem cleanup (num allocs : %zu)", globalShmemsMap.size());
         {
-            for (const auto shmemIt : shmemMap) {
-                shmemManager.release(shmemIt.second);
-            }
-            for (auto &shmem : usmShmemToRelease) {
-                shmemManager.release(shmem);
+            for (const auto shmemIt : globalShmemsMap) {
+                globalShmemAllocators.getNonUsmMmappedAllocator().free(shmemIt.second);
             }
         }
-        shmemMap.clear();
+        globalShmemsMap.clear();
         usmShmemToRelease.clear();
 
         l0SpecificCleanup();
@@ -215,19 +214,23 @@ class ClientContext {
         return isStopping;
     }
 
-    void addUsmHeap(const Cal::Utils::AddressRange &newRange) {
-        usmHeaps.push_back({newRange});
+    void addUsmHeap(Cal::Usm::UsmMmappedShmemAllocator &&usmHeap) {
+        usmHeaps.push_back(std::move(usmHeap));
     }
 
-    std::vector<Cal::Utils::Heap> &getUsmHeaps() {
+    const std::vector<Cal::Usm::UsmMmappedShmemAllocator> &getUsmHeaps() const {
         return usmHeaps;
     }
 
-    void addUsmSharedHostAlloc(void *ctx, void *ptr, size_t alignedSize, Cal::Ipc::Shmem shmem, void (*gpuDestructor)(void *ctx, void *ptr)) {
+    std::vector<Cal::Usm::UsmMmappedShmemAllocator> &getUsmHeaps() {
+        return usmHeaps;
+    }
+
+    void addUsmSharedHostAlloc(void *ctx, void *ptr, size_t alignedSize, const Cal::Ipc::MmappedShmemAllocationT &shmem, void (*gpuDestructor)(void *ctx, void *ptr)) {
         usmSharedHostMap[ptr] = Cal::Usm::UsmSharedHostAlloc{ctx, ptr, alignedSize, shmem, gpuDestructor};
     }
 
-    void reapUsmSharedHostAlloc(void *ptr, Cal::Ipc::ShmemAllocator &shmemManager, bool callGpuDestructor = true) {
+    void reapUsmSharedHostAlloc(void *ptr, bool callGpuDestructor = true) {
         auto it = usmSharedHostMap.find(ptr);
         if (usmSharedHostMap.end() == it) {
             log<Verbosity::error>("Asked to reap an unknown pointer %p given as USM shared/host allocation", ptr);
@@ -237,8 +240,12 @@ class ClientContext {
         if (callGpuDestructor && alloc.gpuDestructor) {
             alloc.gpuDestructor(alloc.ctx, alloc.ptr);
         }
-        Cal::Usm::resetUsmCpuRange(alloc.ptr, alloc.alignedSize);
-        shmemManager.release(alloc.shmem);
+
+        for (auto &heap : usmHeaps) {
+            if (heap.getMmapRange().contains(alloc.ptr)) {
+                heap.free(alloc.shmem);
+            }
+        }
         usmSharedHostMap.erase(it);
     }
 
@@ -264,14 +271,14 @@ class ClientContext {
 
     template <typename HandleT>
     void trackAllocatedResource(HandleT handle) {
-        if (isPersistentMode) {
+        if (automaticCleanupOfApiHandles) {
             trackAllocatedResource(handle, getTracking<HandleT>());
         }
     }
 
     template <typename HandleT>
     void removeResourceTracking(HandleT handle) {
-        if (isPersistentMode) {
+        if (automaticCleanupOfApiHandles) {
             removeResourceTracking(handle, getTracking<HandleT>());
         }
     }
@@ -325,10 +332,12 @@ class ClientContext {
         }
     }
 
+    Cal::Ipc::GlobalShmemAllocators &globalShmemAllocators;
+    bool automaticCleanupOfApiHandles = false;
     std::atomic_bool isStopping = false;
     std::mutex criticalSection;
-    std::vector<Cal::Utils::Heap> usmHeaps;
-    std::unordered_map<int, Cal::Ipc::Shmem> shmemMap;
+    std::vector<Cal::Usm::UsmMmappedShmemAllocator> usmHeaps;
+    std::unordered_map<int, Cal::Ipc::MmappedShmemAllocationT> globalShmemsMap;
     std::unordered_map<void *, Cal::Usm::UsmSharedHostAlloc> usmSharedHostMap;
     std::vector<std::pair<std::future<void>, std::unique_ptr<Cal::Rpc::ChannelServer>>> rpcChannels;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> mallocShmemZeroCopyHandler;
@@ -414,7 +423,7 @@ class Provider {
             return -1;
         }
         if (-1 != serviceConfig.sharedRunnerLockFd) {
-            if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != close(serviceConfig.sharedRunnerLockFd))) {
+            if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
                 log<Verbosity::error>("Could not unlock shared runner lock for socket %s\n", serviceConfig.listener.socketPath.c_str());
             }
         }
@@ -458,8 +467,8 @@ class Provider {
         return config;
     }
 
-    Cal::Ipc::ShmemAllocator &getShmemManager() {
-        return *shmemManager;
+    Cal::Ipc::GlobalShmemAllocators &getGlobalShmemAllocators() {
+        return *globalShmemAllocators;
     }
 
     Cal::Service::Apis::Ocl::OclSharedObjects &getOclSharedObjects() {
@@ -562,7 +571,7 @@ class Provider {
         Cal::Service::Apis::LevelZero::LevelZeroSharedObjects l0;
     } sharedObjects;
     Cal::Messages::RespHandshake config;
-    std::unique_ptr<Cal::Ipc::ShmemAllocator> shmemManager;
+    std::unique_ptr<Cal::Ipc::GlobalShmemAllocators> globalShmemAllocators;
     Cal::Ipc::MallocShmemZeroCopyManager mallocShmemZeroCopyManager;
     std::vector<RpcSubtypeHandlers> rpcHandlers;
     std::vector<Cal::Rpc::DirectCallCallbackT> directCallCallbacks;
@@ -653,7 +662,7 @@ class Provider {
             return;
         }
         log<Verbosity::info>("Handshake with client #%d has SUCCEEDED (pid:%d, ppid:%d, api:%s, process:%s)", clientConnection->getId(), handshake.pid, handshake.ppid, handshake.clientTypeStr(), handshake.clientProcessName);
-        ClientContext ctx(isPersistentMode);
+        ClientContext ctx(service.getGlobalShmemAllocators(), isPersistentMode);
         service.assignToSpectacle(handshake.ppid, handshake.pid, handshake.clientProcessName, ctx);
         if (ctx.getSpectacleAssignment()) {
             log<Verbosity::debug>("Client #%d was assigned to a spectacle %p", clientConnection->getId(), ctx.getSpectacleAssignment());
@@ -696,7 +705,7 @@ class Provider {
         }
         log<Verbosity::debug>("Stopped servicing client : %d (reason : %s)", clientConnection->getId(), brokenConnection ? "broken connection" : "service shutdown");
         log<Verbosity::debug>("Reaping resources after client : %d", clientConnection->getId());
-        ctx.cleanup(service.getShmemManager());
+        ctx.cleanup();
     }
 
     bool serviceRequestMessage(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
@@ -816,16 +825,16 @@ class Provider {
             }
         }
 
-        Cal::Ipc::Shmem shmem;
-        shmem = shmemManager->create(size, false);
+        Cal::Ipc::MmappedShmemAllocationT shmem;
+        shmem = globalShmemAllocators->getNonUsmMmappedAllocator().allocate(size);
 
-        if (nullptr == shmem.ptr) {
+        if (false == shmem.isValid()) {
             return false;
         }
 
         Cal::Messages::RespAllocateShmem shmemResponse;
-        shmemResponse.id = shmem.id;
-        shmemResponse.size = shmem.underlyingSize;
+        shmemResponse.id = shmem.getShmemId();
+        shmemResponse.size = shmem.getFileSize();
         clientConnection.send(shmemResponse);
 
         {
@@ -850,7 +859,7 @@ class Provider {
             return false;
         }
 
-        auto channelServer = std::make_unique<Cal::Rpc::ChannelServer>(clientConnection, *shmemManager);
+        auto channelServer = std::make_unique<Cal::Rpc::ChannelServer>(clientConnection, globalShmemAllocators->getNonUsmMmappedAllocator());
         if (false == channelServer->init(shmem, request, serviceSynchronizationMethod)) {
             log<Verbosity::error>("Failed to initialize channel server for client : %d", clientConnection.getId());
             return false;
@@ -864,7 +873,7 @@ class Provider {
             return false;
         }
 
-        log<Verbosity::debug>("Spawning thread for new RPC ring buffer %d  of client %d", shmem.id, clientConnection.getId());
+        log<Verbosity::debug>("Spawning thread for new RPC ring buffer %d  of client %d", shmem.getShmemId(), clientConnection.getId());
         auto worker = std::async(std::launch::async, Provider::serviceSingleRpcChannel, channelServer.get(), std::ref(ctx), std::ref(*this));
         ctx.registerRpcChannel(std::move(worker),
                                std::move(channelServer));
@@ -886,7 +895,7 @@ class Provider {
         }
 
         mmapBloatGuardMutexLock.unlock();
-        ctx.addUsmHeap({negotiatedUsmRangeOpt.value()});
+        ctx.addUsmHeap(Cal::Usm::UsmMmappedShmemAllocator{this->globalShmemAllocators->getBaseAllocator(), negotiatedUsmRangeOpt.value()});
 
         return true;
     }

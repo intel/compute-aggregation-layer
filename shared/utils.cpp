@@ -154,55 +154,6 @@ int64_t getCalEnvI64(std::string_view name, int64_t defaultValue) {
     return atoll(envStr);
 }
 
-void *Heap::alloc(size_t sizeInBytes, size_t alignment) {
-    if (this->getSizeLeft() < sizeInBytes) {
-        return nullptr;
-    }
-
-    void *addr = nullptr;
-    if (vma.getSubRanges().empty()) {
-        addr = vma.getBoundingRange().base();
-    } else {
-        addr = vma.getSubRanges().rbegin()->getBoundingRange().rightBound();
-    }
-
-    addr = Cal::Utils::alignUp(addr, alignment);
-
-    if (false == vma.getBoundingRange().contains({addr, sizeInBytes})) {
-        if (Cal::Utils::alignUp(vma.getSubRanges().begin()->getBoundingRange().start, alignment) - vma.getBoundingRange().start >= sizeInBytes) {
-            addr = Cal::Utils::alignUp(vma.getBoundingRange().base(), alignment);
-        } else {
-            addr = nullptr;
-            auto prev = vma.getSubRanges().begin();
-            auto it = prev + 1;
-            while (it != vma.getSubRanges().end()) {
-                if (Cal::Utils::alignUp(prev->getBoundingRange().end, alignment) - it->getBoundingRange().start >= sizeInBytes) {
-                    addr = Cal::Utils::alignUp(prev->getBoundingRange().rightBound(), alignment);
-                    break;
-                }
-                prev = it;
-                ++it;
-            }
-            if (nullptr == addr) {
-                log<Verbosity::debug>("Failed to allocate from heap");
-            }
-        }
-    }
-
-    commitRange({addr, sizeInBytes});
-    return addr;
-}
-
-void Heap::free(void *addr) {
-    auto range = vma.findSubRange({addr});
-    if (nullptr == range) {
-        log<Verbosity::error>("Attempted to free non-allocated range");
-        return;
-    }
-
-    freeRange(range->getBoundingRange());
-}
-
 std::string getPathForTempFiles() {
     return calTempFilesDefaultPath.data() + std::to_string(geteuid()) + "/"s;
 }

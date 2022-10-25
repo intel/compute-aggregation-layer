@@ -24,28 +24,9 @@ namespace Cal {
 
 namespace Service {
 
-static const char *intelGpuPlatformName = "Intel.*Graphics";
-
-void *getUsmMemoryFromHeap(Cal::Utils::Heap &heap, size_t alignedSize, Cal::Ipc::Shmem shmem) {
-    void *cpuAddress = heap.alloc(alignedSize, Cal::Utils::pageSize64KB);
-    if (nullptr == cpuAddress) {
-        return nullptr;
-    }
-    log<Verbosity::debug>("Trying to map %zu bytes of shmem memory to USM shared/host heap : %zx-%zx at offset %zu (ptr : %p)",
-                          alignedSize, heap.getRange().start, heap.getRange().end, Cal::Utils::byteDistanceAbs(heap.getRange().base(), cpuAddress), cpuAddress);
-    auto ptr = Cal::Usm::mapUsmCpuRangeToFd(cpuAddress, alignedSize, shmem.fd);
-    if ((MAP_FAILED == ptr) || (cpuAddress != ptr)) {
-        log<Verbosity::debug>("Failed to map %zu bytes of shmem memory to USM shared/host heap : %zx-%zx at offset %zu",
-                              alignedSize, heap.getRange().start, heap.getRange().end, Cal::Utils::byteDistanceAbs(heap.getRange().base(), cpuAddress), cpuAddress);
-        heap.free(cpuAddress);
-        return nullptr;
-    }
-    log<Verbosity::debug>("Succesfully mapped %zu bytes of shmem memory to USM shared/host heap : %zx-%zx at offset %zu",
-                          alignedSize, heap.getRange().start, heap.getRange().end, Cal::Utils::byteDistanceAbs(heap.getRange().base(), cpuAddress), cpuAddress);
-    return cpuAddress;
-}
-
 namespace Apis {
+
+static const char *intelGpuPlatformName = "Intel.*Graphics";
 
 namespace Ocl {
 cl_platform_id globalOclPlatform = {};
@@ -209,23 +190,14 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
     }
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    shmem = shmemManager.create(alignedSize, true);
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for clHostMemAllocINTEL");
-        apiCommand->captures.ret = nullptr;
-        apiCommand->captures.errcode_ret = CL_OUT_OF_HOST_MEMORY;
-        return true;
-    }
-
     properties.push_back(0);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clHostMemAllocINTEL(apiCommand->args.context,
                                                                                             properties.data(),
@@ -233,17 +205,16 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
                                                                                             apiCommand->args.alignment,
                                                                                             apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU",
-                                  apiCommand->args.size, heap.getRange().start, heap.getRange().end);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            log<Verbosity::error>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU",
+                                  apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU",
-                                  apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.ret);
+                                  apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
             ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.id;
+            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.offset_within_resource = 0U;
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
@@ -251,19 +222,17 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
             log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
             apiCommand->captures.ret = nullptr;
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
             return true;
         }
     }
     if (nullptr == apiCommand->captures.ret) {
-        log<Verbosity::debug>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
+        log<Verbosity::error>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        shmemManager.release(shmem);
     }
 
     return true;
@@ -287,23 +256,14 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
     }
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    shmem = shmemManager.create(alignedSize, true);
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for clSharedMemAllocINTEL");
-        apiCommand->captures.ret = nullptr;
-        apiCommand->captures.errcode_ret = CL_OUT_OF_HOST_MEMORY;
-        return true;
-    }
-
     properties.push_back(0);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clSharedMemAllocINTEL(apiCommand->args.context,
                                                                                               apiCommand->args.device,
@@ -312,15 +272,14 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
                                                                                               apiCommand->args.alignment,
                                                                                               apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.ret);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
             ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.id;
+            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.offset_within_resource = 0U;
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
@@ -328,19 +287,17 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
             log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
             apiCommand->captures.ret = nullptr;
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
             return true;
         }
     }
     if (nullptr == apiCommand->captures.ret) {
-        log<Verbosity::debug>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
+        log<Verbosity::error>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        shmemManager.release(shmem);
     }
 
     return true;
@@ -358,21 +315,13 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
     cl_mem_properties_intel properties[] = {CL_MEM_ALLOC_USE_HOST_PTR_INTEL, 0, 0};
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    shmem = shmemManager.create(alignedSize, true);
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for clSVMAlloc");
-        apiCommand->captures.ret = nullptr;
-        return true;
-    }
-
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clHostMemAllocINTEL(apiCommand->args.context,
                                                                                             properties,
@@ -380,15 +329,14 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
                                                                                             apiCommand->args.alignment,
                                                                                             nullptr);
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.ret);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
             ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.id;
+            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.offset_within_resource = 0U;
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
@@ -396,15 +344,13 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
             log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
             apiCommand->captures.ret = nullptr;
             return true;
         }
     }
     if (nullptr == apiCommand->captures.ret) {
-        log<Verbosity::debug>("None of USM shared/host heaps could acommodate new SVM allocation for GPU");
-        shmemManager.release(shmem);
+        log<Verbosity::error>("None of USM shared/host heaps could acommodate new SVM allocation for GPU");
     }
 
     return true;
@@ -417,7 +363,7 @@ inline bool clSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->args.ptr);
     if (service.getCpuInfo().isAccessibleByApplication(ptr)) {
         auto ctxLock = ctx.lock();
-        ctx.reapUsmSharedHostAlloc(ptr, service.getShmemManager(), false);
+        ctx.reapUsmSharedHostAlloc(ptr, false);
     }
     return true;
 }
@@ -492,15 +438,6 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcM *>(command);
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    shmem = shmemManager.create(alignedSize, true);
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for host ptr of clCreateBuffer");
-        apiCommand->captures.ret = nullptr;
-        apiCommand->captures.errcode_ret = CL_OUT_OF_HOST_MEMORY;
-        return true;
-    }
 
     auto flags = apiCommand->args.flags;
     flags = flags & (~(CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR));
@@ -508,10 +445,12 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
 
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
+
         if (apiCommand->args.host_ptr && (apiCommand->args.flags & (CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR))) {
             memcpy(cpuAddress, apiCommand->captures.host_ptr, apiCommand->args.size);
         }
@@ -519,16 +458,15 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
                                                                                      cpuAddress, &apiCommand->captures.errcode_ret);
 
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to create buffer out of host memory of size %zu bytes from USM shared/host heap :%zx-%zx", apiCommand->args.size, heap.getRange().start, heap.getRange().end);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            log<Verbosity::debug>("Failed to create buffer out of host memory of size %zu bytes from USM shared/host heap :%zx-%zx", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret != nullptr) {
-            log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.ret);
+            log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
             ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, cpuAddress, alignedSize, shmem, gpuDestructorClMem);
             apiCommand->implicitArgs.hostptr = cpuAddress;
-            apiCommand->implicitArgs.hostptr_shmem_resource = shmem.id;
+            apiCommand->implicitArgs.hostptr_shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.hostptr_offset_within_resource = 0U;
             apiCommand->implicitArgs.hostptr_aligned_size = alignedSize;
             break;
@@ -539,7 +477,6 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
             apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
         }
-        shmemManager.release(shmem);
     }
 
     return true;
@@ -553,7 +490,7 @@ inline bool clMemFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &ch
                                                                                    apiCommand->args.ptr);
     if (service.getCpuInfo().isAccessibleByApplication(ptr)) {
         auto ctxLock = ctx.lock();
-        ctx.reapUsmSharedHostAlloc(ptr, service.getShmemManager(), false);
+        ctx.reapUsmSharedHostAlloc(ptr, false);
     }
     return true;
 }
@@ -566,7 +503,7 @@ inline bool clMemBlockingFreeINTELHandler(Provider &service, Cal::Rpc::ChannelSe
                                                                                            apiCommand->args.ptr);
     if (service.getCpuInfo().isAccessibleByApplication(ptr)) {
         auto ctxLock = ctx.lock();
-        ctx.reapUsmSharedHostAlloc(ptr, service.getShmemManager(), false);
+        ctx.reapUsmSharedHostAlloc(ptr, false);
     }
     return true;
 }
@@ -587,7 +524,7 @@ inline bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseMemObject(apiCommand->args.memobj);
     if (hostPtr && false == (ctx.getMallocShmemZeroCopyHandler() && ctx.getMallocShmemZeroCopyHandler()->isImportedPointer(hostPtr))) {
         auto ctxLock = ctx.lock();
-        ctx.reapUsmSharedHostAlloc(hostPtr, service.getShmemManager(), false);
+        ctx.reapUsmSharedHostAlloc(hostPtr, false);
     }
     return true;
 }
@@ -757,24 +694,14 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     apiCommand->captures.host_desc.flags |= ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR;
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    {
-        shmem = shmemManager.create(alignedSize, true);
-    }
-
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for zeMemAllocHost");
-        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        return true;
-    }
 
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
 
         // Set host pointer to be used.
         apiCommand->captures.pptr = cpuAddress;
@@ -784,18 +711,17 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
                                                                                            apiCommand->args.alignment,
                                                                                            &apiCommand->captures.pptr);
         if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
             apiCommand->captures.pptr = nullptr;
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
             continue; // try different heap
         }
 
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.pptr);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.pptr);
 
             ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.id;
+            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.offset_within_resource = 0U;
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
@@ -804,8 +730,7 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
                                   cpuAddress, apiCommand->captures.pptr);
 
             Cal::Service::Apis::LevelZero::Standard::zeMemFree(apiCommand->args.hContext, apiCommand->captures.pptr);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
 
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
             apiCommand->captures.pptr = nullptr;
@@ -815,14 +740,12 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     }
 
     if (apiCommand->captures.ret != ZE_RESULT_SUCCESS || nullptr == apiCommand->captures.pptr) {
-        log<Verbosity::debug>("None of USM shared/host heaps could accommodate new USM host allocation for GPU");
+        log<Verbosity::error>("None of USM shared/host heaps could accommodate new USM host allocation for GPU");
 
         if (ZE_RESULT_SUCCESS == apiCommand->captures.ret) {
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         }
         apiCommand->captures.pptr = nullptr;
-
-        shmemManager.release(shmem);
     }
 
     return true;
@@ -846,24 +769,13 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     apiCommand->captures.host_desc.flags |= ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR;
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-    auto &shmemManager = service.getShmemManager();
-    Cal::Ipc::Shmem shmem;
-    {
-        shmem = shmemManager.create(alignedSize, true);
-    }
-
-    if (false == shmem.isValid()) {
-        log<Verbosity::error>("Failed to create shmem for zeMemAllocShared");
-        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        return true;
-    }
-
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        void *cpuAddress = getUsmMemoryFromHeap(heap, alignedSize, shmem);
-        if (nullptr == cpuAddress) {
+        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        if (false == shmem.isValid()) {
             continue;
         }
+        void *cpuAddress = shmem.getMmappedPtr();
 
         // Set host pointer to be used.
         apiCommand->captures.pptr = cpuAddress;
@@ -875,18 +787,17 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
                                                                                              apiCommand->args.hDevice,
                                                                                              &apiCommand->captures.pptr);
         if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
             apiCommand->captures.pptr = nullptr;
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
             continue; // try different heap
         }
 
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getRange().start, heap.getRange().end, apiCommand->captures.pptr);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.pptr);
 
             ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.id;
+            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
             apiCommand->implicitArgs.offset_within_resource = 0U;
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
@@ -895,8 +806,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
                                   cpuAddress, apiCommand->captures.pptr);
 
             Cal::Service::Apis::LevelZero::Standard::zeMemFree(apiCommand->args.hContext, apiCommand->captures.pptr);
-            Cal::Usm::resetUsmCpuRange(cpuAddress, alignedSize);
-            heap.free(cpuAddress);
+            heap.free(shmem);
 
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
             apiCommand->captures.pptr = nullptr;
@@ -906,13 +816,12 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     }
 
     if (apiCommand->captures.ret != ZE_RESULT_SUCCESS || nullptr == apiCommand->captures.pptr) {
-        log<Verbosity::debug>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
+        log<Verbosity::error>("None of USM shared/host heaps could acommodate new USM host allocation for GPU");
 
         if (ZE_RESULT_SUCCESS == apiCommand->captures.ret) {
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         }
         apiCommand->captures.pptr = nullptr;
-        shmemManager.release(shmem);
     }
 
     return true;
@@ -926,7 +835,7 @@ bool zeMemFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, Clien
 
     if (service.getCpuInfo().isAccessibleByApplication(apiCommand->args.ptr)) {
         auto ctxLock = ctx.lock();
-        ctx.reapUsmSharedHostAlloc(apiCommand->args.ptr, service.getShmemManager(), false);
+        ctx.reapUsmSharedHostAlloc(apiCommand->args.ptr, false);
     }
 
     return true;
@@ -989,7 +898,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.srcptr, apiCommand->args.size);
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
     auto mappedSrcPtr = memoryBlock.translate(apiCommand->args.srcptr);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
@@ -1007,7 +916,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.srcptr, apiCommand->args.size);
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
     auto mappedSrcPtr = memoryBlock.translate(apiCommand->args.srcptr);
 
     std::memcpy(mappedSrcPtr, apiCommand->captures.getSrcptr(), apiCommand->args.size);
@@ -1027,7 +936,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.dstptr, apiCommand->args.size);
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
     auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
@@ -1045,10 +954,10 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &srcMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.srcptr, apiCommand->args.size);
+    auto &srcMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
     auto mappedSrcPtr = srcMemoryBlock.translate(apiCommand->args.srcptr);
 
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.dstptr, apiCommand->args.size);
+    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.dstptr);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
@@ -1066,7 +975,7 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.ptr, apiCommand->args.size);
+    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
@@ -1086,7 +995,7 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM *>(command);
 
     auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getShmemManager(), apiCommand->args.ptr, apiCommand->args.size);
+    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
@@ -1167,7 +1076,7 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
     if (nullptr == this->knownChoreographies) {
         this->knownChoreographies = std::make_unique<ChoreographyLibrary>();
     }
-    this->shmemManager = std::make_unique<Cal::Ipc::ShmemAllocator>(Cal::Ipc::getCalShmemPathBase(getpid()));
+    this->globalShmemAllocators = std::make_unique<Cal::Ipc::GlobalShmemAllocators>(Cal::Ipc::getCalShmemPathBase(getpid()));
     auto requestedDefaultRpcChannelSize = Cal::Utils::getCalEnvI64(calDefaultRpcChannelSizeEnvName, 0);
     if (requestedDefaultRpcChannelSize > 0) {
         log<Verbosity::info>("Changing default rpc message channel size from %dMB to %dMB", this->defaultRpcMessageChannelSizeMB, requestedDefaultRpcChannelSize);
@@ -1293,8 +1202,8 @@ void destroyResources(const char *resourceName, TrackingT &tracking, const Destr
 }
 
 void ClientContext::l0SpecificCleanup() {
-    if (isPersistentMode) {
-        log<Verbosity::info>("Resource tracking is disabled. Skipping resource cleaning.");
+    if (automaticCleanupOfApiHandles) {
+        log<Verbosity::info>("Automatic cleanup of API handles is disabled. Skipping cleanup of API handles.");
         return;
     }
 

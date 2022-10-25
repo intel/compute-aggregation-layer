@@ -77,7 +77,7 @@ inline bool tryMergeUsmRegions(Cal::Utils::AddressRange desiredRange, Cal::Utils
     log<Verbosity::debug>("Proposed USM address space collides with previous proposal - will try to merges regions to create contigous address space for USM.");
     auto missingSubRanges = existingReservations.getSubRangesDiffFrom(desiredRange);
     for (auto diff : missingSubRanges) {
-        void *ptr = reserveUsmCpuRange(diff.base(), diff.size());
+        void *ptr = UsmMmappedShmemAllocator::reserveUsmCpuRange(diff.base(), diff.size());
         if (isValidMmapAddress(ptr)) {
             existingReservations.insertSubRange({diff.base(), diff.size()});
         } else {
@@ -153,7 +153,7 @@ inline void cleanupObsoleteAddressReservations(std::optional<Cal::Utils::Address
 
     if (partitionedReservation) {
         log<Verbosity::debug>("Merging USM range from multiple mmaps into a single one");
-        auto ptr = forceReserveUsmCpuRange(usedRange.base(), usedRange.size());
+        auto ptr = UsmMmappedShmemAllocator::forceReserveUsmCpuRange(usedRange.base(), usedRange.size());
         if (isValidMmapAddress(ptr)) {
             log<Verbosity::debug>("Succesfully merged USM ranges from multiple reservations into a single one");
         } else {
@@ -191,7 +191,7 @@ std::optional<Cal::Utils::AddressRange> negotiateUsmRangeWithService(Cal::Ipc::C
             break;
         }
 
-        void *ptr = reserveUsmCpuRange(receivedProposal.base(), receivedProposal.size());
+        void *ptr = UsmMmappedShmemAllocator::reserveUsmCpuRange(receivedProposal.base(), receivedProposal.size());
 
         if (isValidMmapAddress(ptr)) {
             mmapReservations.insertSubRange(receivedProposal);
@@ -211,7 +211,7 @@ std::optional<Cal::Utils::AddressRange> negotiateUsmRangeWithService(Cal::Ipc::C
         } else {
             log<Verbosity::debug>("Proposed USM address space is not suitable (mmap failed), will try to propose different range.");
             proposedUsmSize = receivedProposal.size();
-            proposedUsmBase = reserveUsmCpuRange(NULL, proposedUsmSize);
+            proposedUsmBase = UsmMmappedShmemAllocator::reserveUsmCpuRange(NULL, proposedUsmSize);
             if (false == isValidMmapAddress(proposedUsmBase)) {
                 log<Verbosity::error>("Failed to propose any USM address space for size : %zu", proposedUsmSize);
                 break;
@@ -243,7 +243,7 @@ std::optional<Cal::Utils::AddressRange> negotiateUsmRangeWithClient(Cal::Ipc::Co
 
     while (tryNum < maxTries) {
         ++tryNum;
-        void *ptr = Cal::Usm::reserveUsmCpuRange(requestedUsmBase, usmSize);
+        void *ptr = UsmMmappedShmemAllocator::reserveUsmCpuRange(requestedUsmBase, usmSize);
         if (isValidMmapAddress(ptr)) {
             mmapReservations.insertSubRange({ptr, usmSize});
             if (requestedUsmBase) { // address proposed by client
@@ -279,7 +279,7 @@ std::optional<Cal::Utils::AddressRange> negotiateUsmRangeWithClient(Cal::Ipc::Co
         } else {                               // MAP_FAILED
             if (nullptr != requestedUsmBase) { // address from client
                 log<Verbosity::debug>("Requested USM address space is not suitable (mmap failed), will try to propose different range");
-                ptr = Cal::Usm::reserveUsmCpuRange(NULL, usmSize);
+                ptr = UsmMmappedShmemAllocator::reserveUsmCpuRange(NULL, usmSize);
                 if (false == isValidMmapAddress(ptr)) {
                     log<Verbosity::error>("Failed to propose any USM address space for size : %zu", usmSize);
                     break;

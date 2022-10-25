@@ -216,7 +216,8 @@ class IcdPlatform {
     using UsmRangeIterator = std::map<const void *, const void *>::iterator;
 
   public:
-    IcdPlatform(Cal::Ipc::ShmemImporter &shmemManager, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager) : shmemManager(shmemManager), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager) {
+    IcdPlatform(Cal::Ipc::ShmemImporter &shmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager)
+        : shmemImporter(shmemImporter), usmShmemImporter(usmShmemImporter), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager) {
         auto cpuInfoOpt = cpuInfo.read();
         if (cpuInfoOpt) {
             this->cpuInfo = cpuInfoOpt.value();
@@ -253,24 +254,21 @@ class IcdPlatform {
         return mallocShmemZeroCopyManager;
     }
 
-    bool openNewUsmHostOrSharedPointer(void *ctx, void *newUsmAlloc, int shmem_resource, size_t offset_within_resource, size_t aligned_size) {
-        if (nullptr == newUsmAlloc) {
+    bool openNewUsmHostOrSharedPointer(void *ctx, void *assignedUsmPtr, int shmemResource, size_t offsetWithinResource, size_t size) {
+        if (nullptr == assignedUsmPtr) {
             return true;
         }
         auto heapsLock = usmHeaps.lock();
         for (size_t i = 0; i < usmHeaps.heaps.size(); ++i) {
             const auto &usmHeap = this->usmHeaps.heaps[i];
-            if (usmHeap.contains(newUsmAlloc)) {
-                log<Verbosity::debug>("Opening new USM host/shared allocation %p from heap %d", newUsmAlloc, i);
-                Cal::Ipc::RemoteShmem shmemFromServer = {};
-                shmemFromServer.id = shmem_resource;
-                shmemFromServer.size = aligned_size;
-                auto shmem = shmemManager.open(shmemFromServer, newUsmAlloc);
+            if (usmHeap.contains(assignedUsmPtr)) {
+                log<Verbosity::debug>("Opening new USM host/shared allocation %p from heap %d", i);
+                auto shmem = shmemImporter.open(shmemResource, size, assignedUsmPtr);
                 if (false == shmem.isValid()) {
-                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", newUsmAlloc, i);
+                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", assignedUsmPtr, i);
                     return false;
                 }
-                usmHeaps.allocations[newUsmAlloc] = Cal::Usm::UsmSharedHostAlloc{ctx, newUsmAlloc, aligned_size, shmem};
+                usmHeaps.allocations[assignedUsmPtr] = Cal::Usm::UsmSharedHostAlloc{ctx, assignedUsmPtr, size, shmem};
                 return true;
             }
         }
@@ -367,9 +365,7 @@ class IcdPlatform {
             usmHeaps.allocations.erase(it);
         }
 
-        Cal::Usm::resetUsmCpuRange(descriptor.ptr, descriptor.alignedSize);
-        descriptor.shmem.ptr = nullptr;
-        shmemManager.release(descriptor.shmem);
+        usmShmemImporter.release(descriptor.shmem);
     }
 
     bool areUsm(int count, const void *ptr[], bool result[]) {
@@ -433,22 +429,18 @@ class IcdPlatform {
 
     bool writeRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
         for (const auto &transfer : transferDescs) {
-            Cal::Ipc::RemoteShmem remoteShmem{};
-            remoteShmem.id = transfer.shmemId;
-            remoteShmem.size = transfer.underlyingSize;
-
-            auto shmem = shmemManager.open(remoteShmem, nullptr);
+            auto shmem = shmemImporter.open(transfer.shmemId, transfer.underlyingSize, nullptr);
             if (!shmem.isValid()) {
                 log<Verbosity::error>("Cannot map shared memory to perform transfer from client to service!");
                 return false;
             }
 
-            const auto destinationAddress = reinterpret_cast<uintptr_t>(shmem.ptr) + transfer.offsetFromMapping;
+            const auto destinationAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromMapping;
             const auto source = reinterpret_cast<const void *>(transfer.transferStart);
             auto destination = reinterpret_cast<void *>(destinationAddress);
 
             std::memcpy(destination, source, transfer.bytesCountToCopy);
-            shmemManager.release(shmem);
+            shmemImporter.release(shmem);
         }
 
         return true;
@@ -456,22 +448,18 @@ class IcdPlatform {
 
     bool readRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
         for (const auto &transfer : transferDescs) {
-            Cal::Ipc::RemoteShmem remoteShmem{};
-            remoteShmem.id = transfer.shmemId;
-            remoteShmem.size = transfer.underlyingSize;
-
-            auto shmem = shmemManager.open(remoteShmem, nullptr);
+            auto shmem = shmemImporter.open(transfer.shmemId, transfer.underlyingSize, nullptr);
             if (!shmem.isValid()) {
                 log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
                 return false;
             }
 
-            const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.ptr) + transfer.offsetFromMapping;
+            const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromMapping;
             const auto source = reinterpret_cast<const void *>(sourceAddress);
             const auto destination = reinterpret_cast<void *>(transfer.transferStart);
 
             std::memcpy(destination, source, transfer.bytesCountToCopy);
-            shmemManager.release(shmem);
+            shmemImporter.release(shmem);
         }
 
         return true;
@@ -484,7 +472,8 @@ class IcdPlatform {
   protected:
     Cal::Utils::CpuInfo cpuInfo;
 
-    Cal::Ipc::ShmemImporter &shmemManager;
+    Cal::Ipc::ShmemImporter &shmemImporter;
+    Cal::Usm::UsmShmemImporter &usmShmemImporter;
     Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager;
     bool allowedToUseZeroCopyForMallocShmem = false;
     std::unique_ptr<Cal::Icd::PageFaultManager> pageFaultManager;

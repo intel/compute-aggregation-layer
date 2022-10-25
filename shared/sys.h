@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 namespace Cal {
 
@@ -35,6 +36,9 @@ extern int (*sem_init)(sem_t *sem, int pshared, unsigned int value);
 extern int (*sem_destroy)(sem_t *sem);
 extern int (*sem_wait)(sem_t *sem);
 extern int (*sem_post)(sem_t *sem);
+
+extern int (*ftruncate)(int fd, off_t length);
+extern int (*close)(int fd);
 
 } // namespace Sys
 

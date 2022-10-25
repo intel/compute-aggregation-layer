@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 #include "service/service.h"
+#include "shared/allocators.h"
 #include "shared/utils.h"
 #include "test/mocks/log_mock.h"
 #include "test/mocks/sys_mock.h"
@@ -158,9 +159,9 @@ TEST(AddressRange, givenDifferentConstructionMethodsThenRangeIsExpressedProperly
     EXPECT_EQ(start, ptr.start);
     EXPECT_EQ(start + 1, ptr.end);
 
-    Cal::Utils::AddressRange uintptr(start);
-    EXPECT_EQ(start, uintptr.start);
-    EXPECT_EQ(start + 1, uintptr.end);
+    Cal::Utils::AddressRange withinSize = Cal::Utils::AddressRange::withinSize(static_cast<size_t>(end));
+    EXPECT_EQ(0U, withinSize.start);
+    EXPECT_EQ(end, withinSize.end);
 }
 
 TEST(AddressRange, sizeReturnsDifferenceBetweenStartAndEnd) {
@@ -178,8 +179,8 @@ TEST(AddressRange, givenSubRangeThenContainsReturnsTrue) {
 
     Cal::Utils::AddressRange range(start, end);
 
-    EXPECT_TRUE(range.contains({start}));
-    EXPECT_TRUE(range.contains({end - 1}));
+    EXPECT_TRUE(range.contains({reinterpret_cast<void *>(start)}));
+    EXPECT_TRUE(range.contains({reinterpret_cast<void *>(end - 1)}));
     EXPECT_TRUE(range.contains({start, end}));
     EXPECT_TRUE(range.contains({start + 7, end - 3}));
 }
@@ -190,8 +191,8 @@ TEST(AddressRange, givenDisjointRangesThenContainsReturnsFalse) {
 
     Cal::Utils::AddressRange range(start, end);
 
-    EXPECT_FALSE(range.contains({start - 1}));
-    EXPECT_FALSE(range.contains({end}));
+    EXPECT_FALSE(range.contains({reinterpret_cast<void *>(start - 1)}));
+    EXPECT_FALSE(range.contains({reinterpret_cast<void *>(end)}));
     EXPECT_FALSE(range.contains({start - 3, start}));
     EXPECT_FALSE(range.contains({start - 3, start - 1}));
     EXPECT_FALSE(range.contains({end, end + 3}));
@@ -218,13 +219,13 @@ TEST(AddressRange, givenSubRangeThenIntersectsReturnsTrue) {
 
     Cal::Utils::AddressRange range(start, end);
 
-    EXPECT_TRUE(range.intersects({start}));
-    EXPECT_TRUE(range.intersects({end - 1}));
+    EXPECT_TRUE(range.intersects({reinterpret_cast<void *>(start)}));
+    EXPECT_TRUE(range.intersects({reinterpret_cast<void *>(end - 1)}));
     EXPECT_TRUE(range.intersects({start, end}));
     EXPECT_TRUE(range.intersects({start + 7, end - 3}));
 
-    EXPECT_TRUE((Cal::Utils::AddressRange{start}.intersects(range)));
-    EXPECT_TRUE((Cal::Utils::AddressRange{end - 1}.intersects(range)));
+    EXPECT_TRUE((Cal::Utils::AddressRange{reinterpret_cast<void *>(start)}.intersects(range)));
+    EXPECT_TRUE((Cal::Utils::AddressRange{reinterpret_cast<void *>(end - 1)}.intersects(range)));
     EXPECT_TRUE((Cal::Utils::AddressRange{start, end}.intersects(range)));
     EXPECT_TRUE((Cal::Utils::AddressRange{start + 7, end - 3}.intersects(range)));
 }
@@ -235,15 +236,15 @@ TEST(AddressRange, givenDisjointRangesThenIntersectsReturnsFalse) {
 
     Cal::Utils::AddressRange range(start, end);
 
-    EXPECT_FALSE(range.intersects({start - 1}));
-    EXPECT_FALSE(range.intersects({end}));
+    EXPECT_FALSE(range.intersects({reinterpret_cast<void *>(start - 1)}));
+    EXPECT_FALSE(range.intersects({reinterpret_cast<void *>(end)}));
     EXPECT_FALSE(range.intersects({start - 3, start}));
     EXPECT_FALSE(range.intersects({start - 3, start - 1}));
     EXPECT_FALSE(range.intersects({end, end + 3}));
     EXPECT_FALSE(range.intersects({end + 1, end + 3}));
 
-    EXPECT_FALSE((Cal::Utils::AddressRange{start - 1}.intersects(range)));
-    EXPECT_FALSE((Cal::Utils::AddressRange{end}.intersects(range)));
+    EXPECT_FALSE((Cal::Utils::AddressRange{reinterpret_cast<void *>(start - 1)}.intersects(range)));
+    EXPECT_FALSE((Cal::Utils::AddressRange{reinterpret_cast<void *>(end)}.intersects(range)));
     EXPECT_FALSE((Cal::Utils::AddressRange{start - 3, start}.intersects(range)));
     EXPECT_FALSE((Cal::Utils::AddressRange{start - 3, start - 1}.intersects(range)));
     EXPECT_FALSE((Cal::Utils::AddressRange{end, end + 3}.intersects(range)));
@@ -344,20 +345,20 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
 
     for (auto subRange : sortedSubranges) {
         EXPECT_EQ(nullptr, partitionedRange.findSubRange(subRange)) << subRange.start;
-        EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start})) << subRange.start;
-        EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.end})) << subRange.start;
-        EXPECT_EQ(nullptr, partitionedRange.findSubRange({(subRange.start + subRange.end / 2)})) << subRange.start;
+        EXPECT_EQ(nullptr, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.start)})) << subRange.start;
+        EXPECT_EQ(nullptr, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.end)})) << subRange.start;
+        EXPECT_EQ(nullptr, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.start + subRange.end / 2)})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start + 1, subRange.end - 1})) << subRange.start;
         partitionedRange.insertSubRange(subRange);
         EXPECT_EQ(subRange, partitionedRange.findSubRange(subRange)->getBoundingRange()) << subRange.start;
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({subRange.start})->getBoundingRange()) << subRange.start;
-        if (partitionedRange.findSubRange({subRange.end})) {
-            EXPECT_NE(subRange, partitionedRange.findSubRange({subRange.end})->getBoundingRange()) << subRange.start;
+        EXPECT_EQ(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.start)})->getBoundingRange()) << subRange.start;
+        if (partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.end)})) {
+            EXPECT_NE(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.end)})->getBoundingRange()) << subRange.start;
         }
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({(subRange.start + subRange.end) / 2})->getBoundingRange()) << subRange.start;
+        EXPECT_EQ(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>((subRange.start + subRange.end) / 2)})->getBoundingRange()) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
@@ -366,11 +367,11 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
 
     for (auto subRange : sortedSubranges) {
         EXPECT_EQ(subRange, partitionedRange.findSubRange(subRange)->getBoundingRange()) << subRange.start;
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({subRange.start})->getBoundingRange()) << subRange.start;
-        if (partitionedRange.findSubRange({subRange.end})) {
-            EXPECT_NE(subRange, partitionedRange.findSubRange({subRange.end})->getBoundingRange()) << subRange.start;
+        EXPECT_EQ(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.start)})->getBoundingRange()) << subRange.start;
+        if (partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.end)})) {
+            EXPECT_NE(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.end)})->getBoundingRange()) << subRange.start;
         }
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({(subRange.start + subRange.end) / 2})->getBoundingRange()) << subRange.start;
+        EXPECT_EQ(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>((subRange.start + subRange.end) / 2)})->getBoundingRange()) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
@@ -378,11 +379,11 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
     }
 
     EXPECT_EQ(nullptr, partitionedRange.findSubRange(missingRange));
-    EXPECT_EQ(nullptr, partitionedRange.findSubRange({missingRange.start}));
-    if (partitionedRange.findSubRange({missingRange.end})) {
-        EXPECT_NE(missingRange, partitionedRange.findSubRange({missingRange.end})->getBoundingRange());
+    EXPECT_EQ(nullptr, partitionedRange.findSubRange({reinterpret_cast<void *>(missingRange.start)}));
+    if (partitionedRange.findSubRange({reinterpret_cast<void *>(missingRange.end)})) {
+        EXPECT_NE(missingRange, partitionedRange.findSubRange({reinterpret_cast<void *>(missingRange.end)})->getBoundingRange());
     }
-    EXPECT_EQ(nullptr, partitionedRange.findSubRange({(missingRange.start + missingRange.end) / 2}));
+    EXPECT_EQ(nullptr, partitionedRange.findSubRange({reinterpret_cast<void *>((missingRange.start + missingRange.end) / 2)}));
     EXPECT_EQ(nullptr, partitionedRange.findSubRange({missingRange.start - 1, missingRange.end}));
     EXPECT_EQ(nullptr, partitionedRange.findSubRange({missingRange.start, missingRange.end + 1}));
     EXPECT_EQ(nullptr, partitionedRange.findSubRange({missingRange.start - 1, missingRange.end + 1}));
@@ -685,160 +686,6 @@ TEST(PartitionedAddressRange, whenDestroyingSubRangesThenAffectChildSubRangesAsW
 
     ASSERT_EQ(1U, partitionedRange.getSubRanges()[1].getSubRanges().size());
     EXPECT_EQ(right, partitionedRange.getSubRanges()[1].getSubRanges()[0].getBoundingRange());
-}
-
-TEST(Heap, whenDefaultInitializedThenRepresentsEmptyRange) {
-    Cal::Utils::AddressRange emptyRange = {0U, 0U};
-    Cal::Utils::Heap heap;
-    EXPECT_EQ(emptyRange, heap.getRange());
-    EXPECT_EQ(0U, heap.getSizeUsed());
-    EXPECT_EQ(0U, heap.getSizeLeft());
-}
-
-TEST(Heap, whenCreatedFromRangeThenRepresentsThatRange) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-    EXPECT_EQ(heapRange, heap.getRange());
-    EXPECT_EQ(0U, heap.getSizeUsed());
-    EXPECT_EQ(heapRange.size(), heap.getSizeLeft());
-}
-
-TEST(Heap, whenAllocatingThenUseFreeAddressesFromTopOfHeapIfPossible) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-
-    size_t size0 = 64U;
-    size_t size1 = 128U;
-    size_t size2 = 64U;
-
-    auto ptr0 = heap.alloc(size0);
-    auto ptr1 = heap.alloc(size1);
-    auto ptr2 = heap.alloc(size2);
-
-    EXPECT_EQ(size0 + size1 + size2, heap.getSizeUsed());
-    heap.free(ptr1);
-    EXPECT_EQ(size0 + size2, heap.getSizeUsed());
-
-    size_t size3 = 64U;
-    size_t size4 = 128U;
-    auto ptr3 = heap.alloc(size3);
-    auto ptr4 = heap.alloc(size4);
-    EXPECT_EQ(size0 + size2 + size3 + size4, heap.getSizeUsed());
-
-    EXPECT_NE(nullptr, ptr0);
-    EXPECT_LT(reinterpret_cast<uintptr_t>(ptr0), reinterpret_cast<uintptr_t>(ptr1));
-    EXPECT_LT(reinterpret_cast<uintptr_t>(ptr1), reinterpret_cast<uintptr_t>(ptr2));
-    EXPECT_LT(reinterpret_cast<uintptr_t>(ptr2), reinterpret_cast<uintptr_t>(ptr3));
-    EXPECT_LT(reinterpret_cast<uintptr_t>(ptr3), reinterpret_cast<uintptr_t>(ptr4));
-
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr0, size0).intersects(Cal::Utils::AddressRange(ptr1, size1)));
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr1, size1).intersects(Cal::Utils::AddressRange(ptr2, size2)));
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr2, size2).intersects(Cal::Utils::AddressRange(ptr3, size3)));
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr3, size3).intersects(Cal::Utils::AddressRange(ptr4, size4)));
-}
-
-TEST(Heap, whenAllocatingAndThereAreNoFreeAddressAtTheTopOfTheHeapThenReuseFreedMiddleRange) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-
-    size_t size0 = 64U;
-    size_t size1 = 128U;
-    size_t size2 = heap.getSizeLeft() - size0 - size1;
-    size_t size3 = 64U;
-
-    auto ptr0 = heap.alloc(size0);
-    auto ptr1 = heap.alloc(size1);
-    auto ptr2 = heap.alloc(size2);
-    EXPECT_NE(nullptr, ptr0);
-    EXPECT_NE(nullptr, ptr1);
-    EXPECT_NE(nullptr, ptr2);
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr0, size0).intersects(Cal::Utils::AddressRange(ptr1, size1)));
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr1, size1).intersects(Cal::Utils::AddressRange(ptr2, size2)));
-
-    EXPECT_EQ(0U, heap.getSizeLeft());
-    auto ptr3 = heap.alloc(size3);
-    EXPECT_EQ(nullptr, ptr3);
-
-    heap.free(ptr1);
-    EXPECT_EQ(128U, heap.getSizeLeft());
-
-    size_t size4 = 64U;
-    size_t size5 = 64U;
-    size_t size6 = 64U;
-    auto ptr4 = heap.alloc(size4);
-    auto ptr5 = heap.alloc(size5);
-    EXPECT_NE(nullptr, ptr4);
-    EXPECT_NE(nullptr, ptr5);
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr4, size4).intersects(Cal::Utils::AddressRange(ptr5, size5)));
-    EXPECT_TRUE(Cal::Utils::AddressRange(ptr1, size1).contains(Cal::Utils::AddressRange(ptr4, size4)));
-    EXPECT_TRUE(Cal::Utils::AddressRange(ptr1, size1).contains(Cal::Utils::AddressRange(ptr5, size5)));
-    EXPECT_EQ(0U, heap.getSizeLeft());
-    auto ptr6 = heap.alloc(size6);
-    EXPECT_EQ(nullptr, ptr6);
-}
-
-TEST(Heap, whenAllocatingAndThereAreNoFreeAddressAtTheTopOfTheHeapThenReuseFreedBottomRange) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-
-    size_t size0 = 64U;
-    size_t size1 = heap.getSizeLeft() - size0;
-    size_t size2 = 64U;
-
-    auto ptr0 = heap.alloc(size0);
-    auto ptr1 = heap.alloc(size1);
-
-    EXPECT_NE(nullptr, ptr0);
-    EXPECT_NE(nullptr, ptr1);
-    EXPECT_FALSE(Cal::Utils::AddressRange(ptr0, size0).intersects(Cal::Utils::AddressRange(ptr1, size1)));
-
-    auto ptr2 = heap.alloc(size2);
-    EXPECT_EQ(nullptr, ptr2);
-
-    heap.free(ptr0);
-    EXPECT_EQ(64U, heap.getSizeLeft());
-
-    size_t size3 = 64U;
-    auto ptr3 = heap.alloc(size3);
-    EXPECT_NE(nullptr, ptr3);
-    EXPECT_EQ(Cal::Utils::AddressRange(ptr0, size0), Cal::Utils::AddressRange(ptr3, size3));
-}
-
-TEST(Heap, whenNewAllocationsAreAddredThenSizeRemainingDecreases) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-    EXPECT_EQ(0U, heap.getSizeUsed());
-    EXPECT_EQ(heapRange.size(), heap.getSizeLeft());
-
-    auto result = heap.alloc(64U);
-    EXPECT_NE(nullptr, result);
-    EXPECT_EQ(64U, heap.getSizeUsed());
-    EXPECT_EQ(heapRange.size() - 64U, heap.getSizeLeft());
-
-    result = heap.alloc(heap.getSizeLeft());
-    EXPECT_NE(nullptr, result);
-    EXPECT_EQ(heapRange.size(), heap.getSizeUsed());
-    EXPECT_EQ(0U, heap.getSizeLeft());
-
-    result = heap.alloc(1U);
-    EXPECT_EQ(nullptr, result);
-    EXPECT_EQ(heapRange.size(), heap.getSizeUsed());
-    EXPECT_EQ(0U, heap.getSizeLeft());
-}
-
-TEST(Heap, whenAllocatingAddressessThenAlignmentsAreTakenIntoAccount) {
-    Cal::Utils::AddressRange heapRange = {4096U, 8192U};
-    Cal::Utils::Heap heap(heapRange);
-    auto ptr0 = heap.alloc(1);
-    auto ptr1 = heap.alloc(1);
-    auto ptr2 = heap.alloc(1);
-    auto ptr3 = heap.alloc(1, 4096U);
-
-    EXPECT_TRUE(Cal::Utils::isAlignedPow2<Cal::Utils::defaultAlignmentSize>(ptr0));
-    EXPECT_TRUE(Cal::Utils::isAlignedPow2<Cal::Utils::defaultAlignmentSize>(ptr1));
-    EXPECT_FALSE(Cal::Utils::isAlignedPow2<Cal::Utils::defaultAlignmentSize * 2>(ptr1));
-    EXPECT_TRUE(Cal::Utils::isAlignedPow2<Cal::Utils::defaultAlignmentSize>(ptr2));
-    EXPECT_TRUE(Cal::Utils::isAlignedPow2<4096U>(ptr3));
 }
 
 TEST(GetCalEnv, whenEnvNotAvailableThenReturnNull) {

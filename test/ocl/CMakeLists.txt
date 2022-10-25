@@ -31,6 +31,7 @@ add_executable(ocl_test_ult_icd
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
 
+               ${cal_source_root_dir}/shared/allocators.cpp
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${generated_dir}/generated_icd_ocl.cpp
