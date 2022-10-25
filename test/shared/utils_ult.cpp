@@ -1053,5 +1053,54 @@ TEST(countNullterminatedKey, givenArrayThenCountsKeyValuePairsTreating0KeyAsTerm
     EXPECT_EQ(3U, Cal::Utils::countNullterminatedKey("ab\0d"));
 }
 
+TEST(concatenate, givenEmptyArrayThenReturnsEmptyString) {
+    const char *substr[] = {"abc", "def"};
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[0], "");
+        EXPECT_TRUE(concatenated.empty());
+    }
+
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[0], " ");
+        EXPECT_TRUE(concatenated.empty());
+    }
+}
+
+TEST(concatenate, givenArrayWithOneEntryThenReturnsThatEntry) {
+    const char *substr[] = {"abc", "def"};
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[1], "");
+        EXPECT_STREQ(substr[0], concatenated.c_str());
+    }
+
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[1], " ");
+        EXPECT_STREQ(substr[0], concatenated.c_str());
+    }
+}
+
+TEST(concatenate, givenArrayWithMultipleEntriesThenReturnsConcatenatedString) {
+    const char *substr[] = {"abc", "def"};
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[2], "");
+        EXPECT_STREQ("abcdef", concatenated.c_str());
+    }
+
+    {
+        auto concatenated = Cal::Utils::concatenate(&substr[0], &substr[2], " ");
+        EXPECT_STREQ("abc def", concatenated.c_str());
+    }
+}
+
+TEST(intAsPath, givenUint64ThenConvertsBackAndForthProperly) {
+    auto max32 = std::numeric_limits<uint32_t>::max();
+    auto max64 = std::numeric_limits<uint64_t>::max();
+
+    uint64_t valuesToTest[] = {0, 5, 9, 10, 15, 31, 32, 65, 113, max32, max64};
+    for (auto v : valuesToTest) {
+        EXPECT_EQ(v, Cal::Utils::decodeIntFromPath(Cal::Utils::encodeIntAsPath(v).c_str())) << v;
+    }
+}
+
 } // namespace Ult
 } // namespace Cal

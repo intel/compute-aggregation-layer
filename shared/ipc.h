@@ -101,6 +101,7 @@ struct ControlMessageHeader {
     static constexpr uint16_t messageTypeNop = 0U;
     static constexpr uint16_t messageTypePing = 2U;
     static constexpr uint16_t messageTypeRequest = 3U;
+    static constexpr uint16_t messageTypeStop = 4U;
     uint16_t type = messageTypeUnknown;
     uint16_t subtype = messageTypeUnknown;
 };
@@ -159,7 +160,7 @@ class Socket : public Connection {
             return false;
         }
         pingMessage = {};
-        if (((sizeof(pingMessage) != this->receive(&pingMessage, sizeof(pingMessage)))) || (ControlMessageHeader::messageTypePing != pingMessage.type)) {
+        if ((sizeof(pingMessage) != this->receive(&pingMessage, sizeof(pingMessage))) || (ControlMessageHeader::messageTypePing != pingMessage.type)) {
             log<Verbosity::debug>("Detected that socket is dead - didn't receive ping response");
             return false;
         }

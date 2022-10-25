@@ -245,5 +245,39 @@ std::string concatenate(const char **beg, const char **end, const char *separato
     return ret;
 }
 
+std::string encodeIntAsPath(uint64_t v) {
+    if (0 == v) {
+        return "0";
+    }
+    uint8_t digits[std::numeric_limits<uint64_t>::digits10] = {};
+    int i = 0;
+    // 32-base system
+    while (v) {
+        digits[i] = v & ((1 << 5) - 1);
+        v >>= 5;
+        ++i;
+    }
+    --i;
+
+    std::string ret;
+    ret.reserve(i + 1);
+    while (i >= 0) {
+        auto d = digits[i];
+        ret += (d < 10) ? ('0' + d) : ('A' + d - 10);
+        --i;
+    }
+    return ret;
+}
+
+uint64_t decodeIntFromPath(const char *str) {
+    uint64_t ret = 0U;
+    while (*str) {
+        uint8_t digit = *str;
+        ret = ret * 32 + ((digit >= 'A') ? (digit - 'A' + 10) : (digit - '0'));
+        ++str;
+    }
+    return ret;
+}
+
 } // namespace Utils
 } // namespace Cal

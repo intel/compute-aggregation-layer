@@ -24,9 +24,11 @@ void printCalServiceHelp();
 void printCalServiceVersion();
 int printCalUnimplementedApiCalls(const char *arg);
 std::string getFullExePathIfExists(const char *fileName);
+void stopPersistentService();
 
 constexpr option options[] = {
     {"persistent", no_argument, nullptr, 'p'},
+    {"quit", no_argument, nullptr, 'q'},
     {"shared", no_argument, nullptr, 's'},
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
@@ -41,11 +43,14 @@ int main(int argc, const char *argv[]) {
     bool isExplicitSharedRunnerMode = false;
 
     int option;
-    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+pshvu:", options, nullptr)) != -1) {
+    while ((option = getopt_long(argc, const_cast<char *const *>(argv), "+pqshvu:", options, nullptr)) != -1) {
         switch (option) {
         case 'p':
             isExplicitPersistentMode = true;
             break;
+        case 'q':
+            stopPersistentService();
+            return 0;
         case 's':
             isExplicitSharedRunnerMode = true;
             break;
@@ -95,9 +100,9 @@ int main(int argc, const char *argv[]) {
         if (Cal::Service::ServiceConfig::Mode::sharedRunner == serviceConfig.mode) {
             std::string commandLine = Cal::Utils::concatenate(&argv[optind], &argv[argc], "");
             size_t commandLineHash = std::hash<std::string>()(commandLine);
-            serviceConfig.listener.socketPath += "shared_runner/" + std::to_string(commandLineHash) + "/";
+            serviceConfig.listener.socketPath += "shared_runner/" + Cal::Utils::encodeIntAsPath(commandLineHash) + "/";
         } else {
-            serviceConfig.listener.socketPath += "runner/" + std::to_string(getpid()) + "/";
+            serviceConfig.listener.socketPath += "runner/" + Cal::Utils::encodeIntAsPath(getpid()) + "/";
         }
     }
 
@@ -174,6 +179,7 @@ void printCalServiceHelp() {
     printf("   -v  --version              Show version\n");
     printf("   -p  --persistent           Start cal in server mode, that applications can connect to. Running CAL without parameters is identical to running in persistent mode.\n");
     printf("   -s  --shared               Start cal in shared runner mode. In this mode, identical parallel workload invocations will share a single CAL service which will be started on demand and kept alive no longer than needed.\n");
+    printf("   -q  --quit                 Send STOP message to persistent cal service.\n");
     printf("   -u  --unimplemented ocl    List all OCL Api calls that are currently missing in the implementations\n");
     printf("                       l0     List all Level Zero Api calls that are currently missing in the implementations\n");
 
@@ -244,4 +250,35 @@ void printCalServiceVersion() {
 #endif
     printf("\n");
     printf("Built on : %s\n", NAME_TO_STR(CAL_BUILD_SYSTEM));
+}
+
+void stopPersistentService() {
+    Cal::Service::ServiceConfig::ListenerConfig persistentListenerConfig;
+    persistentListenerConfig.socketPath.append("socket");
+    auto connectionFactory = std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
+    auto connection = connectionFactory->connect(persistentListenerConfig.socketPath.c_str());
+    if (nullptr == connection) {
+        fprintf(stderr, "Did not detect active cal service for %s\n", persistentListenerConfig.socketPath.c_str());
+        return;
+    }
+
+    printf("Detected active cal service for %s - sending stop message\n", persistentListenerConfig.socketPath.c_str());
+    Cal::Ipc::ControlMessageHeader stopMessage{Cal::Ipc::ControlMessageHeader::messageTypeStop};
+    if ((sizeof(stopMessage) != connection->send(&stopMessage, sizeof(stopMessage)))) {
+        fprintf(stderr, "Could not send stop request - send failed\n");
+        return;
+    }
+    stopMessage = {};
+    if ((sizeof(stopMessage) != connection->receive(&stopMessage, sizeof(stopMessage))) || (Cal::Ipc::ControlMessageHeader::messageTypeStop != stopMessage.type)) {
+        fprintf(stderr, "Could not send stop request - did not receive valid response\n");
+        return;
+    }
+
+    // reset connection to verify if service really stopped
+    connection = connectionFactory->connect(persistentListenerConfig.socketPath.c_str());
+    if (connection && connection->isAlive()) {
+        fprintf(stderr, "Failed to stop cal service for %s\n", persistentListenerConfig.socketPath.c_str());
+    } else {
+        printf("Succesfully stopped cal service for %s\n", persistentListenerConfig.socketPath.c_str());
+    }
 }

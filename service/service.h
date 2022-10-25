@@ -605,13 +605,24 @@ class Provider {
         } activeClientGuard{service};
         log<Verbosity::debug>("Starting to service client : %d (assigned ordinal : %lld)", clientConnection->getId(), clientOrdinal);
 
-        Cal::Ipc::ControlMessageHeader pingMessageHeader;
-        while (clientConnection->peek(pingMessageHeader) && (Cal::Ipc::ControlMessageHeader::messageTypePing == pingMessageHeader.type)) {
-            clientConnection->receive(pingMessageHeader);
+        Cal::Ipc::ControlMessageHeader prologueMessageHeader;
+        while (clientConnection->peek(prologueMessageHeader) && (Cal::Ipc::ControlMessageHeader::messageTypePing == prologueMessageHeader.type)) {
+            clientConnection->receive(prologueMessageHeader);
             log<Verbosity::debug>("Client : %d sent ping request", clientConnection->getId());
-            if (false == clientConnection->send(pingMessageHeader)) {
-                log<Verbosity::error>("Could not send response ping response to client : %d", clientConnection->getId());
+            if (false == clientConnection->send(prologueMessageHeader)) {
+                log<Verbosity::error>("Could not send ping response to client : %d", clientConnection->getId());
             }
+        }
+
+        if (clientConnection->peek(prologueMessageHeader) && (Cal::Ipc::ControlMessageHeader::messageTypeStop == prologueMessageHeader.type)) {
+            clientConnection->receive(prologueMessageHeader);
+            log<Verbosity::info>("Client : %d requested service to stop", clientConnection->getId());
+            service.runInLoop = false;
+            service.listener->shutdown();
+            if (false == clientConnection->send(prologueMessageHeader)) {
+                log<Verbosity::error>("Could not send stop response to client : %d", clientConnection->getId());
+            }
+            return;
         }
 
         Cal::Messages::ReqHandshake handshake;
@@ -655,6 +666,15 @@ class Provider {
                 log<Verbosity::debug>("Client : %d sent ping request", clientConnection->getId());
                 if (false == clientConnection->send(messageHeader)) {
                     log<Verbosity::error>("Could not send response ping response to client : %d", clientConnection->getId());
+                }
+                break;
+
+            case Cal::Ipc::ControlMessageHeader::messageTypeStop:
+                log<Verbosity::info>("Client : %d requested service to stop", clientConnection->getId());
+                service.runInLoop = false;
+                service.listener->shutdown();
+                if (false == clientConnection->send(messageHeader)) {
+                    log<Verbosity::error>("Could not send stop response to client : %d", clientConnection->getId());
                 }
                 break;
 

@@ -746,6 +746,8 @@ inline std::vector<std::string> split(const std::string &input, const char *deli
 }
 
 std::string concatenate(const char **beg, const char **end, const char *separator);
+std::string encodeIntAsPath(uint64_t v);
+uint64_t decodeIntFromPath(const char *str);
 
 bool isDebuggerConnected();
 
