@@ -3998,7 +3998,7 @@ config :
                             type : ze_module_handle_t
                             kind : scalar
                             translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
-                        server_access : write
+                        server_access : read_write
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
                  4 :
                     name : phBuildLog

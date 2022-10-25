@@ -5688,6 +5688,9 @@ struct ZeModuleCreateRpcM {
         if(args.desc){
             captures.desc = *args.desc;
         }
+        if(args.phModule){
+            captures.phModule = *args.phModule;
+        }
         using Cal::Utils::alignUpPow2;
 
         auto& dynMem = captures.dynMem;
