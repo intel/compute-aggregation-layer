@@ -8,8 +8,10 @@ config :
     icd_namespace : "Cal::Icd::Ocl"
     rpc_namespace : "Cal::Rpc::Ocl"
     daemon_namespace : "Cal::Service::Apis::Ocl"
-    icd_dispatch_table_type : cl_icd_dispatch
-    icd_init_dispatch_table_func_name : initOclIcdDispatchTable
+    icd_dispatch_table_type :
+        "core" : "cl_icd_dispatch"
+
+    icd_init_dispatch_table_func_name_format : "initOclIcdDispatchTable"
     icd_get_extenion_func_addr_func_name : getOclExtensionFuncionAddressRpcHelper
     icd_acquire_global_object : "auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();"
     icd_acquire_channel : "globalOclPlatform->getRpcChannel();"
@@ -33,51 +35,51 @@ config :
         - "#include <CL/cl_ext.h>"
       
     unimplemented:
-        - clSetCommandQueueProperty # Deprecated 1.0
-# GL-sharing, intentionally left unsupported in aggregation layer:
-        - clCreateFromGLBuffer
-        - clCreateFromGLTexture2D
-        - clCreateFromGLTexture3D
-        - clCreateFromGLRenderbuffer
-        - clGetGLObjectInfo
-        - clGetGLTextureInfo
-        - clEnqueueAcquireGLObjects
-        - clEnqueueReleaseGLObjects
-        - clGetGLContextInfoKHR
-        - clCreateEventFromGLsyncKHR
-        - clCreateFromGLTexture
-        - clCreateFromEGLImageKHR
-        - clEnqueueAcquireEGLObjectsKHR
-        - clEnqueueReleaseEGLObjectsKHR
-        - clCreateEventFromEGLSyncKHR
-
-# D3D/DX-sharing, intentionally left unsupported in aggregation layer:
-        - clGetDeviceIDsFromD3D10KHR
-        - clCreateFromD3D10BufferKHR
-        - clCreateFromD3D10Texture2DKHR
-        - clCreateFromD3D10Texture3DKHR
-        - clEnqueueAcquireD3D10ObjectsKHR
-        - clEnqueueReleaseD3D10ObjectsKHR
-        - clGetDeviceIDsFromD3D11KHR
-        - clCreateFromD3D11BufferKHR
-        - clCreateFromD3D11Texture2DKHR
-        - clCreateFromD3D11Texture3DKHR
-        - clCreateFromDX9MediaSurfaceKHR
-        - clEnqueueAcquireD3D11ObjectsKHR
-        - clEnqueueReleaseD3D11ObjectsKHR
-        - clGetDeviceIDsFromDX9MediaAdapterKHR
-        - clEnqueueAcquireDX9MediaSurfacesKHR
-        - clEnqueueReleaseDX9MediaSurfacesKHR
-        
-# WIP : 
-        - clEnqueueMapImage
-       
-# Callbacks, intentionally left for later
-        - clEnqueueSVMFree
-        - clEnqueueNativeKernel
-        - clSetProgramReleaseCallback
-        - clSetContextDestructorCallback
-        - clSetMemObjectDestructorCallback
+        - name : "core"
+          members : [
+              clSetCommandQueueProperty, # Deprecated 1.0
+              # GL-sharing, intentionally left unsupported in aggregation layer:
+              clCreateFromGLBuffer,
+              clCreateFromGLTexture2D,
+              clCreateFromGLTexture3D,
+              clCreateFromGLRenderbuffer,
+              clGetGLObjectInfo,
+              clGetGLTextureInfo,
+              clEnqueueAcquireGLObjects,
+              clEnqueueReleaseGLObjects,
+              clGetGLContextInfoKHR,
+              clCreateEventFromGLsyncKHR,
+              clCreateFromGLTexture,
+              clCreateFromEGLImageKHR,
+              clEnqueueAcquireEGLObjectsKHR,
+              clEnqueueReleaseEGLObjectsKHR,
+              clCreateEventFromEGLSyncKHR,
+              # D3D/DX-sharing, intentionally left unsupported in aggregation layer:
+              clGetDeviceIDsFromD3D10KHR,
+              clCreateFromD3D10BufferKHR,
+              clCreateFromD3D10Texture2DKHR,
+              clCreateFromD3D10Texture3DKHR,
+              clEnqueueAcquireD3D10ObjectsKHR,
+              clEnqueueReleaseD3D10ObjectsKHR,
+              clGetDeviceIDsFromD3D11KHR,
+              clCreateFromD3D11BufferKHR,
+              clCreateFromD3D11Texture2DKHR,
+              clCreateFromD3D11Texture3DKHR,
+              clCreateFromDX9MediaSurfaceKHR,
+              clEnqueueAcquireD3D11ObjectsKHR,
+              clEnqueueReleaseD3D11ObjectsKHR,
+              clGetDeviceIDsFromDX9MediaAdapterKHR,
+              clEnqueueAcquireDX9MediaSurfacesKHR,
+              clEnqueueReleaseDX9MediaSurfacesKHR,
+              # WIP :
+              clEnqueueMapImage,
+              # Callbacks, intentionally left for later
+              clEnqueueSVMFree,
+              clEnqueueNativeKernel,
+              clSetProgramReleaseCallback,
+              clSetContextDestructorCallback,
+              clSetMemObjectDestructorCallback
+          ]
 
     functions :
         - name : clGetPlatformIDs

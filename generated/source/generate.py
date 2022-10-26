@@ -1043,7 +1043,7 @@ class Config:
         self.functions_by_name = {func.name: func for func in self.functions}
         self.icd_namespace = src.get("icd_namespace", "").split("::")
         self.icd_dispatch_table_type = src.get("icd_dispatch_table_type", "DispatchTableT")
-        self.icd_init_dispatch_table_func_name = src.get("icd_init_dispatch_table_func_name", "initIcdDispatchTable")
+        self.icd_init_dispatch_table_func_name_format = src.get("icd_init_dispatch_table_func_name_format", "initIcdDispatchTable")
         self.icd_get_extenion_func_addr_func_name = src.get("icd_get_extenion_func_addr_func_name", None)
         self.icd_acquire_global_object = src.get("icd_acquire_global_object", "")
         self.icd_acquire_channel = src.get("icd_acquire_channel", "")
@@ -1059,7 +1059,8 @@ class Config:
                 continue
             f.aliased_function = self.functions_by_name[f.special_handling.icd.alias_to]
 
-        assert not any(f for f in self.functions if f.name in self.unimplemented)
+        for func_category in self.unimplemented:
+            assert not any(f for f in self.functions if f.name in func_category["members"])
 
     def get_extensions(self, include_variants=False):
         return [f for f in self.functions if f.traits.is_extension and not f.special_handling.is_variant()]
@@ -1152,6 +1153,8 @@ def get_func_ddi_name(config: Config, func):
     regex_category = func.ddi_category[:-3] if func.ddi_category.endswith("Exp") else func.ddi_category
 
     name = f"{config.ddi_format_regexp1_category.format(config.ddi_format_regexp0.format(func.name), {'category' : regex_category})}"
+    if "pfnExp" in name:
+        name = name.replace("pfnExp", "pfn")
     name = f"{func.ddi_category}.{name}"
 
     return name
@@ -1166,6 +1169,9 @@ def get_ddi_name(config: Config, qual_name: str):
     regex_category = category[:-3] if category.endswith("Exp") else category
 
     name = f"{config.ddi_format_regexp1_category.format(config.ddi_format_regexp0.format(fname), {'category' : regex_category})}"
+    if "pfnExp" in name:
+        name = name.replace("pfnExp", "pfn")
+
     if category not in name:
         name = f"{category}.{name}"
     return name

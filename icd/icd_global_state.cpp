@@ -47,7 +47,7 @@ Cal::Icd::Ocl::IcdOclPlatform *IcdGlobalState::getOclPlatform() {
 Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
     std::call_once(l0Platform.onceFlag, [this]() {
         Cal::Utils::initDynamicVerbosity();
-        Cal::Icd::LevelZero::initL0Ddi(l0Dddi);
+        Cal::Icd::LevelZero::initL0Ddi(l0Ddi);
         log<Verbosity::info>("Creating Compute Aggregation Layer Level Zero platform from pid : %d", getpid());
         this->l0Platform.platform = std::make_unique<Icd::LevelZero::IcdL0Platform>(*shmemManager, *mallocShmemZeroCopyManager);
         if (false == this->l0Platform.platform->valid()) {

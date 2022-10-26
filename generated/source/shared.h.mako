@@ -14,9 +14,11 @@ namespace ${namespace_part} {
 %if unimplemented:
 inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     std::vector<std::string> ret;
-%for func_name in unimplemented:
+% for func_category in unimplemented:
+%  for func_name in func_category["members"]:
     ret.push_back("${func_name}");
-%endfor
+%  endfor
+% endfor
     return ret;
 }
 %endif

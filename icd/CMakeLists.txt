@@ -14,6 +14,7 @@ add_library(cal SHARED # acts as ICD
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_global_state.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_ocl.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_level_zero.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/icd_level_zero_table_exports.cpp
             ${cal_source_root_dir}/shared/sys.cpp
             ${cal_source_root_dir}/shared/usm.cpp
             ${cal_source_root_dir}/shared/utils.cpp

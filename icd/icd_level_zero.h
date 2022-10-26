@@ -25,11 +25,10 @@
 #include <string>
 #include <utility>
 
-extern ze_dditable_t l0Dddi;
-extern ze_api_version_t supportedL0ApiVersion;
+extern ze_dditable_t l0Ddi;
 
 struct l0_icd_base {
-    ze_dditable_t *dt = &l0Dddi;
+    ze_dditable_t *dt = &l0Ddi;
 };
 
 template <typename LocalObjectType>
@@ -54,7 +53,7 @@ struct l0_icd_base_mapped : l0_icd_base {
     }
 
     bool isLocal() const {
-        return this->dt == &l0Dddi;
+        return this->dt == &l0Ddi;
     }
 
     bool isRemote() const {

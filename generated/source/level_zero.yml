@@ -8,16 +8,20 @@ config :
     icd_namespace : "Cal::Icd::LevelZero"
     rpc_namespace : "Cal::Rpc::LevelZero"
     daemon_namespace : "Cal::Service::Apis::LevelZero"
-    icd_dispatch_table_type : ze_dditable_t
-    icd_init_dispatch_table_func_name : initL0Ddi
+    icd_dispatch_table_type :
+        "core" : "ze_dditable_t"
+        "sysman" : "zes_dditable_t"
+        "tools" : "zet_dditable_t"
+
+    icd_init_dispatch_table_func_name_format : "initL0{}Ddi"
     icd_get_extenion_func_addr_func_name : "getL0ExtensionFuncionAddressRpcHelper"
     icd_acquire_global_object : "auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();"
     icd_acquire_channel : "globalL0Platform->getRpcChannel();"
     result_type: ze_result_t
     result_success: ZE_RESULT_SUCCESS
     ddi_format_regexp0 :
-      from : "([^\\.]*\\.)*ze(.*)"
-      to : "\\1pfn\\2"
+      from : "([^\\.]*\\.)*(zes|zet|ze)(.*)"
+      to : "\\1pfn\\3"
     ddi_format_regexp1_category :
       from : "pfn{category}"
       to : "pfn"
@@ -30,6 +34,13 @@ config :
         - "#include \"icd/icd_level_zero.h\""
       icd_h:
         - "#include \"icd/icd_level_zero.h\""
+        - "#include \"level_zero/ze_api.h\""
+        - "#include \"level_zero/ze_ddi.h\""
+        - "#include \"level_zero/zes_api.h\""
+        - "#include \"level_zero/zes_ddi.h\""
+        - "#include \"level_zero/zet_api.h\""
+        - "#include \"level_zero/zet_ddi.h\""
+
       api:
         - "#include \"level_zero/ze_api.h\""
 
@@ -207,62 +218,216 @@ config :
                     kind : struct
 
     unimplemented:
-        - CommandList.zeCommandListAppendMemoryRangesBarrier
-        - Context.zeContextSystemBarrier
-        - Device.zeDeviceReserveCacheExt
-        - Device.zeDeviceSetCacheAdviceExt
-        - CommandList.zeCommandListAppendWriteGlobalTimestamp
-        - CommandList.zeCommandListAppendMemoryCopyRegion
-        - CommandList.zeCommandListAppendMemoryCopyFromContext
-        - CommandList.zeCommandListAppendImageCopy
-        - CommandList.zeCommandListAppendImageCopyRegion
-        - CommandList.zeCommandListAppendImageCopyToMemory
-        - CommandList.zeCommandListAppendImageCopyFromMemory
-        - CommandList.zeCommandListAppendMemoryPrefetch
-        - CommandList.zeCommandListAppendMemAdvise
-        - Device.zeDeviceGetP2PProperties
-        - CommandList.zeCommandListAppendEventReset
-        - CommandList.zeCommandListAppendQueryKernelTimestamps
-        - EventExp.zeEventQueryTimestampsExp
-        - FabricVertexExp.zeFabricVertexGetExp
-        - FabricVertexExp.zeFabricVertexGetSubVerticesExp
-        - FabricVertexExp.zeFabricVertexGetPropertiesExp
-        - FabricVertexExp.zeFabricVertexGetDeviceExp
-        - DeviceExp.zeDeviceGetFabricVertexExp
-        - FabricEdgeExp.zeFabricEdgeGetExp
-        - FabricEdgeExp.zeFabricEdgeGetVerticesExp
-        - FabricEdgeExp.zeFabricEdgeGetPropertiesExp
-        - Image.zeImageGetProperties
-        - Image.zeImageCreate
-        - Image.zeImageDestroy
-        - CommandList.zeCommandListAppendImageCopyToMemoryExt
-        - CommandList.zeCommandListAppendImageCopyFromMemoryExt
-        - ImageExp.zeImageGetMemoryPropertiesExp
-        - Image.zeImageGetAllocPropertiesExt
-        - ImageExp.zeImageViewCreateExp
-        - KernelExp.zeKernelSchedulingHintExp
-        - Module.zeModuleInspectLinkageExt
-        - Mem.zeMemFreeExt
-        - Module.zeModuleDynamicLink
-        - Kernel.zeKernelGetSourceAttributes
-        - CommandList.zeCommandListAppendLaunchCooperativeKernel
-        - CommandList.zeCommandListAppendLaunchKernelIndirect
-        - CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect
-        - Context.zeContextMakeMemoryResident
-        - Context.zeContextEvictMemory
-        - Context.zeContextMakeImageResident
-        - Context.zeContextEvictImage
-        - Sampler.zeSamplerCreate
-        - Sampler.zeSamplerDestroy
-        - VirtualMem.zeVirtualMemReserve
-        - VirtualMem.zeVirtualMemFree
-        - VirtualMem.zeVirtualMemQueryPageSize
-        - PhysicalMem.zePhysicalMemCreate
-        - PhysicalMem.zePhysicalMemDestroy
-        - VirtualMem.zeVirtualMemMap
-        - VirtualMem.zeVirtualMemUnmap
-        - VirtualMem.zeVirtualMemSetAccessAttribute
-        - VirtualMem.zeVirtualMemGetAccessAttribute
+        - name : "core"
+          members : [
+              CommandList.zeCommandListAppendMemoryRangesBarrier,
+              Context.zeContextSystemBarrier,
+              Device.zeDeviceReserveCacheExt,
+              Device.zeDeviceSetCacheAdviceExt,
+              CommandList.zeCommandListAppendWriteGlobalTimestamp,
+              CommandList.zeCommandListAppendMemoryCopyRegion,
+              CommandList.zeCommandListAppendMemoryCopyFromContext,
+              CommandList.zeCommandListAppendImageCopy,
+              CommandList.zeCommandListAppendImageCopyRegion,
+              CommandList.zeCommandListAppendImageCopyToMemory,
+              CommandList.zeCommandListAppendImageCopyFromMemory,
+              CommandList.zeCommandListAppendMemoryPrefetch,
+              CommandList.zeCommandListAppendMemAdvise,
+              Device.zeDeviceGetP2PProperties,
+              CommandList.zeCommandListAppendEventReset,
+              CommandList.zeCommandListAppendQueryKernelTimestamps,
+              EventExp.zeEventQueryTimestampsExp,
+              FabricVertexExp.zeFabricVertexGetExp,
+              FabricVertexExp.zeFabricVertexGetSubVerticesExp,
+              FabricVertexExp.zeFabricVertexGetPropertiesExp,
+              FabricVertexExp.zeFabricVertexGetDeviceExp,
+              DeviceExp.zeDeviceGetFabricVertexExp,
+              FabricEdgeExp.zeFabricEdgeGetExp,
+              FabricEdgeExp.zeFabricEdgeGetVerticesExp,
+              FabricEdgeExp.zeFabricEdgeGetPropertiesExp,
+              Image.zeImageGetProperties,
+              Image.zeImageCreate,
+              Image.zeImageDestroy,
+              CommandList.zeCommandListAppendImageCopyToMemoryExt,
+              CommandList.zeCommandListAppendImageCopyFromMemoryExt,
+              ImageExp.zeImageGetMemoryPropertiesExp,
+              Image.zeImageGetAllocPropertiesExt,
+              ImageExp.zeImageViewCreateExp,
+              KernelExp.zeKernelSchedulingHintExp,
+              Module.zeModuleInspectLinkageExt,
+              Mem.zeMemFreeExt,
+              Module.zeModuleDynamicLink,
+              Kernel.zeKernelGetSourceAttributes,
+              CommandList.zeCommandListAppendLaunchCooperativeKernel,
+              CommandList.zeCommandListAppendLaunchKernelIndirect,
+              CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect,
+              Context.zeContextMakeMemoryResident,
+              Context.zeContextEvictMemory,
+              Context.zeContextMakeImageResident,
+              Context.zeContextEvictImage,
+              Sampler.zeSamplerCreate,
+              Sampler.zeSamplerDestroy,
+              VirtualMem.zeVirtualMemReserve,
+              VirtualMem.zeVirtualMemFree,
+              VirtualMem.zeVirtualMemQueryPageSize,
+              PhysicalMem.zePhysicalMemCreate,
+              PhysicalMem.zePhysicalMemDestroy,
+              VirtualMem.zeVirtualMemMap,
+              VirtualMem.zeVirtualMemUnmap,
+              VirtualMem.zeVirtualMemSetAccessAttribute,
+              VirtualMem.zeVirtualMemGetAccessAttribute
+          ]
+
+        - name : "sysman"
+          members : [
+              Device.zesDeviceEnumRasErrorSets,
+              Ras.zesRasGetProperties,
+              Ras.zesRasGetConfig,
+              Ras.zesRasSetConfig,
+              Ras.zesRasGetState,
+              Device.zesDeviceGetProperties,
+              Device.zesDeviceGetState,
+              Device.zesDeviceReset,
+              Device.zesDeviceProcessesGetState,
+              Device.zesDevicePciGetProperties,
+              Device.zesDevicePciGetState,
+              Device.zesDevicePciGetBars,
+              Device.zesDevicePciGetStats,
+              Device.zesDeviceEnumFans,
+              Fan.zesFanGetProperties,
+              Fan.zesFanGetConfig,
+              Fan.zesFanSetDefaultMode,
+              Fan.zesFanSetFixedSpeedMode,
+              Fan.zesFanSetSpeedTableMode,
+              Fan.zesFanGetState,
+              Device.zesDeviceEnumFirmwares,
+              Firmware.zesFirmwareGetProperties,
+              Firmware.zesFirmwareFlash,
+              Power.zesPowerGetLimitsExt,
+              Power.zesPowerSetLimitsExt,
+              Device.zesDeviceEnumStandbyDomains,
+              Standby.zesStandbyGetProperties,
+              Standby.zesStandbyGetMode,
+              Standby.zesStandbySetMode,
+              Device.zesDeviceEnumTemperatureSensors,
+              Temperature.zesTemperatureGetProperties,
+              Temperature.zesTemperatureGetConfig,
+              Temperature.zesTemperatureSetConfig,
+              Temperature.zesTemperatureGetState,
+              Device.zesDeviceEccAvailable,
+              Device.zesDeviceEccConfigurable,
+              Device.zesDeviceGetEccState,
+              Device.zesDeviceSetEccState,
+              Device.zesDeviceEnumEngineGroups,
+              Engine.zesEngineGetProperties,
+              Engine.zesEngineGetActivity,
+              Device.zesDeviceEnumSchedulers,
+              Scheduler.zesSchedulerGetProperties,
+              Scheduler.zesSchedulerGetCurrentMode,
+              Scheduler.zesSchedulerGetTimeoutModeProperties,
+              Scheduler.zesSchedulerGetTimesliceModeProperties,
+              Scheduler.zesSchedulerSetTimeoutMode,
+              Scheduler.zesSchedulerSetTimesliceMode,
+              Scheduler.zesSchedulerSetExclusiveMode,
+              Scheduler.zesSchedulerSetComputeUnitDebugMode,
+              Device.zesDeviceEnumMemoryModules,
+              Memory.zesMemoryGetProperties,
+              Memory.zesMemoryGetState,
+              Memory.zesMemoryGetBandwidth,
+              Device.zesDeviceEnumPerformanceFactorDomains,
+              PerformanceFactor.zesPerformanceFactorGetProperties,
+              PerformanceFactor.zesPerformanceFactorGetConfig,
+              PerformanceFactor.zesPerformanceFactorSetConfig,
+              Device.zesDeviceEnumLeds,
+              Led.zesLedGetProperties,
+              Led.zesLedGetState,
+              Led.zesLedSetState,
+              Led.zesLedSetColor,
+              Device.zesDeviceEnumPowerDomains,
+              Device.zesDeviceGetCardPowerDomain,
+              Power.zesPowerGetProperties,
+              Power.zesPowerGetEnergyCounter,
+              Power.zesPowerGetLimits,
+              Power.zesPowerSetLimits,
+              Power.zesPowerGetEnergyThreshold,
+              Power.zesPowerSetEnergyThreshold,
+              Device.zesDeviceEnumFabricPorts,
+              FabricPort.zesFabricPortGetProperties,
+              FabricPort.zesFabricPortGetLinkType,
+              FabricPort.zesFabricPortGetConfig,
+              FabricPort.zesFabricPortSetConfig,
+              FabricPort.zesFabricPortGetState,
+              FabricPort.zesFabricPortGetThroughput,
+              Device.zesDeviceEventRegister,
+              Driver.zesDriverEventListen,
+              Driver.zesDriverEventListenEx,
+              Device.zesDeviceEnumDiagnosticTestSuites,
+              Diagnostics.zesDiagnosticsGetProperties,
+              Diagnostics.zesDiagnosticsGetTests,
+              Diagnostics.zesDiagnosticsRunTests,
+              Device.zesDeviceEnumPsus,
+              Psu.zesPsuGetProperties,
+              Psu.zesPsuGetState,
+              Device.zesDeviceEnumFrequencyDomains,
+              Frequency.zesFrequencyGetProperties,
+              Frequency.zesFrequencyGetAvailableClocks,
+              Frequency.zesFrequencyGetRange,
+              Frequency.zesFrequencySetRange,
+              Frequency.zesFrequencyGetState,
+              Frequency.zesFrequencyGetThrottleTime,
+              Frequency.zesFrequencyOcGetCapabilities,
+              Frequency.zesFrequencyOcGetVoltageTarget,
+              Frequency.zesFrequencyOcSetVoltageTarget,
+              Frequency.zesFrequencyOcSetMode,
+              Frequency.zesFrequencyOcGetMode,
+              Frequency.zesFrequencyOcGetIccMax,
+              Frequency.zesFrequencyOcSetIccMax,
+              Frequency.zesFrequencyOcGetTjMax,
+              Frequency.zesFrequencyOcSetTjMax
+          ]
+
+        - name : "tools"
+          members : [
+              Kernel.zetKernelGetProfileInfo,
+              MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp,
+              Device.zetDeviceGetDebugProperties,
+              Debug.zetDebugAttach,
+              Debug.zetDebugDetach,
+              Debug.zetDebugReadEvent,
+              Debug.zetDebugAcknowledgeEvent,
+              Debug.zetDebugInterrupt,
+              Debug.zetDebugResume,
+              Debug.zetDebugReadMemory,
+              Debug.zetDebugWriteMemory,
+              Debug.zetDebugGetRegisterSetProperties,
+              Debug.zetDebugReadRegisters,
+              Debug.zetDebugWriteRegisters,
+              Module.zetModuleGetDebugInfo,
+              MetricGroup.zetMetricGroupGet,
+              MetricGroup.zetMetricGroupGetProperties,
+              MetricGroup.zetMetricGroupCalculateMetricValues,
+              Metric.zetMetricGet,
+              Metric.zetMetricGetProperties,
+              Context.zetContextActivateMetricGroups,
+              MetricStreamer.zetMetricStreamerOpen,
+              CommandList.zetCommandListAppendMetricStreamerMarker,
+              MetricStreamer.zetMetricStreamerClose,
+              MetricStreamer.zetMetricStreamerReadData,
+              MetricQueryPool.zetMetricQueryPoolCreate,
+              MetricQueryPool.zetMetricQueryPoolDestroy,
+              MetricQuery.zetMetricQueryCreate,
+              MetricQuery.zetMetricQueryDestroy,
+              MetricQuery.zetMetricQueryReset,
+              CommandList.zetCommandListAppendMetricQueryBegin,
+              CommandList.zetCommandListAppendMetricQueryEnd,
+              CommandList.zetCommandListAppendMetricMemoryBarrier,
+              MetricQuery.zetMetricQueryGetData,
+              TracerExp.zetTracerExpCreate,
+              TracerExp.zetTracerExpDestroy,
+              TracerExp.zetTracerExpSetPrologues,
+              TracerExp.zetTracerExpSetEpilogues,
+              TracerExp.zetTracerExpSetEnabled,
+          ]
 
     functions :
         - name : zeInit

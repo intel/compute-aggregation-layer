@@ -38,6 +38,7 @@ add_executable(l0_test_ult_icd
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
                ${cal_source_root_dir}/icd/icd_level_zero.cpp
+               ${cal_source_root_dir}/icd/icd_level_zero_table_exports.cpp
 
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
@@ -59,6 +60,7 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
                ${cal_source_root_dir}/icd/icd_level_zero.cpp
+               ${cal_source_root_dir}/icd/icd_level_zero_table_exports.cpp
 
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
