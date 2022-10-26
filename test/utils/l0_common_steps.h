@@ -31,6 +31,7 @@ bool synchronizeCommandQueue(ze_command_queue_handle_t queue);
 bool destroyCommandQueue(ze_command_queue_handle_t &queue);
 
 bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_list_handle_t &list);
+bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_mode_t mode, ze_command_list_handle_t &list);
 bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *source,

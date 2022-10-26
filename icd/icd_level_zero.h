@@ -148,7 +148,7 @@ inline uint32_t defaultPropertiesCount = 1u;
 template <typename L0Obj, typename T, typename F>
 ze_result_t obtainProperties(L0Obj *obj, T *properties, F &&rpcHelper) {
     if constexpr (hasPNext<T>::value) {
-        if (properties->pNext) {
+        if (properties && properties->pNext) {
             return rpcHelper(obj, properties);
         }
     }
@@ -167,7 +167,7 @@ ze_result_t obtainProperties(L0Obj *obj, T *properties, F &&rpcHelper) {
 template <typename L0Obj, typename T, typename F>
 ze_result_t obtainProperties(L0Obj *obj, uint32_t *pCount, T *properties, F &&rpcHelper) {
     if constexpr (hasPNext<T>::value) {
-        if (properties->pNext) {
+        if (properties && properties->pNext) {
             return rpcHelper(obj, pCount, properties);
         }
     }

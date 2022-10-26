@@ -231,6 +231,24 @@ bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, u
     return true;
 }
 
+bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_mode_t mode, ze_command_list_handle_t &list) {
+    ze_command_queue_desc_t queueDescription{};
+
+    queueDescription.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
+    queueDescription.mode = mode;
+    queueDescription.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
+    queueDescription.ordinal = ordinal;
+
+    const auto zeCommandListCreateImmediateResult = zeCommandListCreateImmediate(context, device, &queueDescription, &list);
+    if (zeCommandListCreateImmediateResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListCreateImmediate() call has failed! Error code = %d", static_cast<int>(zeCommandListCreateImmediateResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Command list created successfully! Handle = %p", static_cast<void *>(list));
+    return true;
+}
+
 bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *source,
