@@ -2301,6 +2301,12 @@ struct ZeDeviceGetComputePropertiesRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pComputeProperties){
+            captures.pComputeProperties = *args.pComputeProperties;
+        }
+    }
+
     void copyToCaller(){
         if(args.pComputeProperties){
             *args.pComputeProperties = captures.pComputeProperties;
@@ -2361,6 +2367,12 @@ struct ZeDeviceGetModulePropertiesRpcM {
         message.args.pModuleProperties = pModuleProperties;
     }
     
+
+    void copyFromCaller(){
+        if(args.pModuleProperties){
+            captures.pModuleProperties = *args.pModuleProperties;
+        }
+    }
 
     void copyToCaller(){
         if(args.pModuleProperties){

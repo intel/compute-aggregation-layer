@@ -2100,7 +2100,7 @@ config :
                         element :
                             type : ze_device_compute_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetModuleProperties
           latency : 0.0
@@ -2128,7 +2128,7 @@ config :
                         element :
                             type : ze_device_module_properties_t
                             kind : scalar
-                        server_access : write
+                        server_access : read_write
 
         - name : zeDeviceGetCommandQueueGroupProperties
           latency : 0.0

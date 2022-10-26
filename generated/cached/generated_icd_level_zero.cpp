@@ -830,6 +830,7 @@ ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, z
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetComputePropertiesRpcM;
     auto commandSpace = channel.getSpace<CommandT>(0);
     auto command = new(commandSpace.get()) CommandT(hDevice, pComputeProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -851,6 +852,7 @@ ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetModulePropertiesRpcM;
     auto commandSpace = channel.getSpace<CommandT>(0);
     auto command = new(commandSpace.get()) CommandT(hDevice, pModuleProperties);
+    command->copyFromCaller();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
