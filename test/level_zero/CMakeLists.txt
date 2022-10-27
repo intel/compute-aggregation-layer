@@ -7,12 +7,16 @@
 macro(add_l0_blackbox TEST_NAME TEST_FILES)
   add_executable(${TEST_NAME}
                  ${TEST_FILES}
-                 ${cal_source_root_dir}/test/utils/l0_common_steps.cpp
-                 ${cal_source_root_dir}/shared/utils.cpp
-                 ${cal_source_root_dir}/shared/sys.cpp
+                 $<TARGET_OBJECTS:l0_blackbox_common>
   )
   target_link_libraries(${TEST_NAME} ze_loader ${common_library_dependencies})
 endmacro()
+
+add_library(l0_blackbox_common OBJECT
+            ${cal_source_root_dir}/test/utils/l0_common_steps.cpp
+            ${cal_source_root_dir}/shared/utils.cpp
+            ${cal_source_root_dir}/shared/sys.cpp
+)
 
 add_l0_blackbox(l0_blackbox_append_mem_fill_copy_asynchronous_queue ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_append_mem_fill_copy_asynchronous_queue.cpp)
 add_l0_blackbox(l0_blackbox_append_mem_fill_copy_immediate_synchronous ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_append_mem_fill_copy_immediate_synchronous.cpp)
