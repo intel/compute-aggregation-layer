@@ -8,11 +8,14 @@
 // #### Generated code -- begin ####
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
+#include "shared/utils.h"
 #include "generated_icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
 
 #include <cstdlib>
 #include <type_traits>
+
+using Cal::Utils::ensureNull;
 
 namespace Cal {
 namespace Icd {

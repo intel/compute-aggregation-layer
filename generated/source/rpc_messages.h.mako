@@ -57,6 +57,7 @@ struct DynamicStructTraits {
 };
 
 % for struct_description in config.structures:
+%  if struct_description.members_to_capture():
 template <>
 struct DynamicStructTraits<${struct_description.name}> {
 %  for member in struct_description.members_to_capture():
@@ -65,6 +66,7 @@ struct DynamicStructTraits<${struct_description.name}> {
 %  endfor
 };
 
+%  endif
 % endfor
 
 template<typename T>

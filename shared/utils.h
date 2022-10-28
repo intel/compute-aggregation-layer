@@ -751,5 +751,7 @@ uint64_t decodeIntFromPath(const char *str);
 
 bool isDebuggerConnected();
 
+void ensureNull(const char *sourceLocation, const void *pointer);
+
 } // namespace Utils
 } // namespace Cal

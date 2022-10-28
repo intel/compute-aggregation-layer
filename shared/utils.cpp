@@ -279,5 +279,12 @@ uint64_t decodeIntFromPath(const char *str) {
     return ret;
 }
 
+void ensureNull(const char *sourceLocation, const void *pointer) {
+    if (pointer) {
+        log<Verbosity::error>("%s is not nullptr! Aborting...", sourceLocation);
+        std::abort();
+    }
+}
+
 } // namespace Utils
 } // namespace Cal

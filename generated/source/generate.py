@@ -30,8 +30,8 @@ class Translate:
     def __init__(self, src: str):
         self.str = src
 
-    def format(self, dst, arg, index="", dst_mem="") -> str:
-        return self.str.format(dst=dst, arg=arg, index=index, dst_mem=dst_mem)
+    def format(self, dst, arg, index="", dst_mem="", func_name="") -> str:
+        return self.str.format(dst=dst, arg=arg, index=index, dst_mem=dst_mem, func_name=func_name)
 
 
 class DaemonAction:
@@ -272,7 +272,7 @@ class Member:
         self.kind = Kind(src.get("kind"))
         self.kind_details = KindDetails(src["kind_details"]) if "kind_details" in src.keys() else None
         self.server_access = ServerAccess(src.get("server_access", {}))
-
+        self.translate_before = Translate(src["translate_before"]) if "translate_before" in src.keys() else None
 
 class StructureTraits:
     def __init__(self, struct):
@@ -312,6 +312,10 @@ class StructureTraits:
             total_count += struct.traits.capturable_members_count_including_nested()
 
         return total_count
+
+    # Warning: recursive struct members are currently not included.
+    def requires_translation_of_members_before(self):
+        return any(member.translate_before for member in self.struct.members)
 
     def is_trivial(self): # struct containing only scalar or trivial struct member variables 
         trivial = all(member.kind.is_scalar() or (member.kind.is_struct() and not self.is_non_trivial_struct_dependency(member))
@@ -1263,8 +1267,11 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
 
     def get_args_requiring_translation_before(f):
         return [
-            arg for arg in f.args if arg.translate_before or (
-                arg.kind.is_pointer_to_array() and arg.kind_details.element.translate_before)]
+            arg for arg in f.args if arg.translate_before or
+                (arg.kind.is_pointer_to_array() and arg.kind_details.element.translate_before) or
+                (arg.kind.is_struct() and config.structures_by_name[arg.type.str].traits.requires_translation_of_members_before()) or
+                (arg.kind.is_pointer_to_array() and arg.kind_details.element.kind.is_struct() and
+                 config.structures_by_name[arg.kind_details.element.type.str].traits.requires_translation_of_members_before())]
 
     def get_args_requiring_translation_after(f):
         return [

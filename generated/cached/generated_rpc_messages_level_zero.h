@@ -80,18 +80,6 @@ struct DynamicStructTraits<ze_kernel_desc_t> {
     int32_t pKernelNameCount{-1};
 };
 
-template <>
-struct DynamicStructTraits<ze_pci_address_ext_t> {
-};
-
-template <>
-struct DynamicStructTraits<ze_pci_speed_ext_t> {
-};
-
-template <>
-struct DynamicStructTraits<ze_pci_ext_properties_t> {
-};
-
 
 template<typename T>
 inline char *asMemcpyDstT(T * ptr) {

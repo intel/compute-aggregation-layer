@@ -6,12 +6,15 @@
 // #### Generated code -- begin ####
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
+#include "shared/utils.h"
 % for header in file_headers:
 ${header}
 % endfor
 
 #include <cstdlib>
 #include <type_traits>
+
+using Cal::Utils::ensureNull;
 
 % for namespace_part in icd_namespace:
 namespace ${namespace_part} {
@@ -79,6 +82,21 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %       if can_be_null(arg):
     if(${arg.name})
 %       endif # arg.kind_details.can_be_null
+%      if arg.kind.is_struct():
+    {
+%       for member in [m for m in config.structures_by_name[arg.type.str].members if m.translate_before]:
+        ${member.translate_before.format(f"command->args.{arg.name}.{member.name}", f"{arg.name}.{member.name}", func_name=func_base.name)};
+%       endfor # members
+    }
+%      endif # arg.kind.is_struct()
+<%     sname = '' if not (arg.kind_details and arg.kind_details.element) else arg.kind_details.element.type.str %>\
+%      if arg.kind.is_pointer_to_array() and sname in config.structures_by_name and config.structures_by_name[sname].traits.requires_translation_of_members_before():
+    {
+%       for member in [m for m in config.structures_by_name[arg.kind_details.element.type.str].members if m.translate_before]:
+        ${member.translate_before.format(f"command->args.{arg.name}->{member.name}", f"{arg.name}->{member.name}", func_name=func_base.name)};
+%       endfor # members
+    }
+%      endif # arg.kind.is_pointer_to_array() and sname in config.structures_by_name and config.structures_by_name[sname].traits.requires_translation_of_members_before()
 %      if arg.kind.is_pointer_to_array() and arg.kind_details.element.translate_before:
     {
         auto base = command->captures.${get_arg_from_capture(arg)};
