@@ -23,6 +23,7 @@ add_l0_blackbox(l0_blackbox_append_mem_fill_copy_immediate_synchronous ${CMAKE_C
 add_l0_blackbox(l0_blackbox_context ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_context.cpp)
 add_l0_blackbox(l0_blackbox_device ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_device.cpp)
 add_l0_blackbox(l0_blackbox_driver ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_driver.cpp)
+add_l0_blackbox(l0_blackbox_event ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_event.cpp)
 add_l0_blackbox(l0_blackbox_fence ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_fence.cpp)
 add_l0_blackbox(l0_blackbox_experimental_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_experimental_memory.cpp)
 add_l0_blackbox(l0_blackbox_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_memory.cpp)

@@ -63,6 +63,7 @@ bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_devic
 bool destroyEventPool(ze_event_pool_handle_t &eventPool);
 
 bool createEvent(ze_event_pool_handle_t eventPool, uint32_t index, ze_event_handle_t &event);
+bool synchronizeViaEvent(ze_event_handle_t event);
 bool destroyEvent(ze_event_handle_t &event);
 
 bool createFence(ze_command_queue_handle_t queue, ze_fence_handle_t &fence);

@@ -165,7 +165,7 @@ bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, 
     ze_command_queue_desc_t queueDescription{};
 
     queueDescription.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
-    queueDescription.mode = ZE_COMMAND_QUEUE_MODE_DEFAULT;
+    queueDescription.mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS;
     queueDescription.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
     queueDescription.ordinal = ordinal;
 
@@ -444,6 +444,19 @@ bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_devic
     }
 
     log<Verbosity::info>("Event pool has been created successfully! Handle = %p", static_cast<void *>(eventPool));
+    return true;
+}
+
+bool synchronizeViaEvent(ze_event_handle_t event) {
+    log<Verbosity::info>("Waiting for finish of execution via zeEventHostSynchronize()!");
+
+    const auto zeEventHostSynchronizeResult = zeEventHostSynchronize(event, UINT64_MAX);
+    if (zeEventHostSynchronizeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventHostSynchronize() call has failed! Error code = %d", static_cast<int>(zeEventHostSynchronizeResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeEventHostSynchronize() completed for event = %p!", event);
     return true;
 }
 
