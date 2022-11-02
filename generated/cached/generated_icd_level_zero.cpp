@@ -1060,6 +1060,33 @@ ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDe
 
     return ret;
 }
+ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zeDeviceGetP2PProperties");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, hPeerDevice, pP2PProperties);
+    command->copyFromCaller();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
+    if(pP2PProperties)
+    {
+        ensureNull("zeDeviceGetP2PProperties: pP2PProperties->pNext", pP2PProperties->pNext);
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceCanAccessPeer");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2683,6 +2710,9 @@ ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_im
 }
 ze_result_t zeDeviceGetExternalMemoryProperties (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
     return Cal::Icd::LevelZero::zeDeviceGetExternalMemoryProperties(hDevice, pExternalMemoryProperties);
+}
+ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
+    return Cal::Icd::LevelZero::zeDeviceGetP2PProperties(hDevice, hPeerDevice, pP2PProperties);
 }
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) {
     return Cal::Icd::LevelZero::zeDeviceCanAccessPeer(hDevice, hPeerDevice, value);

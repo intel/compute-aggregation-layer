@@ -116,6 +116,10 @@ ze_result_t zeDeviceGetExternalMemoryProperties(ze_device_handle_t hDevice, ze_d
    return {};
 }
 
+ze_result_t zeDeviceGetP2PProperties(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties){
+   return {};
+}
+
 ze_result_t zeDeviceCanAccessPeer(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value){
    return {};
 }

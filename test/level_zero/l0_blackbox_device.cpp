@@ -405,6 +405,20 @@ bool getSubDevices(ze_device_handle_t device, std::vector<ze_device_handle_t> &s
     return true;
 }
 
+bool getOwnP2PProperties(ze_device_handle_t device) {
+    log<Verbosity::info>("Getting own P2P properties of device = %p", static_cast<void *>(device));
+
+    ze_device_p2p_properties_t p2pProperties{ZE_STRUCTURE_TYPE_DEVICE_P2P_PROPERTIES};
+    const auto zeDeviceGetP2PPropertiesResult = zeDeviceGetP2PProperties(device, device, &p2pProperties);
+    if (zeDeviceGetP2PPropertiesResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDeviceGetP2PProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetP2PPropertiesResult));
+        return false;
+    }
+
+    log<Verbosity::info>("ze_device_p2p_property_flags_t = %d", static_cast<int>(p2pProperties.flags));
+    return true;
+}
+
 bool parseAllowOptionalSteps(int argc, const char **argv) {
     for (int i = 0; i < argc; ++i) {
         if (0 == strcmp(argv[i], "--allow-optional-steps")) {
@@ -442,6 +456,7 @@ int main(int argc, const char *argv[]) {
         RUN_REQUIRED_STEP(getDeviceCacheProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceCommandQueueGroupProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(checkAccessToOwnAllocations(devices[deviceIndex]));
+        RUN_REQUIRED_STEP(getOwnP2PProperties(devices[deviceIndex]));
 
         if (allowOptionalSteps) {
             RUN_OPTIONAL_STEP(getDevicePciPropertiesExt(devices[deviceIndex]));

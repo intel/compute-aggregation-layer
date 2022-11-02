@@ -884,6 +884,22 @@ config :
                     type : ze_kernel_uuid_t
                     kind : scalar
 
+        - name : ze_device_p2p_properties_t
+          members :
+                 0 :
+                    name : stype
+                    type : ze_structure_type_t
+                    kind : scalar
+                 1 :
+                    name : pNext
+                    type : void*
+                    kind : scalar
+                    translate_before : "ensureNull(\"{func_name}: {arg}\", {arg})"
+                 2 :
+                    name : flags
+                    type : ze_device_p2p_property_flags_t
+                    kind : scalar
+
     unimplemented:
         - name : "core"
           members : [
@@ -900,7 +916,6 @@ config :
               CommandList.zeCommandListAppendImageCopyFromMemory,
               CommandList.zeCommandListAppendMemoryPrefetch,
               CommandList.zeCommandListAppendMemAdvise,
-              Device.zeDeviceGetP2PProperties,
               CommandList.zeCommandListAppendEventReset,
               CommandList.zeCommandListAppendQueryKernelTimestamps,
               EventExp.zeEventQueryTimestampsExp,
@@ -3002,26 +3017,35 @@ config :
                             kind : struct
                         server_access : read_write
 
-#        - name : zeDeviceGetP2PProperties
-#          ddi_category :  Device
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hPeerDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 2 :
-#                    name : pP2PProperties
-#                    type : ze_device_p2p_properties_t*
-#                    kind : pointer
-#
+        - name : zeDeviceGetP2PProperties
+          ddi_category :  Device
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hPeerDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 2 :
+                    name : pP2PProperties
+                    type : ze_device_p2p_properties_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_device_p2p_properties_t
+                            kind : struct
+                        server_access : read_write
+
         - name : zeDeviceCanAccessPeer
           latency : 0.0
           ddi_category :  Device

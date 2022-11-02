@@ -54,6 +54,7 @@ extern ze_result_t (*zeDeviceGetMemoryAccessProperties)(ze_device_handle_t hDevi
 extern ze_result_t (*zeDeviceGetCacheProperties)(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties);
 extern ze_result_t (*zeDeviceGetImageProperties)(ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties);
 extern ze_result_t (*zeDeviceGetExternalMemoryProperties)(ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties);
+extern ze_result_t (*zeDeviceGetP2PProperties)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties);
 extern ze_result_t (*zeDeviceCanAccessPeer)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
 extern ze_result_t (*zeDeviceGetStatus)(ze_device_handle_t hDevice);
 extern ze_result_t (*zeDeviceGetGlobalTimestamps)(ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp);
@@ -448,6 +449,16 @@ inline bool zeDeviceGetExternalMemoryPropertiesHandler(Provider &service, Cal::R
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetExternalMemoryProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pExternalMemoryProperties ? &apiCommand->captures.pExternalMemoryProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zeDeviceGetP2PPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDeviceGetP2PProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetP2PProperties(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.hPeerDevice, 
+                                                apiCommand->args.pP2PProperties ? &apiCommand->captures.pP2PProperties : nullptr
                                                 );
     return true;
 }
@@ -1136,6 +1147,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDeviceGetCachePropertiesRpcM::messageSubtype] = zeDeviceGetCachePropertiesHandler;
     outHandlers[ZeDeviceGetImagePropertiesRpcM::messageSubtype] = zeDeviceGetImagePropertiesHandler;
     outHandlers[ZeDeviceGetExternalMemoryPropertiesRpcM::messageSubtype] = zeDeviceGetExternalMemoryPropertiesHandler;
+    outHandlers[ZeDeviceGetP2PPropertiesRpcM::messageSubtype] = zeDeviceGetP2PPropertiesHandler;
     outHandlers[ZeDeviceCanAccessPeerRpcM::messageSubtype] = zeDeviceCanAccessPeerHandler;
     outHandlers[ZeDeviceGetStatusRpcM::messageSubtype] = zeDeviceGetStatusHandler;
     outHandlers[ZeDeviceGetGlobalTimestampsRpcM::messageSubtype] = zeDeviceGetGlobalTimestampsHandler;
@@ -1461,6 +1473,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertie
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetExternalMemoryProperties(
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.pExternalMemoryProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetP2PProperties(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.hPeerDevice, 
+                                                apiCommand.args.pP2PProperties
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM &apiCommand) {
@@ -1927,6 +1946,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeDeviceGetCachePropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetCachePropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetImagePropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetImagePropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM*>(command)); break;

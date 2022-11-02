@@ -60,6 +60,7 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
 ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties);
 ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties);
 ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties);
+ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties);
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
 ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice);
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp);
@@ -176,10 +177,6 @@ inline void zeCommandListAppendMemoryPrefetchUnimpl() {
 }
 inline void zeCommandListAppendMemAdviseUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemAdvise is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeDeviceGetP2PPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Device.zeDeviceGetP2PProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendEventResetUnimpl() {
@@ -952,6 +949,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Device.pfnGetCacheProperties = Cal::Icd::LevelZero::zeDeviceGetCacheProperties;
     dt.Device.pfnGetImageProperties = Cal::Icd::LevelZero::zeDeviceGetImageProperties;
     dt.Device.pfnGetExternalMemoryProperties = Cal::Icd::LevelZero::zeDeviceGetExternalMemoryProperties;
+    dt.Device.pfnGetP2PProperties = Cal::Icd::LevelZero::zeDeviceGetP2PProperties;
     dt.Device.pfnCanAccessPeer = Cal::Icd::LevelZero::zeDeviceCanAccessPeer;
     dt.Device.pfnGetStatus = Cal::Icd::LevelZero::zeDeviceGetStatus;
     dt.Device.pfnGetGlobalTimestamps = Cal::Icd::LevelZero::zeDeviceGetGlobalTimestamps;
@@ -1027,7 +1025,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendImageCopyFromMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemory)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryUnimpl);
     dt.CommandList.pfnAppendMemoryPrefetch = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryPrefetch)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryPrefetchUnimpl);
     dt.CommandList.pfnAppendMemAdvise = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemAdvise)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemAdviseUnimpl);
-    dt.Device.pfnGetP2PProperties = reinterpret_cast<decltype(dt.Device.pfnGetP2PProperties)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceGetP2PPropertiesUnimpl);
     dt.CommandList.pfnAppendEventReset = reinterpret_cast<decltype(dt.CommandList.pfnAppendEventReset)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendEventResetUnimpl);
     dt.CommandList.pfnAppendQueryKernelTimestamps = reinterpret_cast<decltype(dt.CommandList.pfnAppendQueryKernelTimestamps)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendQueryKernelTimestampsUnimpl);
     dt.EventExp.pfnQueryTimestampsExp = reinterpret_cast<decltype(dt.EventExp.pfnQueryTimestampsExp)>(Cal::Icd::LevelZero::Unimplemented::zeEventQueryTimestampsExpUnimpl);

@@ -46,6 +46,7 @@ ze_result_t (*zeDeviceGetMemoryAccessProperties)(ze_device_handle_t hDevice, ze_
 ze_result_t (*zeDeviceGetCacheProperties)(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) = nullptr;
 ze_result_t (*zeDeviceGetImageProperties)(ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) = nullptr;
 ze_result_t (*zeDeviceGetExternalMemoryProperties)(ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) = nullptr;
+ze_result_t (*zeDeviceGetP2PProperties)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) = nullptr;
 ze_result_t (*zeDeviceCanAccessPeer)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) = nullptr;
 ze_result_t (*zeDeviceGetStatus)(ze_device_handle_t hDevice) = nullptr;
 ze_result_t (*zeDeviceGetGlobalTimestamps)(ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp) = nullptr;
@@ -282,6 +283,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeDeviceGetExternalMemoryProperties = reinterpret_cast<decltype(zeDeviceGetExternalMemoryProperties)>(dlsym(libraryHandle, "zeDeviceGetExternalMemoryProperties"));
     if(nullptr == zeDeviceGetExternalMemoryProperties){
         log<Verbosity::error>("Missing symbol zeDeviceGetExternalMemoryProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeDeviceGetP2PProperties = reinterpret_cast<decltype(zeDeviceGetP2PProperties)>(dlsym(libraryHandle, "zeDeviceGetP2PProperties"));
+    if(nullptr == zeDeviceGetP2PProperties){
+        log<Verbosity::error>("Missing symbol zeDeviceGetP2PProperties in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -682,6 +689,7 @@ void unloadLevelZeroLibrary() {
     zeDeviceGetCacheProperties = nullptr;
     zeDeviceGetImageProperties = nullptr;
     zeDeviceGetExternalMemoryProperties = nullptr;
+    zeDeviceGetP2PProperties = nullptr;
     zeDeviceCanAccessPeer = nullptr;
     zeDeviceGetStatus = nullptr;
     zeDeviceGetGlobalTimestamps = nullptr;
