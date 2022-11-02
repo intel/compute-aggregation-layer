@@ -29,13 +29,6 @@ add_l0_blackbox(l0_blackbox_experimental_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_b
 add_l0_blackbox(l0_blackbox_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_memory.cpp)
 add_l0_blackbox(l0_blackbox_module_and_kernel ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_and_kernel.cpp)
 
-add_executable(l0_test_basic
-               ${CMAKE_CURRENT_SOURCE_DIR}/l0_test_basic.cpp
-               ${cal_source_root_dir}/shared/utils.cpp
-               ${cal_source_root_dir}/shared/sys.cpp
-)
-target_link_libraries(l0_test_basic ze_loader ${common_library_dependencies})
-
 add_executable(l0_test_ult_icd
                ${CMAKE_CURRENT_SOURCE_DIR}/l0_ult_icd.cpp
 
