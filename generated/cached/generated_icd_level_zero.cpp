@@ -1607,6 +1607,27 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
 
     return ret;
 }
+ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendEventReset");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();;
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList, hEvent);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     log<Verbosity::bloat>("Establishing RPC for zeEventHostReset");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2816,6 +2837,9 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
 }
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     return Cal::Icd::LevelZero::zeEventQueryStatus(hEvent);
+}
+ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    return Cal::Icd::LevelZero::zeCommandListAppendEventReset(hCommandList, hEvent);
 }
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     return Cal::Icd::LevelZero::zeEventHostReset(hEvent);

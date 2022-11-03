@@ -77,6 +77,7 @@ extern ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t h
 extern ze_result_t (*zeEventHostSignal)(ze_event_handle_t hEvent);
 extern ze_result_t (*zeEventHostSynchronize)(ze_event_handle_t hEvent, uint64_t timeout);
 extern ze_result_t (*zeEventQueryStatus)(ze_event_handle_t hEvent);
+extern ze_result_t (*zeCommandListAppendEventReset)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 extern ze_result_t (*zeEventHostReset)(ze_event_handle_t hEvent);
 extern ze_result_t (*zeEventQueryKernelTimestamp)(ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr);
 extern ze_result_t (*zeFenceCreate)(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
@@ -685,6 +686,15 @@ inline bool zeEventQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer
                                                 );
     return true;
 }
+inline bool zeCommandListAppendEventResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendEventReset");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendEventReset(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.hEvent
+                                                );
+    return true;
+}
 inline bool zeEventHostResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeEventHostReset");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostResetRpcM*>(command);
@@ -1183,6 +1193,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeEventHostSignalRpcM::messageSubtype] = zeEventHostSignalHandler;
     outHandlers[ZeEventHostSynchronizeRpcM::messageSubtype] = zeEventHostSynchronizeHandler;
     outHandlers[ZeEventQueryStatusRpcM::messageSubtype] = zeEventQueryStatusHandler;
+    outHandlers[ZeCommandListAppendEventResetRpcM::messageSubtype] = zeCommandListAppendEventResetHandler;
     outHandlers[ZeEventHostResetRpcM::messageSubtype] = zeEventHostResetHandler;
     outHandlers[ZeEventQueryKernelTimestampRpcM::messageSubtype] = zeEventQueryKernelTimestampHandler;
     outHandlers[ZeFenceCreateRpcM::messageSubtype] = zeFenceCreateHandler;
@@ -1628,6 +1639,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM &apiCommand
                                                 apiCommand.args.hEvent
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendEventReset(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.hEvent
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeEventHostResetRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostReset(
                                                 apiCommand.args.hEvent
@@ -1993,6 +2010,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeEventHostSignalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostSignalRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventHostResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFenceCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceCreateRpcM*>(command)); break;

@@ -916,7 +916,6 @@ config :
               CommandList.zeCommandListAppendImageCopyFromMemory,
               CommandList.zeCommandListAppendMemoryPrefetch,
               CommandList.zeCommandListAppendMemAdvise,
-              CommandList.zeCommandListAppendEventReset,
               CommandList.zeCommandListAppendQueryKernelTimestamps,
               EventExp.zeEventQueryTimestampsExp,
               FabricVertexExp.zeFabricVertexGetExp,
@@ -3654,23 +3653,25 @@ config :
                     type : ze_event_handle_t
                     kind : scalar
                     translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
-#
-#        - name : zeCommandListAppendEventReset
-#          ddi_category :  CommandList
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hCommandList
-#                    type : ze_command_list_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hEvent
-#                    type : ze_event_handle_t
-#                    kind : scalar
-#
+
+        - name : zeCommandListAppendEventReset
+          ddi_category :  CommandList
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hCommandList
+                    type : ze_command_list_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hEvent
+                    type : ze_event_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+
         - name : zeEventHostReset
           latency : 0.0
           ddi_category :  Event

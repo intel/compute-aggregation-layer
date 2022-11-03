@@ -22,6 +22,11 @@
 #include <string>
 #include <vector>
 
+enum class EventStatus {
+    signaled = 0,
+    notSignaled = 1,
+};
+
 bool getEventPoolIpcHandle(ze_event_pool_handle_t eventPool, ze_ipc_event_pool_handle_t &eventPoolIpcHandle) {
     log<Verbosity::info>("Getting IPC handle of ze_event_pool_handle_t = %p", eventPool);
 
@@ -87,6 +92,65 @@ bool signalEventFromHost(ze_event_handle_t event) {
     return true;
 }
 
+bool ensureEventInState(ze_event_handle_t event, EventStatus eventStatus) {
+    const auto eventStatusLabel = (eventStatus == EventStatus::signaled) ? "signaled" : "not signaled";
+    log<Verbosity::info>("Ensuring that event is in state: %s", eventStatusLabel);
+
+    const auto zeEventQueryStatusResult = zeEventQueryStatus(event);
+    if (zeEventQueryStatusResult != ZE_RESULT_SUCCESS && zeEventQueryStatusResult != ZE_RESULT_NOT_READY) {
+        log<Verbosity::error>("zeEventQueryStatus() call has failed! Error code: %d", static_cast<int>(zeEventQueryStatusResult));
+        return false;
+    }
+
+    const auto expectedZeStatus = (eventStatus == EventStatus::signaled) ? ZE_RESULT_SUCCESS : ZE_RESULT_NOT_READY;
+    if (expectedZeStatus != zeEventQueryStatusResult) {
+        log<Verbosity::error>("Actual status is different than expected one!");
+        return false;
+    } else {
+        log<Verbosity::info>("Actual status matches the expected one!");
+        return true;
+    }
+}
+
+bool resetEvent(ze_event_handle_t event) {
+    log<Verbosity::info>("Resetting event = %p", static_cast<void *>(event));
+
+    const auto zeEventHostResult = zeEventHostReset(event);
+    if (zeEventHostResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventHostReset() call has failed! Error code: %d", static_cast<int>(zeEventHostResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Reset of event has been successful!");
+    return true;
+}
+
+bool appendSignalEvent(ze_command_list_handle_t cmdList, ze_event_handle_t event) {
+    log<Verbosity::info>("Appending signal event (%p) operation to command list (%p)", static_cast<void *>(event), static_cast<void *>(cmdList));
+
+    const auto zeCommandListAppendSignalEventResult = zeCommandListAppendSignalEvent(cmdList, event);
+    if (zeCommandListAppendSignalEventResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendSignalEvent() call has failed! Error code: %d", static_cast<int>(zeCommandListAppendSignalEventResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully appended signal operation for given event!");
+    return true;
+}
+
+bool appendResetEvent(ze_command_list_handle_t cmdList, ze_event_handle_t event) {
+    log<Verbosity::info>("Appending reset event (%p) operation to command list (%p)", static_cast<void *>(event), static_cast<void *>(cmdList));
+
+    const auto zeCommandListAppendEventResetResult = zeCommandListAppendEventReset(cmdList, event);
+    if (zeCommandListAppendEventResetResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendEventReset() call has failed! Error code: %d", static_cast<int>(zeCommandListAppendEventResetResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully appended reset operation for given event!");
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using namespace Cal::Testing::Utils::LevelZero;
 
@@ -136,6 +200,16 @@ int main(int argc, const char *argv[]) {
     ze_event_pool_handle_t eventPool{};
     RUN_REQUIRED_STEP(createEventPool(context, eventsCount, &devices[0], 1, eventPool));
 
+    ze_event_handle_t eventToBeResetFromCmdList{};
+    RUN_REQUIRED_STEP(createEvent(eventPool, 5, eventToBeResetFromCmdList));
+    RUN_REQUIRED_STEP(signalEventFromHost(eventToBeResetFromCmdList));
+    RUN_REQUIRED_STEP(ensureEventInState(eventToBeResetFromCmdList, EventStatus::signaled));
+    RUN_REQUIRED_STEP(appendResetEvent(cmdList, eventToBeResetFromCmdList));
+
+    ze_event_handle_t eventToBeSignaledFromCmdList{};
+    RUN_REQUIRED_STEP(createEvent(eventPool, 4, eventToBeSignaledFromCmdList));
+    RUN_REQUIRED_STEP(appendSignalEvent(cmdList, eventToBeSignaledFromCmdList));
+
     ze_event_handle_t intermediateBuffer1FilledEvent{};
     RUN_REQUIRED_STEP(createEvent(eventPool, 3, intermediateBuffer1FilledEvent));
 
@@ -156,6 +230,12 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(synchronizeViaEvent(copyingFinishedEvent));
     RUN_REQUIRED_STEP(verifyMemoryCopyResults(sourceBuffer, destinationBuffer, bufferSize));
 
+    RUN_REQUIRED_STEP(ensureEventInState(eventToBeResetFromCmdList, EventStatus::notSignaled));
+
+    RUN_REQUIRED_STEP(ensureEventInState(eventToBeSignaledFromCmdList, EventStatus::signaled));
+    RUN_REQUIRED_STEP(resetEvent(eventToBeSignaledFromCmdList));
+    RUN_REQUIRED_STEP(ensureEventInState(eventToBeSignaledFromCmdList, EventStatus::notSignaled));
+
     ze_ipc_event_pool_handle_t eventPoolIpcHandle{};
     RUN_REQUIRED_STEP(getEventPoolIpcHandle(eventPool, eventPoolIpcHandle));
 
@@ -166,6 +246,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(destroyEvent(copyingFinishedEvent));
     RUN_REQUIRED_STEP(destroyEvent(intermediateBuffer2FilledEvent));
     RUN_REQUIRED_STEP(destroyEvent(intermediateBuffer1FilledEvent));
+    RUN_REQUIRED_STEP(destroyEvent(eventToBeSignaledFromCmdList));
+    RUN_REQUIRED_STEP(destroyEvent(eventToBeResetFromCmdList));
     RUN_REQUIRED_STEP(destroyEventPool(eventPool));
 
     RUN_REQUIRED_STEP(destroyCommandList(cmdList));

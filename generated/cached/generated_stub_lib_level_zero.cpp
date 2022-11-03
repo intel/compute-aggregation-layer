@@ -208,6 +208,10 @@ ze_result_t zeEventQueryStatus(ze_event_handle_t hEvent){
    return {};
 }
 
+ze_result_t zeCommandListAppendEventReset(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent){
+   return {};
+}
+
 ze_result_t zeEventHostReset(ze_event_handle_t hEvent){
    return {};
 }

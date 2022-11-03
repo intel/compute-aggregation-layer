@@ -83,6 +83,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent);
 ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent);
+ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent);
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr);
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
@@ -178,10 +179,6 @@ inline void zeCommandListAppendMemoryPrefetchUnimpl() {
 }
 inline void zeCommandListAppendMemAdviseUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemAdvise is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeCommandListAppendEventResetUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendEventReset is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendQueryKernelTimestampsUnimpl() {
@@ -969,6 +966,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Event.pfnHostSignal = Cal::Icd::LevelZero::zeEventHostSignal;
     dt.Event.pfnHostSynchronize = Cal::Icd::LevelZero::zeEventHostSynchronize;
     dt.Event.pfnQueryStatus = Cal::Icd::LevelZero::zeEventQueryStatus;
+    dt.CommandList.pfnAppendEventReset = Cal::Icd::LevelZero::zeCommandListAppendEventReset;
     dt.Event.pfnHostReset = Cal::Icd::LevelZero::zeEventHostReset;
     dt.Event.pfnQueryKernelTimestamp = Cal::Icd::LevelZero::zeEventQueryKernelTimestamp;
     dt.Fence.pfnCreate = Cal::Icd::LevelZero::zeFenceCreate;
@@ -1023,7 +1021,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendImageCopyFromMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemory)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryUnimpl);
     dt.CommandList.pfnAppendMemoryPrefetch = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryPrefetch)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryPrefetchUnimpl);
     dt.CommandList.pfnAppendMemAdvise = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemAdvise)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemAdviseUnimpl);
-    dt.CommandList.pfnAppendEventReset = reinterpret_cast<decltype(dt.CommandList.pfnAppendEventReset)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendEventResetUnimpl);
     dt.CommandList.pfnAppendQueryKernelTimestamps = reinterpret_cast<decltype(dt.CommandList.pfnAppendQueryKernelTimestamps)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendQueryKernelTimestampsUnimpl);
     dt.EventExp.pfnQueryTimestampsExp = reinterpret_cast<decltype(dt.EventExp.pfnQueryTimestampsExp)>(Cal::Icd::LevelZero::Unimplemented::zeEventQueryTimestampsExpUnimpl);
     dt.FabricVertexExp.pfnGetExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetExp)>(Cal::Icd::LevelZero::Unimplemented::zeFabricVertexGetExpUnimpl);

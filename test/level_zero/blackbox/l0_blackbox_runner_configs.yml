@@ -27,6 +27,10 @@ full :
         test_binary : "l0_blackbox_experimental_memory"
         preserve_logs : False
 
+    event :
+        test_binary : "l0_blackbox_event"
+        preserve_logs : False
+
     fence :
         test_binary : "l0_blackbox_fence"
         preserve_logs : False
