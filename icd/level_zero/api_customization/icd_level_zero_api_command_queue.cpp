@@ -28,6 +28,7 @@ ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, u
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence) {
     auto icdCommandQueue = static_cast<IcdL0CommandQueue *>(hCommandQueue);
     auto queueLock = icdCommandQueue->lock();
+    icdCommandQueue->moveSharedAllocationsToGpu(numCommandLists, phCommandLists);
 
     icdCommandQueue->storeExecutedCommandListsPointers(numCommandLists, phCommandLists);
 

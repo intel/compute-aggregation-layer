@@ -103,6 +103,17 @@ namespace LevelZero {
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local);
 
+inline PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_mem_alloc_desc_t *deviceDesc, const ze_host_mem_alloc_desc_t *hostDesc) {
+    auto placement = PageFaultManager::Placement::HOST;
+    if (deviceDesc->flags & ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
+        placement = PageFaultManager::Placement::DEVICE;
+    }
+    if (hostDesc->flags & ZE_HOST_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
+        placement = PageFaultManager::Placement::HOST;
+    }
+    return placement;
+}
+
 namespace PropertiesCache {
 template <typename... Ts>
 using VectorTuple = std::tuple<std::vector<Ts>...>;
@@ -355,6 +366,27 @@ struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Ic
     } allocPropertiesCache;
 };
 
+struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL0TypePrinter> {
+    using RefCountedWithParent::RefCountedWithParent;
+    KernelArgCache zeKernelSetArgumentValueCache;
+
+    PropertiesCache::VectorTuple<ze_kernel_properties_t> properties;
+
+    template <typename T>
+    constexpr uint32_t &getPropertiesCount() {
+        return PropertiesCache::defaultPropertiesCount;
+    }
+
+    void storeKernelArg(const void *argValue, uint32_t argNum) {
+        if (allocationsToMigrate.size() < argNum + 1) {
+            allocationsToMigrate.resize(argNum + 1);
+        }
+        allocationsToMigrate[argNum] = argValue;
+    }
+    bool sharedIndirectAccessSet = false;
+    std::vector<const void *> allocationsToMigrate;
+};
+
 class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, IcdL0TypePrinter> {
   protected:
     using ChunkEntry = Cal::Rpc::MemChunk;
@@ -399,12 +431,26 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
         }
     }
 
+    bool sharedIndirectAccessSet = false;
+
+    std::vector<const void *> &getUsedAllocations() {
+        return this->usedAllocations;
+    }
+
+    template <typename... Args>
+    void moveSharedAllocationsToGpu(Args... args) {
+        (moveSharedAllocationsToGpuImpl(args), ...);
+    }
+    void moveKernelArgsToGpu(IcdL0Kernel *kernel);
+
   protected:
     friend IcdL0Platform;
 
     void setCommandListType(CommandListType type) {
         commandListType = type;
     }
+
+    void moveSharedAllocationsToGpuImpl(const void *ptr);
 
     void registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory);
     ChunkEntry mergeChunks(const ChunkEntry &first, const ChunkEntry &second);
@@ -414,6 +460,8 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     std::mutex memoryToReadMutex{};
     std::vector<ChunkEntry> memoryToWrite{};
     std::vector<ChunkEntry> memoryToRead{};
+
+    std::vector<const void *> usedAllocations{};
 };
 
 class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_queue_handle_t, IcdL0TypePrinter> {
@@ -431,6 +479,8 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     [[nodiscard]] std::unique_lock<std::mutex> lock() {
         return std::unique_lock<std::mutex>{queueMutex};
     }
+
+    void moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
 
   private:
     std::mutex queueMutex{};
@@ -474,18 +524,6 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
 
 struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
-};
-
-struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL0TypePrinter> {
-    using RefCountedWithParent::RefCountedWithParent;
-    KernelArgCache zeKernelSetArgumentValueCache;
-
-    PropertiesCache::VectorTuple<ze_kernel_properties_t> properties;
-
-    template <typename T>
-    constexpr uint32_t &getPropertiesCount() {
-        return PropertiesCache::defaultPropertiesCount;
-    }
 };
 
 struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_t, IcdL0TypePrinter> {

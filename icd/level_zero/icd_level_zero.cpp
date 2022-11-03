@@ -181,6 +181,46 @@ ze_result_t IcdL0CommandList::readRequiredMemory() {
     return ZE_RESULT_SUCCESS;
 }
 
+void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
+    if (kernel->sharedIndirectAccessSet) {
+        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllAllocationsToGpu();
+    } else {
+        for (auto &alloc : kernel->allocationsToMigrate) {
+            moveSharedAllocationsToGpuImpl(alloc);
+        }
+    }
+}
+
+void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {
+    if (this->isImmediate()) {
+        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllocationToGpu(ptr);
+    } else {
+        this->usedAllocations.push_back(ptr);
+    }
+}
+
+void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists) {
+    bool indirectAccessSet = false;
+    for (uint32_t i = 0; i < numCommandLists; i++) {
+        auto l0CmdList = static_cast<IcdL0CommandList *>(phCommandLists[i]);
+        if (l0CmdList->sharedIndirectAccessSet) {
+            Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllAllocationsToGpu();
+            indirectAccessSet = true;
+            break;
+        }
+    }
+    for (uint32_t i = 0; i < numCommandLists; i++) {
+        auto l0CmdList = static_cast<IcdL0CommandList *>(phCommandLists[i]);
+        auto &allocs = l0CmdList->getUsedAllocations();
+        if (!indirectAccessSet) {
+            for (auto &alloc : allocs) {
+                Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllocationToGpu(alloc);
+            }
+        }
+        allocs.clear();
+    }
+}
+
 ze_result_t IcdL0CommandQueue::readMemoryRequiredByCurrentlyExecutedCommandLists() {
     for (const auto &commandList : currentlyExecutedCommandLists) {
         const auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);

@@ -738,7 +738,25 @@ class Provider {
             }
             return service(request, clientConnection, ctx);
         }
+        case Cal::Messages::ReqPageFault::messageSubtype: {
+            Cal::Messages::ReqPageFault request(nullptr);
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqImportAddressSpace)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
         }
+        }
+    }
+
+    bool service(const Cal::Messages::ReqPageFault &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested page fault on address: %p", clientConnection.getId(), request.ptr);
+        auto ptr = reinterpret_cast<const char *>(request.ptr);
+        [[maybe_unused]] auto volatile pageFaultRead = ptr[0];
+
+        Cal::Messages::RespPageFault resp;
+        clientConnection.send(resp);
+        return true;
     }
 
     bool service(const Cal::Messages::ReqAllocateShmem &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {

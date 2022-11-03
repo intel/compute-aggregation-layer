@@ -424,6 +424,53 @@ struct RespImportAddressSpace {
 };
 static_assert(std::is_standard_layout<RespImportAddressSpace>::value);
 
+struct ReqPageFault {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 10;
+
+    ReqPageFault(const void *ptr) : ptr(ptr) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqPageFault::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqPageFault::messageSubtype) ? 1 : 0;
+        invalid |= ptr == nullptr;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqPageFault is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    const void *ptr;
+};
+static_assert(std::is_standard_layout<ReqPageFault>::value);
+
+struct RespPageFault {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 11;
+
+    RespPageFault() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = RespPageFault::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespPageFault::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespPageFault is not valid");
+        }
+        return 0 != invalid;
+    }
+};
+static_assert(std::is_standard_layout<RespPageFault>::value);
+
 } // namespace Messages
 
 } // namespace Cal

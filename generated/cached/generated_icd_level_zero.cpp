@@ -179,6 +179,8 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;
     return ret;
 }
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
@@ -1981,6 +1983,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     return ret;
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
+    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->unregisterSharedAlloc(ptr);
     Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
     static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
@@ -2563,6 +2566,8 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
     return ret;
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
@@ -2656,6 +2661,8 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;
+    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernel");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -2690,9 +2697,13 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;
+    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernelIndirect");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -2727,6 +2738,8 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {

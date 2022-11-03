@@ -32,6 +32,7 @@ constexpr std::string_view calEnableOclInCalrunEnvName = "CAL_ENABLE_OCL_IN_CALR
 constexpr std::string_view calUseLoggerNameEnvName = "CAL_USE_LOGGER_NAME";
 constexpr std::string_view calAppendPIDEnvName = "CAL_APPEND_PID";
 constexpr std::string_view calEnableAilEnvName = "CAL_USE_AIL";
+constexpr std::string_view calSharedAllocations = "CAL_SHARED_ALLOCATIONS";
 
 constexpr std::string_view calUseSemaphoresInChannelServerEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_SERVER";
 constexpr std::string_view calUseSemaphoresInChannelClientEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_CLIENT";

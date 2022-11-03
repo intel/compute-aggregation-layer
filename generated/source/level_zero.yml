@@ -1474,6 +1474,9 @@ config :
 
         - name : zeCommandListReset
           latency : 0.0
+          special_handling : 
+                icd : 
+                    handler_epilogue : "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;"
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -4626,7 +4629,7 @@ config :
           latency : 0.0
           special_handling : 
                 icd : 
-                    handler_prologue : "Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
+                    handler_prologue : "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
                 rpc :
                     custom_handler : True
           ddi_category :  Mem
@@ -5508,6 +5511,9 @@ config :
         - name : zeKernelSetIndirectAccess
           latency : 0.0
           ddi_category :  Kernel
+          special_handling : 
+                icd : 
+                    handler_epilogue : "static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);"
           returns :
                     type : ze_result_t
                     kind : scalar
@@ -5653,6 +5659,10 @@ config :
 
         - name : zeCommandListAppendLaunchKernel
           latency : 0.0
+          special_handling : 
+                icd : 
+                    handler_prologue : "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"
+                    handler_epilogue : "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
           ddi_category :  CommandList
           returns :
                     type : ze_result_t
@@ -5737,6 +5747,10 @@ config :
 #                    kind : pointer
 #
         - name : zeCommandListAppendLaunchKernelIndirect
+          special_handling : 
+                icd : 
+                    handler_prologue : "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"
+                    handler_epilogue : "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
           ddi_category :  CommandList
           returns :
                     type : ze_result_t

@@ -2073,6 +2073,7 @@ config :
           latency : 0.0
           special_handling : 
                 icd : 
+                    handler_prologue : "static_cast<IcdOclKernel*>(kernel)->moveArgsToGpu();\n"
                     handler_epilogue : "command_queue->asLocalObject()->enqueue();"
           returns :
                     type : cl_int
@@ -5698,6 +5699,9 @@ config :
                         
         - name : clSetKernelArgSVMPointer
           latency : 0.0
+          special_handling : 
+                icd : 
+                    dont_generate_handler : True
           returns :
                     type : cl_int
                     kind : scalar
@@ -5721,6 +5725,9 @@ config :
                         
         - name : clSetKernelExecInfo
           latency : 0.0
+          special_handling : 
+                icd :
+                    handler_epilogue : "static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
           returns :
                     type : cl_int
                     kind : scalar
@@ -6846,7 +6853,7 @@ config :
                 icd : 
                     not_in_dispatch_table : True
                     in_get_extension_function_address : True
-                    handler_prologue : "invalidateKernelArgCache();"
+                    handler_prologue : "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
                 rpc :
                     custom_handler : True
           returns :

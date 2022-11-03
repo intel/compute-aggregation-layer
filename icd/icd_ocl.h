@@ -190,10 +190,30 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
 cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value);
 cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const void *argValue);
+cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue);
 
 cl_int clReleaseMemObject(cl_mem memobj);
 
 size_t getTexelSizeBytes(const cl_image_format *imageFormat);
+
+inline PageFaultManager::Placement getSharedAllocationPlacement(const cl_mem_properties_intel *properties) {
+    auto placement = PageFaultManager::Placement::HOST;
+    if (properties != nullptr) {
+        for (int i = 0; properties[i] != 0; i += 2) {
+            if (properties[i] == CL_MEM_ALLOC_FLAGS_INTEL) {
+                auto allocflags = static_cast<cl_mem_alloc_flags_intel>(properties[i + 1]);
+                if (allocflags & CL_MEM_ALLOC_INITIAL_PLACEMENT_DEVICE_INTEL) {
+                    placement = PageFaultManager::Placement::DEVICE;
+                }
+                if (allocflags & CL_MEM_ALLOC_INITIAL_PLACEMENT_HOST_INTEL) {
+                    placement = PageFaultManager::Placement::HOST;
+                }
+                break;
+            }
+        }
+    }
+    return placement;
+}
 
 struct OclImageTraits {
     OclImageTraits() = default;
@@ -670,6 +690,16 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
         *static_cast<cl_mem *>(argData) = static_cast<IcdOclMem *>(*(reinterpret_cast<cl_mem *>(argData)))->asRemoteObject();
     }
     KernelArgCache clSetKernelArgCache;
+
+    void moveArgsToGpu();
+    void storeKernelArg(const void *argValue, uint32_t argNum) {
+        if (allocationsToMigrate.size() < argNum + 1) {
+            allocationsToMigrate.resize(argNum + 1);
+        }
+        allocationsToMigrate[argNum] = argValue;
+    }
+    bool sharedIndirectAccessSet = false;
+    std::vector<const void *> allocationsToMigrate;
 
   protected:
     std::vector<ArgTraits> argsTraits;

@@ -16,12 +16,13 @@
 namespace Cal::Icd::LevelZero {
 
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue) {
+    auto l0Kernel = static_cast<IcdL0Kernel *>(hKernel);
+    l0Kernel->storeKernelArg(pArgValue, argIndex);
+
     auto cacheEnabled = Cal::Icd::icdGlobalState.isCacheEnabled();
     if (!cacheEnabled) {
         return zeKernelSetArgumentValueRpcHelper(hKernel, argIndex, argSize, pArgValue);
     }
-
-    auto l0Kernel = static_cast<IcdL0Kernel *>(hKernel);
 
     auto cacheRet = l0Kernel->zeKernelSetArgumentValueCache.findCachedKernelArg(argIndex, argSize, pArgValue);
     if (cacheRet != l0Kernel->zeKernelSetArgumentValueCache.cache.end()) {

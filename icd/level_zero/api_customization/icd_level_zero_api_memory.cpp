@@ -31,6 +31,10 @@ ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc
 }
 
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t *device_desc, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void **pptr) {
+    if (!Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->getSharedAllocationsEnabled()) {
+        return Cal::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
+    }
+
     Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs implicitArgs;
     auto result = Cal::Icd::LevelZero::zeMemAllocSharedRpcHelper(hContext, device_desc, host_desc, size, alignment, hDevice, pptr, implicitArgs);
     if (result != ZE_RESULT_SUCCESS) {
@@ -40,7 +44,9 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_a
         log<Verbosity::error>("Failed to open USM shared/host shmem");
         Cal::Icd::LevelZero::zeMemFree(hContext, *pptr);
         *pptr = nullptr;
+        return result;
     }
+    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->registerSharedAlloc(*pptr, size, getSharedAllocationPlacement(device_desc, host_desc));
     return result;
 }
 

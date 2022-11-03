@@ -1379,6 +1379,8 @@ cl_int clFinish (cl_command_queue command_queue) {
     return ret;
 }
 cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, const size_t* local_work_size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static_cast<IcdOclKernel*>(kernel)->moveArgsToGpu();
+
     log<Verbosity::bloat>("Establishing RPC for clEnqueueNDRangeKernel");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -3283,26 +3285,7 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     command_queue->asLocalObject()->enqueue();
     return ret;
 }
-cl_int clSetKernelArgSVMPointer (cl_kernel kernel, cl_uint argIndex, const void* argValue) {
-    log<Verbosity::bloat>("Establishing RPC for clSetKernelArgSVMPointer");
-    auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto &channel = globalOclPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClSetKernelArgSVMPointerRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(kernel, argIndex, argValue);
-    command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    cl_int ret = command->captures.ret;
-
-    return ret;
-}
+ // clSetKernelArgSVMPointer ignored in generator - based on dont_generate_handler flag
 cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void* param_value) {
     log<Verbosity::bloat>("Establishing RPC for clSetKernelExecInfo");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3323,6 +3306,8 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     }
     cl_int ret = command->captures.ret;
 
+    channelLock.unlock();
+    static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);
     return ret;
 }
 cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -3916,6 +3901,7 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
     return ret;
 }
 cl_int clMemFreeINTEL (cl_context context, void* ptr) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->unregisterSharedAlloc(ptr);
     invalidateKernelArgCache();
     log<Verbosity::bloat>("Establishing RPC for clMemFreeINTEL");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
