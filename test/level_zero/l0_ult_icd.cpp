@@ -6,7 +6,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "icd/icd_level_zero.h"
+#include "icd/level_zero/icd_level_zero.h"
 #include "test/mocks/icd_l0_command_list_mock.h"
 #include "test/mocks/log_mock.h"
 

@@ -19,6 +19,8 @@ add_executable(ocl_test_use_host_ptr
 )
 target_link_libraries(ocl_test_use_host_ptr OpenCL ${common_library_dependencies})
 
+get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)
+
 add_executable(ocl_test_ult_icd
                ${CMAKE_CURRENT_SOURCE_DIR}/ocl_ult_icd.cpp
                ${cal_source_root_dir}/shared/utils.cpp
@@ -28,15 +30,13 @@ add_executable(ocl_test_ult_icd
                ${cal_source_root_dir}/icd/icd_platform.cpp
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero_table_exports.cpp
 
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${generated_dir}/generated_icd_ocl.cpp
-               ${generated_dir}/generated_icd_level_zero.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
-               ${generated_dir}/generated_rpc_messages_level_zero.cpp
+
+               ${ICD_L0_OBJECTS_SOURCES}
 )
 
 target_link_libraries(ocl_test_ult_icd gmock-gtest ${common_library_dependencies})

@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: MIT
 #
 
+get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)
+
 add_executable(l0_test_ult_icd
                ${CMAKE_CURRENT_SOURCE_DIR}/l0_ult_icd.cpp
 
                ${cal_source_root_dir}/icd/icd_platform.cpp
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero_table_exports.cpp
 
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
@@ -19,8 +19,8 @@ add_executable(l0_test_ult_icd
 
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
-               ${generated_dir}/generated_icd_level_zero.cpp
-               ${generated_dir}/generated_rpc_messages_level_zero.cpp
+
+               ${ICD_L0_OBJECTS_SOURCES}
 )
 
 target_link_libraries(l0_test_ult_icd Threads::Threads rt dl ${common_library_dependencies} gmock-gtest)
@@ -32,8 +32,6 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/icd/icd_platform.cpp
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero.cpp
-               ${cal_source_root_dir}/icd/icd_level_zero_table_exports.cpp
 
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
@@ -41,8 +39,8 @@ add_executable(l0_test_ult_rpc
 
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
-               ${generated_dir}/generated_icd_level_zero.cpp
-               ${generated_dir}/generated_rpc_messages_level_zero.cpp
+
+               ${ICD_L0_OBJECTS_SOURCES}
 )
 
 target_link_libraries(l0_test_ult_rpc Threads::Threads rt dl ${common_library_dependencies} gmock-gtest)

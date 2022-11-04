@@ -4,24 +4,21 @@
 # SPDX-License-Identifier: MIT
 #
 
-add_subdirectories()
-
 add_definitions(-DCAL_LOGGER_NAME=C)
 add_definitions(-Dmockable=)
+
+add_subdirectories()
 
 add_library(cal SHARED # acts as ICD
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_platform.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_global_state.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_ocl.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/icd_level_zero.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/icd_level_zero_table_exports.cpp
             ${cal_source_root_dir}/shared/sys.cpp
             ${cal_source_root_dir}/shared/usm.cpp
             ${cal_source_root_dir}/shared/utils.cpp
             ${generated_dir}/generated_icd_ocl.cpp
             ${generated_dir}/generated_rpc_messages_ocl.cpp
-            ${generated_dir}/generated_icd_level_zero.cpp
-            ${generated_dir}/generated_rpc_messages_level_zero.cpp
+            $<TARGET_OBJECTS:icd_l0_objects>
 )
 
 target_link_libraries(cal ${common_library_dependencies})

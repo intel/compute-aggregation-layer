@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "icd/icd_level_zero.h"
+#include "icd/level_zero/icd_level_zero.h"
 
 namespace Cal::Mocks {
 
