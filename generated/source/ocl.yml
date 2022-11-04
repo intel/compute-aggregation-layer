@@ -13,8 +13,8 @@ config :
 
     icd_init_dispatch_table_func_name_format : "initOclIcdDispatchTable"
     icd_get_extenion_func_addr_func_name : getOclExtensionFuncionAddressRpcHelper
-    icd_acquire_global_object : "auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();"
-    icd_acquire_channel : "globalOclPlatform->getRpcChannel();"
+    icd_acquire_global_object : "auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform()"
+    icd_acquire_channel : "globalOclPlatform->getRpcChannel()"
     result_type : cl_int
     result_success : CL_SUCCESS
     file_headers :

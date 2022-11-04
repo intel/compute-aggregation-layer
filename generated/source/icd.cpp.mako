@@ -54,7 +54,7 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
     ${"return " if not func_base.returns.type.is_void() else ""}${'::'.join(config.icd_namespace + [func_base.name])}(${func_base.get_call_params_list_str()});
 }
 %    else : # f == func_base
-    ${config.icd_acquire_global_object}
+    ${config.icd_acquire_global_object};
     auto &channel = ${config.icd_acquire_channel};
     auto channelLock = channel.lock();
     using CommandT = ${get_fq_message_name(func_base)};

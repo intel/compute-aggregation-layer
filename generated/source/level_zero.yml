@@ -15,8 +15,8 @@ config :
 
     icd_init_dispatch_table_func_name_format : "initL0{}Ddi"
     icd_get_extenion_func_addr_func_name : "getL0ExtensionFuncionAddressRpcHelper"
-    icd_acquire_global_object : "auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();"
-    icd_acquire_channel : "globalL0Platform->getRpcChannel();"
+    icd_acquire_global_object : "auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform()"
+    icd_acquire_channel : "globalL0Platform->getRpcChannel()"
     result_type: ze_result_t
     result_success: ZE_RESULT_SUCCESS
     ddi_format_regexp0 :
