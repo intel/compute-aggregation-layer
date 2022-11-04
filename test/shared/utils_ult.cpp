@@ -6,6 +6,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "service/service.h"
 #include "shared/utils.h"
 #include "test/mocks/log_mock.h"
 #include "test/mocks/sys_mock.h"
@@ -935,6 +936,32 @@ TEST(GetCalEnvI64, whenEnvAvailableThenReturnItsIntegerValue) {
     EXPECT_EQ(11, Cal::Utils::getCalEnvI64("myenv", 0));
 
     EXPECT_TRUE(logs.empty()) << logs.str();
+}
+
+TEST(Setenv, whenSetEnvThenEnvSet) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    const char *MockEnvName = "TEST_MOCK_ENV";
+    const char *MockEnvValue = "0x123456789";
+
+    EXPECT_FALSE(Cal::Sys::setenv(MockEnvName, "0x123456789", 1));
+    auto envIt = tempSysCallsCtx.envVariables.find(MockEnvName);
+    EXPECT_FALSE(std::strcmp(envIt->second.c_str(), MockEnvValue));
+
+    EXPECT_FALSE(Cal::Sys::unsetenv(MockEnvName));
+    envIt = tempSysCallsCtx.envVariables.find(MockEnvName);
+    EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
+}
+
+TEST(Setenv, whenCreateServiceConfigThenSetProperEnv) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    auto envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
+    EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
+    auto config = std::make_unique<Cal::Service::ServiceConfig>();
+    envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
+    EXPECT_FALSE(std::strcmp(envIt->second.c_str(), Cal::Service::ServiceConfig::neoCalEnabledEnvValue));
+    config.reset();
+    envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
+    EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
 }
 
 TEST(CpuInfo, whenProcCpunFileNotAvailableThenReturnsNullopt) {

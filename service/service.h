@@ -66,6 +66,16 @@ struct ServiceConfig {
     bool isAnyRunnerMode() const {
         return (this->mode == Mode::runner) || (this->mode == Mode::sharedRunner);
     }
+
+    inline static const char *neoCalEnabledEnvName = "NEO_CAL_ENABLED";
+    inline static const char *neoCalEnabledEnvValue = "1";
+
+    ServiceConfig() {
+        Cal::Sys::setenv(neoCalEnabledEnvName, neoCalEnabledEnvValue, 1);
+    }
+    ~ServiceConfig() {
+        Cal::Sys::unsetenv(neoCalEnabledEnvName);
+    }
 };
 
 namespace Apis {

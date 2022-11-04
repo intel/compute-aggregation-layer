@@ -163,6 +163,15 @@ struct SysCallsContext {
         return setenvBaseImpl(name, value, overwrite);
     }
 
+    virtual int unsetenv(const char *name) {
+        ++apiConfig.unsetenv.callCount;
+        if (apiConfig.unsetenv.returnValue) {
+            return apiConfig.unsetenv.returnValue.value();
+        }
+
+        return unsetenvBaseImpl(name);
+    }
+
     void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
         std::lock_guard<std::mutex> lock(mutex);
         auto addrReceived = addr;
@@ -224,6 +233,15 @@ struct SysCallsContext {
             return 0;
         }
         envVariables[name] = value;
+        return 0;
+    }
+
+    int unsetenvBaseImpl(const char *name) {
+        if ((nullptr == name) || ('\0' == name[0]) || (nullptr != strstr(name, "="))) {
+            return EINVAL;
+        }
+        std::lock_guard<std::mutex> lock(mutex);
+        auto prev = envVariables.erase(name);
         return 0;
     }
 
@@ -302,6 +320,12 @@ struct SysCallsContext {
             std::optional<std::function<int(const char *name, const char *value, int overwrite)>> impl;
             uint64_t callCount = 0U;
         } setenv;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *name)>> impl;
+            uint64_t callCount = 0U;
+        } unsetenv;
 
         struct {
             std::unordered_map<std::string, std::string> returnValues;

@@ -41,6 +41,10 @@ int (*setenv)(const char *name, const char *value, int overwrite) = +[](const ch
     return Cal::Mocks::sysCallsContext->setenv(name, value, overwrite);
 };
 
+int (*unsetenv)(const char *name) = +[](const char *name) -> int {
+    return Cal::Mocks::sysCallsContext->unsetenv(name);
+};
+
 std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, std::ios_base::openmode mode) = +[](const char *filename, std::ios_base::openmode mode) -> std::unique_ptr<std::istream> {
     return Cal::Mocks::sysCallsContext->openFileForRead(filename, mode);
 };
