@@ -185,16 +185,16 @@ int main(int argc, const char *argv[]) {
     void *destinationBuffer{nullptr};
 
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, sourceBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceBuffer, 0xAA, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBuffer, 0xAA, bufferSize));
 
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, intermediateBuffer1));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(intermediateBuffer1, 0xBB, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(intermediateBuffer1, 0xBB, bufferSize));
 
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, intermediateBuffer2));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(intermediateBuffer2, 0xCC, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(intermediateBuffer2, 0xCC, bufferSize));
 
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, destinationBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationBuffer, 0xDD, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destinationBuffer, 0xDD, bufferSize));
 
     constexpr uint32_t eventsCount{10};
     ze_event_pool_handle_t eventPool{};

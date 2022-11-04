@@ -49,15 +49,15 @@ int main(int argc, const char *argv[]) {
     constexpr size_t alignment{8};
 
     std::vector<char> sourceBufferFromHeap(bufferSize);
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceBufferFromHeap.data(), 0x44, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBufferFromHeap.data(), 0x44, bufferSize));
 
     void *usmHostBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xAA, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
 
     void *usmSharedBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xBB, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xBB, bufferSize));
 
     void *usmDeviceBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateDeviceMemory(context, bufferSize, alignment, devices[0], usmDeviceBuffer));
@@ -73,8 +73,8 @@ int main(int argc, const char *argv[]) {
 
     // Case 2: zeCommandListAppendMemoryFill
     static constexpr std::array<char, patternSize> patternFromStack = {1, 7, 1, 9, 1, 5, 1, 4, 2, 3, 4, 5, 6, 2, 3, 3};
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xEE, patternSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xDD, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xEE, patternSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xDD, bufferSize));
 
     RUN_REQUIRED_STEP(appendMemoryFill(cmdList, usmHostBuffer, patternFromStack.data(), patternSize, bufferSize));
     RUN_REQUIRED_STEP(verifyMemoryFillResults(usmHostBuffer, bufferSize, patternFromStack.data(), patternSize));

@@ -562,7 +562,7 @@ bool destroyFence(ze_fence_handle_t &fence) {
     return true;
 }
 
-bool fillBufferOnHostViaMemcpy(void *buffer, int value, size_t bufferSize) {
+bool fillBufferOnHostViaMemset(void *buffer, int value, size_t bufferSize) {
     log<Verbosity::info>("Filling buffer (%p) of size (%zd) with value (%d)", buffer, bufferSize, value);
     std::memset(buffer, value, bufferSize);
 

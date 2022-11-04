@@ -654,8 +654,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, sourceCopyBuffer));
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, destinationCopyBuffer));
 
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceCopyBuffer, 0xFF, bufferSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationCopyBuffer, 0xAA, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceCopyBuffer, 0xFF, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destinationCopyBuffer, 0xAA, bufferSize));
 
     RUN_REQUIRED_STEP(setKernelArgument(copyBufferKernel, 0, sizeof(sourceCopyBuffer), &sourceCopyBuffer));
     RUN_REQUIRED_STEP(setKernelArgument(copyBufferKernel, 1, sizeof(destinationCopyBuffer), &destinationCopyBuffer));
@@ -676,8 +676,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, sourceDoubleVals));
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, destinationDoubleVals));
 
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceDoubleVals, 0x1, bufferSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationDoubleVals, 0x2, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceDoubleVals, 0x1, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destinationDoubleVals, 0x2, bufferSize));
 
     RUN_REQUIRED_STEP(setKernelArgument(doubleValsKernel, 0, sizeof(sourceDoubleVals), &sourceDoubleVals));
     RUN_REQUIRED_STEP(setKernelArgument(doubleValsKernel, 1, sizeof(destinationDoubleVals), &destinationDoubleVals));

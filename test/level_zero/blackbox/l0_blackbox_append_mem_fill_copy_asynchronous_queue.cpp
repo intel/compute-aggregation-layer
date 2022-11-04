@@ -55,18 +55,18 @@ int main(int argc, const char *argv[]) {
     constexpr size_t alignment{8};
 
     std::vector<char> sourceBufferFromHeap(bufferSize);
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceBufferFromHeap.data(), 0x44, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBufferFromHeap.data(), 0x44, bufferSize));
 
     std::vector<char> destinationBufferFromHeap(bufferSize);
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationBufferFromHeap.data(), 0x55, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destinationBufferFromHeap.data(), 0x55, bufferSize));
 
     void *usmHostBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xAA, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
 
     void *usmSharedBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xBB, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xBB, bufferSize));
 
     void *usmDeviceBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateDeviceMemory(context, bufferSize, alignment, devices[0], usmDeviceBuffer));
@@ -95,10 +95,10 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(verifyMemoryCopyResults(sourceBufferFromHeap.data(), usmHostBuffer, bufferSize));
 
     // Case 2: zeCommandListAppendMemoryCopy synchronized via zeFenceHostSynchronize.
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceBufferFromHeap.data(), 0x11, bufferSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationBufferFromHeap.data(), 0x22, bufferSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0x33, bufferSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0x77, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBufferFromHeap.data(), 0x11, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destinationBufferFromHeap.data(), 0x22, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0x33, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0x77, bufferSize));
 
     RUN_REQUIRED_STEP(resetCommandList(cmdList));
     RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, usmDeviceBuffer, sourceBufferFromHeap.data(), bufferSize));
@@ -127,8 +127,8 @@ int main(int argc, const char *argv[]) {
 
     // Case 3: zeCommandListAppendMemoryFill synchronized via zeCommandQueueSynchronize.
     static constexpr std::array<char, patternSize> patternFromStack = {1, 7, 1, 9, 1, 5, 1, 4, 2, 3, 4, 5, 6, 2, 3, 3};
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xEE, patternSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xDD, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xEE, patternSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xDD, bufferSize));
 
     RUN_REQUIRED_STEP(resetCommandList(cmdList));
     RUN_REQUIRED_STEP(appendMemoryFill(cmdList, usmHostBuffer, patternFromStack.data(), patternSize, bufferSize));
@@ -149,8 +149,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(verifyMemoryFillResults(usmSharedBuffer, bufferSize, usmHostBuffer, patternSize));
 
     // Case 4: zeCommandListAppendMemoryFill synchronized via zeFenceHostSynchronize.
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xEE, patternSize));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xDD, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xEE, patternSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xDD, bufferSize));
 
     RUN_REQUIRED_STEP(resetCommandList(cmdList));
     RUN_REQUIRED_STEP(resetFence(fence));

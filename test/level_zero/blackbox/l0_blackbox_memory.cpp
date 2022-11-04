@@ -151,7 +151,7 @@ int main(int argc, const char *argv[]) {
 
     void *usmHostBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmHostBuffer, 0xAA, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
 
     ze_memory_allocation_properties_t usmHostBufferAllocProps{};
     ze_device_handle_t usmHostBufferDeviceHandle{};
@@ -162,7 +162,7 @@ int main(int argc, const char *argv[]) {
 
     void *usmSharedBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(usmSharedBuffer, 0xBB, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xBB, bufferSize));
 
     ze_memory_allocation_properties_t usmSharedBufferAllocProps{};
     ze_device_handle_t usmSharedBufferDeviceHandle{};

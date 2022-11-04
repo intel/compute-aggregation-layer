@@ -71,7 +71,7 @@ bool synchronizeViaFence(ze_fence_handle_t fence);
 bool resetFence(ze_fence_handle_t fence);
 bool destroyFence(ze_fence_handle_t &fence);
 
-bool fillBufferOnHostViaMemcpy(void *buffer, int value, size_t bufferSize);
+bool fillBufferOnHostViaMemset(void *buffer, int value, size_t bufferSize);
 bool verifyMemoryCopyResults(const void *sourceBuffer, const void *destinationBuffer, size_t bufferSize);
 bool verifyMemoryFillResults(const void *destination, size_t destinationSize, const void *pattern, size_t patternSize);
 
