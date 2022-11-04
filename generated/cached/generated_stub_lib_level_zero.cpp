@@ -360,6 +360,10 @@ ze_result_t zeCommandListAppendLaunchKernel(ze_command_list_handle_t hCommandLis
    return {};
 }
 
+ze_result_t zeCommandListAppendLaunchKernelIndirect(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 ze_result_t zeDevicePciGetPropertiesExt(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties){
    return {};
 }

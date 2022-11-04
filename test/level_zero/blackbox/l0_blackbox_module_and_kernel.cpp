@@ -470,6 +470,27 @@ bool appendLaunchKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t ker
     return true;
 }
 
+bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList,
+                                ze_kernel_handle_t kernel,
+                                ze_group_count_t *launchArgsDeviceAccessibleBuffer,
+                                ze_event_handle_t signalEvent,
+                                uint32_t numWaitEvents,
+                                ze_event_handle_t *waitEvents) {
+    const auto zeCommandListAppendLaunchKernelIndirectResult = zeCommandListAppendLaunchKernelIndirect(cmdList,
+                                                                                                       kernel,
+                                                                                                       launchArgsDeviceAccessibleBuffer,
+                                                                                                       signalEvent,
+                                                                                                       numWaitEvents,
+                                                                                                       waitEvents);
+    if (zeCommandListAppendLaunchKernelIndirectResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendLaunchKernelIndirect() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendLaunchKernelIndirectResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Launch kernel indirect operation appended successfully!");
+    return true;
+}
+
 bool setGlobalOffset(ze_kernel_handle_t kernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     const auto zeKernelSetGlobalOffsetExpResult = zeKernelSetGlobalOffsetExp(kernel, offsetX, offsetY, offsetZ);
     if (zeKernelSetGlobalOffsetExpResult != ZE_RESULT_SUCCESS) {
@@ -633,8 +654,8 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, sourceCopyBuffer));
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, destinationCopyBuffer));
 
-    std::memset(sourceCopyBuffer, 0xFF, bufferSize);
-    std::memset(destinationCopyBuffer, 0xAA, bufferSize);
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceCopyBuffer, 0xFF, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationCopyBuffer, 0xAA, bufferSize));
 
     RUN_REQUIRED_STEP(setKernelArgument(copyBufferKernel, 0, sizeof(sourceCopyBuffer), &sourceCopyBuffer));
     RUN_REQUIRED_STEP(setKernelArgument(copyBufferKernel, 1, sizeof(destinationCopyBuffer), &destinationCopyBuffer));
@@ -655,14 +676,22 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, sourceDoubleVals));
     RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, destinationDoubleVals));
 
-    std::memset(sourceDoubleVals, 0x1, bufferSize);
-    std::memset(destinationDoubleVals, 0x2, bufferSize);
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(sourceDoubleVals, 0x1, bufferSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemcpy(destinationDoubleVals, 0x2, bufferSize));
 
     RUN_REQUIRED_STEP(setKernelArgument(doubleValsKernel, 0, sizeof(sourceDoubleVals), &sourceDoubleVals));
     RUN_REQUIRED_STEP(setKernelArgument(doubleValsKernel, 1, sizeof(destinationDoubleVals), &destinationDoubleVals));
 
     RUN_REQUIRED_STEP(setGlobalOffset(doubleValsKernel, 0, 0, 0));
-    RUN_REQUIRED_STEP(appendLaunchKernel(cmdList, doubleValsKernel, launchArgs, nullptr));
+
+    void *indirectLaunchArgs{nullptr};
+    RUN_REQUIRED_STEP(allocateDeviceMemory(context, sizeof(ze_group_count_t), sizeof(uint32_t), devices[0], indirectLaunchArgs));
+
+    ze_event_handle_t indirectLaunchArgsPreparedEvent{};
+    RUN_REQUIRED_STEP(createEvent(eventPool, 2, indirectLaunchArgsPreparedEvent));
+
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, indirectLaunchArgs, &launchArgs, sizeof(ze_group_count_t), indirectLaunchArgsPreparedEvent));
+    RUN_REQUIRED_STEP(appendLaunchKernelIndirect(cmdList, doubleValsKernel, static_cast<ze_group_count_t *>(indirectLaunchArgs), nullptr, 1, &indirectLaunchArgsPreparedEvent));
 
     RUN_REQUIRED_STEP(closeCommandList(cmdList));
     RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
@@ -673,11 +702,13 @@ int main(int argc, const char *argv[]) {
 
     RUN_REQUIRED_STEP(queryKernelTimestamp(copyBufferFinishedEvent, devices[0]));
 
+    RUN_REQUIRED_STEP(destroyEvent(indirectLaunchArgsPreparedEvent));
     RUN_REQUIRED_STEP(destroyEvent(copyBufferFinishedEvent));
     RUN_REQUIRED_STEP(destroyEventPool(eventPool));
     RUN_REQUIRED_STEP(destroyCommandList(cmdList));
     RUN_REQUIRED_STEP(destroyCommandQueue(queue));
 
+    RUN_REQUIRED_STEP(freeMemory(context, indirectLaunchArgs));
     RUN_REQUIRED_STEP(freeMemory(context, sourceDoubleVals));
     RUN_REQUIRED_STEP(freeMemory(context, destinationDoubleVals));
 
