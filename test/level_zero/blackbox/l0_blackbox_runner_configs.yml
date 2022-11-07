@@ -42,6 +42,10 @@ full :
     module_and_kernel :
         test_binary : "l0_blackbox_module_and_kernel"
         preserve_logs : False
+    
+    image :
+        test_binary : "l0_blackbox_image"
+        preserve_logs : False
 
 limited :
     append_mem_fill_copy_asynchronous_queue :
@@ -76,4 +80,8 @@ limited :
 
     module_and_kernel :
         test_binary : "l0_blackbox_module_and_kernel"
+        preserve_logs : False
+
+    image :
+        test_binary : "l0_blackbox_image"
         preserve_logs : False

@@ -76,6 +76,7 @@ struct IcdL0ModuleBuildLog;
 struct IcdL0Kernel;
 struct IcdL0EventPool;
 struct IcdL0Event;
+struct IcdL0Image;
 
 } // namespace LevelZero
 } // namespace Icd
@@ -92,6 +93,7 @@ struct _ze_kernel_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Kernel
 struct _ze_event_pool_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0EventPool> {};
 struct _ze_event_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Event> {};
 struct _ze_fence_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Fence> {};
+struct _ze_image_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Image> {};
 
 namespace Cal {
 namespace Icd {
@@ -277,6 +279,14 @@ struct IcdL0TypePrinter {
 
         if constexpr (std::is_same_v<ZeObjT, _ze_fence_handle_t>) {
             return "_ze_fence_handle_t";
+        }
+
+        if constexpr (std::is_same_v<ZeObjT, ze_image_handle_t>) {
+            return "ze_image_handle_t";
+        }
+
+        if constexpr (std::is_same_v<ZeObjT, _ze_image_handle_t>) {
+            return "_ze_image_handle_t";
         }
 
         return "unknown";
@@ -500,6 +510,10 @@ struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, IcdL0T
     using RefCountedWithParent::RefCountedWithParent;
 };
 
+struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, IcdL0TypePrinter> {
+    using RefCountedWithParent::RefCountedWithParent;
+};
+
 class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
@@ -621,6 +635,14 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, eventPoolsMap, eventPoolsMapMutex);
     }
 
+    ze_image_handle_t translateNewRemoteObjectToLocalObject(ze_image_handle_t remoteHandle) {
+        return translateNewRemoteObjectToLocalObject<IcdL0Image>(remoteHandle, static_cast<ze_image_handle_t>(nullptr), imagesMap, imagesMapMutex);
+    }
+
+    void removeObjectFromMap(ze_image_handle_t remoteHandle, IcdL0Image *localHandle) {
+        removeObjectFromMap(remoteHandle, localHandle, imagesMap, imagesMapMutex);
+    }
+
     ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle, ze_command_queue_handle_t queueHandle) {
         auto fence = translateNewRemoteObjectToLocalObject<IcdL0Fence>(remoteHandle, static_cast<ze_fence_handle_t>(nullptr), fencesMap, fencesMapMutex);
         if (!fence) {
@@ -739,6 +761,9 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 
     std::mutex eventPoolsMapMutex;
     std::map<ze_event_pool_handle_t, IcdL0EventPool *> eventPoolsMap;
+
+    std::mutex imagesMapMutex;
+    std::map<ze_image_handle_t, IcdL0Image *> imagesMap;
 
     std::mutex fencesMapMutex;
     std::map<ze_fence_handle_t, IcdL0Fence *> fencesMap;

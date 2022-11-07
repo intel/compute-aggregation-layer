@@ -900,6 +900,77 @@ config :
                     type : ze_device_p2p_property_flags_t
                     kind : scalar
 
+        - name : ze_image_desc_t
+          members :
+                 0 :
+                    name : stype
+                    type : ze_structure_type_t
+                    kind : scalar
+                 1 :
+                    name : pNext
+                    type : void*
+                    kind : scalar
+                    translate_before : "ensureNull(\"{func_name}: {arg}\", {arg})"
+                 2 :
+                    name : flags
+                    type : ze_image_flags_t
+                    kind : scalar
+                 3 :
+                    name : type
+                    type : ze_image_type_t
+                    kind : scalar
+                 4 :
+                    name : format
+                    type : ze_image_format_t
+                    kind : scalar                
+                 5 :
+                    name : width
+                    type : uint64_t
+                    kind : scalar
+                 6 :
+                    name : height
+                    type : uint32_t
+                    kind : scalar
+                 7 :
+                    name : depth
+                    type : uint32_t
+                    kind : scalar
+                 8 :
+                    name : arraylevels
+                    type : uint32_t
+                    kind : scalar    
+                 9 :
+                    name : miplevels
+                    type : uint32_t
+                    kind : scalar
+
+        - name : ze_image_format_t
+          members :
+                 0 :
+                    name : layout
+                    type : ze_image_format_layout_t
+                    kind : scalar
+                 1 :
+                    name : type
+                    type : ze_image_format_type_t
+                    kind : scalar
+                 2 :
+                    name : x
+                    type : ze_image_format_swizzle_t
+                    kind : scalar
+                 3 :
+                    name : y
+                    type : ze_image_format_swizzle_t
+                    kind : scalar
+                 4 :
+                    name : z
+                    type : ze_image_format_swizzle_t
+                    kind : scalar
+                 5 :
+                    name : w
+                    type : ze_image_format_swizzle_t
+                    kind : scalar
+
     unimplemented:
         - name : "core"
           members : [
@@ -927,8 +998,6 @@ config :
               FabricEdgeExp.zeFabricEdgeGetVerticesExp,
               FabricEdgeExp.zeFabricEdgeGetPropertiesExp,
               Image.zeImageGetProperties,
-              Image.zeImageCreate,
-              Image.zeImageDestroy,
               CommandList.zeCommandListAppendImageCopyToMemoryExt,
               CommandList.zeCommandListAppendImageCopyFromMemoryExt,
               ImageExp.zeImageGetMemoryPropertiesExp,
@@ -4073,41 +4142,65 @@ config :
 #                    type : ze_image_properties_t*
 #                    kind : pointer
 #
-#        - name : zeImageCreate
-#          ddi_category :  Image
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hContext
-#                    type : ze_context_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : hDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 2 :
-#                    name : desc
-#                    type : const ze_image_desc_t*
-#                    kind : pointer
-#                 3 :
-#                    name : phImage
-#                    type : ze_image_handle_t*
-#                    kind : pointer
-#
-#        - name : zeImageDestroy
-#          ddi_category :  Image
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hImage
-#                    type : ze_image_handle_t
-#                    kind : scalar
+        - name : zeImageCreate
+          latency : 0.0
+          ddi_category :  Image
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hContext
+                    type : ze_context_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+                 1 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 2 :
+                    name : desc
+                    type : const ze_image_desc_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_image_desc_t
+                            kind : struct
+                        server_access : read
+                 3 :
+                    name : phImage
+                    type : ze_image_handle_t*
+                    kind : ptr_array
+                    daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_image_handle_t
+                            kind : scalar
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                        server_access : read_write
+
+
+        - name : zeImageDestroy
+          latency : 0.0
+          ddi_category :  Image
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hImage
+                    type : ze_image_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Image*>({arg})->asRemoteObject()"
+                    translate_after : "{arg}->asLocalObject()->dec()"
+                    daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 #
 #        - name : zeCommandListAppendImageCopyToMemoryExt
 #          ddi_category :  CommandList

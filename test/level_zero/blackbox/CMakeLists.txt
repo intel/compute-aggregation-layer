@@ -28,5 +28,6 @@ add_l0_blackbox(l0_blackbox_fence ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_fence.
 add_l0_blackbox(l0_blackbox_experimental_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_experimental_memory.cpp)
 add_l0_blackbox(l0_blackbox_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_memory.cpp)
 add_l0_blackbox(l0_blackbox_module_and_kernel ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_and_kernel.cpp)
+add_l0_blackbox(l0_blackbox_image ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_image.cpp)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_runner_configs.yml ${cal_binary_root_dir} COPYONLY)

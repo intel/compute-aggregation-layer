@@ -1805,6 +1805,60 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
 
     return ret;
 }
+ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
+    log<Verbosity::bloat>("Establishing RPC for zeImageCreate");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeImageCreateRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, desc, phImage);
+    command->copyFromCaller();
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    if(desc)
+    {
+        ensureNull("zeImageCreate: desc->pNext", desc->pNext);
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    if(phImage)
+    {
+        phImage[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phImage[0]);
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
+    log<Verbosity::bloat>("Establishing RPC for zeImageDestroy");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeImageDestroyRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hImage);
+    command->args.hImage = static_cast<IcdL0Image*>(hImage)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    {
+        hImage->asLocalObject()->dec();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocShared");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2864,6 +2918,12 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
 }
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     return Cal::Icd::LevelZero::zeKernelSetGlobalOffsetExp(hKernel, offsetX, offsetY, offsetZ);
+}
+ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
+    return Cal::Icd::LevelZero::zeImageCreate(hContext, hDevice, desc, phImage);
+}
+ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
+    return Cal::Icd::LevelZero::zeImageDestroy(hImage);
 }
 ze_result_t zeMemAllocShared (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     return Cal::Icd::LevelZero::zeMemAllocShared(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);

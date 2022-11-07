@@ -78,6 +78,8 @@ ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t timeout
 ze_result_t (*zeFenceQueryStatus)(ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeFenceReset)(ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeKernelSetGlobalOffsetExp)(ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) = nullptr;
+ze_result_t (*zeImageCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) = nullptr;
+ze_result_t (*zeImageDestroy)(ze_image_handle_t hImage) = nullptr;
 ze_result_t (*zeMemAllocShared)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) = nullptr;
 ze_result_t (*zeMemAllocDevice)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) = nullptr;
 ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) = nullptr;
@@ -480,6 +482,18 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeImageCreate = reinterpret_cast<decltype(zeImageCreate)>(dlsym(libraryHandle, "zeImageCreate"));
+    if(nullptr == zeImageCreate){
+        log<Verbosity::error>("Missing symbol zeImageCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeImageDestroy = reinterpret_cast<decltype(zeImageDestroy)>(dlsym(libraryHandle, "zeImageDestroy"));
+    if(nullptr == zeImageDestroy){
+        log<Verbosity::error>("Missing symbol zeImageDestroy in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeMemAllocShared = reinterpret_cast<decltype(zeMemAllocShared)>(dlsym(libraryHandle, "zeMemAllocShared"));
     if(nullptr == zeMemAllocShared){
         log<Verbosity::error>("Missing symbol zeMemAllocShared in %s", loadPath.c_str());
@@ -735,6 +749,8 @@ void unloadLevelZeroLibrary() {
     zeFenceQueryStatus = nullptr;
     zeFenceReset = nullptr;
     zeKernelSetGlobalOffsetExp = nullptr;
+    zeImageCreate = nullptr;
+    zeImageDestroy = nullptr;
     zeMemAllocShared = nullptr;
     zeMemAllocDevice = nullptr;
     zeMemAllocHost = nullptr;

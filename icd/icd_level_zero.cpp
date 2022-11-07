@@ -955,6 +955,7 @@ template void objectCleanup<ze_kernel_handle_t, IcdL0Kernel *>(void *, void *);
 template void objectCleanup<ze_event_handle_t, IcdL0Event *>(void *, void *);
 template void objectCleanup<ze_event_pool_handle_t, IcdL0EventPool *>(void *, void *);
 template void objectCleanup<ze_fence_handle_t, IcdL0Fence *>(void *, void *);
+template void objectCleanup<ze_image_handle_t, IcdL0Image *>(void *, void *);
 
 } // namespace LevelZero
 } // namespace Icd

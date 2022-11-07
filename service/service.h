@@ -289,6 +289,8 @@ class ClientContext {
             return l0EventPoolsTracking;
         } else if constexpr (std::is_same_v<HandleT, ze_fence_handle_t>) {
             return l0FencesTracking;
+        } else if constexpr (std::is_same_v<HandleT, ze_image_handle_t>) {
+            return l0ImagesTracking;
         } else {
             struct AlwaysFalse;
             constexpr bool alwaysFalse = std::is_same_v<HandleT, AlwaysFalse>;
@@ -334,6 +336,7 @@ class ClientContext {
     std::unordered_set<ze_event_handle_t> l0EventsTracking{};
     std::unordered_set<ze_event_pool_handle_t> l0EventPoolsTracking{};
     std::unordered_set<ze_fence_handle_t> l0FencesTracking{};
+    std::unordered_set<ze_image_handle_t> l0ImagesTracking{};
 
     Cal::Ipc::MemoryBlocksManager memoryBlocksManager{};
 };

@@ -1304,6 +1304,7 @@ void ClientContext::l0SpecificCleanup() {
     destroyResources("ze_module_handle_t", getTracking<ze_module_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeModuleDestroy);
     destroyResources("ze_event_handle_t", getTracking<ze_event_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeEventDestroy);
     destroyResources("ze_event_pool_handle_t", getTracking<ze_event_pool_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeEventPoolDestroy);
+    destroyResources("ze_image_handle_t", getTracking<ze_image_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeImageDestroy);
     destroyResources("ze_context_handle_t", getTracking<ze_context_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeContextDestroy);
 }
 
