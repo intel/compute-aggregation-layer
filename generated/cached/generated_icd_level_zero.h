@@ -92,6 +92,7 @@ ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t 
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence);
 ze_result_t zeFenceReset (ze_fence_handle_t hFence);
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ);
+ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 ze_result_t zeImageDestroy (ze_image_handle_t hImage);
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM);
@@ -221,10 +222,6 @@ inline void zeFabricEdgeGetVerticesExpUnimpl() {
 }
 inline void zeFabricEdgeGetPropertiesExpUnimpl() {
     log<Verbosity::critical>("Function FabricEdgeExp.zeFabricEdgeGetPropertiesExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeImageGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Image.zeImageGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendImageCopyToMemoryExtUnimpl() {
@@ -969,6 +966,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Fence.pfnQueryStatus = Cal::Icd::LevelZero::zeFenceQueryStatus;
     dt.Fence.pfnReset = Cal::Icd::LevelZero::zeFenceReset;
     dt.KernelExp.pfnSetGlobalOffsetExp = Cal::Icd::LevelZero::zeKernelSetGlobalOffsetExp;
+    dt.Image.pfnGetProperties = Cal::Icd::LevelZero::zeImageGetProperties;
     dt.Image.pfnCreate = Cal::Icd::LevelZero::zeImageCreate;
     dt.Image.pfnDestroy = Cal::Icd::LevelZero::zeImageDestroy;
     dt.Mem.pfnAllocShared = Cal::Icd::LevelZero::zeMemAllocShared;
@@ -1027,7 +1025,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.FabricEdgeExp.pfnGetExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetExp)>(Cal::Icd::LevelZero::Unimplemented::zeFabricEdgeGetExpUnimpl);
     dt.FabricEdgeExp.pfnGetVerticesExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetVerticesExp)>(Cal::Icd::LevelZero::Unimplemented::zeFabricEdgeGetVerticesExpUnimpl);
     dt.FabricEdgeExp.pfnGetPropertiesExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetPropertiesExp)>(Cal::Icd::LevelZero::Unimplemented::zeFabricEdgeGetPropertiesExpUnimpl);
-    dt.Image.pfnGetProperties = reinterpret_cast<decltype(dt.Image.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zeImageGetPropertiesUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemoryExt)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryExtUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemoryExt)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryExtUnimpl);
     dt.ImageExp.pfnGetMemoryPropertiesExp = reinterpret_cast<decltype(dt.ImageExp.pfnGetMemoryPropertiesExp)>(Cal::Icd::LevelZero::Unimplemented::zeImageGetMemoryPropertiesExpUnimpl);

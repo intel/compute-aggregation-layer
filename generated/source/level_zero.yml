@@ -971,6 +971,22 @@ config :
                     type : ze_image_format_swizzle_t
                     kind : scalar
 
+        - name : ze_image_properties_t
+          members :
+                 0 :
+                    name : stype
+                    type : ze_structure_type_t
+                    kind : scalar
+                 1 :
+                    name : pNext
+                    type : void*
+                    kind : scalar
+                    translate_before : "ensureNull(\"{func_name}: {arg}\", {arg})"
+                 2 :
+                    name : samplerFilterFlags
+                    type : ze_image_sampler_filter_flags_t
+                    kind : scalar
+
     unimplemented:
         - name : "core"
           members : [
@@ -997,7 +1013,6 @@ config :
               FabricEdgeExp.zeFabricEdgeGetExp,
               FabricEdgeExp.zeFabricEdgeGetVerticesExp,
               FabricEdgeExp.zeFabricEdgeGetPropertiesExp,
-              Image.zeImageGetProperties,
               CommandList.zeCommandListAppendImageCopyToMemoryExt,
               CommandList.zeCommandListAppendImageCopyFromMemoryExt,
               ImageExp.zeImageGetMemoryPropertiesExp,
@@ -4121,27 +4136,42 @@ config :
                     name : offsetZ
                     type : uint32_t
                     kind : scalar
-#
-#        - name : zeImageGetProperties
-#          ddi_category :  Image
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : hDevice
-#                    type : ze_device_handle_t
-#                    kind : scalar
-#                 1 :
-#                    name : desc
-#                    type : const ze_image_desc_t*
-#                    kind : pointer
-#                 2 :
-#                    name : pImageProperties
-#                    type : ze_image_properties_t*
-#                    kind : pointer
-#
+
+        - name : zeImageGetProperties
+          ddi_category :  Image
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : hDevice
+                    type : ze_device_handle_t
+                    kind : scalar
+                    translate_before : "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                 1 :
+                    name : desc
+                    type : const ze_image_desc_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_image_desc_t
+                            kind : struct
+                        server_access : read
+                 2 :
+                    name : pImageProperties
+                    type : ze_image_properties_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: "1"
+                        can_be_null : True
+                        element :
+                            type : ze_image_properties_t
+                            kind : struct
+                        server_access : read_write
+
         - name : zeImageCreate
           latency : 0.0
           ddi_category :  Image

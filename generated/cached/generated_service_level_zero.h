@@ -86,6 +86,7 @@ extern ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t 
 extern ze_result_t (*zeFenceQueryStatus)(ze_fence_handle_t hFence);
 extern ze_result_t (*zeFenceReset)(ze_fence_handle_t hFence);
 extern ze_result_t (*zeKernelSetGlobalOffsetExp)(ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ);
+extern ze_result_t (*zeImageGetProperties)(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
 extern ze_result_t (*zeImageCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 extern ze_result_t (*zeImageDestroy)(ze_image_handle_t hImage);
 extern ze_result_t (*zeMemAllocShared)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
@@ -780,6 +781,16 @@ inline bool zeKernelSetGlobalOffsetExpHandler(Provider &service, Cal::Rpc::Chann
                                                 );
     return true;
 }
+inline bool zeImageGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeImageGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeImageGetProperties(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
+                                                apiCommand->args.pImageProperties ? &apiCommand->captures.pImageProperties : nullptr
+                                                );
+    return true;
+}
 inline bool zeImageCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeImageCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeImageCreateRpcM*>(command);
@@ -1235,6 +1246,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeFenceQueryStatusRpcM::messageSubtype] = zeFenceQueryStatusHandler;
     outHandlers[ZeFenceResetRpcM::messageSubtype] = zeFenceResetHandler;
     outHandlers[ZeKernelSetGlobalOffsetExpRpcM::messageSubtype] = zeKernelSetGlobalOffsetExpHandler;
+    outHandlers[ZeImageGetPropertiesRpcM::messageSubtype] = zeImageGetPropertiesHandler;
     outHandlers[ZeImageCreateRpcM::messageSubtype] = zeImageCreateHandler;
     outHandlers[ZeImageDestroyRpcM::messageSubtype] = zeImageDestroyHandler;
     outHandlers[ZeMemAllocSharedRpcM::messageSubtype] = zeMemAllocSharedHandler;
@@ -1727,6 +1739,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM &ap
                                                 apiCommand.args.offsetZ
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeImageGetProperties(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.desc, 
+                                                apiCommand.args.pImageProperties
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeImageCreateRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeImageCreate(
                                                 apiCommand.args.hContext, 
@@ -2067,6 +2086,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFenceResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeImageCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeImageCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeImageDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeImageDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM*>(command)); break;

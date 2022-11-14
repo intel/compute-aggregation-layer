@@ -1805,6 +1805,36 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
 
     return ret;
 }
+ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zeImageGetProperties");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, desc, pImageProperties);
+    command->copyFromCaller();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    if(desc)
+    {
+        ensureNull("zeImageGetProperties: desc->pNext", desc->pNext);
+    }
+    if(pImageProperties)
+    {
+        ensureNull("zeImageGetProperties: pImageProperties->pNext", pImageProperties->pNext);
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
     log<Verbosity::bloat>("Establishing RPC for zeImageCreate");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2918,6 +2948,9 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
 }
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     return Cal::Icd::LevelZero::zeKernelSetGlobalOffsetExp(hKernel, offsetX, offsetY, offsetZ);
+}
+ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
+    return Cal::Icd::LevelZero::zeImageGetProperties(hDevice, desc, pImageProperties);
 }
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
     return Cal::Icd::LevelZero::zeImageCreate(hContext, hDevice, desc, phImage);

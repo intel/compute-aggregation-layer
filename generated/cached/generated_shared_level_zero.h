@@ -40,7 +40,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("FabricEdgeExp.zeFabricEdgeGetExp");
     ret.push_back("FabricEdgeExp.zeFabricEdgeGetVerticesExp");
     ret.push_back("FabricEdgeExp.zeFabricEdgeGetPropertiesExp");
-    ret.push_back("Image.zeImageGetProperties");
     ret.push_back("CommandList.zeCommandListAppendImageCopyToMemoryExt");
     ret.push_back("CommandList.zeCommandListAppendImageCopyFromMemoryExt");
     ret.push_back("ImageExp.zeImageGetMemoryPropertiesExp");

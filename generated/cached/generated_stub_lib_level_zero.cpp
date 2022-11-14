@@ -244,6 +244,10 @@ ze_result_t zeKernelSetGlobalOffsetExp(ze_kernel_handle_t hKernel, uint32_t offs
    return {};
 }
 
+ze_result_t zeImageGetProperties(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties){
+   return {};
+}
+
 ze_result_t zeImageCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage){
    return {};
 }
