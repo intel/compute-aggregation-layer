@@ -57,14 +57,14 @@ static ze_result_t zeCommandListAppendMemoryFillImmediate(ze_command_list_handle
     return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
 
-static ze_result_t zeCommandListAppendMemoryFillNormal(ze_command_list_handle_t hCommandList,
-                                                       void *ptr,
-                                                       const void *pattern,
-                                                       size_t pattern_size,
-                                                       size_t size,
-                                                       ze_event_handle_t hSignalEvent,
-                                                       uint32_t numWaitEvents,
-                                                       ze_event_handle_t *phWaitEvents) {
+static ze_result_t zeCommandListAppendMemoryFillRegular(ze_command_list_handle_t hCommandList,
+                                                        void *ptr,
+                                                        const void *pattern,
+                                                        size_t pattern_size,
+                                                        size_t size,
+                                                        ze_event_handle_t hSignalEvent,
+                                                        uint32_t numWaitEvents,
+                                                        ze_event_handle_t *phWaitEvents) {
     auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
     const auto [dstIsUsm, srcIsUsm] = arePointersUsm(ptr, pattern);
 
@@ -113,8 +113,52 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
     if (icdCommandList->isImmediate()) {
         return zeCommandListAppendMemoryFillImmediate(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else {
-        return zeCommandListAppendMemoryFillNormal(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        return zeCommandListAppendMemoryFillRegular(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
+}
+
+static ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous(bool dstIsUsm,
+                                                                     bool srcIsUsm,
+                                                                     ze_command_list_handle_t hCommandList,
+                                                                     void *dstptr,
+                                                                     const void *srcptr,
+                                                                     size_t size,
+                                                                     ze_event_handle_t hSignalEvent,
+                                                                     uint32_t numWaitEvents,
+                                                                     ze_event_handle_t *phWaitEvents) {
+    if (srcIsUsm) {
+        return zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    }
+
+    if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
+        log<Verbosity::debug>("zeCommandListAppendMemoryCopyImmediateSynchronous(): host's heap/stack memory blocks overlap!");
+        return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
+    }
+
+    return zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronous(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+}
+
+static ze_result_t zeCommandListAppendMemoryCopyImmediateAsynchronous(bool dstIsUsm,
+                                                                      bool srcIsUsm,
+                                                                      ze_command_list_handle_t hCommandList,
+                                                                      void *dstptr,
+                                                                      const void *srcptr,
+                                                                      size_t size,
+                                                                      ze_event_handle_t hSignalEvent,
+                                                                      uint32_t numWaitEvents,
+                                                                      ze_event_handle_t *phWaitEvents) {
+    if (srcIsUsm) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopy for USM2M is not supported for asynchronous immediate command lists yet!");
+        return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
+    }
+
+    if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
+        log<Verbosity::debug>("zeCommandListAppendMemoryCopyImmediateAsynchronous(): host's heap/stack memory blocks overlap!");
+        return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
+    }
+
+    log<Verbosity::error>("zeCommandListAppendMemoryCopy for M2M is not supported for asynchronous immediate command lists yet!");
+    return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
 
 static ze_result_t zeCommandListAppendMemoryCopyImmediate(ze_command_list_handle_t hCommandList,
@@ -133,27 +177,21 @@ static ze_result_t zeCommandListAppendMemoryCopyImmediate(ze_command_list_handle
         return zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 
-    if (srcIsUsm) {
-        log<Verbosity::error>("zeCommandListAppendMemoryCopy for USM2M is not supported for immediate command lists yet!");
-        return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
+    auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
+    if (icdCommandList->isImmediateSynchronous()) {
+        return zeCommandListAppendMemoryCopyImmediateSynchronous(dstIsUsm, srcIsUsm, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    } else {
+        return zeCommandListAppendMemoryCopyImmediateAsynchronous(dstIsUsm, srcIsUsm, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
-
-    if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
-        log<Verbosity::debug>("zeCommandListAppendMemoryCopy(): host's heap/stack memory blocks overlap!");
-        return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
-    }
-
-    log<Verbosity::error>("zeCommandListAppendMemoryCopy for M2M is not supported for immediate command lists yet!");
-    return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
 
-static ze_result_t zeCommandListAppendMemoryCopyNormal(ze_command_list_handle_t hCommandList,
-                                                       void *dstptr,
-                                                       const void *srcptr,
-                                                       size_t size,
-                                                       ze_event_handle_t hSignalEvent,
-                                                       uint32_t numWaitEvents,
-                                                       ze_event_handle_t *phWaitEvents) {
+static ze_result_t zeCommandListAppendMemoryCopyRegular(ze_command_list_handle_t hCommandList,
+                                                        void *dstptr,
+                                                        const void *srcptr,
+                                                        size_t size,
+                                                        ze_event_handle_t hSignalEvent,
+                                                        uint32_t numWaitEvents,
+                                                        ze_event_handle_t *phWaitEvents) {
     auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
     const auto [dstIsUsm, srcIsUsm] = arePointersUsm(dstptr, srcptr);
 
@@ -204,7 +242,7 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
     if (icdCommandList->isImmediate()) {
         return zeCommandListAppendMemoryCopyImmediate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     } else {
-        return zeCommandListAppendMemoryCopyNormal(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        return zeCommandListAppendMemoryCopyRegular(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 }
 

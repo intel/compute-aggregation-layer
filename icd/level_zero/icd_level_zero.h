@@ -393,7 +393,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 
   public:
     enum class CommandListType {
-        Normal = 0,
+        Regular = 0,
         Immediate = 1,
         ImmediateSynchronous = 2,
     };
@@ -403,7 +403,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     static CommandListType selectImmediateType(const ze_command_queue_desc_t *altdesc);
 
     bool isImmediate() const {
-        return commandListType != CommandListType::Normal;
+        return commandListType != CommandListType::Regular;
     }
 
     bool isImmediateSynchronous() const {
@@ -455,7 +455,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     void registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory);
     ChunkEntry mergeChunks(const ChunkEntry &first, const ChunkEntry &second);
 
-    CommandListType commandListType{CommandListType::Normal};
+    CommandListType commandListType{CommandListType::Regular};
     std::mutex memoryToWriteMutex{};
     std::mutex memoryToReadMutex{};
     std::vector<ChunkEntry> memoryToWrite{};
