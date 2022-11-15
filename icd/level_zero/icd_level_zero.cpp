@@ -22,6 +22,14 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 
+IcdL0CommandList::CommandListType IcdL0CommandList::selectImmediateType(const ze_command_queue_desc_t *altdesc) {
+    if (altdesc && altdesc->mode == ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
+        return CommandListType::ImmediateSynchronous;
+    } else {
+        return CommandListType::Immediate;
+    }
+}
+
 void IcdL0CommandList::registerMemoryToWrite(const void *srcPtr, size_t srcSize) {
     std::lock_guard lock{memoryToWriteMutex};
     registerMemoryToContainer(srcPtr, srcSize, memoryToWrite);

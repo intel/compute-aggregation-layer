@@ -78,7 +78,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     command->copyToCaller();
     if(phCommandList)
     {
-        phCommandList[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandList[0], false);
+        phCommandList[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandList[0], IcdL0CommandList::CommandListType::Normal);
     }
     ze_result_t ret = command->captures.ret;
 
@@ -109,7 +109,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     command->copyToCaller();
     if(phCommandList)
     {
-        phCommandList[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandList[0], true);
+        phCommandList[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandList[0], IcdL0CommandList::selectImmediateType(altdesc));
     }
     ze_result_t ret = command->captures.ret;
 

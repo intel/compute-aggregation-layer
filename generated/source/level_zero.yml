@@ -1395,7 +1395,7 @@ config :
                         element :
                             type : ze_command_list_handle_t
                             kind : scalar
-                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, false)"
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::CommandListType::Normal)"
                         server_access : write
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 
@@ -1438,7 +1438,7 @@ config :
                         element :
                             type : ze_command_list_handle_t
                             kind : scalar
-                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, true)"
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::selectImmediateType(altdesc))"
                         server_access : write
                     daemon_action_on_success : "ctx.trackAllocatedResource({arg})"
 

@@ -360,10 +360,22 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     using ChunkEntry = Cal::Rpc::MemChunk;
 
   public:
+    enum class CommandListType {
+        Normal = 0,
+        Immediate = 1,
+        ImmediateSynchronous = 2,
+    };
+
     using RefCountedWithParent::RefCountedWithParent;
 
+    static CommandListType selectImmediateType(const ze_command_queue_desc_t *altdesc);
+
     bool isImmediate() const {
-        return isImmediateList;
+        return commandListType != CommandListType::Normal;
+    }
+
+    bool isImmediateSynchronous() const {
+        return commandListType == CommandListType::ImmediateSynchronous;
     }
 
     void registerMemoryToWrite(const void *srcPtr, size_t srcSize);
@@ -390,14 +402,14 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
   protected:
     friend IcdL0Platform;
 
-    void markAsImmediate() {
-        isImmediateList = true;
+    void setCommandListType(CommandListType type) {
+        commandListType = type;
     }
 
     void registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory);
     ChunkEntry mergeChunks(const ChunkEntry &first, const ChunkEntry &second);
 
-    bool isImmediateList{false};
+    CommandListType commandListType{CommandListType::Normal};
     std::mutex memoryToWriteMutex{};
     std::mutex memoryToReadMutex{};
     std::vector<ChunkEntry> memoryToWrite{};
@@ -552,11 +564,11 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, commandQueuesMap, commandQueuesMapMutex);
     }
 
-    ze_command_list_handle_t translateNewRemoteObjectToLocalObject(ze_command_list_handle_t remoteHandle, bool isImmediate) {
+    ze_command_list_handle_t translateNewRemoteObjectToLocalObject(ze_command_list_handle_t remoteHandle, IcdL0CommandList::CommandListType cmdListType) {
         auto commandList = translateNewRemoteObjectToLocalObject<IcdL0CommandList>(remoteHandle, static_cast<ze_command_list_handle_t>(nullptr), commandListsMap, commandListsMapMutex);
-        if (isImmediate && commandList) {
+        if (commandList) {
             auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);
-            icdCommandList->markAsImmediate();
+            icdCommandList->setCommandListType(cmdListType);
         }
 
         return commandList;
