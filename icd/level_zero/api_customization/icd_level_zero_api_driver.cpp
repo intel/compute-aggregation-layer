@@ -6,7 +6,6 @@
  */
 
 #include "generated_icd_level_zero.h"
-#include "generated_rpc_messages_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "icd_level_zero_api.h"
