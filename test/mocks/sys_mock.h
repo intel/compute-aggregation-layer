@@ -241,7 +241,7 @@ struct SysCallsContext {
             return EINVAL;
         }
         std::lock_guard<std::mutex> lock(mutex);
-        auto prev = envVariables.erase(name);
+        envVariables.erase(name);
         return 0;
     }
 

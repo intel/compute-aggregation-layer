@@ -30,13 +30,13 @@ TEST(TypedRing, givenSpaceAndCapacityThenUsesThemAsUnderlyingMemory) {
     EXPECT_EQ(data.size(), ring.getCapacity());
 
     EXPECT_EQ(0U, ring.peekIteration());
-    EXPECT_EQ(0U, ring.peekHeadOffset());
-    EXPECT_EQ(0U, ring.peekTailOffset());
+    EXPECT_EQ(0, ring.peekHeadOffset());
+    EXPECT_EQ(0, ring.peekTailOffset());
     head = 1;
     tail = 4;
     EXPECT_EQ(0U, ring.peekIteration());
-    EXPECT_EQ(1U, ring.peekHeadOffset());
-    EXPECT_EQ(4U, ring.peekTailOffset());
+    EXPECT_EQ(1, ring.peekHeadOffset());
+    EXPECT_EQ(4, ring.peekTailOffset());
     EXPECT_EQ(3, *ring.peekHead());
 }
 
@@ -46,11 +46,11 @@ TEST(TypedRing, whenResetIsCalledThenReinitializesHeadAndTailOffsetToZero) {
     int tail = 4;
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
-    EXPECT_EQ(1U, ring.peekHeadOffset());
-    EXPECT_EQ(4U, ring.peekTailOffset());
+    EXPECT_EQ(1, ring.peekHeadOffset());
+    EXPECT_EQ(4, ring.peekTailOffset());
     ring.reset();
-    EXPECT_EQ(0U, ring.peekHeadOffset());
-    EXPECT_EQ(0U, ring.peekTailOffset());
+    EXPECT_EQ(0, ring.peekHeadOffset());
+    EXPECT_EQ(0, ring.peekTailOffset());
 }
 
 TEST(TypedRing, whenCheckedIfEmptyThenReturnsTrueOnlyIfHeadEqualsToTail) {
@@ -401,7 +401,7 @@ TEST(CommandsChannelPartitioUsingDefaultLayoutn, givenCorrectShmemSizeThenPartit
     EXPECT_EQ((LayoutT::completionStampsEnd - LayoutT::completionStampsStart) / sizeof(Cal::Rpc::CompletionStampT), commandsChannel.layout.completionStampsCapacity);
 
     EXPECT_EQ(LayoutT::heapStart, commandsChannel.layout.heapStart);
-    EXPECT_EQ(alignedShmemSize, commandsChannel.layout.heapEnd);
+    EXPECT_EQ(static_cast<int64_t>(alignedShmemSize), commandsChannel.layout.heapEnd);
 
     EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(LayoutT::semClient), commandsChannel.semClient);
     EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(LayoutT::semServer), commandsChannel.semServer);
@@ -427,7 +427,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
 
     EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
     EXPECT_FALSE(commandsChannel.ownsSemaphores);
-    EXPECT_EQ(0, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(3, *ringHead);
     EXPECT_EQ(5, *ringTail);
@@ -450,7 +450,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
 
     EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
     EXPECT_TRUE(commandsChannel.ownsSemaphores);
-    EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(0, *ringHead);
     EXPECT_EQ(0, *ringTail);
@@ -469,10 +469,10 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
         CommandsChannelWhiteBox commandsChannel;
         tempSysCallsCtx.apiConfig.sem_init.returnValue = -1;
         EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
-        EXPECT_EQ(1, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
         EXPECT_FALSE(logs.empty());
-        EXPECT_EQ(0, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+        EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
     }
 
     logs.clear();
@@ -488,8 +488,8 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
         };
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
         EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
-        EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_init.callCount);
-        EXPECT_EQ(1, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+        EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
         EXPECT_FALSE(logs.empty());
     }
 }
@@ -506,10 +506,10 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresThenDestroysThemDuringOw
         CommandsChannelWhiteBox commandsChannel;
         EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
-        EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
     }
 
-    EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
 }
 
 TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemThenEmitsWarning) {
@@ -525,11 +525,11 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemTh
         CommandsChannelWhiteBox commandsChannel;
         EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
-        EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         tempSysCallsCtx.apiConfig.sem_destroy.returnValue = -1;
     }
 
-    EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
     EXPECT_FALSE(logs.empty());
 }
 
@@ -545,10 +545,10 @@ TEST(CommandsChannelPartition, whenDidNotInitializeSempahoresThenDoesNotDestroyT
         CommandsChannelWhiteBox commandsChannel;
         EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
-        EXPECT_EQ(0, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_init.callCount);
     }
 
-    EXPECT_EQ(0, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+    EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
 }
 
 TEST(CommandsChannelPartitionUsingGivenLayout, givenInvalidLayoutThenFailsAndEmitsWarning) {
@@ -679,7 +679,7 @@ TEST(CommandsChannelPartitionUsingGivenLayout, whenInitializationOfControlBlockI
 
     EXPECT_TRUE(commandsChannel2.partition(alignedShmem, alignedShmemSize, commandsChannel.layout, false));
     EXPECT_FALSE(commandsChannel2.ownsSemaphores);
-    EXPECT_EQ(0, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(3, *ringHead);
     EXPECT_EQ(5, *ringTail);
@@ -706,7 +706,7 @@ TEST(CommandsChannelPartitionUsingGivenLayout, whenInitializationOfControlBlockI
 
     EXPECT_TRUE(commandsChannel2.partition(alignedShmem, alignedShmemSize, commandsChannel.layout, true));
     EXPECT_TRUE(commandsChannel2.ownsSemaphores);
-    EXPECT_EQ(2, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(0, *ringHead);
     EXPECT_EQ(0, *ringTail);

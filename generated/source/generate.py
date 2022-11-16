@@ -503,7 +503,7 @@ class FunctionCaptureLayout:
 {spaces}    continue;
 {spaces}}}
 
-{spaces}const auto& {current_member_count_name} = {current_member_count_access};
+{spaces}const auto {current_member_count_name} = static_cast<uint32_t>({current_member_count_access});
 {spaces}if(!{current_member_count_name}){{
 {spaces}    continue;
 {spaces}}}
@@ -546,7 +546,7 @@ class FunctionCaptureLayout:
 {spaces}    continue;
 {spaces}}}
 
-{spaces}const auto& {current_element_count_name} = {real_count};
+{spaces}const auto {current_element_count_name} = static_cast<uint32_t>({real_count});
 {spaces}if(!{current_element_count_name}){{
 {spaces}    continue;
 {spaces}}}
@@ -577,7 +577,7 @@ class FunctionCaptureLayout:
 {spaces}    continue;
 {spaces}}}
 
-{spaces}const auto& {current_member_count_name} = {current_member_count_access};
+{spaces}const auto {current_member_count_name} = static_cast<int32_t>({current_member_count_access});
 {spaces}if(!{current_member_count_name}){{
 {spaces}    {parent_name}Traits[{it}].{self.member.name}Offset = -1;
 {spaces}    {parent_name}Traits[{it}].{self.member.name}Count = -1;
@@ -596,7 +596,7 @@ class FunctionCaptureLayout:
                 copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof(DynamicStructTraits<{current_member_element_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
-                copy_from_caller += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{\n"
+                copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{\n"
                 copy_from_caller += self.create_nested_array_member_copy_from_caller(
                     self.member.kind_details.element.kind_details.element, current_member_name, current_offset_var, formatter, spaces_count + 4, next_it)
                 copy_from_caller += f"\n{spaces}}}\n"
@@ -607,7 +607,7 @@ class FunctionCaptureLayout:
                 next_it = str(chr(ord(it) + 1))
 
                 for child in self.children:
-                    copy_from_caller += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{\n"
+                    copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{\n"
                     copy_from_caller += child.create_copy_from_caller(current_offset_var, formatter, spaces_count + 4, next_it)
                     copy_from_caller += f"\n{spaces}}}\n"
 
@@ -651,7 +651,7 @@ class FunctionCaptureLayout:
                 copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count_name} * sizeof(DynamicStructTraits<{real_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
-                copy_from_caller += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_element_count_name}; ++{next_it}){{\n"
+                copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_element_count_name}; ++{next_it}){{\n"
                 copy_from_caller += self.create_nested_array_member_copy_from_caller(
                     element.kind_details.element.kind_details.element, current_element_name, current_offset_var, formatter, spaces_count + 4, next_it)
                 copy_from_caller += f"\n{spaces}}}\n"
@@ -682,7 +682,7 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof(DynamicStructTraits<{current_member_element_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
-                reassemble_nested_structs += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{\n"
+                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{\n"
                 reassemble_nested_structs += self.create_nested_array_member_reassemble_structs(
                     self.member.kind_details.element.kind_details.element,
                     current_member_name,
@@ -699,7 +699,7 @@ class FunctionCaptureLayout:
                 next_it = str(chr(ord(it) + 1))
 
                 for child in self.children:
-                    reassemble_nested_structs += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{\n"
+                    reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{\n"
                     reassemble_nested_structs += child.create_reassemble_nested_structs(
                         current_offset_var, formatter, spaces_count + 4, next_it)
                     reassemble_nested_structs += f"\n{spaces}}}\n"
@@ -740,7 +740,7 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count} * sizeof(DynamicStructTraits<{real_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
-                reassemble_nested_structs += f"\n{spaces}for(uint32_t {next_it} = 0; {next_it} < {current_element_count}; ++{next_it}){{\n"
+                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_element_count}; ++{next_it}){{\n"
                 reassemble_nested_structs += self.create_nested_array_member_reassemble_structs(
                     element.kind_details.element.kind_details.element,
                     current_element_name,

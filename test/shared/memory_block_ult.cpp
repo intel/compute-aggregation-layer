@@ -737,7 +737,7 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     };
 
     auto &firstBlock = getBlock(0);
-    auto &secondBlock = getBlock(1);
+    [[maybe_unused]] auto &secondBlock = getBlock(1);
     auto &thirdBlock = getBlock(2);
 
     uint32_t transferDescsCount{4};
@@ -760,7 +760,7 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     EXPECT_EQ(firstBlock.chunks[0].shmem.id, transferDescs[0].shmemId);
     EXPECT_EQ(firstBlock.chunks[0].shmem.underlyingSize, transferDescs[0].underlyingSize);
     EXPECT_EQ(firstChunkSize, transferDescs[0].bytesCountToCopy);
-    EXPECT_EQ(64, transferDescs[0].offsetFromMapping);
+    EXPECT_EQ(64u, transferDescs[0].offsetFromMapping);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(firstSrcAddress), transferDescs[0].transferStart);
 
     EXPECT_EQ(thirdBlock.chunks[0].shmem.id, transferDescs[1].shmemId);

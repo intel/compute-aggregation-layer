@@ -142,7 +142,7 @@ auto asLocalObjectOrNull(OclObjectType *obj) {
 namespace Cal {
 namespace Icd {
 namespace Ocl {
-struct IcdOclPlatform;
+class IcdOclPlatform;
 struct IcdOclDevice;
 struct IcdOclContext;
 struct IcdOclCommandQueue;
@@ -413,7 +413,7 @@ struct ClBufferRecycler {
             auto recycledBuffer = *bestFit;
             currentRecycleSizeTotal -= recycledBuffer->size;
             --currentRecycleCountTotal;
-            if (bestFit - objects.begin() != objects.size() - 1) {
+            if (bestFit - objects.begin() != (static_cast<int64_t>(objects.size()) - 1)) {
                 *bestFit = *objects.rbegin();
             }
             objects.pop_back();

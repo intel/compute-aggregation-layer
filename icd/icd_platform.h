@@ -55,7 +55,7 @@ class PageFaultManager {
 
     ~PageFaultManager() {
         if (!this->previousHandlerRestored) {
-            auto retVal = sigaction(SIGSEGV, &previousPageFaultHandler, nullptr);
+            sigaction(SIGSEGV, &previousPageFaultHandler, nullptr);
         }
     }
 
@@ -116,7 +116,7 @@ class PageFaultManager {
     struct SharedAllocDesc {
         uint64_t size = 0;
         Placement placement = Placement::HOST;
-        SharedAllocDesc(uint64_t size, Placement placement) : placement(placement), size(size){};
+        SharedAllocDesc(uint64_t size, Placement placement) : size(size), placement(placement) {}
     };
 
     void moveAllocationToGpuImpl(const void *hostPtr) {
@@ -148,7 +148,7 @@ class PageFaultManager {
             previousPageFaultHandler.sa_sigaction(signal, info, context);
         } else {
             if (previousPageFaultHandler.sa_handler == SIG_DFL) {
-                auto retVal = sigaction(SIGSEGV, &previousPageFaultHandler, nullptr);
+                sigaction(SIGSEGV, &previousPageFaultHandler, nullptr);
                 previousHandlerRestored = true;
             } else if (previousPageFaultHandler.sa_handler == SIG_IGN) {
                 return;
@@ -280,9 +280,9 @@ class IcdPlatform {
 
             const auto rangeBegin = reinterpret_cast<std::uintptr_t>(newUsmAlloc);
             const auto rangeEnd = reinterpret_cast<void *>(rangeBegin + allocationSize);
-            const auto [_, isInserted] = userModeAccessibleUsmDeviceAddresses.emplace(newUsmAlloc, rangeEnd);
+            const auto emplaceResult = userModeAccessibleUsmDeviceAddresses.emplace(newUsmAlloc, rangeEnd);
 
-            if (!isInserted) {
+            if (!emplaceResult.second) {
                 log<Verbosity::error>("Couldn't insert USM device allocation to internal map! Returning nullptr.");
                 return nullptr;
             }

@@ -79,7 +79,7 @@ bool getDeviceComputeProperties(ze_device_handle_t device) {
        << " * maxSharedLocalMemory : " << computeProperties.maxSharedLocalMemory << "\n"
        << " * numSubGroupSizes : " << computeProperties.numSubGroupSizes << "\n";
 
-    for (int i = 0; i < computeProperties.numSubGroupSizes; ++i) {
+    for (auto i = 0u; i < computeProperties.numSubGroupSizes; ++i) {
         ss << " * subGroupSizes[" << i << "] : " << computeProperties.subGroupSizes[i] << "\n";
     }
 

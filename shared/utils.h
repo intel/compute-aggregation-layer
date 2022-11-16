@@ -269,7 +269,7 @@ class CountingSemaphore { // switch to counting_semaphore in C++20
   public:
     void signal(uint32_t count) {
         std::unique_lock<std::mutex> lock(mutex);
-        for (int i = 0; i < count; ++i) {
+        for (auto i = 0u; i < count; ++i) {
             ++counter;
             cv.notify_one();
         }

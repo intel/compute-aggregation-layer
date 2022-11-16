@@ -185,10 +185,9 @@ TEST(UsmCpuRange, whenFailedResettingUsmCpuRangeThenOutputsAWarning) {
     EXPECT_NE(MAP_FAILED, addr);
     ASSERT_EQ(1U, tempSysCallsCtx.vma.getSubRanges().size());
     EXPECT_EQ(Cal::Utils::AddressRange(addr, size), tempSysCallsCtx.vma.getSubRanges()[0].getBoundingRange());
-    auto mmapTraitsExpected = tempSysCallsCtx.vma.getSubRanges()[0].getTag();
 
     tempSysCallsCtx.apiConfig.mmap.returnValue = MAP_FAILED;
-    constexpr auto size2 = 4096U;
+
     auto addr2 = Cal::Utils::moveByBytes(addr, size);
     Cal::Usm::resetUsmCpuRange(addr2, size);
     EXPECT_EQ(1U, tempSysCallsCtx.vma.getSubRanges().size());
@@ -214,9 +213,10 @@ TEST(NegotiateUsmRangeWithService, whenStartingNegotiationThenSuggestsProvidedAd
         }
 
         auto message = reinterpret_cast<const Cal::Messages::ReqNegotiateUsmAddressRange *>(data);
-        if ((message->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) && (message->header.subtype != Cal::Messages::ReqNegotiateUsmAddressRange::messageSubtype) || message->isInvalid()) {
+        if (((message->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) && (message->header.subtype != Cal::Messages::ReqNegotiateUsmAddressRange::messageSubtype)) || message->isInvalid()) {
             return -1;
         }
+
         correctMessage = true;
         gotAddr = message->proposedUsmBase;
         gotSize = message->proposedUsmSize;
@@ -334,7 +334,7 @@ TEST(NegotiateUsmRangeWithService, whenServiceDisagreesOnceAndClientDisagreesOnc
     EXPECT_TRUE(logs.empty()) << logs.str();
     ASSERT_TRUE(ret.has_value());
     EXPECT_EQ(Cal::Utils::AddressRange(std::get<1>(service).proposedUsmBase, std::get<1>(service).proposedUsmSize), ret.value());
-    EXPECT_EQ(2U, numMmapCalls);
+    EXPECT_EQ(2, numMmapCalls);
 }
 
 TEST(NegotiateUsmRangeWithService, whenServiceDisagreesMaxTimesThenFail) {
@@ -373,7 +373,7 @@ TEST(NegotiateUsmRangeWithService, whenServiceDisagreesMaxTimesThenFail) {
 
     EXPECT_FALSE(logs.empty()) << logs.str();
     EXPECT_FALSE(ret.has_value());
-    EXPECT_EQ(2U, numMmapCalls);
+    EXPECT_EQ(2, numMmapCalls);
 }
 
 TEST(NegotiateUsmRangeWithService, whenAMergedVmaLooksUsableThenTryIt) {
@@ -444,7 +444,7 @@ TEST(NegotiateUsmRangeWithService, whenAMergedVmaLooksUsableThenTryIt) {
     EXPECT_TRUE(logs.empty()) << logs.str();
     EXPECT_TRUE(ret.has_value());
     EXPECT_EQ(overlapRange, ret.value());
-    EXPECT_EQ(2U, numNullAddrMmapCalls);
+    EXPECT_EQ(2, numNullAddrMmapCalls);
 
     ASSERT_EQ(3U, tempSysCallsCtx.vma.getSubRanges().size());
 }
@@ -469,7 +469,6 @@ TEST(NegotiateUsmRangeWithClient, whenFirstProvidedAddressFromClientIsUsableThen
     void *expectedAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(4096U));
     size_t expectedSize = 8192U;
 
-    auto &client = mockConnection.inMessages;
     auto &service = mockConnection.outMessages;
 
     std::get<0>(service).proposedUsmBase = expectedAddr;

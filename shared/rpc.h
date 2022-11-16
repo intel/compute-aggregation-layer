@@ -80,7 +80,7 @@ class TypedRing final {
         }
         auto prevHead = peekHeadOffset();
         auto nextHead = prevHead;
-        if (prevHead + 1 == capacity) {
+        if (prevHead + 1 == static_cast<int64_t>(capacity)) {
             nextHead = 0;
         } else {
             nextHead = prevHead + 1;
@@ -94,7 +94,7 @@ class TypedRing final {
         auto tailSnapshot = peekTailOffset();
         auto headSnapshot = peekHeadOffset();
         if (tailSnapshot >= headSnapshot) {
-            if (capacity > tailSnapshot + 1) {
+            if (static_cast<int64_t>(capacity) > tailSnapshot + 1) {
                 data[tailSnapshot] = std::forward<T>(el);
                 __atomic_store_n(tail, tailSnapshot + 1, __ATOMIC_RELAXED);
                 return true;
@@ -352,6 +352,8 @@ class CommandsChannel {
                 log<Verbosity::error>("%s (range %zx-%zx) does not meet alignment (%zx)", name, range.start, range.end, alignment);
             }
             for (auto &[rhsName, rhsRange, rhsAlignment] : ranges) {
+                (void)rhsAlignment;
+
                 if (&range == &rhsRange) {
                     continue;
                 }
@@ -577,7 +579,7 @@ class ChannelClient : public CommandsChannel {
     }
 
     bool wait(CompletionStampT *completionStamp, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
-        if (0 != messageFlags & Cal::Rpc::RpcMessageHeader::FlagsBits::signalSemaphoreOnCompletion) {
+        if (0 != (messageFlags & Cal::Rpc::RpcMessageHeader::FlagsBits::signalSemaphoreOnCompletion)) {
             return semaphoreWait(completionStamp);
         } else {
             return activeWait(completionStamp);

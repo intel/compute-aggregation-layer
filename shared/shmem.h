@@ -68,7 +68,7 @@ class ShmemAllocator {
 
     ShmemAllocator() : shmemIdAllocator(maxShmems) {
     }
-    ShmemAllocator(const std::string &path) : basePath(path), shmemIdAllocator(maxShmems) {
+    ShmemAllocator(const std::string &path) : shmemIdAllocator(maxShmems), basePath(path) {
     }
     mockable ~ShmemAllocator() = default;
 
@@ -373,11 +373,8 @@ class BasicMemoryBlock {
     }
 
     void merge(BasicMemoryBlock &&rhs) {
-        const auto lhsBegin = chunks.front().firstPageAddress;
         const auto lhsEnd = chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
-
         const auto rhsBegin = rhs.chunks.front().firstPageAddress;
-        const auto rhsEnd = rhs.chunks.back().firstPageAddress + chunks.back().shmem.underlyingSize;
 
         assert(lhsEnd <= rhsBegin && "Logic error! Currently only greater rhs can be merged!");
 
@@ -538,7 +535,10 @@ class BasicMemoryBlocksManager {
         const auto srcPageBegin = srcBegin - pageOffset;
 
         auto [insertedBlockIt, wasInserted] = memoryBlocks.try_emplace(srcPageBegin, shmemManager, srcptr, size);
-        assert(wasInserted && "Cannot insert memory block! This should not happen!");
+        if (!wasInserted) {
+            log<Verbosity::critical>("Could not insert block! Aborting...");
+            std::abort();
+        }
 
         return (*insertedBlockIt).second;
     }
@@ -630,8 +630,7 @@ class BasicMemoryBlocksManager {
         }
 
         std::for_each(blocksToMergeBegin, blocksToMergeEnd, [&singleBlock](auto &entry) {
-            auto &[firstPageAddress, blockToBeMerged] = entry;
-            singleBlock.merge(std::move(blockToBeMerged));
+            singleBlock.merge(std::move(entry.second));
         });
 
         // The range is now in the single block. Remove empty blocks.

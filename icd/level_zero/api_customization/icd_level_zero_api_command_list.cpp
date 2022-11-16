@@ -107,7 +107,6 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     icdCommandList->moveSharedAllocationsToGpu(ptr, pattern);
 
     if (icdCommandList->isImmediate()) {
@@ -236,7 +235,6 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     icdCommandList->moveSharedAllocationsToGpu(dstptr, srcptr);
 
     if (icdCommandList->isImmediate()) {

@@ -22,7 +22,6 @@ TEST(popcount, givenIntegerThenReturnsNumberOfBitsSet) {
     static_assert(Cal::Utils::popcount(1) == 1);
     static_assert(Cal::Utils::popcount(2) == 1);
     static_assert(Cal::Utils::popcount(3) == 2);
-    constexpr auto pc = Cal::Utils::popcount(4096);
     static_assert(Cal::Utils::popcount(4096) == 1);
     static_assert(Cal::Utils::popcount(4097) == 2);
     static_assert(Cal::Utils::popcount(0b10110101010101010101111010110) == 17);
@@ -121,9 +120,9 @@ TEST(byteDistance, givenTwoPointersThenReturnsDistanceInBytesBetweenThem) {
     EXPECT_EQ(6, Cal::Utils::byteDistance(reinterpret_cast<void *>(static_cast<uintptr_t>(4090U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4096U))));
     EXPECT_EQ(-6, Cal::Utils::byteDistance(reinterpret_cast<void *>(static_cast<uintptr_t>(4096U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4090U))));
 
-    EXPECT_EQ(0, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4090U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4090U))));
-    EXPECT_EQ(6, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4090U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4096U))));
-    EXPECT_EQ(6, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4096U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4090U))));
+    EXPECT_EQ(0u, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4090U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4090U))));
+    EXPECT_EQ(6u, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4090U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4096U))));
+    EXPECT_EQ(6u, Cal::Utils::byteDistanceAbs(reinterpret_cast<void *>(static_cast<uintptr_t>(4096U)), reinterpret_cast<void *>(static_cast<uintptr_t>(4090U))));
 }
 
 TEST(moveByBytes, givenBasePointerAndOffsetThenReturnsPointerThatIsOffsetBytesGreaterThanBase) {
@@ -320,7 +319,7 @@ TEST(PartitionedAddressRange, whenAddingSubrangesThenTheyAreOrdered) {
     }
 
     auto &subRanges = partitionedRange.getSubRanges();
-    ASSERT_EQ(numSubRanges, subRanges.size());
+    ASSERT_EQ(static_cast<unsigned>(numSubRanges), subRanges.size());
     for (int idx = 0; idx < numSubRanges; ++idx) {
         auto bounds = subRanges[idx].getBoundingRange();
         EXPECT_EQ(sortedSubranges[idx], bounds) << idx;
@@ -584,10 +583,10 @@ TEST(PartitionedAddressRange, whenDestroyingNonInterSectingSubRangeThenDoNothing
     partitionedRange.insertSubRange(range);
 
     auto numImpacted = partitionedRange.destroySubRange({0U, 4096U});
-    EXPECT_EQ(0U, numImpacted);
+    EXPECT_EQ(0, numImpacted);
 
     numImpacted = partitionedRange.destroySubRange({8192U, 8192U + 4096U});
-    EXPECT_EQ(0U, numImpacted);
+    EXPECT_EQ(0, numImpacted);
 
     ASSERT_EQ(1U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(range, partitionedRange.getSubRanges()[0].getBoundingRange());
@@ -599,7 +598,7 @@ TEST(PartitionedAddressRange, whenDestroyingWholeSubRangeThenRemoveIt) {
     partitionedRange.insertSubRange(range);
 
     auto numImpacted = partitionedRange.destroySubRange(range);
-    EXPECT_EQ(1U, numImpacted);
+    EXPECT_EQ(1, numImpacted);
 
     EXPECT_EQ(0U, partitionedRange.getSubRanges().size());
 }
@@ -614,7 +613,7 @@ TEST(PartitionedAddressRange, whenDestroyingMiddleOfSubRangeThenSplitIt) {
     partitionedRange.insertSubRange(range);
 
     auto numImpacted = partitionedRange.destroySubRange(middle);
-    EXPECT_EQ(1U, numImpacted);
+    EXPECT_EQ(1, numImpacted);
 
     ASSERT_EQ(2U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(left, partitionedRange.getSubRanges()[0].getBoundingRange());
@@ -631,9 +630,9 @@ TEST(PartitionedAddressRange, whenDestroyingHeadOrTailOfSubRangeThenTruncateIt) 
     partitionedRange.insertSubRange(range);
 
     auto numImpacted = partitionedRange.destroySubRange(left);
-    EXPECT_EQ(1U, numImpacted);
+    EXPECT_EQ(1, numImpacted);
     numImpacted = partitionedRange.destroySubRange(right);
-    EXPECT_EQ(1U, numImpacted);
+    EXPECT_EQ(1, numImpacted);
 
     ASSERT_EQ(1U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(middle, partitionedRange.getSubRanges()[0].getBoundingRange());
@@ -648,19 +647,19 @@ TEST(PartitionedAddressRange, whenDestroyingSpanOfSubrangesThenAffectAllInRange)
     }
 
     auto numImpacted = partitionedRange.destroySubRange({ranges[1].start, ranges[2].end});
-    EXPECT_EQ(2U, numImpacted);
+    EXPECT_EQ(2, numImpacted);
     ASSERT_EQ(2U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(ranges[0], partitionedRange.getSubRanges()[0].getBoundingRange());
     EXPECT_EQ(ranges[3], partitionedRange.getSubRanges()[1].getBoundingRange());
 
     numImpacted = partitionedRange.destroySubRange({ranges[0].start + pageSize, ranges[3].end - pageSize});
-    EXPECT_EQ(2U, numImpacted);
+    EXPECT_EQ(2, numImpacted);
     ASSERT_EQ(2U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(Cal::Utils::AddressRange(ranges[0].start, ranges[0].start + pageSize), partitionedRange.getSubRanges()[0].getBoundingRange());
     EXPECT_EQ(Cal::Utils::AddressRange(ranges[3].end - pageSize, ranges[3].end), partitionedRange.getSubRanges()[1].getBoundingRange());
 
     numImpacted = partitionedRange.destroySubRange({ranges[0].start, ranges[3].end});
-    EXPECT_EQ(2U, numImpacted);
+    EXPECT_EQ(2, numImpacted);
     EXPECT_EQ(0U, partitionedRange.getSubRanges().size());
 }
 
@@ -675,7 +674,7 @@ TEST(PartitionedAddressRange, whenDestroyingSubRangesThenAffectChildSubRangesAsW
     partitionedRange.findSubRange(range)->insertSubRange(range);
 
     auto numImpacted = partitionedRange.destroySubRange(middle);
-    EXPECT_EQ(1U, numImpacted);
+    EXPECT_EQ(1, numImpacted);
 
     ASSERT_EQ(2U, partitionedRange.getSubRanges().size());
     EXPECT_EQ(left, partitionedRange.getSubRanges()[0].getBoundingRange());
@@ -1031,16 +1030,16 @@ TEST(atomicMin, givenDifferentInputValuesThenAlwaysKeepsMin) {
 
 TEST(clz, givenIntegerThenReturnsNumberOfLeadingZeros) {
     unsigned int v = 0;
-    EXPECT_EQ(24 + 1, Cal::Utils::clz(v = 0b01111111));
-    EXPECT_EQ(24 + 7, Cal::Utils::clz(v = 0b00000001));
+    EXPECT_EQ(24u + 1u, Cal::Utils::clz(v = 0b01111111));
+    EXPECT_EQ(24u + 7u, Cal::Utils::clz(v = 0b00000001));
     EXPECT_EQ(0U, Cal::Utils::clz(v = 0xFFFFFFFF));
 }
 
 TEST(leadingBitNum, givenIntegerThenReturnsPositionOfOldestBit) {
     unsigned int v = 0;
-    EXPECT_EQ(7, Cal::Utils::leadingBitNum(v = 0b01111111));
-    EXPECT_EQ(1, Cal::Utils::leadingBitNum(v = 0b00000001));
-    EXPECT_EQ(32, Cal::Utils::leadingBitNum(v = 0xFFFFFFFF));
+    EXPECT_EQ(7u, Cal::Utils::leadingBitNum(v = 0b01111111));
+    EXPECT_EQ(1u, Cal::Utils::leadingBitNum(v = 0b00000001));
+    EXPECT_EQ(32u, Cal::Utils::leadingBitNum(v = 0xFFFFFFFF));
 }
 
 TEST(countNullterminated, givenNullThenReturnsZero) {

@@ -52,7 +52,10 @@ struct ReqHandshake {
         this->ppid = getppid();
         this->clientType = clientType;
         auto processName = Cal::Utils::getProcessName();
-        strncpy(this->clientProcessName, processName.data(), sizeof(this->clientProcessName));
+
+        auto dstSize = sizeof(this->clientProcessName);
+        strncpy(this->clientProcessName, processName.data(), dstSize - 1);
+        this->clientProcessName[dstSize - 1] = '\0';
     }
 
     bool isInvalid() const {

@@ -616,7 +616,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                 continue;
             }
 
-            const auto& descPInputModuleCount = desc[i].inputSize;
+            const auto descPInputModuleCount = static_cast<uint32_t>(desc[i].inputSize);
             if(!descPInputModuleCount){
                 continue;
             }
@@ -630,7 +630,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                 continue;
             }
 
-            const auto& descPBuildFlagsCount = Cal::Utils::countNullterminated(desc[i].pBuildFlags);
+            const auto descPBuildFlagsCount = static_cast<uint32_t>(Cal::Utils::countNullterminated(desc[i].pBuildFlags));
             if(!descPBuildFlagsCount){
                 continue;
             }
@@ -644,7 +644,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                 continue;
             }
 
-            const auto& descPConstantsCount = 1;
+            const auto descPConstantsCount = static_cast<uint32_t>(1);
             if(!descPConstantsCount){
                 continue;
             }
@@ -657,7 +657,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                     continue;
                 }
 
-                const auto& descPConstantsPConstantIdsCount = desc[i].pConstants[j].numConstants;
+                const auto descPConstantsPConstantIdsCount = static_cast<uint32_t>(desc[i].pConstants[j].numConstants);
                 if(!descPConstantsPConstantIdsCount){
                     continue;
                 }
@@ -671,7 +671,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                     continue;
                 }
 
-                const auto& descPConstantsPConstantValuesCount = desc[i].pConstants[j].numConstants;
+                const auto descPConstantsPConstantValuesCount = static_cast<uint32_t>(desc[i].pConstants[j].numConstants);
                 if(!descPConstantsPConstantValuesCount){
                     continue;
                 }
@@ -684,7 +684,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
                         continue;
                     }
 
-                    const auto& descPConstantsPConstantValues_kCount = 1;
+                    const auto descPConstantsPConstantValues_kCount = static_cast<uint32_t>(1);
                     if(!descPConstantsPConstantValues_kCount){
                         continue;
                     }
@@ -804,7 +804,7 @@ ZeKernelCreateRpcM::Captures::DynamicTraits ZeKernelCreateRpcM::Captures::Dynami
                 continue;
             }
 
-            const auto& descPKernelNameCount = Cal::Utils::countNullterminated(desc[i].pKernelName);
+            const auto descPKernelNameCount = static_cast<uint32_t>(Cal::Utils::countNullterminated(desc[i].pKernelName));
             if(!descPKernelNameCount){
                 continue;
             }

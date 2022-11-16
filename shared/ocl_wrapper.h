@@ -103,7 +103,7 @@ inline cl_platform_id getPlatformByOrdinal(int ordinal) {
         return invalidPlatform;
     }
 
-    if ((ordinal < 0) || (ordinal + 1 > numPlatforms)) {
+    if ((ordinal < 0) || (static_cast<cl_uint>(ordinal + 1) > numPlatforms)) {
         log<Verbosity::info>("Platform with ordinal %d does not exist", ordinal);
         return invalidPlatform;
     }

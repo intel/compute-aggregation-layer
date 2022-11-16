@@ -22,14 +22,12 @@ TEST(ReassemblationTest, GivenCapturesWithNestedStructFieldsWhenCopyingAndReasse
     uint64_t firstConstant = 121;
     uint64_t secondConstant = 77;
     uint64_t thirdConstant = 212;
-    std::array<const void *, constantsCount> constantValues = {&firstConstant, &secondConstant, &secondConstant};
+    std::array<const void *, constantsCount> constantValues = {&firstConstant, &secondConstant, &thirdConstant};
 
     ze_module_constants_t moduleConstants = {
         constantsCount,
         constantsIds.data(),
         constantValues.data()};
-
-    constexpr static const char *skipWarningAboutModuleRecompilationFlag = "-Wno-recompiled-from-ir";
 
     constexpr static size_t spirvLen = 20;
     std::array<uint8_t, spirvLen> spirV = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0};

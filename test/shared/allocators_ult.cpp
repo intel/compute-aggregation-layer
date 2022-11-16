@@ -31,7 +31,7 @@ TEST(StaticLengthBitAllocator, WhenFullThenReturnsInvalidOffset) {
     StaticBitAllocatorT allocator;
     auto numBits = std::numeric_limits<MaskT>::digits;
     for (int i = 0; i < numBits; ++i) {
-        auto bit = allocator.allocate();
+        allocator.allocate();
     }
 
     EXPECT_EQ(StaticBitAllocatorT::invalidOffset, allocator.allocate());
@@ -47,7 +47,7 @@ TEST(StaticLengthBitAllocator, WhenCopyConstructedThenHoldsTheSameBits) {
     }
 
     auto copy = allocator;
-    for (int i = numBits / 2; i < numBits; ++i) {
+    for (auto i = numBits / 2; i < numBits; ++i) {
         auto bitInOrig = copy.allocate();
         auto bitInCopy = allocator.allocate();
         EXPECT_NE(StaticBitAllocatorT::invalidOffset, bitInOrig) << i;
@@ -69,7 +69,7 @@ TEST(StaticLengthBitAllocator, WhenMoveConstructedThenTakesOverTheBits) {
     }
 
     auto moved = std::move(allocator);
-    for (int i = numBits / 2; i < numBits; ++i) {
+    for (auto i = numBits / 2; i < numBits; ++i) {
         auto bit = moved.allocate();
         EXPECT_NE(StaticBitAllocatorT::invalidOffset, bit) << i;
         EXPECT_EQ(0U, occupiedBits.count(bit)) << i;
@@ -93,8 +93,8 @@ TEST(StaticLengthBitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectR
     std::set<StaticBitAllocatorT::BitOffsetT> occupiedBits;
     for (int i = 0; i < numBits; ++i) {
         auto bit = allocator.allocate();
-        EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
-        EXPECT_GT(numBits, bit) << "it : " << i << " bit : " << bit;
+        EXPECT_LE(0u, bit) << "it : " << i << " bit : " << bit;
+        EXPECT_GT(static_cast<size_t>(numBits), bit) << "it : " << i << " bit : " << bit;
         EXPECT_EQ(0U, occupiedBits.count(bit));
         occupiedBits.insert(bit);
     }
@@ -144,7 +144,7 @@ TEST(BitAllocator, WhenDefaultConstructedThenIsEmpty) {
     BitAllocator allocator{numBits};
     EXPECT_EQ(numBits, allocator.getCapacity());
     numBits = allocator.getCapacity();
-    for (int i = 0; i < numBits; ++i) {
+    for (auto i = 0u; i < numBits; ++i) {
         auto bit = allocator.allocate();
         EXPECT_NE(BitAllocator::invalidOffset, bit) << "it : " << i << " bit : " << bit;
     }
@@ -153,8 +153,8 @@ TEST(BitAllocator, WhenDefaultConstructedThenIsEmpty) {
 TEST(BitAllocator, WhenFullThenReturnsInvalidOffset) {
     Cal::Allocators::BitAllocator allocator{256};
     auto numBits = allocator.getCapacity();
-    for (int i = 0; i < numBits; ++i) {
-        auto bit = allocator.allocate();
+    for (auto i = 0u; i < numBits; ++i) {
+        allocator.allocate();
     }
 
     EXPECT_EQ(BitAllocator::invalidOffset, allocator.allocate());
@@ -164,9 +164,9 @@ TEST(BitAllocator, WhenAllocatingBitsThenReturnedValuesAreInCorrectRangeAndUniqu
     BitAllocator allocator{256};
     auto numBits = allocator.getCapacity();
     std::set<BitAllocator::BitOffsetT> occupiedBits;
-    for (int i = 0; i < numBits; ++i) {
+    for (auto i = 0u; i < numBits; ++i) {
         auto bit = allocator.allocate();
-        EXPECT_LE(0, bit) << "it : " << i << " bit : " << bit;
+        EXPECT_LE(0u, bit) << "it : " << i << " bit : " << bit;
         EXPECT_GT(numBits, bit) << "it : " << i << " bit : " << bit;
         EXPECT_EQ(0U, occupiedBits.count(bit));
         occupiedBits.insert(bit);
@@ -177,7 +177,7 @@ TEST(BitAllocator, WhenFreeingBitsThenTheyCanBeReallocated) {
     BitAllocator allocator{256};
     auto numBits = allocator.getCapacity();
     std::vector<BitAllocator::BitOffsetT> occupiedBits;
-    for (int i = 0; i < numBits; ++i) {
+    for (auto i = 0u; i < numBits; ++i) {
         auto bit = allocator.allocate();
         occupiedBits.push_back(bit);
     }
@@ -228,7 +228,7 @@ TEST(TagAllocator, WhenAllocatingTagsThenReturnedValuesAreInCorrectRangeAndUniqu
     auto numTags = allocator.getCapacity();
     std::set<int *> occupiedTags;
     Cal::Utils::AddressRange range{underlyingData.data(), underlyingData.size() * sizeof(int)};
-    for (int i = 0; i < numTags; ++i) {
+    for (auto i = 0u; i < numTags; ++i) {
         auto tag = allocator.allocate();
         EXPECT_EQ(tag, Cal::Utils::alignUp(tag, sizeof(int))) << "it : " << i << " wrong alignment for tag : " << reinterpret_cast<uintptr_t>(tag) << " [range : " << range.start << "-" << range.end << "]";
         EXPECT_TRUE(range.contains(tag)) << "it : " << i << " tag : " << reinterpret_cast<uintptr_t>(tag) << " [range : " << range.start << "-" << range.end << "]";
@@ -242,7 +242,7 @@ TEST(TagAllocator, WhenFreeingTagsThenTheyCanBeReallocated) {
     TagAllocator<int> allocator{underlyingData.data(), underlyingData.size()};
     auto numTags = allocator.getCapacity();
     std::vector<int *> occupiedTags;
-    for (int i = 0; i < numTags; ++i) {
+    for (auto i = 0u; i < numTags; ++i) {
         auto tag = allocator.allocate();
         occupiedTags.push_back(tag);
     }

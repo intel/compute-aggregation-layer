@@ -74,7 +74,7 @@ TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksWhenRegisteringThemToWrite
     mockCommandList.registerMemoryToWrite(&bytes[chunkSize], chunkSize);
     mockCommandList.registerMemoryToWrite(&bytes[(2 * chunkSize) + 2], 2);
 
-    ASSERT_EQ(3, mockCommandList.memoryToWrite.size());
+    ASSERT_EQ(3u, mockCommandList.memoryToWrite.size());
 
     const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
     EXPECT_EQ(&bytes[0], firstAddress);
@@ -86,18 +86,18 @@ TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksWhenRegisteringThemToWrite
 
     const auto &[thirdAddress, thirdSize] = mockCommandList.memoryToWrite[2];
     EXPECT_EQ(&bytes[(2 * chunkSize) + 2], thirdAddress);
-    EXPECT_EQ(2, thirdSize);
+    EXPECT_EQ(2u, thirdSize);
 }
 
 TEST_F(IcdL0CommandListTest, GivenTwoOverlappingChunksWhenRegisteringThemToWriteThenTheyAreMerged) {
     mockCommandList.registerMemoryToWrite(&bytes[0], chunkSize);
     mockCommandList.registerMemoryToWrite(&bytes[chunkSize - 2], chunkSize);
 
-    ASSERT_EQ(1, mockCommandList.memoryToWrite.size());
+    ASSERT_EQ(1u, mockCommandList.memoryToWrite.size());
 
     const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
     EXPECT_EQ(&bytes[0], firstAddress);
-    EXPECT_EQ(6, firstSize);
+    EXPECT_EQ(6u, firstSize);
 }
 
 TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksAndOneWhichOverlapsTheRestWhenRegisteringThemToWriteThenLongChunkReplacesSmallerOnes) {
@@ -114,17 +114,17 @@ TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksAndOneWhichOverlapsTheRest
     mockCommandList.registerMemoryToWrite(&bytes[0], 16);
 
     // Validate registered blocks.
-    ASSERT_EQ(2, mockCommandList.memoryToWrite.size());
+    ASSERT_EQ(2u, mockCommandList.memoryToWrite.size());
 
     // Unrelated chunk.
     const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
     EXPECT_EQ(&otherBytes[0], firstAddress);
-    EXPECT_EQ(8, firstSize);
+    EXPECT_EQ(8u, firstSize);
 
     // Long chunk, which contains partitioned ones.
     const auto &[secondAddress, secondSize] = mockCommandList.memoryToWrite[1];
     EXPECT_EQ(&bytes[0], secondAddress);
-    EXPECT_EQ(16, secondSize);
+    EXPECT_EQ(16u, secondSize);
 }
 
 class ImportedHostPointersManagerTest : public ::testing::Test {

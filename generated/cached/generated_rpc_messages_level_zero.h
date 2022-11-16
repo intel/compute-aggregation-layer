@@ -52,8 +52,8 @@ struct DynamicArgTraits {
 
 template <typename DynamicStructT>
 struct DynamicStructTraits {
-    uint32_t offset;
-    uint32_t count;
+    int32_t offset;
+    int32_t count;
 };
 
 template <>
@@ -6185,7 +6185,7 @@ struct ZeModuleCreateRpcM {
                     auto* descPConstantsTraits = reinterpret_cast<DynamicStructTraits<ze_module_constants_t>*>(dynMem + currentOffset);
                     currentOffset += alignUpPow2<8>(descTraits[i].pConstantsCount * sizeof(DynamicStructTraits<ze_module_constants_t>));
 
-                    for(uint32_t j = 0; j < descTraits[i].pConstantsCount; ++j){
+                    for(int32_t j = 0; j < descTraits[i].pConstantsCount; ++j){
                         if(descPConstantsTraits[j].pConstantIdsOffset == -1){
                             forcePointerWrite(destDesc[i].pConstants[j].pConstantIds, nullptr);
                             continue;
@@ -6195,7 +6195,7 @@ struct ZeModuleCreateRpcM {
                         currentOffset += alignUpPow2<8>(descPConstantsTraits[j].pConstantIdsCount * sizeof(uint32_t));
                     }
 
-                    for(uint32_t j = 0; j < descTraits[i].pConstantsCount; ++j){
+                    for(int32_t j = 0; j < descTraits[i].pConstantsCount; ++j){
                         if(descPConstantsTraits[j].pConstantValuesOffset == -1){
                             forcePointerWrite(destDesc[i].pConstants[j].pConstantValues, nullptr);
                             continue;
@@ -6207,7 +6207,7 @@ struct ZeModuleCreateRpcM {
                         auto* descPConstantsPConstantValuesTraits = reinterpret_cast<DynamicStructTraits<const void *>*>(dynMem + currentOffset);
                         currentOffset += alignUpPow2<8>(descPConstantsTraits[j].pConstantValuesCount * sizeof(DynamicStructTraits<const void *>));
 
-                        for(uint32_t k = 0; k < descPConstantsTraits[j].pConstantValuesCount; ++k){
+                        for(int32_t k = 0; k < descPConstantsTraits[j].pConstantValuesCount; ++k){
                             if(descPConstantsPConstantValuesTraits[k].offset == -1){
                                 forcePointerWrite(destDesc[i].pConstants[j].pConstantValues[k], nullptr);
                                 continue;
@@ -6278,7 +6278,7 @@ struct ZeModuleCreateRpcM {
                     continue;
                 }
 
-                const auto& descPInputModuleCount = args.desc[i].inputSize;
+                const auto descPInputModuleCount = static_cast<int32_t>(args.desc[i].inputSize);
                 if(!descPInputModuleCount){
                     descTraits[i].pInputModuleOffset = -1;
                     descTraits[i].pInputModuleCount = -1;
@@ -6300,7 +6300,7 @@ struct ZeModuleCreateRpcM {
                     continue;
                 }
 
-                const auto& descPBuildFlagsCount = Cal::Utils::countNullterminated(args.desc[i].pBuildFlags);
+                const auto descPBuildFlagsCount = static_cast<int32_t>(Cal::Utils::countNullterminated(args.desc[i].pBuildFlags));
                 if(!descPBuildFlagsCount){
                     descTraits[i].pBuildFlagsOffset = -1;
                     descTraits[i].pBuildFlagsCount = -1;
@@ -6322,7 +6322,7 @@ struct ZeModuleCreateRpcM {
                     continue;
                 }
 
-                const auto& descPConstantsCount = 1;
+                const auto descPConstantsCount = static_cast<int32_t>(1);
                 if(!descPConstantsCount){
                     descTraits[i].pConstantsOffset = -1;
                     descTraits[i].pConstantsCount = -1;
@@ -6338,7 +6338,7 @@ struct ZeModuleCreateRpcM {
                 auto* descPConstantsTraits = reinterpret_cast<DynamicStructTraits<ze_module_constants_t>*>(dynMem + currentOffset);
                 currentOffset += alignUpPow2<8>(descPConstantsCount * sizeof(DynamicStructTraits<ze_module_constants_t>));
 
-                for(uint32_t j = 0; j < descPConstantsCount; ++j){
+                for(int32_t j = 0; j < descPConstantsCount; ++j){
                     const auto& descPConstantsPConstantIds = args.desc[i].pConstants[j].pConstantIds;
                     if(!descPConstantsPConstantIds){
                         descPConstantsTraits[j].pConstantIdsOffset = -1;
@@ -6346,7 +6346,7 @@ struct ZeModuleCreateRpcM {
                         continue;
                     }
 
-                    const auto& descPConstantsPConstantIdsCount = args.desc[i].pConstants[j].numConstants;
+                    const auto descPConstantsPConstantIdsCount = static_cast<int32_t>(args.desc[i].pConstants[j].numConstants);
                     if(!descPConstantsPConstantIdsCount){
                         descPConstantsTraits[j].pConstantIdsOffset = -1;
                         descPConstantsTraits[j].pConstantIdsCount = -1;
@@ -6360,7 +6360,7 @@ struct ZeModuleCreateRpcM {
                     currentOffset += alignUpPow2<8>(descPConstantsPConstantIdsCount * sizeof(uint32_t));
                 }
 
-                for(uint32_t j = 0; j < descPConstantsCount; ++j){
+                for(int32_t j = 0; j < descPConstantsCount; ++j){
                     const auto& descPConstantsPConstantValues = args.desc[i].pConstants[j].pConstantValues;
                     if(!descPConstantsPConstantValues){
                         descPConstantsTraits[j].pConstantValuesOffset = -1;
@@ -6368,7 +6368,7 @@ struct ZeModuleCreateRpcM {
                         continue;
                     }
 
-                    const auto& descPConstantsPConstantValuesCount = args.desc[i].pConstants[j].numConstants;
+                    const auto descPConstantsPConstantValuesCount = static_cast<int32_t>(args.desc[i].pConstants[j].numConstants);
                     if(!descPConstantsPConstantValuesCount){
                         descPConstantsTraits[j].pConstantValuesOffset = -1;
                         descPConstantsTraits[j].pConstantValuesCount = -1;
@@ -6384,7 +6384,7 @@ struct ZeModuleCreateRpcM {
                     auto* descPConstantsPConstantValuesTraits = reinterpret_cast<DynamicStructTraits<const void *>*>(dynMem + currentOffset);
                     currentOffset += alignUpPow2<8>(descPConstantsPConstantValuesCount * sizeof(DynamicStructTraits<const void *>));
 
-                    for(uint32_t k = 0; k < descPConstantsPConstantValuesCount; ++k){
+                    for(int32_t k = 0; k < descPConstantsPConstantValuesCount; ++k){
                         const auto& descPConstantsPConstantValues_k = descPConstantsPConstantValues[k];
                         if(!descPConstantsPConstantValues_k){
                             descPConstantsPConstantValuesTraits[k].offset = -1;
@@ -7100,7 +7100,7 @@ struct ZeKernelCreateRpcM {
                     continue;
                 }
 
-                const auto& descPKernelNameCount = Cal::Utils::countNullterminated(args.desc[i].pKernelName);
+                const auto descPKernelNameCount = static_cast<int32_t>(Cal::Utils::countNullterminated(args.desc[i].pKernelName));
                 if(!descPKernelNameCount){
                     descTraits[i].pKernelNameOffset = -1;
                     descTraits[i].pKernelNameCount = -1;

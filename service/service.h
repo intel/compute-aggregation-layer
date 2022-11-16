@@ -80,8 +80,6 @@ struct ServiceConfig {
 
 namespace Apis {
 
-static const char *intelGpuPlatformName = "Intel.*Graphics";
-
 namespace Ocl {
 
 extern cl_platform_id globalOclPlatform;

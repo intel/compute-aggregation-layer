@@ -169,7 +169,6 @@ bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, 
     queueDescription.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
     queueDescription.ordinal = ordinal;
 
-    ze_command_queue_handle_t commandQueue{};
     const auto zeCommandQueueCreateResult = zeCommandQueueCreate(context, device, &queueDescription, &queue);
     if (zeCommandQueueCreateResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeCommandQueueCreate() call has failed! Error code = %d", static_cast<int>(zeCommandQueueCreateResult));

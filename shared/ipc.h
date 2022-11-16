@@ -118,7 +118,7 @@ class Socket : public Connection {
 
     int send(const void *data, size_t dataSize) override {
         auto ret = write(socketFd, data, dataSize);
-        if (dataSize != ret) {
+        if (static_cast<int64_t>(dataSize) != ret) {
             log<Verbosity::debug>("Failed to send data to socket");
         }
         return ret;

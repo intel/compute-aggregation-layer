@@ -24,6 +24,8 @@ namespace Cal {
 
 namespace Service {
 
+static const char *intelGpuPlatformName = "Intel.*Graphics";
+
 void *getUsmMemoryFromHeap(Cal::Utils::Heap &heap, size_t alignedSize, Cal::Ipc::Shmem shmem) {
     void *cpuAddress = heap.alloc(alignedSize, Cal::Utils::pageSize64KB);
     if (nullptr == cpuAddress) {
@@ -197,7 +199,6 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
         return false;
     }
     std::vector<cl_mem_properties_intel> properties;
-    static constexpr cl_mem_properties_intel propertiesToAdd = 2;
 #define CL_MEM_ALLOC_USE_HOST_PTR_INTEL 0x1000F
     cl_mem_properties_intel propertiesToInject[] = {CL_MEM_ALLOC_USE_HOST_PTR_INTEL, 0};
     auto numPropertiesToInject = sizeof(propertiesToInject) / sizeof(propertiesToInject[0]);
@@ -276,7 +277,6 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
         return false;
     }
     std::vector<cl_mem_properties_intel> properties;
-    static constexpr cl_mem_properties_intel propertiesToAdd = 2;
 #define CL_MEM_ALLOC_USE_HOST_PTR_INTEL 0x1000F
     cl_mem_properties_intel propertiesToInject[] = {CL_MEM_ALLOC_USE_HOST_PTR_INTEL, 0};
     auto numPropertiesToInject = sizeof(propertiesToInject) / sizeof(propertiesToInject[0]);
@@ -1161,7 +1161,9 @@ void *getExtensionFuncAddress(const char *funcname) {
 } // namespace LevelZero
 } // namespace Apis
 
-Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, ServiceConfig &&serviceConfig) : knownChoreographies(std::move(knownChoreographies)), serviceConfig(std::move(serviceConfig)) {
+Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, ServiceConfig &&serviceConfig)
+    : serviceConfig(std::move(serviceConfig)),
+      knownChoreographies(std::move(knownChoreographies)) {
     if (nullptr == this->knownChoreographies) {
         this->knownChoreographies = std::make_unique<ChoreographyLibrary>();
     }

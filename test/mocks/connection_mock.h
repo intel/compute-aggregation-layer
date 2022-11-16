@@ -194,7 +194,7 @@ class ConnectionExpectedProtocol : public ConnectionMock {
     int outIt = 0;
 
     int send(const void *data, size_t dataSize) override {
-        if (outIt >= std::tuple_size<OutMessagesT>()) {
+        if (outIt >= static_cast<int>(std::tuple_size<OutMessagesT>())) {
             return 0;
         }
 
@@ -208,7 +208,7 @@ class ConnectionExpectedProtocol : public ConnectionMock {
     }
 
     int receive(void *data, size_t dataSize) override {
-        if (inIt >= std::tuple_size<InMessagesT>()) {
+        if (inIt >= static_cast<int>(std::tuple_size<InMessagesT>())) {
             return 0;
         }
         auto ret = peek(data, dataSize);
@@ -217,7 +217,7 @@ class ConnectionExpectedProtocol : public ConnectionMock {
     }
 
     int peek(void *data, size_t dataSize) override {
-        if (inIt >= std::tuple_size<InMessagesT>()) {
+        if (inIt >= static_cast<int>(std::tuple_size<InMessagesT>())) {
             return 0;
         }
         std::string encodeIssue;

@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "icd/icd_ocl.h"
 
+#include <cstdint>
 #include <string>
 
 TEST(ClBufferRecycler, givenBufferSizeThenReturnsProperBucketIdForThatSize) {
@@ -18,8 +19,8 @@ TEST(ClBufferRecycler, givenBufferSizeThenReturnsProperBucketIdForThatSize) {
     EXPECT_EQ_BUCKET_ID(0U, Cal::Icd::Ocl::ClBufferRecycler::minBucketSize - 1);
     EXPECT_EQ_BUCKET_ID(0U, Cal::Icd::Ocl::ClBufferRecycler::minBucketSize);
     int bucketSize = Cal::Icd::Ocl::ClBufferRecycler::minBucketSize;
-    int bucketId = 1U;
-    while (bucketSize < Cal::Icd::Ocl::ClBufferRecycler::maxBucketSize) {
+    auto bucketId = 1U;
+    while (bucketSize < static_cast<int64_t>(Cal::Icd::Ocl::ClBufferRecycler::maxBucketSize)) {
         EXPECT_EQ_BUCKET_ID(bucketId, bucketSize + 1);
         EXPECT_EQ_BUCKET_ID(bucketId, bucketSize * 2 - 1);
         EXPECT_EQ_BUCKET_ID(bucketId, bucketSize * 2);
@@ -32,10 +33,5 @@ TEST(ClBufferRecycler, givenBufferSizeThenReturnsProperBucketIdForThatSize) {
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
-
-    auto ret = RUN_ALL_TESTS();
-
-    return ret;
-
-    return 0;
+    return RUN_ALL_TESTS();
 }

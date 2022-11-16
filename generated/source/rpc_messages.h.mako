@@ -52,8 +52,8 @@ struct DynamicArgTraits {
 
 template <typename DynamicStructT>
 struct DynamicStructTraits {
-    uint32_t offset;
-    uint32_t count;
+    int32_t offset;
+    int32_t count;
 };
 
 % for struct_description in config.structures:

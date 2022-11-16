@@ -189,11 +189,12 @@ TEST(ShmemImporterOpen, whenOpeningTheShmemFileThenUsesProperPathAndFlags) {
         capturedMode = mode;
         return -1;
     };
-    auto shmem = importer.open(rshmem, nullptr);
+
+    importer.open(rshmem, nullptr);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_STREQ((std::string(testBasePath.data()) + std::to_string(rshmem.id)).c_str(), capturedName.c_str());
     EXPECT_EQ(O_RDWR, capturedOflag);
-    EXPECT_EQ(0, capturedMode);
+    EXPECT_EQ(mode_t{0u}, capturedMode);
 }
 
 TEST(ShmemImporterOpen, whenMmapingTheShmemFileThenUsesProperFlagsAndFd) {
@@ -263,7 +264,7 @@ TEST(ShmemAllocatorCreate, whenCreatingShmemThenFirstUnlinkStalePath) {
         return 0;
     };
 
-    auto shmem = allocator.create(64, false);
+    allocator.create(64, false);
 
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
     EXPECT_STREQ((testBasePath.data() + std::to_string(0)).c_str(), capturedUnlinkPath.c_str());
@@ -303,7 +304,7 @@ TEST(ShmemAllocatorCreate, whenOpeningShmemThenProperFlagsAreUsed) {
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_STREQ((std::string(testBasePath.data()) + std::to_string(0)).c_str(), capturedName.c_str());
     EXPECT_EQ(O_CREAT | O_EXCL | O_RDWR, capturedOflag);
-    EXPECT_EQ(S_IRUSR | S_IWUSR, capturedMode);
+    EXPECT_EQ(mode_t{S_IRUSR | S_IWUSR}, capturedMode);
     EXPECT_FALSE(shmem.isValid());
     EXPECT_FALSE(logs.empty());
 }

@@ -39,7 +39,7 @@ struct RpcCallId {
     constexpr RpcCallId(RpcMessageHeader::MessageTypeT type, RpcMessageHeader::MessageSubTypeT subtype)
         : unused(0), type(type), subtype(subtype) {
     }
-    constexpr RpcCallId() : type(RpcMessageHeader::messageTypeUnknown), subtype(RpcMessageHeader::messageTypeUnknown) {
+    constexpr RpcCallId() : unused(0), type(RpcMessageHeader::messageTypeUnknown), subtype(RpcMessageHeader::messageTypeUnknown) {
     }
     union {
         struct {
