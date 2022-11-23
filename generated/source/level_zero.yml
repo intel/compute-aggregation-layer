@@ -4876,6 +4876,7 @@ config :
           special_handling :
                 icd :
                     handler_prologue : "if (!Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {\n        return ZE_RESULT_ERROR_INVALID_ARGUMENT;\n    }\n"
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -4905,6 +4906,9 @@ config :
 
         - name : zeMemOpenIpcHandle
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  Mem
           returns :
                     type : ze_result_t
