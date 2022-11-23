@@ -474,6 +474,30 @@ struct RespPageFault {
 };
 static_assert(std::is_standard_layout<RespPageFault>::value);
 
-} // namespace Messages
+struct ReqTransferFd {
+    Cal::Ipc::ControlMessageHeader header = {};
 
+    static constexpr uint16_t messageSubtype = 11;
+
+    ReqTransferFd(int fd) : fd(fd) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqTransferFd::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqTransferFd::messageSubtype) ? 1 : 0;
+        invalid |= fd < 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqTransferFd is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    int fd;
+};
+static_assert(std::is_standard_layout<ReqTransferFd>::value);
+
+} // namespace Messages
 } // namespace Cal

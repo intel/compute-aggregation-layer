@@ -76,7 +76,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool);
 ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent);
-ze_result_t zeEventPoolGetIpcHandle (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc);
+ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc);
 ze_result_t zeEventPoolOpenIpcHandle (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool);
 ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool);
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);

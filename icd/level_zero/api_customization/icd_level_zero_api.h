@@ -36,6 +36,8 @@ ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, u
 ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout);
 
+ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t *phIpc);
+
 ze_result_t zeMemGetAllocProperties(ze_context_handle_t hContext, const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice);
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr);
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext,

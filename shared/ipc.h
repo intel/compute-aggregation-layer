@@ -11,6 +11,7 @@
 #include "shared/log.h"
 #include "shared/sys.h"
 
+#include <array>
 #include <dlfcn.h>
 #include <errno.h>
 #include <limits.h>
@@ -50,7 +51,9 @@ class Connection {
   public:
     virtual ~Connection() = default;
     virtual int send(const void *data, size_t dataSize) = 0;
+    virtual bool sendFd(int fd) = 0;
     virtual int receive(void *data, size_t dataSize) = 0;
+    virtual bool receiveFd(int &fd) = 0;
     virtual int peek(void *data, size_t dataSize) = 0;
     virtual int close() = 0;
     virtual bool isAlive() = 0;
@@ -124,6 +127,46 @@ class Socket : public Connection {
         return ret;
     }
 
+    bool sendFd(int fd) override {
+        // Prepare dummy IO vectors.
+        // In spite of focusing on ancillary data to send FD, we cannot use empty IOV.
+        char dummyData{0};
+        std::array<struct iovec, 1> iov = {};
+        iov[0].iov_base = &dummyData;
+        iov[0].iov_len = sizeof(dummyData);
+
+        // Prepare storage for control message's content and ancillary data.
+        constexpr auto fdSize = sizeof(fd);
+        constexpr auto paddedControlMessageSize = CMSG_SPACE(fdSize);
+        constexpr auto actualControlMessageSize = CMSG_LEN(fdSize);
+        std::array<char, paddedControlMessageSize> controlMessageStorage = {};
+
+        // Prepare storage and fill main message.
+        struct msghdr message;
+        memset(&message, 0, sizeof(message));
+        message.msg_control = controlMessageStorage.data();
+        message.msg_controllen = paddedControlMessageSize;
+        message.msg_iov = iov.data();
+        message.msg_iovlen = iov.size();
+
+        // Fill control message with ancillary data.
+        auto *controlMessage = CMSG_FIRSTHDR(&message);
+        controlMessage->cmsg_len = actualControlMessageSize;
+        controlMessage->cmsg_level = SOL_SOCKET;
+        controlMessage->cmsg_type = SCM_RIGHTS;
+        std::memcpy(CMSG_DATA(controlMessage), &fd, fdSize);
+
+        // Send message and verify results.
+        constexpr int flags{0};
+        const auto ret = sendmsg(socketFd, &message, flags);
+        if (ret == -1) {
+            log<Verbosity::error>("Could not send file descriptor! Errno is %d", static_cast<int>(errno));
+            return false;
+        }
+
+        return true;
+    }
+
     int peek(void *buffer, size_t bufferSize) override {
         auto ret = recv(socketFd, buffer, bufferSize, MSG_PEEK);
         if (ret == -1) {
@@ -138,6 +181,47 @@ class Socket : public Connection {
             log<Verbosity::debug>("Failed to read from socket");
         }
         return ret;
+    }
+
+    bool receiveFd(int &fd) override {
+        // Prepare dummy IO vectors.
+        // In spite of focusing on ancillary data to receive FD, we cannot use empty IOV.
+        char dummyData{0};
+        std::array<struct iovec, 1> iov = {};
+        iov[0].iov_base = &dummyData;
+        iov[0].iov_len = sizeof(dummyData);
+
+        // Prepare storage for control message's content and ancillary data.
+        constexpr auto fdSize = sizeof(fd);
+        constexpr auto paddedControlMessageSize = CMSG_SPACE(fdSize);
+        constexpr auto actualControlMessageSize = CMSG_LEN(fdSize);
+        std::array<char, paddedControlMessageSize> controlMessageStorage = {};
+
+        // Prepare storage and fill main message.
+        struct msghdr message;
+        memset(&message, 0, sizeof(message));
+        message.msg_control = controlMessageStorage.data();
+        message.msg_controllen = paddedControlMessageSize;
+        message.msg_iov = iov.data();
+        message.msg_iovlen = iov.size();
+
+        // Receive message and verify results.
+        constexpr int flags{0};
+        const auto ret = recvmsg(socketFd, &message, flags);
+        if (ret == -1) {
+            log<Verbosity::error>("Could not receive file descriptor! Errno is %d", static_cast<int>(errno));
+            return false;
+        }
+
+        // Validate received control message and assign file descriptor.
+        auto *controlMessage = CMSG_FIRSTHDR(&message);
+        if (controlMessage->cmsg_len == actualControlMessageSize && controlMessage->cmsg_level == SOL_SOCKET && controlMessage->cmsg_type == SCM_RIGHTS) {
+            std::memcpy(&fd, CMSG_DATA(controlMessage), fdSize);
+            return true;
+        }
+
+        log<Verbosity::error>("Received message does not contain valid file descriptor!");
+        return false;
     }
 
     int close() override {

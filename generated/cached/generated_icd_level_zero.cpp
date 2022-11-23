@@ -1462,7 +1462,7 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
 
     return ret;
 }
-ze_result_t zeEventPoolGetIpcHandle (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
+ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolGetIpcHandle");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();

@@ -241,6 +241,10 @@ class IcdPlatform {
         return *rpcChannel;
     }
 
+    Cal::Ipc::Connection &getConnection() {
+        return *connection;
+    }
+
     Cal::Ipc::MallocShmemZeroCopyManager &getMallocShmemZeroCopyManager() {
         return mallocShmemZeroCopyManager;
     }

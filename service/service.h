@@ -739,12 +739,30 @@ class Provider {
         case Cal::Messages::ReqPageFault::messageSubtype: {
             Cal::Messages::ReqPageFault request(nullptr);
             if ((false == clientConnection.receive(request)) || request.isInvalid()) {
-                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqImportAddressSpace)", clientConnection.getId());
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqPageFault)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
+        case Cal::Messages::ReqTransferFd::messageSubtype: {
+            Cal::Messages::ReqTransferFd request(-1);
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqTransferFd)", clientConnection.getId());
                 return false;
             }
             return service(request, clientConnection, ctx);
         }
         }
+    }
+
+    bool service(const Cal::Messages::ReqTransferFd &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested transfer of FD: %d", clientConnection.getId(), request.fd);
+        if (false == clientConnection.sendFd(request.fd)) {
+            log<Verbosity::error>("Could not send FD to the client!");
+            return false;
+        }
+
+        return true;
     }
 
     bool service(const Cal::Messages::ReqPageFault &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {

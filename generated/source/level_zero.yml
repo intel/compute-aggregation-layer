@@ -3665,6 +3665,10 @@ config :
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
         - name : zeEventPoolGetIpcHandle
+          latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
@@ -3689,6 +3693,7 @@ config :
                         server_access : write
 
         - name : zeEventPoolOpenIpcHandle
+          latency : 0.0
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
@@ -3720,6 +3725,7 @@ config :
 
 
         - name : zeEventPoolCloseIpcHandle
+          latency : 0.0
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
@@ -4895,6 +4901,7 @@ config :
                         server_access : write
 
         - name : zeMemOpenIpcHandle
+          latency : 0.0
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -4933,6 +4940,7 @@ config :
                         server_access : write
 
         - name : zeMemCloseIpcHandle
+          latency : 0.0
           ddi_category :  Mem
           returns :
                     type : ze_result_t
@@ -5876,6 +5884,7 @@ config :
 #                    kind : pointer
 #
         - name : zeCommandListAppendLaunchKernelIndirect
+          latency : 0.0
           special_handling : 
                 icd : 
                     handler_prologue : "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"
@@ -5964,6 +5973,7 @@ config :
 #                    kind : pointer
 #
         - name : zeDevicePciGetPropertiesExt
+          latency : 0.0
           ddi_category :  Device
           returns :
                     type : ze_result_t

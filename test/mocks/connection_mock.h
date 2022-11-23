@@ -31,11 +31,25 @@ class ConnectionMock : public Cal::Ipc::Connection {
         return apiConfig.send.defaultReturnValue;
     }
 
+    bool sendFd(int fd) override {
+        if (apiConfig.sendFd.impl) {
+            return apiConfig.sendFd.impl.value()(fd);
+        }
+        return apiConfig.sendFd.defaultReturnValue;
+    }
+
     int receive(void *data, size_t dataSize) override {
         if (apiConfig.receive.impl) {
             return apiConfig.receive.impl.value()(data, dataSize);
         }
         return apiConfig.receive.defaultReturnValue;
+    }
+
+    bool receiveFd(int &fd) override {
+        if (apiConfig.receiveFd.impl) {
+            return apiConfig.receiveFd.impl.value()(fd);
+        }
+        return apiConfig.receiveFd.defaultReturnValue;
     }
 
     int peek(void *data, size_t dataSize) override {
@@ -80,9 +94,19 @@ class ConnectionMock : public Cal::Ipc::Connection {
         } send;
 
         struct {
+            std::optional<std::function<bool(int fd)>> impl;
+            bool defaultReturnValue = false;
+        } sendFd;
+
+        struct {
             std::optional<std::function<int(const void *data, size_t dataSize)>> impl;
             int defaultReturnValue = 0;
         } receive;
+
+        struct {
+            std::optional<std::function<bool(int &fd)>> impl;
+            bool defaultReturnValue = false;
+        } receiveFd;
 
         struct {
             std::optional<std::function<int(const void *data, size_t dataSize)>> impl;
