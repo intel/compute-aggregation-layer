@@ -752,7 +752,33 @@ class Provider {
             }
             return service(request, clientConnection, ctx);
         }
+        case Cal::Messages::ReqReverseTransferFd::messageSubtype: {
+            Cal::Messages::ReqReverseTransferFd request{};
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqReverseTransferFd)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
         }
+        }
+    }
+
+    bool service(const Cal::Messages::ReqReverseTransferFd &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested reverse transfer of FD!", clientConnection.getId());
+
+        int fd{-1};
+        if (false == clientConnection.receiveFd(fd)) {
+            log<Verbosity::error>("Could not receive FD from the client!");
+            return false;
+        }
+
+        Cal::Messages::RespReverseTransferFd response{fd};
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response for ReqReverseTransferFd!");
+            return false;
+        }
+
+        return true;
     }
 
     bool service(const Cal::Messages::ReqTransferFd &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {

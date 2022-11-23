@@ -434,7 +434,7 @@ bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_devic
 
     ze_event_pool_desc_t eventPoolDescription{};
     eventPoolDescription.count = eventsCount;
-    eventPoolDescription.flags = ZE_EVENT_POOL_FLAG_HOST_VISIBLE | ZE_EVENT_POOL_FLAG_KERNEL_TIMESTAMP;
+    eventPoolDescription.flags = ZE_EVENT_POOL_FLAG_HOST_VISIBLE | ZE_EVENT_POOL_FLAG_KERNEL_TIMESTAMP | ZE_EVENT_POOL_FLAG_IPC;
 
     const auto zeEventPoolCreateResult = zeEventPoolCreate(context, &eventPoolDescription, devicesCount, poolDevices, &eventPool);
     if (zeEventPoolCreateResult != ZE_RESULT_SUCCESS) {

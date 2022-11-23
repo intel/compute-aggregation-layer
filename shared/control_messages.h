@@ -488,7 +488,7 @@ struct ReqTransferFd {
         uint32_t invalid = 0;
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != ReqTransferFd::messageSubtype) ? 1 : 0;
-        invalid |= fd < 0;
+        invalid |= (this->fd < 0) ? 1 : 0;
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqTransferFd is not valid");
         }
@@ -498,6 +498,53 @@ struct ReqTransferFd {
     int fd;
 };
 static_assert(std::is_standard_layout<ReqTransferFd>::value);
+
+struct ReqReverseTransferFd {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 12;
+
+    ReqReverseTransferFd() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqReverseTransferFd::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqReverseTransferFd::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqReverseTransferFd is not valid");
+        }
+        return 0 != invalid;
+    }
+};
+static_assert(std::is_standard_layout<ReqReverseTransferFd>::value);
+
+struct RespReverseTransferFd {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 13;
+
+    RespReverseTransferFd(int remoteFd) : remoteFd(remoteFd) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = RespReverseTransferFd::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespReverseTransferFd::messageSubtype) ? 1 : 0;
+        invalid |= (this->remoteFd < 0) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespReverseTransferFd is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    int remoteFd;
+};
+static_assert(std::is_standard_layout<RespReverseTransferFd>::value);
 
 } // namespace Messages
 } // namespace Cal

@@ -3694,6 +3694,9 @@ config :
 
         - name : zeEventPoolOpenIpcHandle
           latency : 0.0
+          special_handling :
+                icd :
+                    handler_only_suffix : "RpcHelper"
           ddi_category :  EventPool
           returns :
                     type : ze_result_t
