@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
 
 namespace Cal {

@@ -14,6 +14,7 @@ ${header}
 #include <cstdlib>
 #include <type_traits>
 
+using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
 
 % for namespace_part in icd_namespace:
@@ -85,16 +86,37 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %      if arg.kind.is_struct():
     {
 %       for member in [m for m in config.structures_by_name[arg.type.str].members if m.translate_before]:
-        ${member.translate_before.format(f"command->args.{arg.name}.{member.name}", f"{arg.name}.{member.name}", func_name=func_base.name)};
+        ${member.translate_before.format(dst=f"command->args.{arg.name}.{member.name}",
+                                         arg=f"{arg.name}.{member.name}",
+                                         func_name=func_base.name,
+                                         dst_captures=f"command->captures.{arg.name}.{member.name}")};
 %       endfor # members
     }
 %      endif # arg.kind.is_struct()
 <%     sname = '' if not (arg.kind_details and arg.kind_details.element) else arg.kind_details.element.type.str %>\
 %      if arg.kind.is_pointer_to_array() and sname in config.structures_by_name and config.structures_by_name[sname].traits.requires_translation_of_members_before():
     {
-%       for member in [m for m in config.structures_by_name[arg.kind_details.element.type.str].members if m.translate_before]:
-        ${member.translate_before.format(f"command->args.{arg.name}->{member.name}", f"{arg.name}->{member.name}", func_name=func_base.name)};
-%       endfor # members
+%        if arg.kind_details.num_elements.is_single_element():
+%         for member in [m for m in config.structures_by_name[arg.kind_details.element.type.str].members if m.translate_before]:
+        ${member.translate_before.format(dst=f"command->args.{arg.name}->{member.name}",
+                                         arg=f"{arg.name}->{member.name}",
+                                         func_name=func_base.name,
+                                         dst_captures=f"command->captures.{arg.name}.{member.name}")};
+%         endfor # members
+%        else: # not arg.kind_details.num_elements.is_single_element()
+        auto base = command->captures.${get_arg_from_capture(arg)};
+        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
+        auto numEntries = ${arg.get_calculated_elements_count()};
+
+        for(size_t i = 0; i < numEntries; ++i){
+%         for member in [m for m in config.structures_by_name[arg.kind_details.element.type.str].members if m.translate_before]:
+            ${member.translate_before.format(f"command->args.{arg.name}[i].{member.name}",
+                                             f"{arg.name}[i].{member.name}",
+                                             func_name=func_base.name,
+                                             dst_captures=f"baseMutable[i].{member.name}")};
+        }
+%         endfor # members
+%        endif # arg.kind_details.num_elements.is_single_element():
     }
 %      endif # arg.kind.is_pointer_to_array() and sname in config.structures_by_name and config.structures_by_name[sname].traits.requires_translation_of_members_before()
 %      if arg.kind.is_pointer_to_array() and arg.kind_details.element.translate_before:

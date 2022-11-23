@@ -30,8 +30,8 @@ class Translate:
     def __init__(self, src: str):
         self.str = src
 
-    def format(self, dst, arg, index="", dst_mem="", func_name="") -> str:
-        return self.str.format(dst=dst, arg=arg, index=index, dst_mem=dst_mem, func_name=func_name)
+    def format(self, dst, arg, index="", dst_mem="", func_name="", dst_captures="") -> str:
+        return self.str.format(dst=dst, arg=arg, index=index, dst_mem=dst_mem, func_name=func_name, dst_captures=dst_captures)
 
 
 class DaemonAction:

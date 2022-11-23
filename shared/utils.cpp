@@ -279,6 +279,22 @@ uint64_t decodeIntFromPath(const char *str) {
     return ret;
 }
 
+template <typename PointedT>
+void enforceNullWithWarningImpl(const char *sourceLocation, PointedT *&pointer) {
+    if (pointer) {
+        log<Verbosity::debug>("%s is not nullptr! Setting its value to nullptr!", sourceLocation);
+        pointer = nullptr;
+    }
+}
+
+void enforceNullWithWarning(const char *sourceLocation, const void *&pointer) {
+    enforceNullWithWarningImpl(sourceLocation, pointer);
+}
+
+void enforceNullWithWarning(const char *sourceLocation, void *&pointer) {
+    enforceNullWithWarningImpl(sourceLocation, pointer);
+}
+
 void ensureNull(const char *sourceLocation, const void *pointer) {
     if (pointer) {
         log<Verbosity::error>("%s is not nullptr! Aborting...", sourceLocation);

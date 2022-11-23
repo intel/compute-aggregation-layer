@@ -751,6 +751,9 @@ uint64_t decodeIntFromPath(const char *str);
 
 bool isDebuggerConnected();
 
+void enforceNullWithWarning(const char *sourceLocation, const void *&pointer);
+void enforceNullWithWarning(const char *sourceLocation, void *&pointer);
+
 void ensureNull(const char *sourceLocation, const void *pointer);
 
 } // namespace Utils

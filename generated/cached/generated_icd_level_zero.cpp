@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
 
 namespace Cal {
@@ -990,7 +991,13 @@ ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t 
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     if(pCommandQueueGroupProperties)
     {
-        ensureNull("zeDeviceGetCommandQueueGroupProperties: pCommandQueueGroupProperties->pNext", pCommandQueueGroupProperties->pNext);
+        auto base = command->captures.pCommandQueueGroupProperties;
+        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
+        auto numEntries = (pCount ? *pCount : 0);
+
+        for(size_t i = 0; i < numEntries; ++i){
+            enforceNullWithWarning("zeDeviceGetCommandQueueGroupProperties: pCommandQueueGroupProperties[i].pNext", baseMutable[i].pNext);
+        }
     }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1017,7 +1024,13 @@ ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ui
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     if(pMemProperties)
     {
-        ensureNull("zeDeviceGetMemoryProperties: pMemProperties->pNext", pMemProperties->pNext);
+        auto base = command->captures.pMemProperties;
+        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
+        auto numEntries = (pCount ? *pCount : 0);
+
+        for(size_t i = 0; i < numEntries; ++i){
+            ensureNull("zeDeviceGetMemoryProperties: pMemProperties[i].pNext", pMemProperties[i].pNext);
+        }
     }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1070,7 +1083,13 @@ ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uin
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     if(pCacheProperties)
     {
-        ensureNull("zeDeviceGetCacheProperties: pCacheProperties->pNext", pCacheProperties->pNext);
+        auto base = command->captures.pCacheProperties;
+        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
+        auto numEntries = (pCount ? *pCount : 0);
+
+        for(size_t i = 0; i < numEntries; ++i){
+            ensureNull("zeDeviceGetCacheProperties: pCacheProperties[i].pNext", pCacheProperties[i].pNext);
+        }
     }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1358,7 +1377,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeEventPoolCreate: desc->pNext", desc->pNext);
+        enforceNullWithWarning("zeEventPoolCreate: desc->pNext", command->captures.desc.pNext);
     }
     if(phDevices)
     {
