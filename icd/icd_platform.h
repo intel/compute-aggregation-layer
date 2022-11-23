@@ -173,16 +173,20 @@ class PageFaultManager {
             return true;
         }
 
-        Cal::Messages::ReqPageFault reqPageFault(ptr);
-        if (this->connection.send(reqPageFault) == false) {
-            log<Verbosity::error>("Error while sending page fault request on address %p", ptr);
-            return false;
-        }
+        {
+            auto connectionLock = this->connection.lock();
 
-        Cal::Messages::RespPageFault respPageFault;
-        if (this->connection.receive(respPageFault) == false || respPageFault.isInvalid()) {
-            log<Verbosity::error>("Error while receiving page fault respond on address %p", ptr);
-            return false;
+            Cal::Messages::ReqPageFault reqPageFault(ptr);
+            if (this->connection.send(reqPageFault) == false) {
+                log<Verbosity::error>("Error while sending page fault request on address %p", ptr);
+                return false;
+            }
+
+            Cal::Messages::RespPageFault respPageFault;
+            if (this->connection.receive(respPageFault) == false || respPageFault.isInvalid()) {
+                log<Verbosity::error>("Error while receiving page fault respond on address %p", ptr);
+                return false;
+            }
         }
 
         sharedAllocDesc->second.placement = Placement::HOST;
