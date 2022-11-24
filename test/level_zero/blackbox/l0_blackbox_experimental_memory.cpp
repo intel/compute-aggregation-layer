@@ -51,11 +51,13 @@ bool getAllIpcHandles(ZexMemGetIpcHandlesT *zexMemGetIpcHandles, ze_context_hand
 
     log<Verbosity::info>("Successfully got IPC handles of %p!", usmDeviceBuffer);
 
+    auto i = 0u;
     for (const auto &ipcHandle : allIpcHandlesOfUsmDeviceBuffer) {
         uint64_t firstBytes{};
         std::memcpy(&firstBytes, ipcHandle.data, sizeof(firstBytes));
 
-        log<Verbosity::info>("First bytes (as u64) of ipcHandle[%d] = " PRIu64, firstBytes);
+        log<Verbosity::info>("First bytes (as u64) of ipcHandle[%d] = " PRIu64, i, firstBytes);
+        ++i;
     }
 
     return true;

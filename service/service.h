@@ -754,7 +754,7 @@ class Provider {
             return service(request, clientConnection, ctx);
         }
         case Cal::Messages::ReqTransferFd::messageSubtype: {
-            Cal::Messages::ReqTransferFd request(-1);
+            Cal::Messages::ReqTransferFd request{0};
             if ((false == clientConnection.receive(request)) || request.isInvalid()) {
                 log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqTransferFd)", clientConnection.getId());
                 return false;
@@ -762,7 +762,7 @@ class Provider {
             return service(request, clientConnection, ctx);
         }
         case Cal::Messages::ReqReverseTransferFd::messageSubtype: {
-            Cal::Messages::ReqReverseTransferFd request{};
+            Cal::Messages::ReqReverseTransferFd request{0};
             if ((false == clientConnection.receive(request)) || request.isInvalid()) {
                 log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqReverseTransferFd)", clientConnection.getId());
                 return false;
@@ -773,15 +773,19 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqReverseTransferFd &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested reverse transfer of FD!", clientConnection.getId());
+        log<Verbosity::debug>("Client : %d requested reverse transfer of FDs!", clientConnection.getId());
 
-        int fd{-1};
-        if (false == clientConnection.receiveFd(fd)) {
-            log<Verbosity::error>("Could not receive FD from the client!");
+        std::vector<int> fds(request.numOfFds);
+        if (false == clientConnection.receiveFds(fds.data(), request.numOfFds)) {
+            log<Verbosity::error>("Could not receive FDs from the client!");
             return false;
         }
 
-        Cal::Messages::RespReverseTransferFd response{fd};
+        Cal::Messages::RespReverseTransferFd response{};
+        for (auto i = 0u; i < request.numOfFds; ++i) {
+            response.remoteFds[i] = fds[i];
+        }
+
         if (false == clientConnection.send(response)) {
             log<Verbosity::error>("Could not send response for ReqReverseTransferFd!");
             return false;
@@ -791,8 +795,8 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqTransferFd &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested transfer of FD: %d", clientConnection.getId(), request.fd);
-        if (false == clientConnection.sendFd(request.fd)) {
+        log<Verbosity::debug>("Client : %d requested transfer of FDs!", clientConnection.getId());
+        if (false == clientConnection.sendFds(request.remoteFds, request.usedFdsCount)) {
             log<Verbosity::error>("Could not send FD to the client!");
             return false;
         }

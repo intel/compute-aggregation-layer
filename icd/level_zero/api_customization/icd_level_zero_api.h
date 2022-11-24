@@ -50,6 +50,14 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext,
                              ze_device_handle_t hDevice,
                              void **pptr);
 
+ze_result_t zexMemGetIpcHandles(ze_context_handle_t hContext, const void *ptr, uint32_t *numIpcHandles, ze_ipc_mem_handle_t *pIpcHandles);
+ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
+                                 ze_device_handle_t hDevice,
+                                 uint32_t numIpcHandles,
+                                 ze_ipc_mem_handle_t *pIpcHandles,
+                                 ze_ipc_memory_flags_t flags,
+                                 void **pptr);
+
 ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properties_t *pModuleProperties);
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue);
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties);

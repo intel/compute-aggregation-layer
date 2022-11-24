@@ -9,6 +9,7 @@
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "icd_level_zero_api.h"
+#include "icd_level_zero_ipc_helpers.h"
 #include "shared/log.h"
 #include "shared/usm.h"
 
@@ -69,55 +70,15 @@ ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void *ptr, ze_
         return rpcCommandResult;
     }
 
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto &connection = globalL0Platform->getConnection();
-    auto lock = connection.lock();
-
-    int remoteFileDescriptor{};
-    std::memcpy(&remoteFileDescriptor, pIpcHandle->data, sizeof(remoteFileDescriptor));
-
-    Cal::Messages::ReqTransferFd reqTransferFd{remoteFileDescriptor};
-    if (false == connection.send(reqTransferFd)) {
-        log<Verbosity::error>("zeMemGetIpcHandle: Could not request transfer of file descriptor!");
-        return ZE_RESULT_ERROR_DEVICE_LOST;
-    }
-
-    int localFileDescriptor = 0;
-    if (false == connection.receiveFd(localFileDescriptor)) {
-        log<Verbosity::error>("zeMemGetIpcHandle: Could not receive file descriptor from service!");
-        return ZE_RESULT_ERROR_DEVICE_LOST;
-    }
-
-    std::memcpy(pIpcHandle->data, &localFileDescriptor, sizeof(localFileDescriptor));
-    return ZE_RESULT_SUCCESS;
+    return Cal::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandle", 1u, pIpcHandle);
 }
 
 ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void **pptr) {
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto &connection = globalL0Platform->getConnection();
-    auto lock = connection.lock();
-
-    int localFileDescriptor{};
-    std::memcpy(&localFileDescriptor, handle.data, sizeof(localFileDescriptor));
-
-    Cal::Messages::ReqReverseTransferFd reqReverseTransferFd{};
-    if (false == connection.send(reqReverseTransferFd)) {
-        log<Verbosity::error>("zeMemOpenIpcHandle: Could not request reverse transfer of file descriptor!");
-        return ZE_RESULT_ERROR_DEVICE_LOST;
+    const auto reverseTranslationResult = Cal::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemOpenIpcHandle", 1u, &handle);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
     }
 
-    if (false == connection.sendFd(localFileDescriptor)) {
-        log<Verbosity::error>("zeMemOpenIpcHandle: Could not send file descriptor to service for reverse transfer!");
-        return ZE_RESULT_ERROR_DEVICE_LOST;
-    }
-
-    Cal::Messages::RespReverseTransferFd respReverseTransferFd{-1};
-    if (false == connection.receive(respReverseTransferFd) || respReverseTransferFd.isInvalid()) {
-        log<Verbosity::error>("zeMemOpenIpcHandle: Could not receive remote file descriptor from service during reverse transfer!");
-        return ZE_RESULT_ERROR_DEVICE_LOST;
-    }
-
-    std::memcpy(handle.data, &respReverseTransferFd.remoteFd, sizeof(respReverseTransferFd.remoteFd));
     return zeMemOpenIpcHandleRpcHelper(hContext, hDevice, handle, flags, pptr);
 }
 

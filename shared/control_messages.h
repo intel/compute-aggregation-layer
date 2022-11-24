@@ -476,8 +476,9 @@ struct ReqTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 11;
+    static constexpr uint16_t maxFdsCount = 4;
 
-    ReqTransferFd(int fd) : fd(fd) {
+    ReqTransferFd(uint16_t usedFdsCount) : usedFdsCount{usedFdsCount} {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqTransferFd::messageSubtype;
     }
@@ -486,14 +487,14 @@ struct ReqTransferFd {
         uint32_t invalid = 0;
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != ReqTransferFd::messageSubtype) ? 1 : 0;
-        invalid |= (this->fd < 0) ? 1 : 0;
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqTransferFd is not valid");
         }
         return 0 != invalid;
     }
 
-    int fd;
+    int remoteFds[maxFdsCount] = {};
+    uint16_t usedFdsCount{};
 };
 static_assert(std::is_standard_layout<ReqTransferFd>::value);
 
@@ -501,8 +502,9 @@ struct ReqReverseTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 12;
+    static constexpr uint16_t maxFdsCount = 4;
 
-    ReqReverseTransferFd() {
+    ReqReverseTransferFd(uint16_t numOfFds) : numOfFds(numOfFds) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqReverseTransferFd::messageSubtype;
     }
@@ -511,11 +513,14 @@ struct ReqReverseTransferFd {
         uint32_t invalid = 0;
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != ReqReverseTransferFd::messageSubtype) ? 1 : 0;
+        invalid |= (this->numOfFds > maxFdsCount) ? 1 : 0;
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqReverseTransferFd is not valid");
         }
         return 0 != invalid;
     }
+
+    uint16_t numOfFds;
 };
 static_assert(std::is_standard_layout<ReqReverseTransferFd>::value);
 
@@ -523,8 +528,9 @@ struct RespReverseTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 13;
+    static constexpr uint16_t maxFdsCount = 4;
 
-    RespReverseTransferFd(int remoteFd) : remoteFd(remoteFd) {
+    RespReverseTransferFd() {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = RespReverseTransferFd::messageSubtype;
     }
@@ -533,14 +539,13 @@ struct RespReverseTransferFd {
         uint32_t invalid = 0;
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != RespReverseTransferFd::messageSubtype) ? 1 : 0;
-        invalid |= (this->remoteFd < 0) ? 1 : 0;
         if (0 != invalid) {
             log<Verbosity::error>("Message RespReverseTransferFd is not valid");
         }
         return 0 != invalid;
     }
 
-    int remoteFd;
+    int remoteFds[maxFdsCount] = {};
 };
 static_assert(std::is_standard_layout<RespReverseTransferFd>::value);
 

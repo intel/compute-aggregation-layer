@@ -4970,6 +4970,7 @@ config:
         icd:
           not_in_dispatch_table: True
           in_get_extension_function_address: True
+          handler_only_suffix : "RpcHelper"
       returns:
         type: ze_result_t
         kind: scalar
@@ -5015,6 +5016,7 @@ config:
         icd:
           not_in_dispatch_table: True
           in_get_extension_function_address: True
+          handler_only_suffix : "RpcHelper"
       returns:
         type: ze_result_t
         kind: scalar
