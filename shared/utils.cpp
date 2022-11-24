@@ -296,9 +296,16 @@ void enforceNullWithWarning(const char *sourceLocation, void *&pointer) {
 }
 
 void ensureNull(const char *sourceLocation, const void *pointer) {
-    if (pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+
+    static bool abortOnNonNullPNext = getCalEnvFlag(calAbortOnNonNullPNext, true);
+    if (abortOnNonNullPNext) {
         log<Verbosity::error>("%s is not nullptr! Aborting...", sourceLocation);
         std::abort();
+    } else {
+        log<Verbosity::info>("%s is not nullptr!", sourceLocation);
     }
 }
 
