@@ -248,7 +248,7 @@ config :
                         element :
                             type : cl_device_id
                             kind : scalar
-                            translate_after : "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, platform)"
+                            translate_after : "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, platform, false)"
                         server_access : write
                  4 :
                     name : num_devices
@@ -457,7 +457,7 @@ config :
                         element :
                             type : void
                             kind : scalar
-                            translate_after : "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{ *reinterpret_cast<cl_device_id*>(&{dst})= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), context); }}"
+                            translate_after : "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{ *reinterpret_cast<cl_device_id*>(&{dst})= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), context, reinterpret_cast<IcdOclDevice*>(baseMutable[i])->isSubDevice); }}"
                         server_access : write
                  4 :
                     name : param_value_size_ret
@@ -508,7 +508,7 @@ config :
                         element :
                             type : cl_device_id
                             kind : scalar
-                            translate_after : "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device)"
+                            translate_after : "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device, true)"
                         server_access : write
                  4 :
                     name : num_devices_ret
@@ -1849,7 +1849,7 @@ config :
                     type : cl_device_id   
                     kind : scalar
                     translate_before : "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
-                    translate_after : "{arg}->asLocalObject()->dec()"
+                    translate_after : "if(static_cast<IcdOclDevice*>({arg})->isSubDevice){{{arg}->asLocalObject()->dec();}}"
                     
 
         - name : clReleaseKernel

@@ -112,7 +112,7 @@ cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_u
         auto numEntries = num_entries;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = globalOclPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i], platform);
+            baseMutable[i] = globalOclPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i], platform, false);
         }
     }
     cl_int ret = command->captures.ret;
@@ -247,7 +247,7 @@ cl_int clGetContextInfoRpcHelper (cl_context context, cl_context_info param_name
         auto numEntries = param_value_size;
 
         for(size_t i = 0; i < numEntries; ++i){
-            if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) { *reinterpret_cast<cl_device_id*>(&baseMutable[i])= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&baseMutable[i]), context); };
+            if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) { *reinterpret_cast<cl_device_id*>(&baseMutable[i])= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&baseMutable[i]), context, reinterpret_cast<IcdOclDevice*>(baseMutable[i])->isSubDevice); };
         }
         globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
     }
@@ -281,7 +281,7 @@ cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_pro
         auto numEntries = num_devices;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = globalOclPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i], in_device);
+            baseMutable[i] = globalOclPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i], in_device, true);
         }
     }
     cl_int ret = command->captures.ret;
@@ -1028,7 +1028,7 @@ cl_int clReleaseDevice (cl_device_id device) {
         return command->returnValue();
     }
     {
-        device->asLocalObject()->dec();
+        if(static_cast<IcdOclDevice*>(device)->isSubDevice){device->asLocalObject()->dec();};
     }
     cl_int ret = command->captures.ret;
 

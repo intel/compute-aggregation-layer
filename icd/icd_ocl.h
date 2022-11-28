@@ -665,6 +665,7 @@ struct IcdOclEvent : Cal::Shared::RefCountedWithParent<_cl_event, IcdOclTypePrin
 };
 struct IcdOclDevice : Cal::Shared::RefCountedWithParent<_cl_device_id, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+    bool isSubDevice = false;
 };
 struct IcdOclSampler : Cal::Shared::RefCountedWithParent<_cl_sampler, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
@@ -726,7 +727,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         return nullptr;
     }
 
-    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_device_id parentDevice) {
+    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_device_id parentDevice, bool isSubDevice) {
         if (nullptr == calDevice) {
             return nullptr;
         }
@@ -737,17 +738,18 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         }
 
         auto localDevice = new IcdOclDevice(calDevice, Cal::Shared::SingleReference::wrap(asLocalObjectOrNull(parentDevice)), &objectCleanup<cl_device_id>);
+        localDevice->isSubDevice = isSubDevice;
         mappings.deviceMap.map[calDevice] = localDevice;
         log<Verbosity::bloat>("Translating new cl_device_id %p to %p", calDevice, localDevice);
         return localDevice;
     }
 
-    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_platform_id parentDevice) {
-        return translateNewRemoteObjectToLocalObject(calDevice, static_cast<cl_device_id>(nullptr));
+    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_platform_id parentDevice, bool isSubDevice) {
+        return translateNewRemoteObjectToLocalObject(calDevice, static_cast<cl_device_id>(nullptr), isSubDevice);
     }
 
-    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_context parent) {
-        return translateNewRemoteObjectToLocalObject(calDevice, static_cast<cl_device_id>(nullptr));
+    IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_context parent, bool isSubDevice) {
+        return translateNewRemoteObjectToLocalObject(calDevice, static_cast<cl_device_id>(nullptr), isSubDevice);
     }
 
     template <typename LocalObjT, typename MapT, typename RemoteObjT, typename ParentsT>
