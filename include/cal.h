@@ -15,7 +15,7 @@
 #endif
 
 // Settings
-constexpr std::string_view calTempFilesDefaultPath = "/tmp/compute_aggregation_layer/";
+constexpr std::string_view calTempFilesDefaultPath = "/tmp/compute_aggregation_layer";
 constexpr std::string_view calShmemPathPrefix = "/compute_aggregation_layer_shmem_";
 constexpr std::string_view calListenerSocketPathEnvName = "CAL_LISTENER_SOCKET_PATH";
 
