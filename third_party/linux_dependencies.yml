@@ -3,7 +3,7 @@ components:
     dest_dir: neo
     type: git
     branch: neo
-    revision: 04a66d2b618113a8e9e5ccd9d4ac191a8a872a57
+    revision: 6542844b2098eb5fa9de0ff2aeb16ad1f6b38d89
     repository: https://github.com/intel/compute-runtime.git
 version: '1'
 converter: E-0
