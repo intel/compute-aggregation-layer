@@ -209,7 +209,7 @@ class PageFaultManager {
     }
 
     Cal::Ipc::Connection &connection;
-    bool sharedAllocationsEnabled = false;
+    bool sharedAllocationsEnabled = true;
 };
 
 class IcdPlatform {
