@@ -21,7 +21,9 @@
 #include <string>
 #include <vector>
 
-static constexpr const char *simpleAppSource =
+using namespace Cal::Testing::Utils::LevelZero;
+
+static constexpr const char *simpleKernelSource =
     R"(__kernel void CopyBuffer(__global unsigned int *src, __global unsigned int *dst) {
     int id = (int)get_global_id(0);
     dst[id] = src[id];
@@ -31,152 +33,24 @@ __kernel void DoubleVals(__global unsigned int *src, __global unsigned int *dst)
     dst[id] = 2 * src[id];
 })";
 
-bool generateSpirv(std::vector<uint8_t> &spirv) {
-    log<Verbosity::info>("Compiling simple kernels to SPIR-V via libocloc.so!");
-
-    Cal::Testing::Utils::DynamicLibrary oclocLib{"libocloc.so"};
-    if (!oclocLib.isLoaded()) {
-        log<Verbosity::error>("Could not find libocloc.so!");
-        return false;
-    }
-
-    using OclocInvokeFunT = int(unsigned int, const char *[], const uint32_t, const uint8_t **, const uint64_t *, const char **, const uint32_t,
-                                const uint8_t **, const uint64_t *, const char **, uint32_t *, uint8_t ***, uint64_t **, char ***);
-
-    auto *oclocInvoke = oclocLib.getFunction<OclocInvokeFunT>("oclocInvoke");
-    if (!oclocInvoke) {
-        log<Verbosity::error>("Cannot find oclocInvoke() function inside libocloc.so!");
-        return false;
-    }
-
-    using OclocFreeOutputFunT = int(uint32_t *, uint8_t ***, uint64_t **, char ***);
-
-    auto *oclocFreeOutput = oclocLib.getFunction<OclocFreeOutputFunT>("oclocFreeOutput");
-    if (!oclocFreeOutput) {
-        log<Verbosity::error>("Cannot find oclocFreeOutput() function inside libocloc.so!");
-        return false;
-    }
-
-    std::array oclocArgs = {"ocloc", "-file", "simple_app.cl", "-spv_only"};
-    std::array sources = {reinterpret_cast<const unsigned char *>(simpleAppSource)};
-    std::array sourcesLengths = {strlen(simpleAppSource) + 1};
-    std::array sourcesNames = {"simple_app.cl"};
-
-    uint32_t numOutputs = 0U;
-    uint8_t **outputs = nullptr;
-    uint64_t *ouputLengths = nullptr;
-    char **outputNames = nullptr;
-
-    const auto compilationResult = oclocInvoke(oclocArgs.size(), oclocArgs.data(),
-                                               sources.size(), sources.data(),
-                                               sourcesLengths.data(), sourcesNames.data(),
-                                               0, nullptr, nullptr, nullptr,
-                                               &numOutputs, &outputs, &ouputLengths, &outputNames);
-    if (compilationResult != 0) {
-        log<Verbosity::error>("Compilation via ocloc lib has failed! Error code = %d", static_cast<int>(compilationResult));
-        return false;
-    }
-
-    unsigned char *spirV = nullptr;
-    size_t spirVlen = 0;
-
-    for (unsigned int i = 0; i < numOutputs; ++i) {
-        auto nameLen = strlen(outputNames[i]);
-        if ((nameLen > 4) && (strstr(&outputNames[i][nameLen - 4], ".spv") != nullptr)) {
-            spirV = outputs[i];
-            spirVlen = ouputLengths[i];
-            break;
-        }
-    }
-
-    if (!spirV) {
-        log<Verbosity::error>("Could not get generated SPIR-V file!");
-        return false;
-    }
-
-    spirv.resize(spirVlen);
-    std::memcpy(spirv.data(), spirV, spirVlen);
-
-    oclocFreeOutput(&numOutputs, &outputs, &ouputLengths, &outputNames);
-    return true;
-}
-
-bool createModule(ze_context_handle_t context, ze_device_handle_t device, const std::vector<uint8_t> &binary, ze_module_format_t binaryFormat, ze_module_handle_t &module) {
-    log<Verbosity::info>("Creating module via zeModuleCreate()!");
+bool testBuildLogFunctions(ze_context_handle_t context, ze_device_handle_t device, const std::vector<uint8_t> &binary,
+                           ze_module_format_t binaryFormat) {
+    log<Verbosity::info>("Testing build log querying!");
 
     ze_module_desc_t moduleDescription = {
-        ZE_STRUCTURE_TYPE_MODULE_DESC,
-        nullptr,
-        binaryFormat,
-        binary.size(),
-        binary.data(),
-        "-Wno-recompiled-from-ir",
-        nullptr};
+        ZE_STRUCTURE_TYPE_MODULE_DESC, nullptr, binaryFormat, binary.size(), binary.data(), "", nullptr};
 
-    bool shouldFinishAfterBuildLog{false};
     ze_module_build_log_handle_t buildLog{};
-
+    ze_module_handle_t module{};
     auto zeModuleCreateResult = zeModuleCreate(context, device, &moduleDescription, &module, &buildLog);
-    if (zeModuleCreateResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleCreate() has failed! Error code: %d", static_cast<int>(zeModuleCreateResult));
-        shouldFinishAfterBuildLog = true;
-    }
-
-    log<Verbosity::info>("Getting build log size!");
-
-    size_t buildLogSize{0};
-    auto zeModuleBuildLogGetStringResult = zeModuleBuildLogGetString(buildLog, &buildLogSize, nullptr);
-    if (zeModuleBuildLogGetStringResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleBuildLogGetString() call has failed! Error code = %d", static_cast<int>(zeModuleBuildLogGetStringResult));
-        return false;
-    }
-
-    log<Verbosity::info>("Build log size is %zd!", buildLogSize);
-    if (buildLogSize > 0) {
-        log<Verbosity::info>("Getting build log!");
-
-        std::string buildLogStr{};
-        buildLogStr.resize(buildLogSize + 1);
-
-        zeModuleBuildLogGetStringResult = zeModuleBuildLogGetString(buildLog, &buildLogSize, buildLogStr.data());
-        if (zeModuleBuildLogGetStringResult != ZE_RESULT_SUCCESS) {
-            log<Verbosity::error>("zeModuleBuildLogGetString() call has failed! Error code = %d", static_cast<int>(zeModuleBuildLogGetStringResult));
-            return false;
-        }
-
-        log<Verbosity::info>("Build log : %s", buildLogStr.c_str());
+    if (zeModuleCreateResult == ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("Module creation succeeded! Module = %p", static_cast<void *>(module));
     } else {
-        log<Verbosity::info>("Build log is empty!");
-    }
-
-    log<Verbosity::info>("Destroying module build log via zeModuleBuildLogDestroy()!");
-
-    auto zeModuleBuildLogDestroyResult = zeModuleBuildLogDestroy(buildLog);
-    if (zeModuleBuildLogDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleBuildLogDestroy() call has failed! Error code = %d", static_cast<int>(zeModuleBuildLogDestroyResult));
+        log<Verbosity::error>("zeModuleCreate() has failed! Error code: %d", static_cast<int>(zeModuleCreateResult));
         return false;
     }
 
-    log<Verbosity::info>("Destruction of L0 module build log has been successful!");
-    if (shouldFinishAfterBuildLog) {
-        return false;
-    }
-
-    log<Verbosity::info>("Module creation succeeded! Module = %p", static_cast<void *>(module));
-    return true;
-}
-
-bool destroyModule(ze_module_handle_t &module) {
-    const auto zeModuleDestroyResult = zeModuleDestroy(module);
-    if (zeModuleDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleDestroy() call has failed for moduleHandle! Error code = %d", static_cast<int>(zeModuleDestroyResult));
-        return false;
-    }
-
-    module = nullptr;
-    log<Verbosity::info>("Module has been destroyed!");
-
-    return true;
+    return checkBuildLog(buildLog);
 }
 
 bool getNativeBinary(std::vector<uint8_t> &nativeBinary, ze_module_handle_t module) {
@@ -185,7 +59,8 @@ bool getNativeBinary(std::vector<uint8_t> &nativeBinary, ze_module_handle_t modu
     size_t nativeBinarySize{0};
     auto zeModuleGetNativeBinaryResult = zeModuleGetNativeBinary(module, &nativeBinarySize, nullptr);
     if (zeModuleGetNativeBinaryResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Cannot get the size of native binary from module! Error code = %d", static_cast<int>(zeModuleGetNativeBinaryResult));
+        log<Verbosity::error>("Cannot get the size of native binary from module! Error code = %d",
+                              static_cast<int>(zeModuleGetNativeBinaryResult));
         return false;
     }
 
@@ -213,7 +88,8 @@ bool getKernelNames(ze_module_handle_t module) {
     uint32_t kernelNamesCount{0};
     auto zeModuleGetKernelNamesResult = zeModuleGetKernelNames(module, &kernelNamesCount, nullptr);
     if (zeModuleGetKernelNamesResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleGetKernelNames() call has failed! Error code = %d", static_cast<int>(zeModuleGetKernelNamesResult));
+        log<Verbosity::error>("zeModuleGetKernelNames() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleGetKernelNamesResult));
         return false;
     }
 
@@ -229,7 +105,8 @@ bool getKernelNames(ze_module_handle_t module) {
 
     zeModuleGetKernelNamesResult = zeModuleGetKernelNames(module, &kernelNamesCount, kernelNames.data());
     if (zeModuleGetKernelNamesResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleGetKernelNames() call has failed! Error code = %d", static_cast<int>(zeModuleGetKernelNamesResult));
+        log<Verbosity::error>("zeModuleGetKernelNames() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleGetKernelNamesResult));
         return false;
     }
 
@@ -247,7 +124,8 @@ bool getModuleProperties(ze_module_handle_t module) {
     ze_module_properties_t moduleProps = {ZE_STRUCTURE_TYPE_MODULE_PROPERTIES};
     const auto zeModuleGetPropertiesResult = zeModuleGetProperties(module, &moduleProps);
     if (zeModuleGetPropertiesResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeModuleGetProperties() call has failed! Error code = %d", static_cast<int>(zeModuleGetPropertiesResult));
+        log<Verbosity::error>("zeModuleGetProperties() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleGetPropertiesResult));
         return false;
     }
 
@@ -256,18 +134,20 @@ bool getModuleProperties(ze_module_handle_t module) {
 }
 
 bool getNonexistentFunctionPointer(ze_module_handle_t module) {
-    log<Verbosity::info>("Getting function pointer to non-existing function from module via zeModuleGetFunctionPointer!");
+    log<Verbosity::info>(
+        "Getting function pointer to non-existing function from module via zeModuleGetFunctionPointer!");
 
     void *nonexistingFunctionPtr{nullptr};
-    const auto zeModuleGetFunctionPointerResult = zeModuleGetFunctionPointer(module, "SomeNonexistingFunction", &nonexistingFunctionPtr);
-    if (zeModuleGetFunctionPointerResult == ZE_RESULT_ERROR_INVALID_FUNCTION_NAME && nonexistingFunctionPtr == nullptr) {
+    const auto zeModuleGetFunctionPointerResult =
+        zeModuleGetFunctionPointer(module, "SomeNonexistingFunction", &nonexistingFunctionPtr);
+    if (zeModuleGetFunctionPointerResult == ZE_RESULT_ERROR_INVALID_FUNCTION_NAME &&
+        nonexistingFunctionPtr == nullptr) {
         log<Verbosity::info>("zeModuleGetFunctionPointer() correctly returned ZE_RESULT_ERROR_INVALID_FUNCTION_NAME!");
         return true;
     }
 
     log<Verbosity::error>("zeModuleGetFunctionPointer() call has failed! Error code = %d, nonexistingFunctionPtr = %p",
-                          static_cast<int>(zeModuleGetFunctionPointerResult),
-                          nonexistingFunctionPtr);
+                          static_cast<int>(zeModuleGetFunctionPointerResult), nonexistingFunctionPtr);
     return false;
 }
 
@@ -278,16 +158,18 @@ bool getNonexistentGlobalVariable(ze_module_handle_t module) {
     size_t globalSize{};
     void *globalPtr{nullptr};
 
-    const auto zeModuleGetGlobalPointerResult = zeModuleGetGlobalPointer(module, nonexistentGlobalVariable, &globalSize, &globalPtr);
+    const auto zeModuleGetGlobalPointerResult =
+        zeModuleGetGlobalPointer(module, nonexistentGlobalVariable, &globalSize, &globalPtr);
     if (zeModuleGetGlobalPointerResult != ZE_RESULT_SUCCESS && globalPtr == nullptr) {
-        log<Verbosity::info>("zeModuleGetGlobalPointer() correctly could not get a pointer for nonexistent_global_variable!");
+        log<Verbosity::info>(
+            "zeModuleGetGlobalPointer() correctly could not get a pointer for nonexistent_global_variable!");
         return true;
     }
 
-    log<Verbosity::error>("zeModuleGetGlobalPointer() unexpectedly returned a pointer for nonexistent_global_variable! This should not happen! "
+    log<Verbosity::error>("zeModuleGetGlobalPointer() unexpectedly returned a pointer for nonexistent_global_variable! "
+                          "This should not happen! "
                           "Error code = %d, nonexistingGlobalVariable = %p",
-                          static_cast<int>(zeModuleGetGlobalPointerResult),
-                          globalPtr);
+                          static_cast<int>(zeModuleGetGlobalPointerResult), globalPtr);
     return false;
 }
 
@@ -296,7 +178,8 @@ bool createKernel(ze_module_handle_t module, ze_kernel_handle_t &kernel, const c
 
     const auto zeKernelCreateResult = zeKernelCreate(module, &kernelDesc, &kernel);
     if (zeKernelCreateResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelCreate() call has failed! Error code = %d", static_cast<int>(zeKernelCreateResult));
+        log<Verbosity::error>("zeKernelCreate() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelCreateResult));
         return false;
     }
 
@@ -307,7 +190,8 @@ bool createKernel(ze_module_handle_t module, ze_kernel_handle_t &kernel, const c
 bool destroyKernel(ze_kernel_handle_t &kernel) {
     const auto zeKernelDestroyResult = zeKernelDestroy(kernel);
     if (zeKernelDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelDestroy() call has failed! Error code = %d", static_cast<int>(zeKernelDestroyResult));
+        log<Verbosity::error>("zeKernelDestroy() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelDestroyResult));
         return false;
     }
 
@@ -323,7 +207,8 @@ bool getKernelName(ze_kernel_handle_t kernel) {
     size_t kernelNameSize{};
     const auto zeKernelGetNameSizeResult = zeKernelGetName(kernel, &kernelNameSize, nullptr);
     if (zeKernelGetNameSizeResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelGetName() call has failed! Error code = %d", static_cast<int>(zeKernelGetNameSizeResult));
+        log<Verbosity::error>("zeKernelGetName() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelGetNameSizeResult));
         return false;
     }
 
@@ -339,7 +224,8 @@ bool getKernelName(ze_kernel_handle_t kernel) {
 
     const auto zeKernelGetNameResult = zeKernelGetName(kernel, &kernelNameSize, kernelName.data());
     if (zeKernelGetNameResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelGetName() call has failed! Error code = %d", static_cast<int>(zeKernelGetNameResult));
+        log<Verbosity::error>("zeKernelGetName() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelGetNameResult));
         return false;
     }
 
@@ -352,7 +238,8 @@ bool getIndirectAccessFlags(ze_kernel_handle_t kernel, ze_kernel_indirect_access
 
     const auto zeKernelGetIndirectAccessResult = zeKernelGetIndirectAccess(kernel, &indirectAccessFlags);
     if (zeKernelGetIndirectAccessResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelGetIndirectAccess() call has failed! Error code = %d", static_cast<int>(zeKernelGetIndirectAccessResult));
+        log<Verbosity::error>("zeKernelGetIndirectAccess() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelGetIndirectAccessResult));
         return false;
     }
 
@@ -365,7 +252,8 @@ bool setIndirectAccessFlags(ze_kernel_handle_t kernel, ze_kernel_indirect_access
 
     const auto zeKernelSetIndirectAccessResult = zeKernelSetIndirectAccess(kernel, indirectAccessFlags);
     if (zeKernelSetIndirectAccessResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSetIndirectAccess() call has failed! Error code = %d", static_cast<int>(zeKernelSetIndirectAccessResult));
+        log<Verbosity::error>("zeKernelSetIndirectAccess() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelSetIndirectAccessResult));
         return false;
     }
 
@@ -377,9 +265,11 @@ bool getTotalGroupCount(ze_kernel_handle_t kernel) {
     log<Verbosity::info>("Getting total group count via zeKernelSuggestMaxCooperativeGroupCount()");
 
     uint32_t totalGroupCount{};
-    const auto zeKernelSuggestMaxCooperativeGroupCountResult = zeKernelSuggestMaxCooperativeGroupCount(kernel, &totalGroupCount);
+    const auto zeKernelSuggestMaxCooperativeGroupCountResult =
+        zeKernelSuggestMaxCooperativeGroupCount(kernel, &totalGroupCount);
     if (zeKernelSuggestMaxCooperativeGroupCountResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSuggestMaxCooperativeGroupCount() call has failed! Error code = %d", static_cast<int>(zeKernelSuggestMaxCooperativeGroupCountResult));
+        log<Verbosity::error>("zeKernelSuggestMaxCooperativeGroupCount() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelSuggestMaxCooperativeGroupCountResult));
         return false;
     }
 
@@ -393,11 +283,13 @@ bool getKernelProperties(ze_kernel_handle_t kernel) {
     ze_kernel_properties_t kernelProperties{};
     const auto zeKernelGetPropertiesResult = zeKernelGetProperties(kernel, &kernelProperties);
     if (zeKernelGetPropertiesResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelGetProperties() call has failed! Error code = %d", static_cast<int>(zeKernelGetPropertiesResult));
+        log<Verbosity::error>("zeKernelGetProperties() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelGetPropertiesResult));
         return false;
     }
 
-    log<Verbosity::info>("Number of kernel arguments read from properties is: %d", static_cast<int>(kernelProperties.numKernelArgs));
+    log<Verbosity::info>("Number of kernel arguments read from properties is: %d",
+                         static_cast<int>(kernelProperties.numKernelArgs));
     return true;
 }
 
@@ -406,7 +298,8 @@ bool setCacheConfig(ze_kernel_handle_t kernel, ze_cache_config_flag_t config) {
 
     const auto zeKernelSetCacheConfigResult = zeKernelSetCacheConfig(kernel, config);
     if (zeKernelSetCacheConfigResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSetCacheConfig() call has failed! Error code = %d", static_cast<int>(zeKernelSetCacheConfigResult));
+        log<Verbosity::error>("zeKernelSetCacheConfig() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelSetCacheConfigResult));
         return false;
     }
 
@@ -414,28 +307,33 @@ bool setCacheConfig(ze_kernel_handle_t kernel, ze_cache_config_flag_t config) {
     return true;
 }
 
-bool suggestGroupSize(ze_kernel_handle_t kernel,
-                      uint32_t xSize, uint32_t ySize, uint32_t zSize,
+bool suggestGroupSize(ze_kernel_handle_t kernel, uint32_t xSize, uint32_t ySize, uint32_t zSize,
                       uint32_t &suggestedGroupSizeX, uint32_t &suggestedGroupSizeY, uint32_t &suggestedGroupSizeZ) {
     log<Verbosity::info>("Trying to get suggested group size for processing (%d x %d x %d) problem.",
                          static_cast<int>(xSize), static_cast<int>(ySize), static_cast<int>(zSize));
 
-    const auto zeKernelSuggestGroupSizeResult = zeKernelSuggestGroupSize(kernel, xSize, ySize, zSize, &suggestedGroupSizeX, &suggestedGroupSizeY, &suggestedGroupSizeZ);
+    const auto zeKernelSuggestGroupSizeResult = zeKernelSuggestGroupSize(
+        kernel, xSize, ySize, zSize, &suggestedGroupSizeX, &suggestedGroupSizeY, &suggestedGroupSizeZ);
     if (zeKernelSuggestGroupSizeResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSuggestGroupSize() call has failed! Error code = %d", static_cast<int>(zeKernelSuggestGroupSizeResult));
+        log<Verbosity::error>("zeKernelSuggestGroupSize() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelSuggestGroupSizeResult));
         return false;
     }
 
-    log<Verbosity::info>("The suggested sizes are: (%d, %d, %d)", static_cast<int>(suggestedGroupSizeX), static_cast<int>(suggestedGroupSizeY), static_cast<int>(suggestedGroupSizeZ));
+    log<Verbosity::info>("The suggested sizes are: (%d, %d, %d)", static_cast<int>(suggestedGroupSizeX),
+                         static_cast<int>(suggestedGroupSizeY), static_cast<int>(suggestedGroupSizeZ));
     return true;
 }
 
-bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint32_t suggestedGroupSizeY, uint32_t suggestedGroupSizeZ) {
+bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint32_t suggestedGroupSizeY,
+                  uint32_t suggestedGroupSizeZ) {
     log<Verbosity::info>("Setting kernel group size via zeKernelSetGroupSize() for CopyBuffer kernel!");
 
-    const auto zeKernelSetGroupSizeResult = zeKernelSetGroupSize(kernel, suggestedGroupSizeX, suggestedGroupSizeY, suggestedGroupSizeZ);
+    const auto zeKernelSetGroupSizeResult =
+        zeKernelSetGroupSize(kernel, suggestedGroupSizeX, suggestedGroupSizeY, suggestedGroupSizeZ);
     if (zeKernelSetGroupSizeResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSetGroupSize() call has failed! Error code: %d", static_cast<int>(zeKernelSetGroupSizeResult));
+        log<Verbosity::error>("zeKernelSetGroupSize() call has failed! Error code: %d",
+                              static_cast<int>(zeKernelSetGroupSizeResult));
         return false;
     }
 
@@ -446,7 +344,8 @@ bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint3
 bool setKernelArgument(ze_kernel_handle_t kernel, uint32_t argIndex, size_t argSize, const void *arg) {
     const auto zeKernelSetArgumentValueResult = zeKernelSetArgumentValue(kernel, argIndex, argSize, arg);
     if (zeKernelSetArgumentValueResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSetArgumentValue() call has failed! Error code: %d", static_cast<int>(zeKernelSetArgumentValueResult));
+        log<Verbosity::error>("zeKernelSetArgumentValue() call has failed! Error code: %d",
+                              static_cast<int>(zeKernelSetArgumentValueResult));
         return false;
     }
 
@@ -454,15 +353,13 @@ bool setKernelArgument(ze_kernel_handle_t kernel, uint32_t argIndex, size_t argS
     return true;
 }
 
-bool appendLaunchKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel, ze_group_count_t &launchArgs, ze_event_handle_t signalEvent) {
-    const auto zeCommandListAppendLaunchKernelResult = zeCommandListAppendLaunchKernel(cmdList,
-                                                                                       kernel,
-                                                                                       &launchArgs,
-                                                                                       signalEvent,
-                                                                                       0,
-                                                                                       nullptr);
+bool appendLaunchKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel, ze_group_count_t &launchArgs,
+                        ze_event_handle_t signalEvent) {
+    const auto zeCommandListAppendLaunchKernelResult =
+        zeCommandListAppendLaunchKernel(cmdList, kernel, &launchArgs, signalEvent, 0, nullptr);
     if (zeCommandListAppendLaunchKernelResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListAppendLaunchKernel() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendLaunchKernelResult));
+        log<Verbosity::error>("zeCommandListAppendLaunchKernel() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendLaunchKernelResult));
         return false;
     }
 
@@ -470,20 +367,14 @@ bool appendLaunchKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t ker
     return true;
 }
 
-bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList,
-                                ze_kernel_handle_t kernel,
-                                ze_group_count_t *launchArgsDeviceAccessibleBuffer,
-                                ze_event_handle_t signalEvent,
-                                uint32_t numWaitEvents,
-                                ze_event_handle_t *waitEvents) {
-    const auto zeCommandListAppendLaunchKernelIndirectResult = zeCommandListAppendLaunchKernelIndirect(cmdList,
-                                                                                                       kernel,
-                                                                                                       launchArgsDeviceAccessibleBuffer,
-                                                                                                       signalEvent,
-                                                                                                       numWaitEvents,
-                                                                                                       waitEvents);
+bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel,
+                                ze_group_count_t *launchArgsDeviceAccessibleBuffer, ze_event_handle_t signalEvent,
+                                uint32_t numWaitEvents, ze_event_handle_t *waitEvents) {
+    const auto zeCommandListAppendLaunchKernelIndirectResult = zeCommandListAppendLaunchKernelIndirect(
+        cmdList, kernel, launchArgsDeviceAccessibleBuffer, signalEvent, numWaitEvents, waitEvents);
     if (zeCommandListAppendLaunchKernelIndirectResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListAppendLaunchKernelIndirect() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendLaunchKernelIndirectResult));
+        log<Verbosity::error>("zeCommandListAppendLaunchKernelIndirect() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendLaunchKernelIndirectResult));
         return false;
     }
 
@@ -494,11 +385,13 @@ bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList,
 bool setGlobalOffset(ze_kernel_handle_t kernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     const auto zeKernelSetGlobalOffsetExpResult = zeKernelSetGlobalOffsetExp(kernel, offsetX, offsetY, offsetZ);
     if (zeKernelSetGlobalOffsetExpResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeKernelSetGlobalOffsetExp() call has failed! Error code = %d", static_cast<int>(zeKernelSetGlobalOffsetExpResult));
+        log<Verbosity::error>("zeKernelSetGlobalOffsetExp() call has failed! Error code = %d",
+                              static_cast<int>(zeKernelSetGlobalOffsetExpResult));
         return false;
     }
 
-    log<Verbosity::info>("Kernel global offsets set to (%d, %d, %d)", static_cast<int>(offsetX), static_cast<int>(offsetY), static_cast<int>(offsetZ));
+    log<Verbosity::info>("Kernel global offsets set to (%d, %d, %d)", static_cast<int>(offsetX),
+                         static_cast<int>(offsetY), static_cast<int>(offsetZ));
     return true;
 }
 
@@ -510,8 +403,9 @@ bool verifyCopyBufferResults(const void *sourceCopyBuffer, const void *destinati
 
     for (size_t i = 0; i < bufferSize; ++i) {
         if (src[i] != dst[i]) {
-            log<Verbosity::error>("Destination of CopyBuffer contains invalid value! Expected: %d, Actual: %d at index %zd.",
-                                  static_cast<int>(src[i]), static_cast<int>(dst[i]), i);
+            log<Verbosity::error>(
+                "Destination of CopyBuffer contains invalid value! Expected: %d, Actual: %d at index %zd.",
+                static_cast<int>(src[i]), static_cast<int>(dst[i]), i);
             return false;
         }
     }
@@ -529,7 +423,9 @@ bool verifyDoubleValsResults(const void *sourceDoubleVals, const void *destinati
 
     for (size_t i = 0; i < count; ++i) {
         if ((2 * src[i]) != dst[i]) {
-            log<Verbosity::error>("Destination of DoubleVals contains invalid value! Expected: %d, Actual: %d at index %zd.", 2 * src[i], dst[i], i);
+            log<Verbosity::error>(
+                "Destination of DoubleVals contains invalid value! Expected: %d, Actual: %d at index %zd.", 2 * src[i],
+                dst[i], i);
             return false;
         }
     }
@@ -544,7 +440,8 @@ bool queryKernelTimestamp(ze_event_handle_t event, ze_device_handle_t device) {
     ze_kernel_timestamp_result_t kernelTsResults{};
     const auto zeEventQueryKernelTimestampsResult = zeEventQueryKernelTimestamp(event, &kernelTsResults);
     if (zeEventQueryKernelTimestampsResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventQueryKernelTimestamp() call has failed! Error code = %d", static_cast<int>(zeEventQueryKernelTimestampsResult));
+        log<Verbosity::error>("zeEventQueryKernelTimestamp() call has failed! Error code = %d",
+                              static_cast<int>(zeEventQueryKernelTimestampsResult));
         return false;
     }
 
@@ -553,7 +450,8 @@ bool queryKernelTimestamp(ze_event_handle_t event, ze_device_handle_t device) {
     ze_device_properties_t deviceProperties = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES};
     const auto zeDeviceGetPropertiesResult = zeDeviceGetProperties(device, &deviceProperties);
     if (zeDeviceGetPropertiesResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeDeviceGetProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetPropertiesResult));
+        log<Verbosity::error>("zeDeviceGetProperties() call has failed! Error code = %d",
+                              static_cast<int>(zeDeviceGetPropertiesResult));
         return false;
     }
 
@@ -567,14 +465,13 @@ bool queryKernelTimestamp(ze_event_handle_t event, ze_device_handle_t device) {
                          " Global end: %lx cycles\n"
                          " timerResolution clock: %d ns\n"
                          " Kernel duration : %d cycles",
-                         kernelTsResults.global.kernelStart, kernelTsResults.context.kernelStart, kernelTsResults.context.kernelEnd, kernelTsResults.global.kernelEnd, timerResolution,
+                         kernelTsResults.global.kernelStart, kernelTsResults.context.kernelStart,
+                         kernelTsResults.context.kernelEnd, kernelTsResults.global.kernelEnd, timerResolution,
                          kernelDuration);
     return true;
 }
 
 int main(int argc, const char *argv[]) {
-    using namespace Cal::Testing::Utils::LevelZero;
-
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
     std::vector<ze_driver_handle_t> drivers{};
@@ -588,7 +485,9 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(createContext(drivers[0], context));
 
     std::vector<uint8_t> spirv{};
-    RUN_REQUIRED_STEP(generateSpirv(spirv));
+    RUN_REQUIRED_STEP(generateSpirv(spirv, simpleKernelSource));
+
+    RUN_REQUIRED_STEP(testBuildLogFunctions(context, devices[0], spirv, ZE_MODULE_FORMAT_IL_SPIRV));
 
     ze_module_handle_t module{};
     RUN_REQUIRED_STEP(createModule(context, devices[0], spirv, ZE_MODULE_FORMAT_IL_SPIRV, module));
@@ -624,7 +523,8 @@ int main(int argc, const char *argv[]) {
     uint32_t suggestedGroupSizeY{};
     uint32_t suggestedGroupSizeZ{};
 
-    RUN_REQUIRED_STEP(suggestGroupSize(copyBufferKernel, xSize, ySize, zSize, suggestedGroupSizeX, suggestedGroupSizeY, suggestedGroupSizeZ));
+    RUN_REQUIRED_STEP(suggestGroupSize(copyBufferKernel, xSize, ySize, zSize, suggestedGroupSizeX, suggestedGroupSizeY,
+                                       suggestedGroupSizeZ));
     RUN_REQUIRED_STEP(setGroupSize(copyBufferKernel, suggestedGroupSizeX, suggestedGroupSizeY, suggestedGroupSizeZ));
 
     ze_kernel_handle_t doubleValsKernel{};
@@ -685,13 +585,17 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(setGlobalOffset(doubleValsKernel, 0, 0, 0));
 
     void *indirectLaunchArgs{nullptr};
-    RUN_REQUIRED_STEP(allocateDeviceMemory(context, sizeof(ze_group_count_t), sizeof(uint32_t), devices[0], indirectLaunchArgs));
+    RUN_REQUIRED_STEP(
+        allocateDeviceMemory(context, sizeof(ze_group_count_t), sizeof(uint32_t), devices[0], indirectLaunchArgs));
 
     ze_event_handle_t indirectLaunchArgsPreparedEvent{};
     RUN_REQUIRED_STEP(createEvent(eventPool, 2, indirectLaunchArgsPreparedEvent));
 
-    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, indirectLaunchArgs, &launchArgs, sizeof(ze_group_count_t), indirectLaunchArgsPreparedEvent));
-    RUN_REQUIRED_STEP(appendLaunchKernelIndirect(cmdList, doubleValsKernel, static_cast<ze_group_count_t *>(indirectLaunchArgs), nullptr, 1, &indirectLaunchArgsPreparedEvent));
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, indirectLaunchArgs, &launchArgs, sizeof(ze_group_count_t),
+                                       indirectLaunchArgsPreparedEvent));
+    RUN_REQUIRED_STEP(appendLaunchKernelIndirect(cmdList, doubleValsKernel,
+                                                 static_cast<ze_group_count_t *>(indirectLaunchArgs), nullptr, 1,
+                                                 &indirectLaunchArgsPreparedEvent));
 
     RUN_REQUIRED_STEP(closeCommandList(cmdList));
     RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
@@ -722,6 +626,4 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(destroyModule(module));
 
     RUN_REQUIRED_STEP(destroyContext(context));
-
-    return 0;
 }

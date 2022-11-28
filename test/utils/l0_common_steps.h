@@ -54,8 +54,10 @@ bool resetCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
 
 bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer);
-bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer);
-bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer);
+bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
+                          void *&usmSharedBuffer);
+bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
+                          void *&usmDeviceBuffer);
 bool freeMemory(ze_context_handle_t context, void *&buffer);
 bool closeMemIpcHandle(ze_context_handle_t context, void *ptr);
 
@@ -74,6 +76,12 @@ bool destroyFence(ze_fence_handle_t &fence);
 bool fillBufferOnHostViaMemset(void *buffer, int value, size_t bufferSize);
 bool verifyMemoryCopyResults(const void *sourceBuffer, const void *destinationBuffer, size_t bufferSize);
 bool verifyMemoryFillResults(const void *destination, size_t destinationSize, const void *pattern, size_t patternSize);
+
+bool generateSpirv(std::vector<uint8_t> &spirv, const char *source);
+bool createModule(ze_context_handle_t context, ze_device_handle_t device, const std::vector<uint8_t> &binary,
+                  ze_module_format_t binaryFormat, ze_module_handle_t &module, const char *flags = "");
+bool destroyModule(ze_module_handle_t &module);
+bool checkBuildLog(ze_module_build_log_handle_t buildLog);
 
 template <typename T>
 bool ensureNullptr(const T *pointer) {
@@ -94,8 +102,7 @@ bool ensurePointersEqual(const T *expected, const T *actual) {
     }
 
     log<Verbosity::error>("Validation failed! Addresses are not equal! Expected: %p, Actual: %p",
-                          static_cast<const void *>(expected),
-                          static_cast<const void *>(actual));
+                          static_cast<const void *>(expected), static_cast<const void *>(actual));
     return false;
 }
 

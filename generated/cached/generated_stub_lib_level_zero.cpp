@@ -300,6 +300,10 @@ ze_result_t zeModuleDestroy(ze_module_handle_t hModule){
    return {};
 }
 
+ze_result_t zeModuleDynamicLink(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog){
+   return {};
+}
+
 ze_result_t zeModuleBuildLogDestroy(ze_module_build_log_handle_t hModuleBuildLog){
    return {};
 }

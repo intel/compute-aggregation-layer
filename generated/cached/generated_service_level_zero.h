@@ -100,6 +100,7 @@ extern ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device
 extern ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr);
 extern ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 extern ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule);
+extern ze_result_t (*zeModuleDynamicLink)(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
 extern ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog);
 extern ze_result_t (*zeModuleBuildLogGetString)(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog);
 extern ze_result_t (*zeModuleGetNativeBinary)(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary);
@@ -982,6 +983,22 @@ inline bool zeModuleDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &c
     }
     return true;
 }
+inline bool zeModuleDynamicLinkHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeModuleDynamicLink");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleDynamicLink(
+                                                apiCommand->args.numModules, 
+                                                apiCommand->args.phModules ? apiCommand->captures.phModules : nullptr, 
+                                                apiCommand->args.phLinkLog ? &apiCommand->captures.phLinkLog : nullptr
+                                                );
+    {
+        const auto& resource = apiCommand->args.phLinkLog ? &apiCommand->captures.phLinkLog : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+        }
+    }
+    return true;
+}
 inline bool zeModuleBuildLogDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleBuildLogDestroy");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM*>(command);
@@ -1292,6 +1309,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZexMemOpenIpcHandlesRpcM::messageSubtype] = zexMemOpenIpcHandlesHandler;
     outHandlers[ZeModuleCreateRpcM::messageSubtype] = zeModuleCreateHandler;
     outHandlers[ZeModuleDestroyRpcM::messageSubtype] = zeModuleDestroyHandler;
+    outHandlers[ZeModuleDynamicLinkRpcM::messageSubtype] = zeModuleDynamicLinkHandler;
     outHandlers[ZeModuleBuildLogDestroyRpcM::messageSubtype] = zeModuleBuildLogDestroyHandler;
     outHandlers[ZeModuleBuildLogGetStringRpcM::messageSubtype] = zeModuleBuildLogGetStringHandler;
     outHandlers[ZeModuleGetNativeBinaryRpcM::messageSubtype] = zeModuleGetNativeBinaryHandler;
@@ -1917,6 +1935,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleDestroyRpcM &apiCommand) {
                                                 apiCommand.args.hModule
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleDynamicLink(
+                                                apiCommand.args.numModules, 
+                                                apiCommand.args.phModules, 
+                                                apiCommand.args.phLinkLog
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleBuildLogDestroy(
                                                 apiCommand.args.hModuleBuildLog
@@ -2156,6 +2181,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZexMemOpenIpcHandlesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexMemOpenIpcHandlesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDestroyRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM*>(command)); break;

@@ -2334,6 +2334,42 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
 
     return ret;
 }
+ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
+    log<Verbosity::bloat>("Establishing RPC for zeModuleDynamicLink");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(numModules, phModules, phLinkLog);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, numModules, phModules, phLinkLog);
+    command->copyFromCaller(dynMemTraits);
+    if(phModules)
+    {
+        auto base = command->captures.phModules;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phModules.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Module*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(phLinkLog)
+    {
+        phLinkLog[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phLinkLog[0]);
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleBuildLogDestroy");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3102,6 +3138,9 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
 }
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     return Cal::Icd::LevelZero::zeModuleDestroy(hModule);
+}
+ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
+    return Cal::Icd::LevelZero::zeModuleDynamicLink(numModules, phModules, phLinkLog);
 }
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog) {
     return Cal::Icd::LevelZero::zeModuleBuildLogDestroy(hModuleBuildLog);

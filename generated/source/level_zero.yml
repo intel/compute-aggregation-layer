@@ -1021,7 +1021,6 @@ config :
               KernelExp.zeKernelSchedulingHintExp,
               Module.zeModuleInspectLinkageExt,
               Mem.zeMemFreeExt,
-              Module.zeModuleDynamicLink,
               Kernel.zeKernelGetSourceAttributes,
               CommandList.zeCommandListAppendLaunchCooperativeKernel,
               CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect,
@@ -5156,26 +5155,44 @@ config :
                     translate_after : "{arg}->asLocalObject()->dec()"
                     daemon_action_on_success : "ctx.removeResourceTracking({arg})"
 
-#        - name : zeModuleDynamicLink
-#          ddi_category :  Module
-#          returns :
-#                    type : ze_result_t
-#                    kind : scalar
-#                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-#          args :
-#                 0 :
-#                    name : numModules
-#                    type : uint32_t
-#                    kind : scalar
-#                 1 :
-#                    name : phModules
-#                    type : ze_module_handle_t*
-#                    kind : pointer
-#                 2 :
-#                    name : phLinkLog
-#                    type : ze_module_build_log_handle_t*
-#                    kind : pointer
-#
+        - name : zeModuleDynamicLink
+          latency : 0.0
+          ddi_category :  Module
+          returns :
+                    type : ze_result_t
+                    kind : scalar
+                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+                 0 :
+                    name : numModules
+                    type : uint32_t
+                    kind : scalar
+                 1 :
+                    name : phModules                    
+                    type : ze_module_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements: numModules
+                        can_be_null : True
+                        element :
+                            type : ze_module_handle_t
+                            kind : scalar
+                            translate_before : "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+                        server_access : read
+                 2 :
+                    name : phLinkLog
+                    type : ze_module_build_log_handle_t*
+                    kind : ptr_array
+                    kind_details :
+                        num_elements : "1"
+                        can_be_null : True
+                        element :
+                            type : ze_module_build_log_handle_t
+                            kind : scalar
+                            translate_after : "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                        server_access : read_write
+                    daemon_action_at_end : "ctx.trackAllocatedResource({arg})"
+
         - name : zeModuleBuildLogDestroy
           latency : 0.0
           ddi_category :  ModuleBuildLog

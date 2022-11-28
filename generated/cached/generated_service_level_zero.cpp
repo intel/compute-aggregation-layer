@@ -92,6 +92,7 @@ ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle
 ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
+ze_result_t (*zeModuleDynamicLink)(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) = nullptr;
 ze_result_t (*zeModuleBuildLogDestroy)(ze_module_build_log_handle_t hModuleBuildLog) = nullptr;
 ze_result_t (*zeModuleBuildLogGetString)(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) = nullptr;
 ze_result_t (*zeModuleGetNativeBinary)(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) = nullptr;
@@ -567,6 +568,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeModuleDynamicLink = reinterpret_cast<decltype(zeModuleDynamicLink)>(dlsym(libraryHandle, "zeModuleDynamicLink"));
+    if(nullptr == zeModuleDynamicLink){
+        log<Verbosity::error>("Missing symbol zeModuleDynamicLink in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeModuleBuildLogDestroy = reinterpret_cast<decltype(zeModuleBuildLogDestroy)>(dlsym(libraryHandle, "zeModuleBuildLogDestroy"));
     if(nullptr == zeModuleBuildLogDestroy){
         log<Verbosity::error>("Missing symbol zeModuleBuildLogDestroy in %s", loadPath.c_str());
@@ -770,6 +777,7 @@ void unloadLevelZeroLibrary() {
     zeMemCloseIpcHandle = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;
+    zeModuleDynamicLink = nullptr;
     zeModuleBuildLogDestroy = nullptr;
     zeModuleBuildLogGetString = nullptr;
     zeModuleGetNativeBinary = nullptr;

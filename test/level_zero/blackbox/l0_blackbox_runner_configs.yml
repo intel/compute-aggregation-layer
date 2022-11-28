@@ -47,6 +47,10 @@ full :
         test_binary : "l0_blackbox_image"
         preserve_logs : False
 
+    dynamic_link :
+        test_binary : "l0_blackbox_dynamic_link"
+        preserve_logs : False
+
 limited :
     append_mem_fill_copy_asynchronous_queue :
         test_binary : "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
@@ -84,4 +88,8 @@ limited :
 
     image :
         test_binary : "l0_blackbox_image"
+        preserve_logs : False
+
+    dynamic_link :
+        test_binary : "l0_blackbox_dynamic_link"
         preserve_logs : False

@@ -110,6 +110,7 @@ ze_result_t zexMemGetIpcHandles (ze_context_handle_t hContext, const void* ptr, 
 ze_result_t zexMemOpenIpcHandles (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
+ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog);
 ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog);
 ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary);
@@ -256,10 +257,6 @@ inline void zeModuleInspectLinkageExtUnimpl() {
 }
 inline void zeMemFreeExtUnimpl() {
     log<Verbosity::critical>("Function Mem.zeMemFreeExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeModuleDynamicLinkUnimpl() {
-    log<Verbosity::critical>("Function Module.zeModuleDynamicLink is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeKernelGetSourceAttributesUnimpl() {
@@ -982,6 +979,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Mem.pfnCloseIpcHandle = Cal::Icd::LevelZero::zeMemCloseIpcHandle;
     dt.Module.pfnCreate = Cal::Icd::LevelZero::zeModuleCreate;
     dt.Module.pfnDestroy = Cal::Icd::LevelZero::zeModuleDestroy;
+    dt.Module.pfnDynamicLink = Cal::Icd::LevelZero::zeModuleDynamicLink;
     dt.ModuleBuildLog.pfnDestroy = Cal::Icd::LevelZero::zeModuleBuildLogDestroy;
     dt.ModuleBuildLog.pfnGetString = Cal::Icd::LevelZero::zeModuleBuildLogGetString;
     dt.Module.pfnGetNativeBinary = Cal::Icd::LevelZero::zeModuleGetNativeBinary;
@@ -1035,7 +1033,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.KernelExp.pfnSchedulingHintExp = reinterpret_cast<decltype(dt.KernelExp.pfnSchedulingHintExp)>(Cal::Icd::LevelZero::Unimplemented::zeKernelSchedulingHintExpUnimpl);
     dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
     dt.Mem.pfnFreeExt = reinterpret_cast<decltype(dt.Mem.pfnFreeExt)>(Cal::Icd::LevelZero::Unimplemented::zeMemFreeExtUnimpl);
-    dt.Module.pfnDynamicLink = reinterpret_cast<decltype(dt.Module.pfnDynamicLink)>(Cal::Icd::LevelZero::Unimplemented::zeModuleDynamicLinkUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
     dt.CommandList.pfnAppendLaunchCooperativeKernel = reinterpret_cast<decltype(dt.CommandList.pfnAppendLaunchCooperativeKernel)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendLaunchCooperativeKernelUnimpl);
     dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = reinterpret_cast<decltype(dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendLaunchMultipleKernelsIndirectUnimpl);

@@ -7,6 +7,8 @@
 
 #include "l0_common_steps.h"
 
+#include "test/utils/dynamic_library.h"
+
 #include <cstdint>
 
 namespace Cal::Testing::Utils::LevelZero {
@@ -112,8 +114,7 @@ bool createContext(ze_driver_handle_t driver, ze_context_handle_t &context) {
 bool destroyContext(ze_context_handle_t &context) {
     const auto zeContextDestroyResult = zeContextDestroy(context);
     if (zeContextDestroyResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeContextDestroy() call has failed for context = %p! Error code = %d",
-                              context, static_cast<int>(zeContextDestroyResult));
+        log<Verbosity::error>("zeContextDestroy() call has failed for context = %p! Error code = %d", context, static_cast<int>(zeContextDestroyResult));
         return false;
     }
 
@@ -161,7 +162,8 @@ bool getComputeQueueOrdinal(ze_device_handle_t device, uint32_t &ordinal) {
     return false;
 }
 
-bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_handle_t &queue) {
+bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal,
+                        ze_command_queue_handle_t &queue) {
     ze_command_queue_desc_t queueDescription{};
 
     queueDescription.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
@@ -179,13 +181,14 @@ bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, 
     return true;
 }
 
-bool executeCommandLists(ze_command_queue_handle_t queue, uint32_t numCmdLists, ze_command_list_handle_t *cmdLists, ze_fence_handle_t fence) {
+bool executeCommandLists(ze_command_queue_handle_t queue, uint32_t numCmdLists, ze_command_list_handle_t *cmdLists,
+                         ze_fence_handle_t fence) {
     log<Verbosity::info>("Executing command list via zeCommandQueueExecuteCommandLists()!");
 
     const auto zeCommandQueueExecuteCommandListsResult = zeCommandQueueExecuteCommandLists(queue, numCmdLists, cmdLists, fence);
     if (zeCommandQueueExecuteCommandListsResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeCommandQueueExecuteCommandLists() call has failed! Error code = %d", static_cast<int>(zeCommandQueueExecuteCommandListsResult));
-        return -1;
+        return false;
     }
 
     log<Verbosity::info>("Execution started!");
@@ -218,11 +221,13 @@ bool destroyCommandQueue(ze_command_queue_handle_t &queue) {
     return true;
 }
 
-bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_list_handle_t &list) {
+bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal,
+                       ze_command_list_handle_t &list) {
     ze_command_list_desc_t commandListDescription = {ZE_STRUCTURE_TYPE_COMMAND_LIST_DESC, nullptr, ordinal, 0};
     const auto zeCommandListCreateResult = zeCommandListCreate(context, device, &commandListDescription, &list);
     if (zeCommandListCreateResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListCreate() call has failed! Error code = %d", static_cast<int>(zeCommandListCreateResult));
+        log<Verbosity::error>("zeCommandListCreate() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListCreateResult));
         return false;
     }
 
@@ -230,7 +235,8 @@ bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, u
     return true;
 }
 
-bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_mode_t mode, ze_command_list_handle_t &list) {
+bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal,
+                                ze_command_queue_mode_t mode, ze_command_list_handle_t &list) {
     ze_command_queue_desc_t queueDescription{};
 
     queueDescription.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
@@ -525,7 +531,8 @@ bool synchronizeViaFence(ze_fence_handle_t fence) {
 
     const auto zeFenceHostSynchronizeResult = zeFenceHostSynchronize(fence, UINT64_MAX);
     if (zeFenceHostSynchronizeResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeFenceHostSynchronize() call has failed! Error code = %d", static_cast<int>(zeFenceHostSynchronizeResult));
+        log<Verbosity::error>("zeFenceHostSynchronize() call has failed! Error code = %d",
+                              static_cast<int>(zeFenceHostSynchronizeResult));
         return false;
     }
 
@@ -602,6 +609,158 @@ bool verifyMemoryFillResults(const void *destination, size_t destinationSize, co
     }
 
     log<Verbosity::info>("Validation passed!");
+    return true;
+}
+
+bool generateSpirv(std::vector<uint8_t> &spirv, const char *source) {
+    log<Verbosity::info>("Compiling OCLC kernels to SPIR-V via libocloc.so!");
+
+    DynamicLibrary oclocLib{"libocloc.so"};
+    if (!oclocLib.isLoaded()) {
+        log<Verbosity::error>("Could not find libocloc.so!");
+        return false;
+    }
+
+    using OclocInvokeFunT = int(unsigned int, const char *[], const uint32_t, const uint8_t **, const uint64_t *,
+                                const char **, const uint32_t, const uint8_t **, const uint64_t *, const char **,
+                                uint32_t *, uint8_t ***, uint64_t **, char ***);
+
+    auto *oclocInvoke = oclocLib.getFunction<OclocInvokeFunT>("oclocInvoke");
+    if (!oclocInvoke) {
+        log<Verbosity::error>("Cannot find oclocInvoke() function inside libocloc.so!");
+        return false;
+    }
+
+    using OclocFreeOutputFunT = int(uint32_t *, uint8_t ***, uint64_t **, char ***);
+
+    auto *oclocFreeOutput = oclocLib.getFunction<OclocFreeOutputFunT>("oclocFreeOutput");
+    if (!oclocFreeOutput) {
+        log<Verbosity::error>("Cannot find oclocFreeOutput() function inside libocloc.so!");
+        return false;
+    }
+
+    std::array oclocArgs = {"ocloc", "-file", "kernel.cl", "-spv_only"};
+    std::array sources = {reinterpret_cast<const unsigned char *>(source)};
+    std::array sourcesLengths = {strlen(source) + 1};
+    std::array sourcesNames = {"kernel.cl"};
+
+    uint32_t numOutputs = 0U;
+    uint8_t **outputs = nullptr;
+    uint64_t *ouputLengths = nullptr;
+    char **outputNames = nullptr;
+
+    const auto compilationResult = oclocInvoke(oclocArgs.size(), oclocArgs.data(), sources.size(), sources.data(),
+                                               sourcesLengths.data(), sourcesNames.data(), 0, nullptr, nullptr, nullptr,
+                                               &numOutputs, &outputs, &ouputLengths, &outputNames);
+    if (compilationResult != 0) {
+        log<Verbosity::error>("Compilation via ocloc lib has failed! Error code = %d",
+                              static_cast<int>(compilationResult));
+        return false;
+    }
+
+    unsigned char *spirV = nullptr;
+    size_t spirVlen = 0;
+
+    for (unsigned int i = 0; i < numOutputs; ++i) {
+        auto nameLen = strlen(outputNames[i]);
+        if ((nameLen > 4) && (strstr(&outputNames[i][nameLen - 4], ".spv") != nullptr)) {
+            spirV = outputs[i];
+            spirVlen = ouputLengths[i];
+            break;
+        }
+    }
+
+    if (!spirV) {
+        log<Verbosity::error>("Could not get generated SPIR-V file!");
+        return false;
+    }
+
+    spirv.resize(spirVlen);
+    std::memcpy(spirv.data(), spirV, spirVlen);
+
+    oclocFreeOutput(&numOutputs, &outputs, &ouputLengths, &outputNames);
+    return true;
+}
+
+bool createModule(ze_context_handle_t context, ze_device_handle_t device, const std::vector<uint8_t> &binary,
+                  ze_module_format_t binaryFormat, ze_module_handle_t &module, const char *flags) {
+    log<Verbosity::info>("Creating module via zeModuleCreate()!");
+
+    ze_module_desc_t moduleDescription = {
+        ZE_STRUCTURE_TYPE_MODULE_DESC, nullptr, binaryFormat, binary.size(), binary.data(), "", nullptr};
+
+    ze_module_build_log_handle_t buildLog{};
+
+    auto zeModuleCreateResult = zeModuleCreate(context, device, &moduleDescription, &module, &buildLog);
+    if (zeModuleCreateResult == ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("Module creation succeeded! Module = %p", static_cast<void *>(module));
+    } else {
+        log<Verbosity::error>("zeModuleCreate() has failed! Error code: %d", static_cast<int>(zeModuleCreateResult));
+    }
+
+    if (checkBuildLog(buildLog)) {
+        log<Verbosity::info>("Build log checking succeeded!");
+    } else {
+        log<Verbosity::error>("build log checking has failed!");
+    }
+
+    return zeModuleCreateResult == ZE_RESULT_SUCCESS;
+}
+
+bool destroyModule(ze_module_handle_t &module) {
+    const auto zeModuleDestroyResult = zeModuleDestroy(module);
+    if (zeModuleDestroyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleDestroy() call has failed for moduleHandle! Error code = %d",
+                              static_cast<int>(zeModuleDestroyResult));
+        return false;
+    }
+
+    module = nullptr;
+    log<Verbosity::info>("Module has been destroyed!");
+
+    return true;
+}
+
+bool checkBuildLog(ze_module_build_log_handle_t buildLog) {
+    log<Verbosity::info>("Getting build log size!");
+
+    size_t buildLogSize{0};
+    auto zeModuleBuildLogGetStringResult = zeModuleBuildLogGetString(buildLog, &buildLogSize, nullptr);
+    if (zeModuleBuildLogGetStringResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleBuildLogGetString() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleBuildLogGetStringResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Build log size is %zd!", buildLogSize);
+    if (buildLogSize > 0) {
+        log<Verbosity::info>("Getting build log!");
+
+        std::string buildLogStr{};
+        buildLogStr.resize(buildLogSize + 1);
+
+        zeModuleBuildLogGetStringResult = zeModuleBuildLogGetString(buildLog, &buildLogSize, buildLogStr.data());
+        if (zeModuleBuildLogGetStringResult != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zeModuleBuildLogGetString() call has failed! Error code = %d",
+                                  static_cast<int>(zeModuleBuildLogGetStringResult));
+            return false;
+        }
+
+        log<Verbosity::info>("Build log : %s", buildLogStr.c_str());
+    } else {
+        log<Verbosity::info>("Build log is empty!");
+    }
+
+    log<Verbosity::info>("Destroying module build log via zeModuleBuildLogDestroy()!");
+
+    auto zeModuleBuildLogDestroyResult = zeModuleBuildLogDestroy(buildLog);
+    if (zeModuleBuildLogDestroyResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleBuildLogDestroy() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleBuildLogDestroyResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Destruction of L0 module build log has been successful!");
     return true;
 }
 

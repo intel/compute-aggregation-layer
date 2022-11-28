@@ -708,6 +708,26 @@ size_t ZeModuleCreateRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
 }
 
+ZeModuleDynamicLinkRpcM::Captures::DynamicTraits ZeModuleDynamicLinkRpcM::Captures::DynamicTraits::calculate(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
+    DynamicTraits ret = {};
+    ret.phModules.count = numModules;
+    ret.phModules.size = ret.phModules.count * sizeof(ze_module_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phModules.offset + ret.phModules.size);
+
+
+    return ret;
+}
+
+size_t ZeModuleDynamicLinkRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phModules) + Cal::Utils::alignUpPow2<8>(this->countPhModules * sizeof(ze_module_handle_t));
+     return size;
+}
+
+size_t ZeModuleDynamicLinkRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhModules * sizeof(ze_module_handle_t));
+     return size;
+}
+
 ZeModuleBuildLogGetStringRpcM::Captures::DynamicTraits ZeModuleBuildLogGetStringRpcM::Captures::DynamicTraits::calculate(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
     DynamicTraits ret = {};
     ret.pBuildLog.count = (pSize ? *pSize : 0);
