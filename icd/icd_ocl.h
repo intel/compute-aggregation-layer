@@ -567,6 +567,11 @@ struct ClBufferRecycler {
     std::atomic_bool isCleaningUp = false;
 };
 
+struct IcdOclDevice : Cal::Shared::RefCountedWithParent<_cl_device_id, IcdOclTypePrinter> {
+    using RefCountedWithParent::RefCountedWithParent;
+    bool isSubDevice = false;
+};
+
 struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 
@@ -576,6 +581,11 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
     ~IcdOclContext() override {
         Cal::Icd::icdGlobalState.unregisterAtExit(this);
         clBufferRecycler.cleanup();
+        for (auto &device : this->devices) {
+            if (device) {
+                static_cast<IcdOclDevice *>(device)->dec();
+            }
+        }
     }
 
     void beforeReleaseCallback();
@@ -662,10 +672,6 @@ struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclType
 
 struct IcdOclEvent : Cal::Shared::RefCountedWithParent<_cl_event, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
-};
-struct IcdOclDevice : Cal::Shared::RefCountedWithParent<_cl_device_id, IcdOclTypePrinter> {
-    using RefCountedWithParent::RefCountedWithParent;
-    bool isSubDevice = false;
 };
 struct IcdOclSampler : Cal::Shared::RefCountedWithParent<_cl_sampler, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;

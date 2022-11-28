@@ -605,6 +605,11 @@ bool IcdOclContext::tryRecycleClBuffer(cl_mem mem) {
 
 void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *devices) {
     this->devices.assign(devices, devices + numDevices);
+    for (auto &device : this->devices) {
+        if (device) {
+            static_cast<IcdOclDevice *>(device)->inc();
+        }
+    }
     if (numDevices && this->clBufferRecycler.allowedReuseSizeTotal > 0) {
         static constexpr int numPropertiesWithVal = 2; // CL_QUEUE_FAMILY_INTEL + CL_QUEUE_INDEX_INTEL
         static constexpr int entriesPerProperty = 2;   // name + value
