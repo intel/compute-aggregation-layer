@@ -483,8 +483,14 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     void moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
 
   private:
+    friend IcdL0Platform;
+    void setCommandQueueType(ze_command_queue_mode_t mode) {
+        this->mode = mode;
+    }
+
     std::mutex queueMutex{};
     std::vector<ze_command_list_handle_t> currentlyExecutedCommandLists{};
+    ze_command_queue_mode_t mode{};
 };
 
 class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t, IcdL0TypePrinter> {
@@ -594,8 +600,14 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, contextsMap, contextsMapMutex);
     }
 
-    ze_command_queue_handle_t translateNewRemoteObjectToLocalObject(ze_command_queue_handle_t remoteHandle) {
-        return translateNewRemoteObjectToLocalObject<IcdL0CommandQueue>(remoteHandle, static_cast<ze_command_queue_handle_t>(nullptr), commandQueuesMap, commandQueuesMapMutex);
+    ze_command_queue_handle_t translateNewRemoteObjectToLocalObject(ze_command_queue_handle_t remoteHandle, ze_command_queue_mode_t mode) {
+        auto commandQueue = translateNewRemoteObjectToLocalObject<IcdL0CommandQueue>(remoteHandle, static_cast<ze_command_queue_handle_t>(nullptr), commandQueuesMap, commandQueuesMapMutex);
+        if (commandQueue) {
+            auto icdCommandQueue = static_cast<IcdL0CommandQueue *>(commandQueue);
+            icdCommandQueue->setCommandQueueType(mode);
+        }
+
+        return commandQueue;
     }
 
     void removeObjectFromMap(ze_command_queue_handle_t remoteHandle, IcdL0CommandQueue *localHandle) {

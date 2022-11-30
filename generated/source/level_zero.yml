@@ -1549,7 +1549,6 @@ config:
               type: ze_command_queue_desc_t
               kind: struct
             server_access: read
-
         3:
           name: phCommandQueue
           type: ze_command_queue_handle_t*
@@ -1560,7 +1559,7 @@ config:
             element:
               type: ze_command_queue_handle_t
               kind: scalar
-              translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+              translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, command->args.desc->mode)"
             server_access: write
           daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 

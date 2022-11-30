@@ -209,7 +209,7 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
     command->copyToCaller();
     if(phCommandQueue)
     {
-        phCommandQueue[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandQueue[0]);
+        phCommandQueue[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phCommandQueue[0], command->args.desc->mode);
     }
     ze_result_t ret = command->captures.ret;
 
