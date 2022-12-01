@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "shared/api_types.h"
 #include "shared/ipc.h"
 #include "shared/rpc.h"
 #include "shared/shmem_transfer_desc.h"
@@ -216,8 +217,8 @@ class IcdPlatform {
     using UsmRangeIterator = std::map<const void *, const void *>::iterator;
 
   public:
-    IcdPlatform(Cal::Ipc::ShmemImporter &shmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager)
-        : shmemImporter(shmemImporter), usmShmemImporter(usmShmemImporter), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager) {
+    IcdPlatform(Cal::Ipc::ShmemImporter &shmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager, Cal::ApiType apiType)
+        : shmemImporter(shmemImporter), usmShmemImporter(usmShmemImporter), mallocShmemZeroCopyManager(mallocShmemZeroCopyManager), apiType(apiType) {
         auto cpuInfoOpt = cpuInfo.read();
         if (cpuInfoOpt) {
             this->cpuInfo = cpuInfoOpt.value();
@@ -475,6 +476,7 @@ class IcdPlatform {
     Cal::Ipc::ShmemImporter &shmemImporter;
     Cal::Usm::UsmShmemImporter &usmShmemImporter;
     Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager;
+    const Cal::ApiType apiType;
     bool allowedToUseZeroCopyForMallocShmem = false;
     std::unique_ptr<Cal::Icd::PageFaultManager> pageFaultManager;
     std::unique_ptr<Cal::Ipc::Connection> connection;

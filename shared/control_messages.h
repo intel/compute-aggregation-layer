@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "shared/api_types.h"
 #include "shared/ipc.h"
 #include "shared/utils.h"
 
@@ -32,25 +33,22 @@ struct ReqHandshake {
     Cal::Ipc::ControlMessageHeader header = {};
 
     static constexpr uint16_t messageSubtype = 1;
-    enum ClientType : uint32_t { unknown,
-                                 ocl,
-                                 l0 };
 
     pid_t pid = 0;
     pid_t ppid = 0;
     char clientProcessName[512] = {};
-    uint32_t clientType = unknown;
+    Cal::ApiType clientApiType = Cal::ApiType::Unknown;
 
     ReqHandshake() {
         this->header.subtype = ReqHandshake::messageSubtype;
     }
 
-    ReqHandshake(ClientType clientType) {
+    ReqHandshake(Cal::ApiType clientApiType) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqHandshake::messageSubtype;
         this->pid = getpid();
         this->ppid = getppid();
-        this->clientType = clientType;
+        this->clientApiType = clientApiType;
         auto processName = Cal::Utils::getProcessName();
 
         auto dstSize = sizeof(this->clientProcessName);
@@ -63,7 +61,7 @@ struct ReqHandshake {
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != ReqHandshake::messageSubtype) ? 1 : 0;
         invalid |= (this->pid == 0) ? 1 : 0;
-        invalid |= (((this->clientType != ocl) ? 1 : 0) & ((this->clientType != l0) ? 1 : 0));
+        invalid |= (((this->clientApiType != Cal::ApiType::OpenCL) ? 1 : 0) & ((this->clientApiType != Cal::ApiType::LevelZero) ? 1 : 0));
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqHandshake is not valid");
         }
@@ -71,13 +69,13 @@ struct ReqHandshake {
     }
 
     const char *clientTypeStr() const {
-        switch (this->clientType) {
+        switch (this->clientApiType) {
         default:
             return "unknown";
-        case ocl:
-            return "ocl";
-        case l0:
-            return "l0";
+        case Cal::ApiType::OpenCL:
+            return "OpenCL";
+        case Cal::ApiType::LevelZero:
+            return "LevelZero";
         }
     }
 };

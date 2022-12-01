@@ -604,8 +604,8 @@ class Provider {
 
     std::unique_ptr<Cal::Ipc::ConnectionListener> createConnectionListener();
 
-    bool isClientSupported(uint32_t clientType) {
-        return ((clientType == Cal::Messages::ReqHandshake::ocl) && systemInfo.availableApis.ocl) || ((clientType == Cal::Messages::ReqHandshake::l0) && systemInfo.availableApis.l0);
+    bool isClientSupported(Cal::ApiType clientApiType) {
+        return ((clientApiType == Cal::ApiType::OpenCL) && systemInfo.availableApis.ocl) || ((clientApiType == Cal::ApiType::LevelZero) && systemInfo.availableApis.l0);
     }
 
     static void serviceSingleClient(std::unique_ptr<Cal::Ipc::Connection> clientConnection, uint64_t clientOrdinal, Provider &service, bool isPersistentMode) {
@@ -651,7 +651,7 @@ class Provider {
             log<Verbosity::error>("Handshake with client #%d has FAILED", clientConnection->getId());
             return;
         }
-        if (false == service.isClientSupported(handshake.clientType)) {
+        if (false == service.isClientSupported(handshake.clientApiType)) {
             log<Verbosity::error>("Client #%d requested %s API which is not available in the system (missing loader)", clientConnection->getId(), handshake.clientTypeStr());
             return;
         }

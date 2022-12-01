@@ -570,7 +570,8 @@ class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, 
 
 class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
   public:
-    using IcdPlatform::IcdPlatform;
+    IcdL0Platform(Cal::Ipc::ShmemImporter &shmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager)
+        : IcdPlatform(shmemImporter, usmShmemImporter, mallocShmemZeroCopyManager, Cal::ApiType::LevelZero) {}
 
     ze_driver_handle_t asRemoteObject() {
         return calDriverHandle;

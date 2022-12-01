@@ -58,7 +58,7 @@ void IcdPlatform::initializeConnection() {
     }
 
     log<Verbosity::debug>("Performing handshake");
-    if (false == this->connection->send(Cal::Messages::ReqHandshake(Cal::Messages::ReqHandshake::ocl))) {
+    if (false == this->connection->send(Cal::Messages::ReqHandshake(apiType))) {
         log<Verbosity::critical>("Handshake with Compute Aggregation Layer service failed");
         this->connection.reset();
         return;
