@@ -14,6 +14,104 @@
 
 namespace Cal::Rpc::LevelZero {
 
+TEST(OpaqueListReassemblationAndCopyTest, GivenCapturesWithOpaqueListNestedStructFieldWhenCopyingAndReassemblingTheStructureThenStructCapturesFieldsPointsToDynMem) {
+    // 0. Prepare arguments, which need to be copied: opaque list -> 2 opaque elements appended to first, known element.
+    ze_kernel_preferred_group_size_properties_t lastElement = {
+        ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES, // stype
+        nullptr,                                                  // pNext
+        8u                                                        // preferredMultiple
+    };
+
+    ze_kernel_preferred_group_size_properties_t secondElement = {
+        ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES, // stype
+        &lastElement,                                             // pNext
+        4u                                                        // preferredMultiple
+    };
+
+    ze_kernel_properties_t firstElement{
+        ZE_STRUCTURE_TYPE_KERNEL_PROPERTIES, // stype
+        &secondElement,                      // pNext
+        3u,                                  // numKernelArgs
+        16u,                                 // requiredGroupSizeX
+        32u,                                 // requiredGroupSizeY
+        48u,                                 // requiredGroupSizeZ
+        4u,                                  // requiredNumSubGroups
+        12u,                                 // requiredSubgroupSize
+        24u,                                 // maxSubgroupSize
+        8u,                                  // maxNumSubgroups
+        128u,                                // localMemSize
+        64u,                                 // privateMemSize
+        32u,                                 // spillMemSize
+        ze_kernel_uuid_t{
+            {1, 2, 3, 4}, // kid
+            {5, 6, 7, 8}, // mid
+        }};
+
+    // Dummy kernel handle used to fulfill interface.
+    ze_kernel_handle_t kernelHandle{};
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernelHandle, &firstElement);
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, kernelHandle, &firstElement);
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits);
+
+    // 4.  Ensure that addresses was only shallow-copied and pointers are invalid.
+    ASSERT_EQ(&secondElement, command->captures.pKernelProperties.pNext);
+
+    // 5. Reassemble captures.
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify pointers.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    EXPECT_EQ(firstElement.stype, command->captures.pKernelProperties.stype);
+    ASSERT_NE(&secondElement, command->captures.pKernelProperties.pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.pKernelProperties.pNext));
+
+    auto secondElementInDynMem = reinterpret_cast<ze_kernel_preferred_group_size_properties_t *>(command->captures.pKernelProperties.pNext);
+    EXPECT_EQ(secondElement.stype, secondElementInDynMem->stype);
+    EXPECT_EQ(secondElement.preferredMultiple, secondElementInDynMem->preferredMultiple);
+    ASSERT_NE(secondElement.pNext, secondElementInDynMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(secondElementInDynMem->pNext));
+
+    auto thirdElementInDynMem = reinterpret_cast<ze_kernel_preferred_group_size_properties_t *>(secondElementInDynMem->pNext);
+    EXPECT_EQ(lastElement.stype, thirdElementInDynMem->stype);
+    EXPECT_EQ(lastElement.preferredMultiple, thirdElementInDynMem->preferredMultiple);
+    EXPECT_EQ(nullptr, thirdElementInDynMem->pNext);
+
+    // 7. Modify scalar fields to simulate output parameters and then copy to caller.
+    constexpr auto expectedPreferredMultipleOfSecondElement = 44u;
+    secondElementInDynMem->preferredMultiple = expectedPreferredMultipleOfSecondElement;
+
+    constexpr auto expectedPreferredMultipleOfThirdElement = 21u;
+    thirdElementInDynMem->preferredMultiple = expectedPreferredMultipleOfThirdElement;
+
+    command->copyToCaller(dynMemTraits);
+
+    // 8. Validate pointers and output fields.
+    EXPECT_EQ(&secondElement, firstElement.pNext);
+
+    EXPECT_EQ(expectedPreferredMultipleOfSecondElement, secondElement.preferredMultiple);
+    EXPECT_EQ(&lastElement, secondElement.pNext);
+
+    EXPECT_EQ(expectedPreferredMultipleOfThirdElement, lastElement.preferredMultiple);
+    EXPECT_EQ(nullptr, lastElement.pNext);
+}
+
 TEST(ReassemblationTest, GivenCapturesWithNestedStructFieldsWhenCopyingAndReassemblingTheStructureThenStructCapturesFieldsPointToDynMem) {
     // 0. Prepare arguments, which need to be copied.
     constexpr static size_t constantsCount = 3;

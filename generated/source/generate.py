@@ -122,6 +122,9 @@ class Kind:
     def is_opaque(self) -> bool:
         return self.str == "opaque"
 
+    def is_opaque_list(self) -> bool:
+        return self.str == "opaque_list"
+
 
 class Element:
     def __init__(self, src: dict):
@@ -161,6 +164,12 @@ class UnderlyingType:
         self.type = Type(src["type"]) if "type" in src else None
         self.kind = Kind(src["kind"]) if "kind" in src else None
 
+class OpaqueType:
+    def __init__(self, src: dict):
+        self.type_name = src.get("extension_type", "")
+        self.extension_enum_value = src.get("extension_enum_value", None)
+        self.contains_output_parameters = src.get("contains_output_parameters", False)
+
 class KindDetails:
     def __init__(self, src: dict):
         self.num_elements = NumElements(src.get("num_elements", {}))
@@ -170,6 +179,10 @@ class KindDetails:
         self.server_access = ServerAccess(src.get("server_access", {}))
         self.variable_generator = src.get("variable_generator", None)
         self.underlying_type = UnderlyingType(src.get("underlying_type", {}))
+        self.iterator_type = src.get("iterator_type", "")
+        self.opaque_traits_name = src.get("opaque_traits_name", "")
+        self.supported_opaque_types = [OpaqueType(t) for t in src.get("supported_opaque_types", {})]
+        self.supported_opaque_types_by_name = {opaque_type.type_name : opaque_type for opaque_type in self.supported_opaque_types}
 
 class CaptureMode:
     def __init__(self, src: str):
@@ -323,10 +336,12 @@ class StructureTraits:
         return trivial
 
     def is_non_trivial_struct_dependency(self, variable):
-        if not (variable.kind.is_struct() and variable.type.str in self.struct.all_structures_description):
+        if (not (variable.kind.is_struct() and variable.type.str in self.struct.all_structures_description)) and not variable.kind.is_opaque_list():
             return False
-        struct_type = self.struct.all_structures_description[variable.type.str]
-        return not struct_type.traits.is_trivial()
+
+        if variable.kind.is_struct():
+            struct_type = self.struct.all_structures_description[variable.type.str]
+            return not struct_type.traits.is_trivial()
 
 
 class Structure:
@@ -338,7 +353,7 @@ class Structure:
         self.traits = StructureTraits(self)
 
     def members_to_capture(self):
-        return [member for member in self.members if member.kind.is_pointer_to_array()]
+        return [member for member in self.members if (member.kind.is_pointer_to_array() or member.kind.is_opaque_list())]
 
     def set_all_structures_description(self, all_structures_description):
         self.all_structures_description = all_structures_description
@@ -434,6 +449,13 @@ class FunctionTraits:
 
         return is_copy_required_for_ptr_array_args or is_copy_required_for_implicit_args or is_copy_required_for_struct_fields
 
+    def is_copy_to_caller_required_for_any_of_struct_fields(self):
+        ptr_array_args = self.get_ptr_array_args()
+        capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
+        capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in capturable_struct_args]
+
+        return any(struct.traits.requires_copy_to_caller() for struct in capturable_structs)
+
     def count_of_capturable_struct_members_includig_nested(self, args):
         total_count = 0
 
@@ -463,7 +485,7 @@ class FunctionTraits:
         return [arg for arg in self.function.args if arg.kind.is_pointer_to_array() and arg.kind_details.num_elements.is_constant()]
 
     def is_non_trivial_struct_dependency(self, variable):
-        if not (variable.kind.is_struct() and variable.type.str in self.function.structures):
+        if (not (variable.kind.is_struct() and variable.type.str in self.function.structures)) and not variable.kind.is_opaque_list():
             return False
         struct_type = self.function.structures[variable.type.str]
         return not struct_type.traits.is_trivial()
@@ -496,7 +518,7 @@ class FunctionCaptureLayout:
             current_member_access = formatter.generate_member_access(self, parent_it)
             current_member_count_name = current_member_name + "Count"
             current_member_count_access = formatter.generate_member_count_access(self, parent_it)
-            current_member_element_type = self.member.kind_details.element.type.str
+            current_member_element_type = self.member.kind_details.element.type.str if not self.member.kind.is_opaque_list() else self.member.kind_details.opaque_traits_name
 
             member_size_calculation = f"""{spaces}const auto& {current_member_name} = {current_member_access};
 {spaces}if(!{current_member_name}){{
@@ -509,6 +531,17 @@ class FunctionCaptureLayout:
 {spaces}}}
 
 {spaces}{total_size_var} += alignUpPow2<8>({current_member_count_name} * sizeof({current_member_element_type}));"""
+
+            # Heterogeneous list hold as void*
+            if self.member.kind.is_opaque_list():
+                iterator_type = self.member.kind_details.iterator_type
+                list_element_name = f"{current_member_name}ListElement"
+
+                member_size_calculation += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_member_access});"
+                member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {current_member_count_name}; ++{it}){{"
+                member_size_calculation += f"\n{spaces}    {total_size_var} += alignUpPow2<8>(getUnderlyingSize({list_element_name}));"
+                member_size_calculation += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
+                member_size_calculation += f"\n{spaces}}}\n"
 
             # Multi-dimensional array member
             if self.member.kind_details.element.kind.is_pointer_to_array() or self.member.kind_details.element.kind.is_opaque():
@@ -561,6 +594,53 @@ class FunctionCaptureLayout:
 
             return member_size_calculation
 
+        def create_copy_to_caller(self, current_offset_var, formatter, spaces_count, it):
+            spaces = " " * spaces_count
+            parent_name = formatter.get_full_parent_name(self)
+            current_dest_access = f"dest{formatter.capital(formatter.generate_member_access(self, it))}"
+
+            current_member_name = formatter.get_full_member_name(self)
+            current_member_offset = f"{parent_name}Traits[{it}].{self.member.name}Offset"
+            current_member_count = f"{parent_name}Traits[{it}].{self.member.name}Count"
+            current_member_element_type = self.member.kind_details.element.type.str
+
+            copy_to_caller = f"""{spaces}if({parent_name}Traits[{it}].{self.member.name}Offset == -1){{
+{spaces}    continue;
+{spaces}}}"""
+
+            if not self.member.kind.is_opaque_list():
+                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({current_member_element_type}));"
+            else:
+                next_it = str(chr(ord(it) + 1))
+                iterator_type = self.member.kind_details.iterator_type
+                list_element_name = f"{current_member_name}ListElement"
+                opaque_traits = self.member.kind_details.opaque_traits_name
+
+                copy_to_caller += f"\n\n{spaces}{current_dest_access} = {parent_name}Traits[{it}].{self.member.name}FirstOriginalElement;"
+
+                copy_to_caller += f"\n\n{spaces}auto {list_element_name}Traits = reinterpret_cast<{opaque_traits}*>(dynMem + {current_offset_var});"
+                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({opaque_traits}));"
+
+                copy_to_caller += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_dest_access});"
+
+                copy_to_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{"
+                copy_to_caller += f"\n{spaces}    const auto sizeInBytes = getUnderlyingSize({list_element_name});"
+                copy_to_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
+
+                copy_to_caller += f"\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
+                copy_to_caller += f"\n{spaces}    if ({formatter.generate_should_copy_to_caller_opaque_element(self, 'extensionType')}) {{"
+                copy_to_caller += f"\n{spaces}        auto originalNextOpaqueElement = getNext({list_element_name});"
+                copy_to_caller += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
+                copy_to_caller += f"\n{spaces}        auto destination = const_cast<{iterator_type}*>({list_element_name});"
+                copy_to_caller += f"\n{spaces}        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);\n"
+                copy_to_caller += f"\n{spaces}        getNextField(*destination) = originalNextOpaqueElement;"
+                copy_to_caller += f"\n{spaces}    }}\n"
+
+                copy_to_caller += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
+                copy_to_caller += f"\n{spaces}}}\n"
+
+            return copy_to_caller
+
         def create_copy_from_caller(self, current_offset_var, formatter, spaces_count, it):
             spaces = " " * spaces_count
             current_member_name = formatter.get_full_member_name(self)
@@ -585,10 +665,34 @@ class FunctionCaptureLayout:
 {spaces}}}
 
 {spaces}{parent_name}Traits[{it}].{self.member.name}Offset = {current_offset_var};
-{spaces}{parent_name}Traits[{it}].{self.member.name}Count = {current_member_count_name};
+{spaces}{parent_name}Traits[{it}].{self.member.name}Count = {current_member_count_name};"""
 
-{spaces}std::memcpy(dynMem + {current_offset_var}, {current_member_name}, {current_member_count_name} * sizeof({current_member_element_type}));
-{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({current_member_element_type}));"""
+            if not self.member.kind.is_opaque_list():
+                copy_from_caller += f"\n\n{spaces}std::memcpy(dynMem + {current_offset_var}, {current_member_name}, {current_member_count_name} * sizeof({current_member_element_type}));"
+                copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({current_member_element_type}));"
+            else :
+                next_it = str(chr(ord(it) + 1))
+                iterator_type = self.member.kind_details.iterator_type
+                list_element_name = f"{current_member_name}ListElement"
+                opaque_traits = self.member.kind_details.opaque_traits_name
+
+                copy_from_caller += f"\n{spaces}{parent_name}Traits[{it}].{self.member.name}FirstOriginalElement = {current_member_access};";
+
+                copy_from_caller += f"\n\n{spaces}auto {list_element_name}Traits = reinterpret_cast<{opaque_traits}*>(dynMem + {current_offset_var});"
+                copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({opaque_traits}));"
+
+                copy_from_caller += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_member_access});"
+                copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{"
+                copy_from_caller += f"\n{spaces}    {list_element_name}Traits[{next_it}].extensionType = getExtensionType({list_element_name});"
+                copy_from_caller += f"\n{spaces}    {list_element_name}Traits[{next_it}].extensionOffset = {current_offset_var};\n"
+
+                copy_from_caller += f"\n{spaces}    const auto sizeInBytes = getUnderlyingSize({list_element_name});"
+                copy_from_caller += f"\n{spaces}    std::memcpy(dynMem + {current_offset_var}, {list_element_name}, sizeInBytes);"
+                copy_from_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
+
+                copy_from_caller += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
+                copy_from_caller += f"\n{spaces}}}\n"
+
 
             # Multi-dimensional array member
             if self.member.kind_details.element.kind.is_pointer_to_array() or self.member.kind_details.element.kind.is_opaque():
@@ -671,10 +775,37 @@ class FunctionCaptureLayout:
             reassemble_nested_structs = f"""{spaces}if({parent_name}Traits[{it}].{self.member.name}Offset == -1){{
 {spaces}    forcePointerWrite({current_dest_access}, nullptr);
 {spaces}    continue;
-{spaces}}}
+{spaces}}}"""
 
-{spaces}forcePointerWrite({current_dest_access}, dynMem + {current_member_offset});
-{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({current_member_element_type}));"""
+            if not self.member.kind.is_opaque_list():
+                reassemble_nested_structs += f"\n\n{spaces}forcePointerWrite({current_dest_access}, dynMem + {current_member_offset});"
+                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({current_member_element_type}));"
+            else:
+                next_it = str(chr(ord(it) + 1))
+                iterator_type = self.member.kind_details.iterator_type
+                list_element_name = f"{current_member_name}ListElement"
+                opaque_traits = self.member.kind_details.opaque_traits_name
+
+                reassemble_nested_structs += f"\n\n{spaces}auto {list_element_name}Traits = reinterpret_cast<{opaque_traits}*>(dynMem + {current_offset_var});"
+                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({opaque_traits}));"
+
+                reassemble_nested_structs += f"\n\n{spaces}forcePointerWrite({current_dest_access}, dynMem + {list_element_name}Traits[0].extensionOffset);"
+                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>(getUnderlyingSize(static_cast<{iterator_type}*>({current_dest_access})));"
+
+                reassemble_nested_structs += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_dest_access});"
+
+                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 1; {next_it} < {current_member_count}; ++{next_it}){{"
+                reassemble_nested_structs += f"\n{spaces}    const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
+                reassemble_nested_structs += f"\n{spaces}    forcePointerWrite(getNextField(*{list_element_name}), dynMem + extensionOffset);\n"
+
+                reassemble_nested_structs += f"\n{spaces}    const auto pNextElement = getNext({list_element_name});"
+                reassemble_nested_structs += f"\n{spaces}    if (pNextElement) {{"
+                reassemble_nested_structs += f"\n{spaces}        const auto sizeInBytes = getUnderlyingSize(pNextElement);"
+                reassemble_nested_structs += f"\n{spaces}        {current_offset_var} += alignUpPow2<8>(sizeInBytes);"
+                reassemble_nested_structs += f"\n{spaces}    }}\n"
+
+                reassemble_nested_structs += f"\n{spaces}    {list_element_name} = pNextElement;"
+                reassemble_nested_structs += f"\n{spaces}}}\n"
 
             # Multi-dimensional array member
             if self.member.kind_details.element.kind.is_pointer_to_array() or self.member.kind_details.element.kind.is_opaque():
@@ -939,6 +1070,9 @@ class MemberLayoutFormatter:
             return member_layout.member.kind_details.num_elements.str
 
         member_access = self.generate_member_access(member_layout, it, prefix)
+        if member_layout.member.kind.is_opaque_list():
+            iterator_type = member_layout.member.kind_details.iterator_type
+            return f"countOpaqueList(static_cast<const {iterator_type}*>({member_access}))"
         if member_layout.member.kind_details.num_elements.is_nullterminated():
             return f"Cal::Utils::countNullterminated({member_access})"
         elif member_layout.member.kind_details.num_elements.is_nullterminated_key():
@@ -969,6 +1103,11 @@ class MemberLayoutFormatter:
     def capital(self, name):
         return f"{name[0].upper() + name[1:]}"
 
+    def generate_should_copy_to_caller_opaque_element(self, member_layout, extension_var):
+        if not member_layout.member.kind_details.supported_opaque_types:
+            return "false"
+
+        return " && ".join([f"{extension_var} == {opaque_type.extension_enum_value}" for opaque_type in member_layout.member.kind_details.supported_opaque_types if opaque_type.contains_output_parameters])
 
 class Formater:
     class RpcMessage:

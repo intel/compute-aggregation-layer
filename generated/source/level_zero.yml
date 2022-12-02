@@ -28,6 +28,7 @@ config:
   file_headers:
     common: []
     rpc_messages_h:
+      - '#include "shared/l0_opaque_list_serialization.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
     rpc_messages_cpp:
@@ -833,8 +834,15 @@ config:
         1:
           name: pNext
           type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
+            supported_opaque_types :
+              - extension_type : ze_kernel_preferred_group_size_properties_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES
+                contains_output_parameters : True
+            server_access: read_write
         2:
           name: numKernelArgs
           type: uint32_t
@@ -985,6 +993,21 @@ config:
         2:
           name: samplerFilterFlags
           type: ze_image_sampler_filter_flags_t
+          kind: scalar
+
+    - name: ze_kernel_preferred_group_size_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+        2:
+          name: preferredMultiple
+          type: uint32_t
           kind: scalar
 
   unimplemented:

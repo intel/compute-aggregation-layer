@@ -1170,6 +1170,7 @@ inline bool zeKernelSetCacheConfigHandler(Provider &service, Cal::Rpc::ChannelSe
 inline bool zeKernelGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeKernelGetProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeKernelGetProperties(
                                                 apiCommand->args.hKernel, 
                                                 apiCommand->args.pKernelProperties ? &apiCommand->captures.pKernelProperties : nullptr

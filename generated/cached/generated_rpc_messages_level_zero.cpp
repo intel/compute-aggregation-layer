@@ -885,6 +885,50 @@ size_t ZeKernelSetArgumentValueRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeKernelGetPropertiesRpcM::Captures::DynamicTraits ZeKernelGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pKernelProperties) {
+        ret.pKernelPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pKernelPropertiesNestedTraits.count = 1;
+        ret.pKernelPropertiesNestedTraits.size = ret.pKernelPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_kernel_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pKernelPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pKernelPropertiesNestedTraits.count; ++i) {
+            const auto& pKernelPropertiesPNext = pKernelProperties[i].pNext;
+            if(!pKernelPropertiesPNext){
+                continue;
+            }
+
+            const auto pKernelPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pKernelProperties[i].pNext)));
+            if(!pKernelPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pKernelPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pKernelPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pKernelProperties[i].pNext);
+            for(uint32_t j = 0; j < pKernelPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pKernelPropertiesPNextListElement));
+                pKernelPropertiesPNextListElement = getNext(pKernelPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeKernelGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeKernelGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeKernelGetNameRpcM::Captures::DynamicTraits ZeKernelGetNameRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, size_t* pSize, char* pName) {
     DynamicTraits ret = {};
     ret.pName.count = (pSize ? *pSize : 0);

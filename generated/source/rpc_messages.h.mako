@@ -63,6 +63,9 @@ struct DynamicStructTraits<${struct_description.name}> {
 %  for member in struct_description.members_to_capture():
     int32_t ${member.name}Offset{-1};
     int32_t ${member.name}Count{-1};
+%    if member.kind.is_opaque_list():
+    void *${member.name}FirstOriginalElement{nullptr};
+%    endif % member.kind.is_opaque_list()
 %  endfor
 };
 
@@ -230,6 +233,34 @@ ${member_layout.create_copy_from_caller("currentOffset", member_layout_formatter
          implicitArgs.${iarg.name} = this->implicitArgs.${iarg.name};
 %     endif # not iarg.server_access.read_only():
 %    endfor # func.implicit_args
+\
+%    if func.traits.is_copy_to_caller_required_for_any_of_struct_fields():
+%      if get_struct_members_layouts(func):
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+%      endif
+\
+%      for arg, member_layouts in get_struct_members_layouts(func).items():
+%        if member_layouts:
+        if(args.${arg.name}) {
+            assert(currentOffset == captures.${arg.name}NestedTraitsOffset);
+            auto* ${arg.name}Traits = reinterpret_cast<DynamicStructTraits<${arg.kind_details.element.type.str}>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.${arg.name}NestedTraitsCount * sizeof(DynamicStructTraits<${arg.kind_details.element.type.str}>));
+
+            auto* dest${member_layout_formatter.capital(arg.name)} = args.${arg.name};
+%        endif
+\
+%        for member_layout in member_layouts:
+
+            for (uint32_t i = 0; i < captures.${arg.name}NestedTraitsCount; ++i) {
+${member_layout.create_copy_to_caller("currentOffset", member_layout_formatter, spaces_count=16, it='i')}
+            }
+%        endfor # for member_layout in member_layouts
+        }
+%      endfor # for arg, member_layouts
+%    endif # func.traits.is_copy_to_caller_required_for_any_of_struct_fields()
     }
 %   endif # func.traits.emit_copy_to_caller
 };
