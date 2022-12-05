@@ -139,8 +139,9 @@ class Socket : public Connection {
         constexpr auto fdSize = sizeof(fds[0]);
         constexpr auto paddedControlMessageSize = CMSG_SPACE(fdSize);
         constexpr auto actualControlMessageSize = CMSG_LEN(fdSize);
-        const auto totalSize = paddedControlMessageSize * (count + 1u);
-        std::vector<char> controlMessageStorage(totalSize);
+        const auto totalBufferSize = paddedControlMessageSize * (count + 1u);
+        const auto totalSize = paddedControlMessageSize * count;
+        std::vector<char> controlMessageStorage(totalBufferSize);
 
         // Prepare storage and fill main message.
         struct msghdr message;
@@ -205,8 +206,9 @@ class Socket : public Connection {
         constexpr auto fdSize = sizeof(fds[0]);
         constexpr auto paddedControlMessageSize = CMSG_SPACE(fdSize);
         constexpr auto actualControlMessageSize = CMSG_LEN(fdSize);
-        const auto totalSize = paddedControlMessageSize * (count + 1);
-        std::vector<char> controlMessageStorage(totalSize);
+        const auto totalBufferSize = paddedControlMessageSize * (count + 1);
+        const auto totalSize = paddedControlMessageSize * count;
+        std::vector<char> controlMessageStorage(totalBufferSize);
 
         // Prepare storage and fill main message.
         struct msghdr message;
