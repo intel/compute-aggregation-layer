@@ -1019,16 +1019,6 @@ ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ui
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, pMemProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    if(pMemProperties)
-    {
-        auto base = command->captures.pMemProperties;
-        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
-        auto numEntries = (pCount ? *pCount : 0);
-
-        for(size_t i = 0; i < numEntries; ++i){
-            ensureNull("zeDeviceGetMemoryProperties: pMemProperties[i].pNext", pMemProperties[i].pNext);
-        }
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;

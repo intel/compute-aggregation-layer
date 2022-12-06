@@ -443,10 +443,11 @@ inline bool zeDeviceGetCommandQueueGroupPropertiesHandler(Provider &service, Cal
 inline bool zeDeviceGetMemoryPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGetMemoryProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetMemoryPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetMemoryProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
-                                                apiCommand->args.pMemProperties ? apiCommand->captures.pMemProperties : nullptr
+                                                apiCommand->args.pMemProperties ? apiCommand->captures.getPMemProperties() : nullptr
                                                 );
     return true;
 }

@@ -470,18 +470,45 @@ ZeDeviceGetMemoryPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetMemoryProper
     ret.pMemProperties.size = ret.pMemProperties.count * sizeof(ze_device_memory_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pMemProperties.offset + ret.pMemProperties.size);
 
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pMemProperties) {
+        ret.pMemPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pMemPropertiesNestedTraits.count = (pCount ? *pCount : 0);
+        ret.pMemPropertiesNestedTraits.size = ret.pMemPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_memory_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pMemPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pMemPropertiesNestedTraits.count; ++i) {
+            const auto& pMemPropertiesPNext = pMemProperties[i].pNext;
+            if(!pMemPropertiesPNext){
+                continue;
+            }
+
+            const auto pMemPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pMemProperties[i].pNext)));
+            if(!pMemPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pMemPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pMemPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pMemProperties[i].pNext);
+            for(uint32_t j = 0; j < pMemPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pMemPropertiesPNextListElement));
+                pMemPropertiesPNextListElement = getNext(pMemPropertiesPNextListElement);
+            }
+
+        }
+    }
 
     return ret;
 }
 
 size_t ZeDeviceGetMemoryPropertiesRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, pMemProperties) + Cal::Utils::alignUpPow2<8>(this->countPMemProperties * sizeof(ze_device_memory_properties_t));
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
      return size;
 }
 
 size_t ZeDeviceGetMemoryPropertiesRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPMemProperties * sizeof(ze_device_memory_properties_t));
-     return size;
+     return dynMemSize;
 }
 
 ZeDeviceGetCachePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetCachePropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {

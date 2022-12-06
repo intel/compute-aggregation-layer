@@ -63,7 +63,7 @@ TEST(OpaqueListReassemblationAndCopyTest, GivenCapturesWithOpaqueListNestedStruc
     // 3. Deep-copy all required data without reassemblation.
     command->copyFromCaller(dynMemTraits);
 
-    // 4.  Ensure that addresses was only shallow-copied and pointers are invalid.
+    // 4.  Ensure that address was only shallow-copied and pointers are invalid.
     ASSERT_EQ(&secondElement, command->captures.pKernelProperties.pNext);
 
     // 5. Reassemble captures.
@@ -110,6 +110,104 @@ TEST(OpaqueListReassemblationAndCopyTest, GivenCapturesWithOpaqueListNestedStruc
 
     EXPECT_EQ(expectedPreferredMultipleOfThirdElement, lastElement.preferredMultiple);
     EXPECT_EQ(nullptr, lastElement.pNext);
+}
+
+TEST(OpaqueListReassemblationAndCopyTest, GivenMultipleDynamicCapturesWithOpaqueListNestedStructFieldWhenCopyingAndReassemblingTheStructuresThenStructCapturesFieldsPointsToDynMem) {
+    // 0. Prepare arguments, which need to be copied:
+    //     - dynamic array of two elements
+    //     - each element contain opaque list with additional 1 opaque element
+    std::array<ze_device_memory_properties_t, 2> deviceMemoryProperties = {};
+    for (auto &property : deviceMemoryProperties) {
+        property.stype = ZE_STRUCTURE_TYPE_DEVICE_MEMORY_ACCESS_PROPERTIES;
+    }
+
+    ze_device_memory_ext_properties_t extensionOfFirst = {
+        ZE_STRUCTURE_TYPE_DEVICE_MEMORY_EXT_PROPERTIES, // stype
+        nullptr,                                        // pNext
+        ZE_DEVICE_MEMORY_EXT_TYPE_FORCE_UINT32,         // type
+        0,                                              // physicalSize
+        0,                                              // readBandwidth
+        0,                                              // writeBandwidth
+        ZE_BANDWIDTH_UNIT_FORCE_UINT32,                 // bandwidthUnit
+    };
+
+    ze_device_memory_ext_properties_t extensionOfSecond = {
+        ZE_STRUCTURE_TYPE_DEVICE_MEMORY_EXT_PROPERTIES, // stype
+        nullptr,                                        // pNext
+        ZE_DEVICE_MEMORY_EXT_TYPE_FORCE_UINT32,         // type
+        0,                                              // physicalSize
+        0,                                              // readBandwidth
+        0,                                              // writeBandwidth
+        ZE_BANDWIDTH_UNIT_FORCE_UINT32,                 // bandwidthUnit
+    };
+
+    deviceMemoryProperties[0].pNext = &extensionOfFirst;
+    deviceMemoryProperties[1].pNext = &extensionOfSecond;
+
+    // Dummy device handle used to fulfill interface.
+    ze_device_handle_t deviceHandle{};
+    uint32_t count = deviceMemoryProperties.size();
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryPropertiesRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(deviceHandle, &count, deviceMemoryProperties.data());
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, deviceHandle, &count, deviceMemoryProperties.data());
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits);
+
+    // 4.  Ensure that addresses were only shallow-copied and pointers are invalid.
+    auto *pMemProperties = command->captures.getPMemProperties();
+    ASSERT_EQ(&extensionOfFirst, pMemProperties[0].pNext);
+    ASSERT_EQ(&extensionOfSecond, pMemProperties[1].pNext);
+
+    // 5. Reassemble captures.
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify pointers.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    ASSERT_NE(&extensionOfFirst, pMemProperties[0].pNext);
+    EXPECT_TRUE(pointsToDynMemBuffer(pMemProperties[0].pNext));
+
+    ASSERT_NE(&extensionOfSecond, pMemProperties[1].pNext);
+    EXPECT_TRUE(pointsToDynMemBuffer(pMemProperties[1].pNext));
+
+    // 7. Modify scalar fields to simulate output parameters and then copy to caller.
+    auto *extensionOfFirstInDynMem = static_cast<ze_device_memory_ext_properties_t *>(pMemProperties[0].pNext);
+    extensionOfFirstInDynMem->physicalSize = 128u;
+    extensionOfFirstInDynMem->readBandwidth = 16u;
+    extensionOfFirstInDynMem->writeBandwidth = 32u;
+
+    auto *extensionOfSecondInDynMem = static_cast<ze_device_memory_ext_properties_t *>(pMemProperties[1].pNext);
+    extensionOfSecondInDynMem->physicalSize = 256u;
+    extensionOfSecondInDynMem->readBandwidth = 8u;
+    extensionOfSecondInDynMem->writeBandwidth = 12u;
+
+    command->copyToCaller(dynMemTraits);
+
+    // 8. Validate pointers and output fields.
+    ASSERT_EQ(&extensionOfFirst, deviceMemoryProperties[0].pNext);
+    ASSERT_EQ(&extensionOfSecond, deviceMemoryProperties[1].pNext);
+
+    EXPECT_EQ(128u, extensionOfFirst.physicalSize);
+    EXPECT_EQ(16u, extensionOfFirst.readBandwidth);
+    EXPECT_EQ(32u, extensionOfFirst.writeBandwidth);
+
+    EXPECT_EQ(256u, extensionOfSecond.physicalSize);
+    EXPECT_EQ(8u, extensionOfSecond.readBandwidth);
+    EXPECT_EQ(12u, extensionOfSecond.writeBandwidth);
 }
 
 TEST(ReassemblationTest, GivenCapturesWithNestedStructFieldsWhenCopyingAndReassemblingTheStructureThenStructCapturesFieldsPointToDynMem) {

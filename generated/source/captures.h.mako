@@ -237,8 +237,11 @@
                 assert(currentOffset == ${arg.name}NestedTraitsOffset);
                 auto* ${arg.name}Traits = reinterpret_cast<DynamicStructTraits<${arg.kind_details.element.type.str}>*>(dynMem + currentOffset);
                 currentOffset += alignUpPow2<8>(${arg.name}NestedTraitsCount * sizeof(DynamicStructTraits<${arg.kind_details.element.type.str}>));
-
+%          if not arg.traits.uses_dynamic_arg_getter:
                 auto* dest${member_layout_formatter.capital(arg.name)} = &${arg.name};
+%          else:
+                auto *dest${member_layout_formatter.capital(arg.name)} = ${f_arg_getter_name(arg)}();
+%          endif
 %        endif # member_layouts:
 \
 %        for member_layout in member_layouts:
