@@ -449,6 +449,9 @@ config:
               - extension_type : ze_scheduling_hint_exp_properties_t
                 extension_enum_value : ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES
                 contains_output_parameters : True
+              - extension_type : ze_device_raytracing_ext_properties_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_DEVICE_RAYTRACING_EXT_PROPERTIES
+                contains_output_parameters : True
             server_access: read_write
         2:
           name: spirvVersionSupported

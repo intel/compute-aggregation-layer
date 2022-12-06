@@ -2755,7 +2755,7 @@ struct ZeDeviceGetModulePropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pModulePropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES) {
+                    if (extensionType == ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_DEVICE_RAYTRACING_EXT_PROPERTIES) {
                         auto originalNextOpaqueElement = getNext(pModulePropertiesPNextListElement);
                         const auto extensionOffset = pModulePropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pModulePropertiesPNextListElement);

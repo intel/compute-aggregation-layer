@@ -40,6 +40,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_scheduling_hint_exp_properties_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_DEVICE_RAYTRACING_EXT_PROPERTIES == desc->stype) {
+        return sizeof(ze_device_raytracing_ext_properties_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
     std::abort();
     return 0;
