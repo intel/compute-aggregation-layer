@@ -400,6 +400,50 @@ size_t ZeDeviceGetSubDevicesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pModuleProperties) {
+        ret.pModulePropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pModulePropertiesNestedTraits.count = 1;
+        ret.pModulePropertiesNestedTraits.size = ret.pModulePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_module_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pModulePropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pModulePropertiesNestedTraits.count; ++i) {
+            const auto& pModulePropertiesPNext = pModuleProperties[i].pNext;
+            if(!pModulePropertiesPNext){
+                continue;
+            }
+
+            const auto pModulePropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pModuleProperties[i].pNext)));
+            if(!pModulePropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pModulePropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pModulePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pModuleProperties[i].pNext);
+            for(uint32_t j = 0; j < pModulePropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pModulePropertiesPNextListElement));
+                pModulePropertiesPNextListElement = getNext(pModulePropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeDeviceGetModulePropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeDeviceGetModulePropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeDeviceGetCommandQueueGroupPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetCommandQueueGroupPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
     DynamicTraits ret = {};
     ret.pCommandQueueGroupProperties.count = (pCount ? *pCount : 0);

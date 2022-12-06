@@ -280,7 +280,17 @@ bool getTotalGroupCount(ze_kernel_handle_t kernel) {
 bool getKernelProperties(ze_kernel_handle_t kernel) {
     log<Verbosity::info>("Getting kernel properties via zeKernelGetProperties()!");
 
-    ze_kernel_properties_t kernelProperties{};
+    ze_kernel_preferred_group_size_properties_t extension = {
+        ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES, // stype
+        nullptr,                                                  // pNext
+        0u                                                        // preferredMultiple
+    };
+
+    ze_kernel_properties_t kernelProperties = {};
+
+    kernelProperties.stype = ZE_STRUCTURE_TYPE_KERNEL_PROPERTIES;
+    kernelProperties.pNext = &extension;
+
     const auto zeKernelGetPropertiesResult = zeKernelGetProperties(kernel, &kernelProperties);
     if (zeKernelGetPropertiesResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeKernelGetProperties() call has failed! Error code = %d",
@@ -290,6 +300,10 @@ bool getKernelProperties(ze_kernel_handle_t kernel) {
 
     log<Verbosity::info>("Number of kernel arguments read from properties is: %d",
                          static_cast<int>(kernelProperties.numKernelArgs));
+
+    log<Verbosity::info>("ze_kernel_preferred_group_size_properties_t: preferredMultiple = %d",
+                         static_cast<int>(extension.preferredMultiple));
+
     return true;
 }
 

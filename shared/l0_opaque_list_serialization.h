@@ -32,6 +32,14 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_kernel_preferred_group_size_properties_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES == desc->stype) {
+        return sizeof(ze_float_atomic_ext_properties_t);
+    }
+
+    if (ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES == desc->stype) {
+        return sizeof(ze_scheduling_hint_exp_properties_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
     std::abort();
     return 0;

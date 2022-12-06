@@ -438,8 +438,18 @@ config:
         1:
           name: pNext
           type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
+            supported_opaque_types :
+              - extension_type : ze_float_atomic_ext_properties_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES
+                contains_output_parameters : True
+              - extension_type : ze_scheduling_hint_exp_properties_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES
+                contains_output_parameters : True
+            server_access: read_write
         2:
           name: spirvVersionSupported
           type: uint32_t

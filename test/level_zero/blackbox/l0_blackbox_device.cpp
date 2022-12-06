@@ -117,7 +117,11 @@ bool getDevicePciPropertiesExt(ze_device_handle_t device) {
 }
 
 bool getDeviceModuleProperties(ze_device_handle_t device) {
+    ze_float_atomic_ext_properties_t floatProperties = {ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES};
+    floatProperties.pNext = nullptr;
+
     ze_device_module_properties_t moduleProperties = {ZE_STRUCTURE_TYPE_DEVICE_MODULE_PROPERTIES};
+    moduleProperties.pNext = &floatProperties;
 
     const auto zeDeviceGetModulePropertiesResult = zeDeviceGetModuleProperties(device, &moduleProperties);
     if (zeDeviceGetModulePropertiesResult != ZE_RESULT_SUCCESS) {
@@ -133,7 +137,11 @@ bool getDeviceModuleProperties(ze_device_handle_t device) {
        << " * fp32flags : " << static_cast<int>(moduleProperties.fp32flags) << "\n"
        << " * fp64flags : " << static_cast<int>(moduleProperties.fp64flags) << "\n"
        << " * maxArgumentsSize : " << moduleProperties.maxArgumentsSize << "\n"
-       << " * printfBufferSize : " << moduleProperties.printfBufferSize;
+       << " * printfBufferSize : " << moduleProperties.printfBufferSize << "\n\n"
+       << "Float atomic exp properties : \n"
+       << " * fp16Flags : " << floatProperties.fp16Flags << "\n"
+       << " * fp32Flags : " << floatProperties.fp32Flags << "\n"
+       << " * fp64Flags : " << floatProperties.fp64Flags;
 
     const auto moduleInfoStr = ss.str();
     log<Verbosity::info>("%s", moduleInfoStr.c_str());

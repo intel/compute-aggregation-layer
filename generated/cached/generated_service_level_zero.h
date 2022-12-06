@@ -423,6 +423,7 @@ inline bool zeDeviceGetComputePropertiesHandler(Provider &service, Cal::Rpc::Cha
 inline bool zeDeviceGetModulePropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGetModuleProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetModulePropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetModuleProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pModuleProperties ? &apiCommand->captures.pModuleProperties : nullptr

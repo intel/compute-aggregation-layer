@@ -1107,7 +1107,7 @@ class MemberLayoutFormatter:
         if not member_layout.member.kind_details.supported_opaque_types:
             return "false"
 
-        return " && ".join([f"{extension_var} == {opaque_type.extension_enum_value}" for opaque_type in member_layout.member.kind_details.supported_opaque_types if opaque_type.contains_output_parameters])
+        return " || ".join([f"{extension_var} == {opaque_type.extension_enum_value}" for opaque_type in member_layout.member.kind_details.supported_opaque_types if opaque_type.contains_output_parameters])
 
 class Formater:
     class RpcMessage:
