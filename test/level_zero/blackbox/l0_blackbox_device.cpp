@@ -236,11 +236,15 @@ bool getDeviceMemoryProperties(ze_device_handle_t device) {
 
     log<Verbosity::info>("Reading memory properties via zeDeviceGetMemoryProperties()!");
 
-    std::vector<ze_device_memory_properties_t> memoryProperties{};
-    memoryProperties.resize(memoryPropertiesCount);
+    std::vector<ze_device_memory_properties_t> memoryProperties(memoryPropertiesCount);
+    std::vector<ze_device_memory_ext_properties_t> memoryExtProperties(memoryPropertiesCount);
 
-    for (auto &memoryProperty : memoryProperties) {
-        memoryProperty.stype = ZE_STRUCTURE_TYPE_DEVICE_MEMORY_PROPERTIES;
+    for (auto i = 0u; i < memoryPropertiesCount; ++i) {
+        memoryProperties[i].stype = ZE_STRUCTURE_TYPE_DEVICE_MEMORY_PROPERTIES;
+        memoryProperties[i].pNext = &memoryExtProperties[i];
+
+        memoryExtProperties[i].stype = ZE_STRUCTURE_TYPE_DEVICE_MEMORY_EXT_PROPERTIES;
+        memoryExtProperties[i].pNext = nullptr;
     }
 
     zeDeviceGetMemoryPropertiesResult = zeDeviceGetMemoryProperties(device, &memoryPropertiesCount, memoryProperties.data());
@@ -250,7 +254,7 @@ bool getDeviceMemoryProperties(ze_device_handle_t device) {
     }
 
     std::stringstream ss;
-    for (auto i = 0u; i < memoryProperties.size(); ++i) {
+    for (auto i = 0u; i < memoryPropertiesCount; ++i) {
         const auto &memoryProperty = memoryProperties[i];
 
         ss.str("");
@@ -262,8 +266,20 @@ bool getDeviceMemoryProperties(ze_device_handle_t device) {
            << " * name : ";
 
         for (const auto c : memoryProperty.name) {
+            if (c == '\0') {
+                break;
+            }
+
             ss << c;
         }
+
+        ss << "\n"
+           << "ze_device_memory_ext_properties_t[" << i << "] : \n"
+           << " * type : " << static_cast<int>(memoryExtProperties[i].type) << "\n"
+           << " * physicalSize : " << memoryExtProperties[i].physicalSize << "\n"
+           << " * readBandwidth : " << memoryExtProperties[i].readBandwidth << "\n"
+           << " * writeBandwidth : " << memoryExtProperties[i].writeBandwidth << "\n"
+           << " * bandwidthUnit : " << static_cast<int>(memoryExtProperties[i].bandwidthUnit);
 
         const auto memoryPropertyInfoStr = ss.str();
         log<Verbosity::info>("%s", memoryPropertyInfoStr.c_str());
