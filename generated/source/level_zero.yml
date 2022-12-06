@@ -281,9 +281,15 @@ config:
           kind: scalar
         1:
           name: pNext
-          type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          type: const void*
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
+            supported_opaque_types :
+              - extension_type : ze_context_power_saving_hint_exp_desc_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC
+                contains_output_parameters : False
         2:
           name: flags
           type: ze_context_flags_t

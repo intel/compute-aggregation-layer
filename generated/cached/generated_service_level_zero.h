@@ -251,6 +251,7 @@ inline bool zeCommandQueueSynchronizeHandler(Provider &service, Cal::Rpc::Channe
 inline bool zeContextCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeContextCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreate(
                                                 apiCommand->args.hDriver, 
                                                 apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
@@ -267,11 +268,12 @@ inline bool zeContextCreateHandler(Provider &service, Cal::Rpc::ChannelServer &c
 inline bool zeContextCreateExHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeContextCreateEx");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateExRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextCreateEx(
                                                 apiCommand->args.hDriver, 
                                                 apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
                                                 apiCommand->args.numDevices, 
-                                                apiCommand->args.phDevices ? apiCommand->captures.phDevices : nullptr, 
+                                                apiCommand->args.phDevices ? apiCommand->captures.getPhDevices() : nullptr, 
                                                 apiCommand->args.phContext ? &apiCommand->captures.phContext : nullptr
                                                 );
     if(isSuccessful(apiCommand->captures.ret)) {

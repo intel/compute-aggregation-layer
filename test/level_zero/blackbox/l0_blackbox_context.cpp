@@ -25,8 +25,17 @@ bool getContextStatus(ze_context_handle_t context) {
 }
 
 bool createContextEx(ze_driver_handle_t driver, std::vector<ze_device_handle_t> &devices, ze_context_handle_t &contextEx) {
-    ze_context_desc_t contextDescription{};
-    contextDescription.stype = ZE_STRUCTURE_TYPE_CONTEXT_DESC;
+    const ze_context_power_saving_hint_exp_desc_t powerSavingHint = {
+        ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC, // stype
+        nullptr,                                      // pNext
+        ZE_POWER_SAVING_HINT_TYPE_MAX                 // hint
+    };
+
+    const ze_context_desc_t contextDescription = {
+        ZE_STRUCTURE_TYPE_CONTEXT_DESC, // stype
+        &powerSavingHint,               // pNext
+        0                               // flags
+    };
 
     const auto numDevices = static_cast<uint32_t>(devices.size());
     const auto zeContextCreateExResult = zeContextCreateEx(driver, &contextDescription, numDevices, devices.data(), &contextEx);

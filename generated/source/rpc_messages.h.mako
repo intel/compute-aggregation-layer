@@ -64,7 +64,7 @@ struct DynamicStructTraits<${struct_description.name}> {
     int32_t ${member.name}Offset{-1};
     int32_t ${member.name}Count{-1};
 %    if member.kind.is_opaque_list():
-    void *${member.name}FirstOriginalElement{nullptr};
+    ${member.type.str} ${member.name}FirstOriginalElement{nullptr};
 %    endif % member.kind.is_opaque_list()
 %  endfor
 };

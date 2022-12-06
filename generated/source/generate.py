@@ -452,7 +452,8 @@ class FunctionTraits:
     def is_copy_to_caller_required_for_any_of_struct_fields(self):
         ptr_array_args = self.get_ptr_array_args()
         capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
-        capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in capturable_struct_args]
+        writable_struct_args = [arg for arg in capturable_struct_args if not arg.kind_details.server_access.read_only()]
+        capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in writable_struct_args]
 
         return any(struct.traits.requires_copy_to_caller() for struct in capturable_structs)
 
@@ -790,7 +791,7 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({opaque_traits}));"
 
                 reassemble_nested_structs += f"\n\n{spaces}forcePointerWrite({current_dest_access}, dynMem + {list_element_name}Traits[0].extensionOffset);"
-                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>(getUnderlyingSize(static_cast<{iterator_type}*>({current_dest_access})));"
+                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>(getUnderlyingSize(static_cast<const {iterator_type}*>({current_dest_access})));"
 
                 reassemble_nested_structs += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_dest_access});"
 

@@ -66,24 +66,95 @@ size_t ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::getCa
      return size;
 }
 
+ZeContextCreateRpcM::Captures::DynamicTraits ZeContextCreateRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (desc) {
+        ret.descNestedTraits.offset = ret.totalDynamicSize;
+        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_context_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
+            const auto& descPNext = desc[i].pNext;
+            if(!descPNext){
+                continue;
+            }
+
+            const auto descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(desc[i].pNext)));
+            if(!descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+            auto descPNextListElement = static_cast<const ze_base_desc_t*>(desc[i].pNext);
+            for(uint32_t j = 0; j < descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
+                descPNextListElement = getNext(descPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeContextCreateRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeContextCreateRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeContextCreateExRpcM::Captures::DynamicTraits ZeContextCreateExRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
     DynamicTraits ret = {};
     ret.phDevices.count = numDevices;
     ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (desc) {
+        ret.descNestedTraits.offset = ret.totalDynamicSize;
+        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_context_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
+            const auto& descPNext = desc[i].pNext;
+            if(!descPNext){
+                continue;
+            }
+
+            const auto descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(desc[i].pNext)));
+            if(!descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+            auto descPNextListElement = static_cast<const ze_base_desc_t*>(desc[i].pNext);
+            for(uint32_t j = 0; j < descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
+                descPNextListElement = getNext(descPNextListElement);
+            }
+
+        }
+    }
 
     return ret;
 }
 
 size_t ZeContextCreateExRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, phDevices) + Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
      return size;
 }
 
 size_t ZeContextCreateExRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
-     return size;
+     return dynMemSize;
 }
 
 ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {

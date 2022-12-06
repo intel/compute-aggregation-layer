@@ -322,14 +322,11 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextCreateRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hDriver, desc, phContext);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, desc, phContext);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, desc, phContext);
+    command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
-    if(desc)
-    {
-        ensureNull("zeContextCreate: desc->pNext", desc->pNext);
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
@@ -337,7 +334,7 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     if(phContext)
     {
         phContext[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phContext[0]);
@@ -357,13 +354,9 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, desc, numDevices, phDevices, phContext);
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
-    if(desc)
-    {
-        ensureNull("zeContextCreateEx: desc->pNext", desc->pNext);
-    }
     if(phDevices)
     {
-        auto base = command->captures.phDevices;
+        auto base = command->captures.getPhDevices();
         auto baseMutable = mutable_element_cast(base);
         auto numEntries = dynMemTraits.phDevices.count;
 
