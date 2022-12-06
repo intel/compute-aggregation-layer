@@ -1061,16 +1061,6 @@ ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uin
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, pCacheProperties);
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    if(pCacheProperties)
-    {
-        auto base = command->captures.pCacheProperties;
-        [[maybe_unused]] auto baseMutable = mutable_element_cast(base);
-        auto numEntries = (pCount ? *pCount : 0);
-
-        for(size_t i = 0; i < numEntries; ++i){
-            ensureNull("zeDeviceGetCacheProperties: pCacheProperties[i].pNext", pCacheProperties[i].pNext);
-        }
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;

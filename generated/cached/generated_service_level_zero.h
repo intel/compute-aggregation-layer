@@ -465,10 +465,11 @@ inline bool zeDeviceGetMemoryAccessPropertiesHandler(Provider &service, Cal::Rpc
 inline bool zeDeviceGetCachePropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGetCacheProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetCachePropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetCacheProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
-                                                apiCommand->args.pCacheProperties ? apiCommand->captures.pCacheProperties : nullptr
+                                                apiCommand->args.pCacheProperties ? apiCommand->captures.getPCacheProperties() : nullptr
                                                 );
     return true;
 }
