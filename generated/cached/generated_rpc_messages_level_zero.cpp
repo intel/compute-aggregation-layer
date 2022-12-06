@@ -531,6 +531,50 @@ size_t ZeDeviceGetCachePropertiesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeDeviceGetP2PPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetP2PPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pP2PProperties) {
+        ret.pP2PPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pP2PPropertiesNestedTraits.count = 1;
+        ret.pP2PPropertiesNestedTraits.size = ret.pP2PPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_p2p_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pP2PPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pP2PPropertiesNestedTraits.count; ++i) {
+            const auto& pP2PPropertiesPNext = pP2PProperties[i].pNext;
+            if(!pP2PPropertiesPNext){
+                continue;
+            }
+
+            const auto pP2PPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pP2PProperties[i].pNext)));
+            if(!pP2PPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pP2PPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pP2PPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pP2PProperties[i].pNext);
+            for(uint32_t j = 0; j < pP2PPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pP2PPropertiesPNextListElement));
+                pP2PPropertiesPNextListElement = getNext(pP2PPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeDeviceGetP2PPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeDeviceGetP2PPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeDriverGetRpcM::Captures::DynamicTraits ZeDriverGetRpcM::Captures::DynamicTraits::calculate(uint32_t* pCount, ze_driver_handle_t* phDrivers) {
     DynamicTraits ret = {};
     ret.phDrivers.count = (pCount ? *pCount : 0);

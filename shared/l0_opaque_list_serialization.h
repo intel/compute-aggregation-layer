@@ -28,6 +28,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return 0;
     }
 
+    if (ZE_STRUCTURE_TYPE_DEVICE_P2P_BANDWIDTH_EXP_PROPERTIES == desc->stype) {
+        return sizeof(ze_device_p2p_bandwidth_exp_properties_t);
+    }
+
     if (ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES == desc->stype) {
         return sizeof(ze_kernel_preferred_group_size_properties_t);
     }

@@ -102,6 +102,13 @@ struct DynamicStructTraits<ze_kernel_properties_t> {
     void *pNextFirstOriginalElement{nullptr};
 };
 
+template <>
+struct DynamicStructTraits<ze_device_p2p_properties_t> {
+    int32_t pNextOffset{-1};
+    int32_t pNextCount{-1};
+    void *pNextFirstOriginalElement{nullptr};
+};
+
 
 template<typename T>
 inline char *asMemcpyDstT(T * ptr) {
@@ -3413,14 +3420,73 @@ struct ZeDeviceGetP2PPropertiesRpcM {
 
     struct Captures {
 
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties);
+            uint32_t totalDynamicSize = 0;
+            uint32_t dynamicStructMembersOffset = 0;
+            DynamicArgTraits pP2PPropertiesNestedTraits = {};
+        };
+
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         ze_device_p2p_properties_t pP2PProperties;
+        uint32_t dynamicStructMembersOffset = 0;
+        uint32_t pP2PPropertiesNestedTraitsOffset = 0;
+        uint32_t pP2PPropertiesNestedTraitsCount = 0;
 
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+            dynamicStructMembersOffset = dynamicTraits.dynamicStructMembersOffset;
+            pP2PPropertiesNestedTraitsOffset = dynamicTraits.pP2PPropertiesNestedTraits.offset;
+            pP2PPropertiesNestedTraitsCount = dynamicTraits.pP2PPropertiesNestedTraits.count;
+            dynMemSize = dynamicTraits.totalDynamicSize;
+        }
+        
+        uint32_t dynMemSize = 0;
+        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
         size_t getCaptureTotalSize() const;
         size_t getCaptureDynMemSize() const;
+        void reassembleNestedStructs() {
+            using Cal::Utils::alignUpPow2;
+
+            uint32_t currentOffset = dynamicStructMembersOffset;
+
+            if(pP2PPropertiesNestedTraitsCount > 0){
+                assert(currentOffset == pP2PPropertiesNestedTraitsOffset);
+                auto* pP2PPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_device_p2p_properties_t>*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pP2PPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_device_p2p_properties_t>));
+                auto* destPP2PProperties = &pP2PProperties;
+
+                for (uint32_t i = 0; i < pP2PPropertiesNestedTraitsCount; ++i) {
+                    if(pP2PPropertiesTraits[i].pNextOffset == -1){
+                        forcePointerWrite(destPP2PProperties[i].pNext, nullptr);
+                        continue;
+                    }
+
+                    auto pP2PPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                    currentOffset += alignUpPow2<8>(pP2PPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                    forcePointerWrite(destPP2PProperties[i].pNext, dynMem + pP2PPropertiesPNextListElementTraits[0].extensionOffset);
+                    currentOffset += alignUpPow2<8>(getUnderlyingSize(static_cast<ze_base_desc_t*>(destPP2PProperties[i].pNext)));
+
+                    auto pP2PPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPP2PProperties[i].pNext);
+                    for(int32_t j = 1; j < pP2PPropertiesTraits[i].pNextCount; ++j){
+                        const auto extensionOffset = pP2PPropertiesPNextListElementTraits[j].extensionOffset;
+                        forcePointerWrite(getNextField(*pP2PPropertiesPNextListElement), dynMem + extensionOffset);
+
+                        const auto pNextElement = getNext(pP2PPropertiesPNextListElement);
+                        if (pNextElement) {
+                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                            currentOffset += alignUpPow2<8>(sizeInBytes);
+                        }
+
+                        pP2PPropertiesPNextListElement = pNextElement;
+                    }
+
+                }
+        }
+    }
 
     }captures;
     
@@ -3431,12 +3497,13 @@ struct ZeDeviceGetP2PPropertiesRpcM {
 
     ZeDeviceGetP2PPropertiesRpcM() = default;
 
-    ZeDeviceGetP2PPropertiesRpcM(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
+    ZeDeviceGetP2PPropertiesRpcM(const Captures::DynamicTraits &dynamicTraits, ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hDevice = hDevice;
         args.hPeerDevice = hPeerDevice;
         args.pP2PProperties = pP2PProperties;
+        captures.adjustCaptureLayout(dynamicTraits);
     }
     
     static void fillWithoutCapture(ZeDeviceGetP2PPropertiesRpcM &message, ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
@@ -3448,15 +3515,101 @@ struct ZeDeviceGetP2PPropertiesRpcM {
     }
     
 
-    void copyFromCaller(){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pP2PProperties){
             captures.pP2PProperties = *args.pP2PProperties;
         }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pP2PProperties){
+            assert(currentOffset == captures.pP2PPropertiesNestedTraitsOffset);
+            auto* pP2PPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_device_p2p_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pP2PPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_device_p2p_properties_t>));
+
+            for (uint32_t i = 0; i < captures.pP2PPropertiesNestedTraitsCount; ++i) {
+                const auto& pP2PPropertiesPNext = args.pP2PProperties[i].pNext;
+                if(!pP2PPropertiesPNext){
+                    pP2PPropertiesTraits[i].pNextOffset = -1;
+                    pP2PPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                const auto pP2PPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pP2PProperties[i].pNext)));
+                if(!pP2PPropertiesPNextCount){
+                    pP2PPropertiesTraits[i].pNextOffset = -1;
+                    pP2PPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                pP2PPropertiesTraits[i].pNextOffset = currentOffset;
+                pP2PPropertiesTraits[i].pNextCount = pP2PPropertiesPNextCount;
+                pP2PPropertiesTraits[i].pNextFirstOriginalElement = args.pP2PProperties[i].pNext;
+
+                auto pP2PPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pP2PPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+                auto pP2PPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(args.pP2PProperties[i].pNext);
+                for(int32_t j = 0; j < pP2PPropertiesPNextCount; ++j){
+                    pP2PPropertiesPNextListElementTraits[j].extensionType = getExtensionType(pP2PPropertiesPNextListElement);
+                    pP2PPropertiesPNextListElementTraits[j].extensionOffset = currentOffset;
+
+                    const auto sizeInBytes = getUnderlyingSize(pP2PPropertiesPNextListElement);
+                    std::memcpy(dynMem + currentOffset, pP2PPropertiesPNextListElement, sizeInBytes);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    pP2PPropertiesPNextListElement = getNext(pP2PPropertiesPNextListElement);
+                }
+
+            }
+        }
     }
 
-    void copyToCaller(){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pP2PProperties){
             *args.pP2PProperties = captures.pP2PProperties;
+        }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pP2PProperties) {
+            assert(currentOffset == captures.pP2PPropertiesNestedTraitsOffset);
+            auto* pP2PPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_device_p2p_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pP2PPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_device_p2p_properties_t>));
+
+            auto* destPP2PProperties = args.pP2PProperties;
+
+            for (uint32_t i = 0; i < captures.pP2PPropertiesNestedTraitsCount; ++i) {
+                if(pP2PPropertiesTraits[i].pNextOffset == -1){
+                    continue;
+                }
+
+                destPP2PProperties[i].pNext = pP2PPropertiesTraits[i].pNextFirstOriginalElement;
+
+                auto pP2PPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pP2PPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                auto pP2PPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPP2PProperties[i].pNext);
+                for(int32_t j = 0; j < pP2PPropertiesTraits[i].pNextCount; ++j){
+                    const auto sizeInBytes = getUnderlyingSize(pP2PPropertiesPNextListElement);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    const auto extensionType = getExtensionType(pP2PPropertiesPNextListElement);
+                    if (extensionType == ZE_STRUCTURE_TYPE_DEVICE_P2P_BANDWIDTH_EXP_PROPERTIES) {
+                        auto originalNextOpaqueElement = getNext(pP2PPropertiesPNextListElement);
+                        const auto extensionOffset = pP2PPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pP2PPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+
+                        getNextField(*destination) = originalNextOpaqueElement;
+                    }
+
+                    pP2PPropertiesPNextListElement = getNext(pP2PPropertiesPNextListElement);
+                }
+
+            }
         }
     }
 };

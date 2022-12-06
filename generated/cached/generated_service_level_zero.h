@@ -491,6 +491,7 @@ inline bool zeDeviceGetExternalMemoryPropertiesHandler(Provider &service, Cal::R
 inline bool zeDeviceGetP2PPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGetP2PProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceGetP2PProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.hPeerDevice, 

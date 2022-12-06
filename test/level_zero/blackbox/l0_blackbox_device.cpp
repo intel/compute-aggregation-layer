@@ -416,7 +416,9 @@ bool getSubDevices(ze_device_handle_t device, std::vector<ze_device_handle_t> &s
 bool getOwnP2PProperties(ze_device_handle_t device) {
     log<Verbosity::info>("Getting own P2P properties of device = %p", static_cast<void *>(device));
 
-    ze_device_p2p_properties_t p2pProperties{ZE_STRUCTURE_TYPE_DEVICE_P2P_PROPERTIES};
+    ze_device_p2p_bandwidth_exp_properties_t bandwidthProperties{ZE_STRUCTURE_TYPE_DEVICE_P2P_BANDWIDTH_EXP_PROPERTIES};
+    ze_device_p2p_properties_t p2pProperties{ZE_STRUCTURE_TYPE_DEVICE_P2P_PROPERTIES, &bandwidthProperties};
+
     const auto zeDeviceGetP2PPropertiesResult = zeDeviceGetP2PProperties(device, device, &p2pProperties);
     if (zeDeviceGetP2PPropertiesResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeDeviceGetP2PProperties() call has failed! Error code = %d", static_cast<int>(zeDeviceGetP2PPropertiesResult));
@@ -424,6 +426,19 @@ bool getOwnP2PProperties(ze_device_handle_t device) {
     }
 
     log<Verbosity::info>("ze_device_p2p_property_flags_t = %d", static_cast<int>(p2pProperties.flags));
+
+    std::stringstream ss;
+    ss << "ze_device_p2p_bandwidth_exp_properties_t : \n"
+       << " * logicalBandwidth : " << bandwidthProperties.logicalBandwidth << "\n"
+       << " * physicalBandwidth : " << bandwidthProperties.physicalBandwidth << "\n"
+       << " * bandwidthUnit : " << static_cast<int>(bandwidthProperties.bandwidthUnit) << "\n"
+       << " * logicalLatency : " << bandwidthProperties.logicalLatency << "\n"
+       << " * physicalLatency : " << bandwidthProperties.physicalLatency << "\n"
+       << " * latencyUnit : " << static_cast<int>(bandwidthProperties.latencyUnit);
+
+    const auto bandwidthPropertiesStr = ss.str();
+    log<Verbosity::info>("%s", bandwidthPropertiesStr.c_str());
+
     return true;
 }
 

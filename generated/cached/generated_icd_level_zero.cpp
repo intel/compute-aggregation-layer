@@ -1148,15 +1148,12 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hDevice, hPeerDevice, pP2PProperties);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, hPeerDevice, pP2PProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, hPeerDevice, pP2PProperties);
+    command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
-    if(pP2PProperties)
-    {
-        ensureNull("zeDeviceGetP2PProperties: pP2PProperties->pNext", pP2PProperties->pNext);
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
@@ -1164,7 +1161,7 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     ze_result_t ret = command->captures.ret;
 
     return ret;
