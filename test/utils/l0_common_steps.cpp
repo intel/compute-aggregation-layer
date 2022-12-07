@@ -345,8 +345,8 @@ bool destroyCommandList(ze_command_list_handle_t &list) {
     return true;
 }
 
-bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer) {
-    ze_host_mem_alloc_desc_t hostMemAllocDesc = {ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC};
+bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer, const void *descPNext) {
+    ze_host_mem_alloc_desc_t hostMemAllocDesc = {ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC, descPNext};
 
     const auto zeMemAllocHostResult = zeMemAllocHost(context, &hostMemAllocDesc, bufferSize, alignment, &usmHostBuffer);
     if (zeMemAllocHostResult != ZE_RESULT_SUCCESS) {

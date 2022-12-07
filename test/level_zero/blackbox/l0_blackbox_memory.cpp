@@ -149,8 +149,14 @@ int main(int argc, const char *argv[]) {
     constexpr size_t bufferSize{1024};
     constexpr size_t alignment{8};
 
+    const ze_relaxed_allocation_limits_exp_desc_t descExtension = {
+        ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC, // stype
+        nullptr,                                              // pNext
+        ZE_RELAXED_ALLOCATION_LIMITS_EXP_FLAG_MAX_SIZE        // flags
+    };
+
     void *usmHostBuffer{nullptr};
-    RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer));
+    RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer, &descExtension));
     RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
 
     ze_memory_allocation_properties_t usmHostBufferAllocProps{};

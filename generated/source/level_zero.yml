@@ -788,9 +788,11 @@ config:
           kind: scalar
         1:
           name: pNext
-          type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          type: const void*
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
         2:
           name: flags
           type: ze_host_mem_alloc_flags_t

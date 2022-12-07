@@ -680,6 +680,8 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     log<Verbosity::bloat>("Servicing RPC request for zeMemAllocHost");
 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocHostRpcM *>(command);
+    apiCommand->captures.reassembleNestedStructs();
+
     if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
         log<Verbosity::error>("Unhandled alignment for zeMemAllocHost");
         return false;
@@ -755,6 +757,8 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     log<Verbosity::bloat>("Servicing RPC request for zeMemAllocShared");
 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM *>(command);
+    apiCommand->captures.reassembleNestedStructs();
+
     if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
         log<Verbosity::error>("Unhandled alignment for zeMemAllocShared");
         return false;

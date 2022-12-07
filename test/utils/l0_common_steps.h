@@ -53,7 +53,7 @@ bool closeCommandList(ze_command_list_handle_t list);
 bool resetCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
 
-bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer);
+bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer, const void *descPNext = nullptr);
 bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
                           void *&usmSharedBuffer);
 bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,

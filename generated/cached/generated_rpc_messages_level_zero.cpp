@@ -817,6 +817,94 @@ size_t ZeCommandListAppendWaitOnEventsRpcM::Captures::getCaptureDynMemSize() con
      return size;
 }
 
+ZeMemAllocSharedRpcM::Captures::DynamicTraits ZeMemAllocSharedRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (host_desc) {
+        ret.host_descNestedTraits.offset = ret.totalDynamicSize;
+        ret.host_descNestedTraits.count = 1;
+        ret.host_descNestedTraits.size = ret.host_descNestedTraits.count * sizeof(DynamicStructTraits<ze_host_mem_alloc_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.host_descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.host_descNestedTraits.count; ++i) {
+            const auto& host_descPNext = host_desc[i].pNext;
+            if(!host_descPNext){
+                continue;
+            }
+
+            const auto host_descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(host_desc[i].pNext)));
+            if(!host_descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(host_descPNextCount * sizeof(NestedPNextTraits));
+
+            auto host_descPNextListElement = static_cast<const ze_base_desc_t*>(host_desc[i].pNext);
+            for(uint32_t j = 0; j < host_descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(host_descPNextListElement));
+                host_descPNextListElement = getNext(host_descPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeMemAllocSharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeMemAllocSharedRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
+ZeMemAllocHostRpcM::Captures::DynamicTraits ZeMemAllocHostRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (host_desc) {
+        ret.host_descNestedTraits.offset = ret.totalDynamicSize;
+        ret.host_descNestedTraits.count = 1;
+        ret.host_descNestedTraits.size = ret.host_descNestedTraits.count * sizeof(DynamicStructTraits<ze_host_mem_alloc_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.host_descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.host_descNestedTraits.count; ++i) {
+            const auto& host_descPNext = host_desc[i].pNext;
+            if(!host_descPNext){
+                continue;
+            }
+
+            const auto host_descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(host_desc[i].pNext)));
+            if(!host_descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(host_descPNextCount * sizeof(NestedPNextTraits));
+
+            auto host_descPNextListElement = static_cast<const ze_base_desc_t*>(host_desc[i].pNext);
+            for(uint32_t j = 0; j < host_descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(host_descPNextListElement));
+                host_descPNextListElement = getNext(host_descPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeMemAllocHostRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeMemAllocHostRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     DynamicTraits ret = {};
     ret.pIpcHandles.count = (numIpcHandles ? *numIpcHandles : 0);

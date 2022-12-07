@@ -10,6 +10,8 @@
 #include "level_zero/ze_api.h"
 #include "shared/log.h"
 
+#include <array>
+
 inline size_t countOpaqueList(const ze_base_desc_t *desc) {
     size_t count{0};
 
@@ -68,6 +70,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_eu_count_ext_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC == desc->stype) {
+        return sizeof(ze_relaxed_allocation_limits_exp_desc_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
     std::abort();
     return 0;
@@ -93,7 +99,18 @@ inline ze_structure_type_t getExtensionType(const ze_base_desc_t *desc) {
 }
 
 inline bool isReadOnly(ze_structure_type_t stype) {
-    return stype == ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC;
+    static constexpr std::array readOnlyExtensions = {
+        ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC,
+        ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC,
+    };
+
+    for (const auto extensionType : readOnlyExtensions) {
+        if (extensionType == stype) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 struct NestedPNextTraits {
