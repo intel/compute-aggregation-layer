@@ -92,6 +92,10 @@ inline ze_structure_type_t getExtensionType(const ze_base_desc_t *desc) {
     return desc->stype;
 }
 
+inline bool isReadOnly(ze_structure_type_t stype) {
+    return stype == ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC;
+}
+
 struct NestedPNextTraits {
     ze_structure_type_t extensionType{};
     int32_t extensionOffset{};

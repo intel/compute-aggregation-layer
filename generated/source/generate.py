@@ -168,7 +168,6 @@ class OpaqueType:
     def __init__(self, src: dict):
         self.type_name = src.get("extension_type", "")
         self.extension_enum_value = src.get("extension_enum_value", None)
-        self.contains_output_parameters = src.get("contains_output_parameters", False)
 
 class KindDetails:
     def __init__(self, src: dict):
@@ -181,8 +180,6 @@ class KindDetails:
         self.underlying_type = UnderlyingType(src.get("underlying_type", {}))
         self.iterator_type = src.get("iterator_type", "")
         self.opaque_traits_name = src.get("opaque_traits_name", "")
-        self.supported_opaque_types = [OpaqueType(t) for t in src.get("supported_opaque_types", {})]
-        self.supported_opaque_types_by_name = {opaque_type.type_name : opaque_type for opaque_type in self.supported_opaque_types}
 
 class CaptureMode:
     def __init__(self, src: str):
@@ -629,7 +626,7 @@ class FunctionCaptureLayout:
                 copy_to_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
 
                 copy_to_caller += f"\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
-                copy_to_caller += f"\n{spaces}    if ({formatter.generate_should_copy_to_caller_opaque_element(self, 'extensionType')}) {{"
+                copy_to_caller += f"\n{spaces}    if (!isReadOnly(extensionType)) {{"
                 copy_to_caller += f"\n{spaces}        auto originalNextOpaqueElement = getNext({list_element_name});"
                 copy_to_caller += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
                 copy_to_caller += f"\n{spaces}        auto destination = const_cast<{iterator_type}*>({list_element_name});"
@@ -1103,12 +1100,6 @@ class MemberLayoutFormatter:
 
     def capital(self, name):
         return f"{name[0].upper() + name[1:]}"
-
-    def generate_should_copy_to_caller_opaque_element(self, member_layout, extension_var):
-        if not member_layout.member.kind_details.supported_opaque_types:
-            return "false"
-
-        return " || ".join([f"{extension_var} == {opaque_type.extension_enum_value}" for opaque_type in member_layout.member.kind_details.supported_opaque_types if opaque_type.contains_output_parameters])
 
 class Formater:
     class RpcMessage:

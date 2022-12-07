@@ -2860,7 +2860,7 @@ struct ZeDeviceGetPropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pDevicePropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_DEVICE_LUID_EXT_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_EU_COUNT_EXT) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pDevicePropertiesPNextListElement);
                         const auto extensionOffset = pDevicePropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pDevicePropertiesPNextListElement);
@@ -3140,7 +3140,7 @@ struct ZeDeviceGetModulePropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pModulePropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_PROPERTIES || extensionType == ZE_STRUCTURE_TYPE_DEVICE_RAYTRACING_EXT_PROPERTIES) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pModulePropertiesPNextListElement);
                         const auto extensionOffset = pModulePropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pModulePropertiesPNextListElement);
@@ -3461,7 +3461,7 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pMemPropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_DEVICE_MEMORY_EXT_PROPERTIES) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pMemPropertiesPNextListElement);
                         const auto extensionOffset = pMemPropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pMemPropertiesPNextListElement);
@@ -3759,7 +3759,7 @@ struct ZeDeviceGetCachePropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pCachePropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_CACHE_RESERVATION_EXT_DESC) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pCachePropertiesPNextListElement);
                         const auto extensionOffset = pCachePropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pCachePropertiesPNextListElement);
@@ -4110,7 +4110,7 @@ struct ZeDeviceGetP2PPropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pP2PPropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_DEVICE_P2P_BANDWIDTH_EXP_PROPERTIES) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pP2PPropertiesPNextListElement);
                         const auto extensionOffset = pP2PPropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pP2PPropertiesPNextListElement);
@@ -8975,7 +8975,7 @@ struct ZeKernelGetPropertiesRpcM {
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pKernelPropertiesPNextListElement);
-                    if (extensionType == ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES) {
+                    if (!isReadOnly(extensionType)) {
                         auto originalNextOpaqueElement = getNext(pKernelPropertiesPNextListElement);
                         const auto extensionOffset = pKernelPropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pKernelPropertiesPNextListElement);
