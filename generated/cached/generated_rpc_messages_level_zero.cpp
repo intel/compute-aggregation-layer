@@ -471,6 +471,50 @@ size_t ZeDeviceGetSubDevicesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeDeviceGetPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pDeviceProperties) {
+        ret.pDevicePropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pDevicePropertiesNestedTraits.count = 1;
+        ret.pDevicePropertiesNestedTraits.size = ret.pDevicePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pDevicePropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pDevicePropertiesNestedTraits.count; ++i) {
+            const auto& pDevicePropertiesPNext = pDeviceProperties[i].pNext;
+            if(!pDevicePropertiesPNext){
+                continue;
+            }
+
+            const auto pDevicePropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pDeviceProperties[i].pNext)));
+            if(!pDevicePropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pDevicePropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pDevicePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pDeviceProperties[i].pNext);
+            for(uint32_t j = 0; j < pDevicePropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pDevicePropertiesPNextListElement));
+                pDevicePropertiesPNextListElement = getNext(pDevicePropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeDeviceGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeDeviceGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
     DynamicTraits ret = {};
 

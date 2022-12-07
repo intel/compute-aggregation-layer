@@ -304,8 +304,17 @@ config:
         1:
           name: pNext
           type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
+            supported_opaque_types :
+              - extension_type : ze_device_luid_ext_properties_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_DEVICE_LUID_EXT_PROPERTIES
+                contains_output_parameters : True
+              - extension_type : ze_eu_count_ext_t
+                extension_enum_value : ZE_STRUCTURE_TYPE_EU_COUNT_EXT
+                contains_output_parameters : True
         2:
           name: type
           type: ze_device_type_t

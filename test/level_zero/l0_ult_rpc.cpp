@@ -10,9 +10,96 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 
 namespace Cal::Rpc::LevelZero {
+
+TEST(ZeDeviceGetPropertiesExtensionsTest, GivenPassedExtensionsWhenCopyingAndReassemblingMessageThenExtensionsAreProperlyHandled) {
+    // 0. Prepare two extensions and form opaque list from them.
+    ze_eu_count_ext_t euCountExtension = {
+        ZE_STRUCTURE_TYPE_EU_COUNT_EXT, // stype
+        nullptr,                        // pNext
+        0u                              // numTotalEUs
+    };
+
+    ze_device_luid_ext_properties_t luidExtension = {
+        ZE_STRUCTURE_TYPE_DEVICE_LUID_EXT_PROPERTIES, // stype
+        &euCountExtension,                            // pNext
+        ze_device_luid_ext_t{},                       // luid
+        0u                                            // nodeMask
+    };
+
+    ze_device_properties_t deviceProperties = {
+        ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES, // stype
+        &luidExtension                       // pNext
+    };
+
+    // Dummy device handle used to fulfill interface.
+    ze_device_handle_t deviceHandle{};
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(deviceHandle, &deviceProperties);
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, deviceHandle, &deviceProperties);
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits);
+
+    // 4. Ensure that address was only shallow-copied and pointers are invalid.
+    ASSERT_EQ(&luidExtension, command->captures.pDeviceProperties.pNext);
+
+    // 5. Reassemble captures.
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify pointers.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    EXPECT_EQ(deviceProperties.stype, command->captures.pDeviceProperties.stype);
+    ASSERT_NE(&luidExtension, command->captures.pDeviceProperties.pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.pDeviceProperties.pNext));
+
+    auto *luidInDynMem = static_cast<ze_device_luid_ext_properties_t *>(command->captures.pDeviceProperties.pNext);
+    EXPECT_EQ(luidExtension.stype, luidInDynMem->stype);
+    ASSERT_NE(&euCountExtension, luidInDynMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(luidInDynMem->pNext));
+
+    auto *euCountInDynMem = static_cast<ze_eu_count_ext_t *>(luidInDynMem->pNext);
+    EXPECT_EQ(euCountExtension.stype, euCountInDynMem->stype);
+    ASSERT_EQ(nullptr, euCountInDynMem->pNext);
+
+    // 7. Modify scalar fields to simulate output parameters and then copy to caller.
+    const auto expectedNumTotalEUs = 16u;
+    euCountInDynMem->numTotalEUs = expectedNumTotalEUs;
+
+    const auto expectedNodeMask = 15u;
+    luidInDynMem->nodeMask = expectedNodeMask;
+
+    const ze_device_luid_ext_t expectedLuid{"1234"};
+    luidInDynMem->luid = expectedLuid;
+
+    command->copyToCaller(dynMemTraits);
+
+    // 8. Validate pointers and output fields.
+    EXPECT_EQ(&luidExtension, deviceProperties.pNext);
+    EXPECT_EQ(&euCountExtension, luidExtension.pNext);
+    EXPECT_EQ(nullptr, euCountExtension.pNext);
+
+    EXPECT_EQ(expectedNumTotalEUs, euCountExtension.numTotalEUs);
+    EXPECT_EQ(expectedNodeMask, luidExtension.nodeMask);
+    EXPECT_EQ(0, std::memcmp(expectedLuid.id, luidExtension.luid.id, ZE_MAX_DEVICE_LUID_SIZE_EXT));
+}
 
 TEST(OpaqueListReassemblationAndCopyTest, GivenCapturesWithOpaqueListNestedStructFieldWhenCopyingAndReassemblingTheStructureThenStructCapturesFieldsPointsToDynMem) {
     // 0. Prepare arguments, which need to be copied: opaque list -> 2 opaque elements appended to first, known element.

@@ -60,6 +60,14 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_cache_reservation_ext_desc_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_DEVICE_LUID_EXT_PROPERTIES == desc->stype) {
+        return sizeof(ze_device_luid_ext_properties_t);
+    }
+
+    if (ZE_STRUCTURE_TYPE_EU_COUNT_EXT == desc->stype) {
+        return sizeof(ze_eu_count_ext_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
     std::abort();
     return 0;

@@ -895,14 +895,11 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hDevice, pDeviceProperties);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pDeviceProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pDeviceProperties);
+    command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    if(pDeviceProperties)
-    {
-        ensureNull("zeDeviceGetProperties: pDeviceProperties->pNext", pDeviceProperties->pNext);
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
@@ -910,7 +907,7 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     if(pDeviceProperties)
     {
         command->captures.ret = static_cast<IcdL0Device*>(hDevice)->patchDeviceName(*pDeviceProperties) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST;
