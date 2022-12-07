@@ -1081,4 +1081,254 @@ TEST(AllocatorWithBoundedMmapToFd, whenFreeingAllocationWithoutMmappedPtrThenOnl
     EXPECT_EQ(1, mockFdAllocator.freeCallCount);
 }
 
+TEST(ArenaAllocatorAllocate, whenHugeAllocationIsRequestedThenCreatesANonSharedBackingStorage) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity * 2;
+    ArenaAllocator<MockFdAllocator, true> arenaAllocator{baseAllocator, allocationGranularity};
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_EQ(0U, allocation.getSubAllocationOffset());
+    EXPECT_EQ(allocSize, allocation.getSubAllocationSize());
+    ASSERT_NE(nullptr, allocation.getSourceAllocation());
+    EXPECT_EQ(allocSize, allocation.getSourceAllocation()->getFileSize());
+    arenaAllocator.free(allocation);
+}
+
+TEST(ArenaAllocatorAllocate, whenHugeAllocationIsRequestedButUnderlyingAllocatorFailsThenReturnsInvalidAllocation) {
+    Cal::Mocks::LogCaptureContext logs;
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity * 2;
+    ArenaAllocator<MockFdAllocator, true> arenaAllocator{baseAllocator, allocationGranularity};
+    baseAllocator.fdToReturn = -1;
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_FALSE(allocation.isValid());
+    EXPECT_FALSE(logs.empty());
+}
+
+TEST(ArenaAllocatorAllocate, whenLatestArenaSnapshotCanAccomodateNewAllocationThenUsesIt) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT arena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    arenaAllocator.latestArena->store(&arena);
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation.isValid());
+
+    EXPECT_TRUE(arena.getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+    arenaAllocator.free(allocation);
+
+    arenaAllocator.latestArena->store(nullptr);
+    baseAllocator.free(arena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorAllocate, whenLatestArenaSnapshotCannotAccomodateNewAllocationThenTriesReusingOldArenas) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT latestArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+    ArenaAllocatorT::ArenaT recycledArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    arenaAllocator.latestArena->store(&latestArena);
+    auto dummyAlloc = latestArena.allocate(allocationGranularity);
+    arenaAllocator.recycledArenas->push_back(&recycledArena);
+
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_TRUE(recycledArena.getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+    EXPECT_EQ(arenaAllocator.latestArena->load(), &recycledArena);
+
+    arenaAllocator.free(allocation);
+
+    latestArena.free(dummyAlloc);
+    arenaAllocator.latestArena->store(nullptr);
+    baseAllocator.free(latestArena.getUnderlyingAllocation());
+    baseAllocator.free(recycledArena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorAllocate, whenLatestArenaSnapshotCannotAccomodateNewAllocationAndThereAreNoOldArenasToRecycleThenAllocatesNewArena) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT latestArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    arenaAllocator.latestArena->store(&latestArena);
+    auto dummyAlloc = latestArena.allocate(allocationGranularity);
+
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_NE(&latestArena, arenaAllocator.latestArena->load());
+    EXPECT_EQ(arenaAllocator.latestArena->load(), allocation.getArena());
+    EXPECT_TRUE(arenaAllocator.latestArena->load()->getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+
+    arenaAllocator.free(allocation);
+
+    latestArena.free(dummyAlloc);
+    baseAllocator.free(latestArena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorAllocate, whenRecycledArenaCannotAccomodateNewAllocationThenAllocatesNewArena) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT latestArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+    ArenaAllocatorT::ArenaT recycledArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    arenaAllocator.latestArena->store(&latestArena);
+    auto dummyAllocLatestArena = latestArena.allocate(allocationGranularity);
+    arenaAllocator.recycledArenas->push_back(&recycledArena);
+    auto dummyAllocRecycledArena = recycledArena.allocate(allocationGranularity);
+
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_NE(&latestArena, arenaAllocator.latestArena->load());
+    EXPECT_NE(&recycledArena, arenaAllocator.latestArena->load());
+    EXPECT_EQ(arenaAllocator.latestArena->load(), allocation.getArena());
+    EXPECT_TRUE(arenaAllocator.latestArena->load()->getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+
+    arenaAllocator.free(allocation);
+
+    latestArena.free(dummyAllocLatestArena);
+    baseAllocator.free(latestArena.getUnderlyingAllocation());
+    recycledArena.free(dummyAllocRecycledArena);
+    baseAllocator.free(recycledArena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorAllocate, whenNeedsToCreateNewArenaButUnderlyingAllocatorFailsThenAllocatesReturnsInvalidAllocationAndEmitsError) {
+    Cal::Mocks::LogCaptureContext logs;
+
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT latestArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    arenaAllocator.latestArena->store(&latestArena);
+    auto dummyAlloc = latestArena.allocate(allocationGranularity);
+
+    baseAllocator.fdToReturn = -1;
+    auto allocation = arenaAllocator.allocate(allocSize);
+    EXPECT_FALSE(allocation.isValid());
+
+    latestArena.free(dummyAlloc);
+    baseAllocator.free(latestArena.getUnderlyingAllocation());
+
+    EXPECT_FALSE(logs.empty());
+}
+
+TEST(ArenaAllocatorAllocate, whenCreatingNewArenaButInParallelLatestArenaChangedThenUsesIt) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT firstArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+    ArenaAllocatorT::ArenaT secondArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    auto dummyAllocFirstArena = firstArena.allocate(allocationGranularity);
+
+    arenaAllocator.apiConfig.peekLatestArena.impl = [&](const ArenaAllocatorT &arenaAllocator) -> ArenaAllocatorT::ArenaT * {
+        if (arenaAllocator.apiConfig.peekLatestArena.callCount == 0) {
+            return &firstArena;
+        } else {
+            return &secondArena;
+        }
+    };
+    auto allocation = arenaAllocator.allocate(allocSize);
+
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_EQ(&secondArena, allocation.getArena());
+    EXPECT_TRUE(secondArena.getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+
+    arenaAllocator.free(allocation);
+
+    firstArena.free(dummyAllocFirstArena);
+    baseAllocator.free(firstArena.getUnderlyingAllocation());
+    baseAllocator.free(secondArena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorAllocate, whenCreatingNewArenaAndInParallelLatestArenaChangedButItsAlreadyFullThenAllocatesNewArena) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+    ArenaAllocatorT::ArenaT firstArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+    ArenaAllocatorT::ArenaT secondArena{baseAllocator.allocate(allocationGranularity), Cal::Utils::OffsetRange{size_t(0U), allocationGranularity}};
+
+    auto dummyAllocFirstArena = firstArena.allocate(allocationGranularity);
+    auto dummyAllocSecondArena = secondArena.allocate(allocationGranularity);
+
+    arenaAllocator.apiConfig.peekLatestArena.impl = [&](const ArenaAllocatorT &arenaAllocator) -> ArenaAllocatorT::ArenaT * {
+        if (arenaAllocator.apiConfig.peekLatestArena.callCount == 0) {
+            return &firstArena;
+        } else {
+            return &secondArena;
+        }
+    };
+    auto allocation = arenaAllocator.allocate(allocSize);
+
+    EXPECT_TRUE(allocation.isValid());
+    EXPECT_NE(&firstArena, arenaAllocator.latestArena->load());
+    EXPECT_NE(&secondArena, arenaAllocator.latestArena->load());
+    EXPECT_EQ(arenaAllocator.latestArena->load(), allocation.getArena());
+    EXPECT_TRUE(arenaAllocator.latestArena->load()->getOffsetRange().contains({allocation.getSubAllocationOffset(), allocation.getSubAllocationSize()}));
+
+    arenaAllocator.free(allocation);
+
+    firstArena.free(dummyAllocFirstArena);
+    baseAllocator.free(firstArena.getUnderlyingAllocation());
+    secondArena.free(dummyAllocSecondArena);
+    baseAllocator.free(secondArena.getUnderlyingAllocation());
+}
+
+TEST(ArenaAllocatorFree, whenArenaOfFreedAllocationCanBeRecycledThenPlaceItInRecycleList) {
+    MockFdAllocator baseAllocator;
+    size_t allocationGranularity = 4096U * 4;
+    size_t allocSize = allocationGranularity / 2;
+    using ArenaAllocatorT = MockArenaAllocator<MockFdAllocator, true>;
+    ArenaAllocatorT arenaAllocator{baseAllocator, allocationGranularity};
+
+    auto allocation1 = arenaAllocator.allocate(allocSize);
+    auto allocation2 = arenaAllocator.allocate(allocSize);
+    auto allocation3 = arenaAllocator.allocate(allocSize);
+    auto allocation4 = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation1.isValid());
+    EXPECT_TRUE(allocation2.isValid());
+    EXPECT_TRUE(allocation3.isValid());
+    EXPECT_TRUE(allocation4.isValid());
+    EXPECT_EQ(allocation1.getArena(), allocation2.getArena());
+    EXPECT_NE(allocation2.getArena(), allocation3.getArena());
+    EXPECT_EQ(allocation3.getArena(), allocation4.getArena());
+
+    arenaAllocator.free(allocation3);
+    EXPECT_EQ(arenaAllocator.peekLatestArena(), allocation4.getArena());
+    arenaAllocator.free(allocation1);
+    EXPECT_EQ(arenaAllocator.peekLatestArena(), allocation4.getArena());
+
+    auto allocation5 = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation5.isValid());
+    EXPECT_EQ(allocation5.getArena(), allocation4.getArena());
+
+    auto allocation6 = arenaAllocator.allocate(allocSize);
+    EXPECT_TRUE(allocation5.isValid());
+    EXPECT_EQ(allocation6.getArena(), allocation2.getArena());
+
+    arenaAllocator.free(allocation2);
+    arenaAllocator.free(allocation4);
+    arenaAllocator.free(allocation5);
+    arenaAllocator.free(allocation6);
+}
+
 } // namespace Cal::Ult

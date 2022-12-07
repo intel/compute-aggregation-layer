@@ -826,7 +826,7 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
     EXPECT_EQ(1U, shmemManager.remoteShmemsLog.size());
     EXPECT_EQ(1, channelClient.failedPartitionCallsCounter);
-    shmemManager.release(shmem);
+    shmemManager.free(shmem);
 }
 
 auto createChannelClientInitProtocolMockConnection(int shmemId, void *shmem, size_t shmemSize) {
@@ -867,7 +867,7 @@ TEST(ChannelClientInit, whenFailedToLaunchTheCommandsChannelThenFailsAndEmitsErr
     EXPECT_FALSE(logs.empty());
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
-    shmemManager.release(commandsChannelShmem);
+    shmemManager.free(commandsChannelShmem);
 }
 
 TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThresholdAccordingly) {
@@ -904,7 +904,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(Cal::Rpc::ChannelClient::SemaphoreThresholds::base, channelClient.semaphoreWaitThreshold);
     }
-    shmemManager.release(commandsChannelShmem);
+    shmemManager.free(commandsChannelShmem);
 }
 
 TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodBasedOnResponseFromService) {
@@ -937,7 +937,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
         EXPECT_EQ(RespLaunchRpcShmemRingBuffer::semaphores, channelClient.serviceSynchronizationMethod);
     }
 
-    shmemManager.release(commandsChannelShmem);
+    shmemManager.free(commandsChannelShmem);
 }
 
 TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAndHeapAndCompletionStampsAreInitialized) {
@@ -960,7 +960,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
     auto heapRamge = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.heapStart), static_cast<size_t>(channelClient.layout.heapEnd - channelClient.layout.heapStart)};
     EXPECT_EQ(heapRamge, channelClient.heap.getRange());
 
-    shmemManager.release(commandsChannelShmem);
+    shmemManager.free(commandsChannelShmem);
 }
 
 TEST(ChannelClient, WhenBeingDestroyedThenReleasesUnderlyingShmem) {
@@ -969,8 +969,9 @@ TEST(ChannelClient, WhenBeingDestroyedThenReleasesUnderlyingShmem) {
     Cal::Mocks::ConnectionMock connection;
     Cal::Mocks::MockShmemManager shmemManager;
     {
+        auto alloc = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
         ChannelClientWhiteBox channelClient{connection, shmemManager};
-        channelClient.underlyingShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+        channelClient.underlyingShmem = Cal::Mocks::MmappedShmemSubAllocationWhiteBox{alloc, 0};
         EXPECT_FALSE(shmemManager.allocatedShmems.empty());
     }
     EXPECT_TRUE(shmemManager.allocatedShmems.empty());

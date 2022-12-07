@@ -133,6 +133,13 @@ void *getExtensionFuncAddress(const char *funcname);
 
 } // namespace Apis
 
+struct UsmSharedHostAlloc {
+    void *ctx = nullptr;
+    Cal::Usm::UsmMmappedShmemArenaAllocator::AllocationT shmem;
+
+    void (*gpuDestructor)(void *ctx, void *ptr) = nullptr;
+};
+
 class ClientContext {
   public:
     struct ChoreographyAssignment {
@@ -176,13 +183,13 @@ class ClientContext {
         rpcChannels.clear();
 
         log<Verbosity::debug>("Performing USM shared/host allocations cleanup (num allocations leaked by client : %zu)", usmSharedHostMap.size());
-        std::vector<Cal::Ipc::ShmemAllocator::AllocationT> usmShmemToRelease;
+        std::vector<UsmSharedHostAlloc> usmShmemToRelease;
         for (const auto &alloc : usmSharedHostMap) {
             if (alloc.second.gpuDestructor) {
-                alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.ptr);
+                alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
             }
             for (auto &heap : usmHeaps) {
-                if (heap.getMmapRange().contains(alloc.second.ptr)) {
+                if (heap.getUnderlyingAllocator().getMmapRange().contains(alloc.second.shmem.getSubAllocationPtr())) {
                     heap.free(alloc.second.shmem);
                 }
             }
@@ -191,8 +198,9 @@ class ClientContext {
 
         log<Verbosity::debug>("Performing USM heaps cleanup (num heaps : %zu)", usmHeaps.size());
         for (const auto &heap : usmHeaps) {
-            if (-1 == Cal::Sys::munmap(heap.getMmapRange().base(), heap.getMmapRange().size())) {
-                log<Verbosity::error>("Failed to munamp USM heap (base : %p, size : %zu)", heap.getMmapRange().base(), heap.getMmapRange().size());
+            auto heapRange = heap.getUnderlyingAllocator().getMmapRange();
+            if (-1 == Cal::Sys::munmap(heapRange.base(), heapRange.size())) {
+                log<Verbosity::error>("Failed to munamp USM heap (base : %p, size : %zu)", heapRange.base(), heapRange.size());
             }
         }
 
@@ -214,20 +222,20 @@ class ClientContext {
         return isStopping;
     }
 
-    void addUsmHeap(Cal::Usm::UsmMmappedShmemAllocator &&usmHeap) {
+    void addUsmHeap(Cal::Usm::UsmMmappedShmemArenaAllocator &&usmHeap) {
         usmHeaps.push_back(std::move(usmHeap));
     }
 
-    const std::vector<Cal::Usm::UsmMmappedShmemAllocator> &getUsmHeaps() const {
+    const std::vector<Cal::Usm::UsmMmappedShmemArenaAllocator> &getUsmHeaps() const {
         return usmHeaps;
     }
 
-    std::vector<Cal::Usm::UsmMmappedShmemAllocator> &getUsmHeaps() {
+    std::vector<Cal::Usm::UsmMmappedShmemArenaAllocator> &getUsmHeaps() {
         return usmHeaps;
     }
 
-    void addUsmSharedHostAlloc(void *ctx, void *ptr, size_t alignedSize, const Cal::Ipc::MmappedShmemAllocationT &shmem, void (*gpuDestructor)(void *ctx, void *ptr)) {
-        usmSharedHostMap[ptr] = Cal::Usm::UsmSharedHostAlloc{ctx, ptr, alignedSize, shmem, gpuDestructor};
+    void addUsmSharedHostAlloc(void *ctx, const Cal::Usm::UsmMmappedShmemArenaAllocator::AllocationT &shmem, void (*gpuDestructor)(void *ctx, void *ptr)) {
+        usmSharedHostMap[shmem.getSubAllocationPtr()] = UsmSharedHostAlloc{ctx, shmem, gpuDestructor};
     }
 
     void reapUsmSharedHostAlloc(void *ptr, bool callGpuDestructor = true) {
@@ -238,11 +246,11 @@ class ClientContext {
         }
         auto &alloc = it->second;
         if (callGpuDestructor && alloc.gpuDestructor) {
-            alloc.gpuDestructor(alloc.ctx, alloc.ptr);
+            alloc.gpuDestructor(alloc.ctx, alloc.shmem.getSubAllocationPtr());
         }
 
         for (auto &heap : usmHeaps) {
-            if (heap.getMmapRange().contains(alloc.ptr)) {
+            if (heap.getUnderlyingAllocator().getMmapRange().contains(alloc.shmem.getSubAllocationPtr())) {
                 heap.free(alloc.shmem);
             }
         }
@@ -336,9 +344,9 @@ class ClientContext {
     bool automaticCleanupOfApiHandles = false;
     std::atomic_bool isStopping = false;
     std::mutex criticalSection;
-    std::vector<Cal::Usm::UsmMmappedShmemAllocator> usmHeaps;
+    std::vector<Cal::Usm::UsmMmappedShmemArenaAllocator> usmHeaps;
     std::unordered_map<int, Cal::Ipc::MmappedShmemAllocationT> globalShmemsMap;
-    std::unordered_map<void *, Cal::Usm::UsmSharedHostAlloc> usmSharedHostMap;
+    std::unordered_map<void *, UsmSharedHostAlloc> usmSharedHostMap;
     std::vector<std::pair<std::future<void>, std::unique_ptr<Cal::Rpc::ChannelServer>>> rpcChannels;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> mallocShmemZeroCopyHandler;
 
@@ -1006,7 +1014,7 @@ class Provider {
         }
 
         mmapBloatGuardMutexLock.unlock();
-        ctx.addUsmHeap(Cal::Usm::UsmMmappedShmemAllocator{this->globalShmemAllocators->getBaseAllocator(), negotiatedUsmRangeOpt.value()});
+        ctx.addUsmHeap(Cal::Usm::UsmMmappedShmemArenaAllocator{this->globalShmemAllocators->getBaseAllocator(), negotiatedUsmRangeOpt.value()});
 
         return true;
     }

@@ -753,6 +753,18 @@ class Lockable {
         return &obj;
     }
 
+    ObjT &operator*() {
+        return obj;
+    }
+
+    const ObjT &operator*() const {
+        return obj;
+    }
+
+    void swap(ObjT &obj) {
+        std::swap(this->obj, obj);
+    }
+
   protected:
     mutable std::mutex mutex;
     ObjT obj = {};

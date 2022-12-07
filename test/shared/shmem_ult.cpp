@@ -256,7 +256,7 @@ TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenFreeingAndMunmapFail
     void *ptr = Cal::Sys::mmap(nullptr, 4096U, PROT_NONE, 0, -1, 0);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
     auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
-    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{shmemAlloc, ptr, 4096U};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, ptr, 4096U};
 
     tempSysCallsCtx.apiConfig.munmap.returnValue = -1;
     globalShmemImporter.release(mmappedShmemAlloc);
@@ -276,7 +276,7 @@ TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenOwnsFdThenFreeingMun
     void *ptr = Cal::Sys::mmap(nullptr, 4096U, PROT_NONE, 0, -1, 0);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
     auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
-    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{shmemAlloc, ptr, 4096U};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, ptr, 4096U};
 
     globalShmemImporter.release(mmappedShmemAlloc);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
@@ -294,7 +294,7 @@ TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenDoesNotOwnFdThenFree
     void *ptr = Cal::Sys::mmap(nullptr, 4096U, PROT_NONE, 0, -1, 0);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
     auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, false};
-    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{shmemAlloc, ptr, 4096U};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, ptr, 4096U};
 
     globalShmemImporter.release(mmappedShmemAlloc);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
@@ -310,7 +310,7 @@ TEST(ShmemImporterRelease, givenAllocationWithoutMmappedPtrThenOnlyClosesFd) {
     Cal::Ipc::ShmemImporter globalShmemImporter;
 
     auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
-    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{shmemAlloc, nullptr, 4096U};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, nullptr, 4096U};
 
     globalShmemImporter.release(mmappedShmemAlloc);
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.mmap.callCount);

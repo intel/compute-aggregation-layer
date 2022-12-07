@@ -314,6 +314,8 @@ class FdAllocation : public BaseAllocationType {
     static constexpr bool isThreadSafe = BaseAllocationType::isThreadSafe;
     static constexpr bool isFdAllocation = true;
 
+    using BaseT = BaseAllocationType;
+
     template <typename BaseAllocationTypeInitT>
     FdAllocation(BaseAllocationTypeInitT &&baseAllocation, int fd, size_t fileSize, bool isFdOwner)
         : BaseAllocationType(std::forward<BaseAllocationTypeInitT>(baseAllocation)),
@@ -345,7 +347,7 @@ class FdAllocation : public BaseAllocationType {
   protected:
     size_t fileSize = 0U;   // file size
     int fd = -1;            // opened FD
-    bool isFdOwner = false; // if fd is valid then true means whole allocation, false means suballocation
+    bool isFdOwner = false; // freeing this allocation closes the fd
 };
 
 // thread-safe decoration
@@ -356,10 +358,11 @@ class FdSubAllocation : public BaseAllocationType {
     static_assert(BaseAllocationType::isFdAllocation);
     static constexpr bool isFdSubAllocation = true;
 
+    using BaseT = BaseAllocationType;
+
     template <typename BaseAllocationTypeInitT>
     FdSubAllocation(BaseAllocationTypeInitT &&baseAllocation, size_t fdOffset)
         : BaseAllocationType(std::forward<BaseAllocationTypeInitT>(baseAllocation)), fdOffset(fdOffset) {
-        this->isFdOwner = false;
     }
 
     FdSubAllocation() = default;
@@ -386,6 +389,8 @@ class MmappedAllocation : public BaseAllocationType {
   public:
     static constexpr bool isThreadSafe = BaseAllocationType::isThreadSafe;
     static constexpr bool isMmappedAllocation = true;
+
+    using BaseT = BaseAllocationType;
 
     template <typename BaseAllocationTypeInitT>
     MmappedAllocation(BaseAllocationTypeInitT &&baseAllocation, void *mmappedPtr, size_t mmappedSize)
@@ -424,6 +429,7 @@ class SubAllocation {
     static constexpr bool isSubAllocation = true;
 
     using ThisT = SubAllocation<SourceAllocationType>;
+    using SourceT = SourceAllocationType;
 
     SubAllocation(const SourceAllocationType *sourceAllocation,
                   size_t subAllocationOffset, size_t subAllocationSize)
@@ -446,7 +452,7 @@ class SubAllocation {
     }
 
     template <typename T = void *>
-    T getSubAllocationPtr() {
+    T getSubAllocationPtr() const {
         static_assert(std::is_pointer_v<T>);
         if constexpr (SourceAllocationType::isMmappedAllocation) {
             static_assert(SourceAllocationType::isThreadSafe);
@@ -520,6 +526,15 @@ class SubAllocator final {
 
     const UnderlyingAllocationType &getUnderlyingAllocation() const {
         return underlyingAllocation;
+    }
+
+    size_t getSizeLeft() {
+        auto rangeAllocatorLock = rangeAllocator.lock();
+        return rangeAllocator->getSizeLeft();
+    }
+
+    Cal::Utils::OffsetRange getOffsetRange() const {
+        return rangeAllocator->getRange();
     }
 
   protected:
@@ -758,6 +773,225 @@ class AllocatorWithBoundedMmapToFd {
     MmapConfig mmapConfig;
     UnmapConfig munmapConfig;
     Cal::Utils::Lockable<AddressRangeAllocator> rangeAllocator;
+};
+
+template <typename UnderlyingAllocator, bool SharedUnderlyingAllocator>
+class ArenaAllocator;
+
+// thread-safe decoration
+template <typename SourceAllocationType, typename ArenaType = void>
+class ArenaSubAllocation : public SubAllocation<SourceAllocationType> {
+    template <typename, bool>
+    friend class ArenaAllocator;
+
+  public:
+    static constexpr bool isThreadSafe = true && SubAllocation<SourceAllocationType>::isThreadSafe;
+
+    using ThisT = ArenaSubAllocation<SourceAllocationType, ArenaType>;
+    using BaseT = SubAllocation<SourceAllocationType>;
+
+    ArenaSubAllocation(const SourceAllocationType *sourceAllocation, size_t subAllocationOffset, size_t subAllocationSize)
+        : SubAllocation<SourceAllocationType>(sourceAllocation, subAllocationOffset, subAllocationSize) {
+    }
+
+    ArenaSubAllocation() = default;
+
+    ArenaType *getArena() const {
+        return arena;
+    }
+
+  protected:
+    ArenaType *arena = nullptr;
+};
+
+// thread-safe
+template <typename UnderlyingAllocator, bool SharedUnderlyingAllocator = false>
+class ArenaAllocator {
+  public:
+    static constexpr bool isThreadSafe = true;
+    static_assert(UnderlyingAllocator::isThreadSafe); // requirement
+
+    using ThisT = ArenaAllocator<UnderlyingAllocator, SharedUnderlyingAllocator>;
+    static constexpr bool isUsingSharedUnderlyingAllocator = SharedUnderlyingAllocator;
+
+    using UnderlyingAllocationT = typename UnderlyingAllocator::AllocationT;
+    using AllocationT = ArenaSubAllocation<UnderlyingAllocationT, void>;
+    using SubAllocatorT = SubAllocator<UnderlyingAllocationT, Cal::Utils::pageSize4KB, AllocationT>;
+    static_assert(SubAllocatorT::isThreadSafe);
+    using ArenaT = SubAllocatorT;
+    static constexpr size_t minAlignment = ArenaT::minAlignment;
+
+    using UnderlyingAllocatorVarT = std::conditional_t<SharedUnderlyingAllocator, UnderlyingAllocator &, UnderlyingAllocator>;
+
+    ArenaAllocator(UnderlyingAllocatorVarT underlyingAllocator, size_t underlyingAllocationGranularity)
+        : underlyingAllocator(std::forward<UnderlyingAllocatorVarT>(underlyingAllocator)),
+          underlyingAllocationGranularity(underlyingAllocationGranularity),
+          standaloneAllocationThreshold(underlyingAllocationGranularity / 2) {
+        constexpr size_t entryArenaSize = 4096U;
+        auto entryArenaAllocation = this->underlyingAllocator.allocate(entryArenaSize);
+        if (entryArenaAllocation.isValid() == false) {
+            log<Verbosity::critical>("Could not allocate entry memory arena");
+        }
+        auto entryArena = std::make_unique<ArenaT>(entryArenaAllocation, Cal::Utils::OffsetRange{uintptr_t{0U}, uintptr_t{entryArenaSize}});
+        latestArena->store(entryArena.get());
+        allArenas->push_back(std::move(entryArena));
+    }
+
+    ArenaAllocator(const ThisT &rhs, int = 0)
+        : ArenaAllocator(rhs.underlyingAllocator, rhs.underlyingAllocationGranularity) {
+    }
+
+    template <typename T = ThisT, std::enable_if_t<T::isUingSharedUnderlyingAllocator, int> = 0>
+    ArenaAllocator(ThisT &&rhs)
+        : underlyingAllocator(rhs.underlyingAllocator), underlyingAllocationGranularity(rhs.underlyingAllocationGranularity), standaloneAllocationThreshold(rhs.standaloneAllocationThreshold),
+          allArenas(std::move(rhs.allArenas)), recycledArenas(std::move(rhs.recycledArenas)), latestArena(rhs.latestArena->load()) {}
+
+    template <typename T = ThisT, std::enable_if_t<false == T::isUsingSharedUnderlyingAllocator, int> = 0>
+    ArenaAllocator(ThisT &&rhs)
+        : underlyingAllocator(std::move(rhs.underlyingAllocator)), underlyingAllocationGranularity(rhs.underlyingAllocationGranularity), standaloneAllocationThreshold(rhs.standaloneAllocationThreshold),
+          allArenas(std::move(rhs.allArenas)), recycledArenas(std::move(rhs.recycledArenas)), latestArena(rhs.latestArena->load()) {}
+
+    virtual ~ArenaAllocator() {
+        for (auto &arena : *allArenas) {
+            underlyingAllocator.free(arena->getUnderlyingAllocation());
+        }
+    }
+
+    mockable AllocationT allocateAsStandalone(size_t size, size_t alignment) {
+        auto newSourceAlloc = underlyingAllocator.allocate(size, alignment);
+        if (newSourceAlloc.isValid() == false) {
+            log<Verbosity::error>("Failed to allocate arena underlying allocation for standalone allocation");
+            return AllocationT{};
+        }
+        auto baseAllocation = std::make_unique<UnderlyingAllocationT>(std::move(newSourceAlloc));
+        AllocationT fullSubAllocation{baseAllocation.get(), 0U, size};
+        baseAllocation.release();
+        return fullSubAllocation;
+    }
+
+    mockable AllocationT allocate(size_t size, size_t alignment) {
+        if (false == adjustSizeAndAlignment<minAlignment>(size, alignment)) {
+            return AllocationT{};
+        }
+
+        if (size > standaloneAllocationThreshold) {
+            return this->allocateAsStandalone(size, alignment); // too big for arena
+        }
+
+        auto latestArenaSnapshot = this->peekLatestArena();
+        auto alloc = latestArenaSnapshot->allocate(size, alignment); // fast path
+        if (alloc.isValid()) {                                       // try use latest used arena
+            alloc.arena = latestArenaSnapshot;
+            return alloc;
+        }
+
+        { // try reuse recycled arenas
+            auto recycleLock = recycledArenas.lock();
+            if (recycledArenas->size() > 0) {
+                auto recycledArena = *recycledArenas->rbegin();
+                recycledArenas->pop_back();
+
+                alloc = recycledArena->allocate(size, alignment);
+                if (alloc.isValid()) {
+                    alloc.arena = recycledArena;
+
+                    {
+                        auto latestArenaLock = latestArena.lock();
+                        if (this->peekLatestArena() == latestArenaSnapshot) { // assume recycled arena is better than latest
+                            latestArena->store(recycledArena);
+                        }
+                    }
+                    return alloc;
+                } else { // probably arena is too fragmented
+                    log<Verbosity::performance>("Failed to allocate from reused arena");
+                }
+            }
+        }
+
+        { // try creating new arena
+            auto newArenaLock = allArenas.lock();
+            {
+                auto prevLatestArenaSnapshot = latestArenaSnapshot;
+                latestArenaSnapshot = this->peekLatestArena();
+                if (latestArenaSnapshot != prevLatestArenaSnapshot) { // check if latest arena is still not suitable
+                    latestArenaSnapshot->allocate(size, alignment);
+                    if (alloc.isValid()) {
+                        return alloc;
+                    }
+                }
+            }
+            auto newArenaAllocation = underlyingAllocator.allocate(underlyingAllocationGranularity);
+            if (newArenaAllocation.isValid() == false) {
+                log<Verbosity::error>("Failed to allocate new memory arena");
+                return {};
+            }
+            auto newArena = std::make_unique<ArenaT>(newArenaAllocation, Cal::Utils::OffsetRange{uintptr_t{0U}, uintptr_t{underlyingAllocationGranularity}});
+            auto arena = newArena.get();
+            allArenas->push_back(std::move(newArena));
+            alloc = arena->allocate(size, alignment);
+            alloc.arena = arena;
+
+            {
+                auto latestArenaLock = latestArena.lock(); // assume new arena is better than latest
+                latestArena->store(arena);
+            }
+
+            return alloc;
+        }
+    }
+
+    AllocationT allocate(size_t size) {
+        return this->allocate(size, minAlignment);
+    }
+
+    mockable void free(const AllocationT &alloc) {
+        if (nullptr == alloc.arena) { // standalone allocation
+            underlyingAllocator.free(*alloc.getSourceAllocation());
+            delete alloc.getSourceAllocation();
+            return;
+        }
+
+        ArenaT *arena = static_cast<ArenaT *>(alloc.arena);
+
+        arena->free(alloc);
+        {
+            if (this->peekLatestArena() == arena) {
+                return;
+            }
+
+            {
+                auto latestArenaLock = latestArena.lock();
+                if (this->peekLatestArena() == arena) {
+                    return;
+                }
+
+                if (arena->getSizeLeft() >= standaloneAllocationThreshold) {
+                    auto recycleLock = recycledArenas.lock();
+                    recycledArenas->push_back(arena);
+                }
+            }
+        }
+    }
+
+    mockable ArenaT *peekLatestArena() const {
+        return latestArena->load();
+    }
+
+    const UnderlyingAllocator &getUnderlyingAllocator() const {
+        return underlyingAllocator;
+    }
+
+  protected:
+    UnderlyingAllocatorVarT underlyingAllocator;
+    size_t underlyingAllocationGranularity = 0U;
+    size_t standaloneAllocationThreshold = 0U;
+
+    using OwnedArenasVecT = std::vector<std::unique_ptr<ArenaT>>;
+    using ReferencedArenasVecT = std::vector<ArenaT *>;
+    Cal::Utils::Lockable<OwnedArenasVecT> allArenas;           // relevant only when creating arena and for cleanup
+    Cal::Utils::Lockable<ReferencedArenasVecT> recycledArenas; // arena that is ready for reuse (after part of it was reaped)
+
+    Cal::Utils::Lockable<std::atomic<ArenaT *>> latestArena; // latest snapshot can be peeked via atomic directly, update only under lock
 };
 
 } // namespace Cal::Allocators

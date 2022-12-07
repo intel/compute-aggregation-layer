@@ -25,6 +25,10 @@ struct MockFdAllocator {
         return AllocationT{fdToReturn++, size, true};
     }
 
+    AllocationT allocate(size_t size) {
+        return allocate(size, 1);
+    }
+
     void free(const AllocationT &) {
         ++freeCallCount;
     }
@@ -60,7 +64,7 @@ class ShmemAllocatorWhiteBox : public Cal::Ipc::ShmemAllocator {
 
 class MmappedShmemAllocationWhiteBox : public Cal::Ipc::MmappedShmemAllocationT {
   public:
-    using BaseT = Cal::Ipc::NonUsmMmappedShmemAllocator::AllocationT;
+    using BaseT = Cal::Ipc::MmappedShmemAllocationT;
 
     using BaseT::BaseT;
 
@@ -68,6 +72,50 @@ class MmappedShmemAllocationWhiteBox : public Cal::Ipc::MmappedShmemAllocationT 
     using BaseT::shmemId;
 
     using BaseT::fd;
+    using BaseT::fileSize;
+    using BaseT::isFdOwner;
+
+    using BaseT::mmappedPtr;
+    using BaseT::mmappedSize;
+};
+
+class MmappedShmemSubAllocationWhiteBox : public Cal::Ipc::MmappedShmemSubAllocationT {
+  public:
+    using BaseT = Cal::Ipc::MmappedShmemSubAllocationT;
+
+    using BaseT::BaseT;
+
+    MmappedShmemSubAllocationWhiteBox(const MmappedShmemAllocationWhiteBox &base, size_t offset) {
+        this->isShmemOwner = base.isShmemOwner;
+        this->shmemId = base.shmemId;
+
+        this->fd = base.fd;
+        this->fileSize = base.fileSize;
+        this->isFdOwner = base.isFdOwner;
+        this->fdOffset = offset;
+
+        this->mmappedPtr = base.mmappedPtr;
+        this->mmappedSize = base.mmappedSize;
+    }
+
+    MmappedShmemSubAllocationWhiteBox(const Cal::Ipc::MmappedShmemAllocationT &base, size_t offset) {
+        this->isShmemOwner = base.isOwnerOfShmem();
+        this->shmemId = base.getShmemId();
+
+        this->fd = base.getFd();
+        this->fileSize = base.getFileSize();
+        this->isFdOwner = base.isOwnerOfFd();
+        this->fdOffset = offset;
+
+        this->mmappedPtr = base.getMmappedPtr();
+        this->mmappedSize = base.getMmappedSize();
+    }
+
+    using BaseT::isShmemOwner;
+    using BaseT::shmemId;
+
+    using BaseT::fd;
+    using BaseT::fdOffset;
     using BaseT::fileSize;
     using BaseT::isFdOwner;
 
@@ -106,7 +154,7 @@ class MockShmemManager : public Cal::Ipc::NonUsmMmappedShmemAllocator, public Ca
         EXPECT_EQ(0u, allocatedShmems.size()) << "Shmems have been leaked!";
     }
 
-    Cal::Ipc::ShmemImporter::AllocationT open(Cal::Ipc::ShmemIdT id, size_t size, void *enforcedVaForMmap) override {
+    Cal::Ipc::ShmemImporter::AllocationT open(Cal::Ipc::ShmemIdT id, size_t offset, size_t size, void *enforcedVaForMmap) override {
         if (Cal::Ipc::invalidShmemId == id) {
             return {};
         }
@@ -124,9 +172,9 @@ class MockShmemManager : public Cal::Ipc::NonUsmMmappedShmemAllocator, public Ca
 
         shmem.fd = fdToReturn++;
         shmem.isFdOwner = true;
-        openedShmems[shmem.fd] = MmappedShmemAllocationWhiteBox{shmem};
+        openedShmems[shmem.fd] = MmappedShmemSubAllocationWhiteBox{shmem, offset};
 
-        return shmem;
+        return openedShmems[shmem.fd];
     }
 
     Cal::Ipc::NonUsmMmappedShmemAllocator::AllocationT allocate(size_t size, size_t alignment) override {
@@ -156,7 +204,7 @@ class MockShmemManager : public Cal::Ipc::NonUsmMmappedShmemAllocator, public Ca
         shmem.mmappedSize = alignedSize;
 
         allocatedShmems[shmem.getShmemId()] = shmem;
-        openedShmems[shmem.getFd()] = MmappedShmemAllocationWhiteBox{shmem};
+        openedShmems[shmem.getFd()] = MmappedShmemSubAllocationWhiteBox{shmem, 0};
         return shmem;
     }
 
@@ -226,7 +274,7 @@ class MockShmemManager : public Cal::Ipc::NonUsmMmappedShmemAllocator, public Ca
     }
 
     std::map<int, MmappedShmemAllocationWhiteBox> allocatedShmems{};
-    std::map<int, MmappedShmemAllocationWhiteBox> openedShmems{};
+    std::map<int, MmappedShmemSubAllocationWhiteBox> openedShmems{};
 
     std::vector<Cal::Ipc::RemoteShmemDesc> remoteShmemsLog;
 
@@ -235,6 +283,38 @@ class MockShmemManager : public Cal::Ipc::NonUsmMmappedShmemAllocator, public Ca
 
     bool allocateRealBackingMemory = false;
     MockShmemAllocator shmemAllocator;
+};
+
+template <typename UnderlyingAllocator, bool SharedUnderlyingAllocator = false>
+class MockArenaAllocator : public Cal::Allocators::ArenaAllocator<UnderlyingAllocator, SharedUnderlyingAllocator> {
+  public:
+    using BaseT = Cal::Allocators::ArenaAllocator<UnderlyingAllocator, SharedUnderlyingAllocator>;
+    using ThisT = MockArenaAllocator<UnderlyingAllocator, SharedUnderlyingAllocator>;
+
+    using BaseT::BaseT;
+    using ArenaT = typename BaseT::ArenaT;
+
+    using BaseT::latestArena;
+    using BaseT::recycledArenas;
+
+    ArenaT *peekLatestArena() const override {
+        ++apiConfig.peekLatestArena.callCount;
+        if (apiConfig.peekLatestArena.returnValue) {
+            return apiConfig.peekLatestArena.returnValue.value();
+        }
+        if (apiConfig.peekLatestArena.impl) {
+            return apiConfig.peekLatestArena.impl.value()(*this);
+        }
+        return BaseT::peekLatestArena();
+    }
+
+    mutable struct {
+        struct {
+            std::optional<ArenaT *> returnValue;
+            std::optional<std::function<ArenaT *(const ThisT &arenaAllocator)>> impl;
+            uint64_t callCount = 0U;
+        } peekLatestArena;
+    } apiConfig;
 };
 
 } // namespace Cal::Mocks

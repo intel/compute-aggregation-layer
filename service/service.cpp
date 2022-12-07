@@ -197,7 +197,7 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clHostMemAllocINTEL(apiCommand->args.context,
                                                                                             properties.data(),
@@ -206,20 +206,20 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
                                                                                             apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
         if (nullptr == apiCommand->captures.ret) {
             log<Verbosity::error>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU",
-                                  apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+                                  apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU",
-                                  apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.offset_within_resource = 0U;
+                                  apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
         } else {
-            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
+            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=got , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
             heap.free(shmem);
@@ -263,7 +263,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clSharedMemAllocINTEL(apiCommand->args.context,
                                                                                               apiCommand->args.device,
@@ -272,19 +272,19 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
                                                                                               apiCommand->args.alignment,
                                                                                               apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.offset_within_resource = 0U;
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
         } else {
-            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
+            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=got , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
             heap.free(shmem);
@@ -321,7 +321,7 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
         apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clHostMemAllocINTEL(apiCommand->args.context,
                                                                                             properties,
@@ -329,19 +329,19 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
                                                                                             apiCommand->args.alignment,
                                                                                             nullptr);
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.offset_within_resource = 0U;
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
         } else {
-            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=requested , %p != %p)",
+            log<Verbosity::error>("ICD ignored request to use given host memory in clHostMemAllocINTEL - would break USM agreements on client side (expected!=got , %p != %p)",
                                   cpuAddress, apiCommand->captures.ret);
             Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(apiCommand->args.context, apiCommand->captures.ret);
             heap.free(shmem);
@@ -449,7 +449,7 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
 
         if (apiCommand->args.host_ptr && (apiCommand->args.flags & (CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR))) {
             memcpy(cpuAddress, apiCommand->captures.host_ptr, apiCommand->args.size);
@@ -458,16 +458,16 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
                                                                                      cpuAddress, &apiCommand->captures.errcode_ret);
 
         if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to create buffer out of host memory of size %zu bytes from USM shared/host heap :%zx-%zx", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            log<Verbosity::debug>("Failed to create buffer out of host memory of size %zu bytes from USM shared/host heap :%zx-%zx", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             heap.free(shmem);
             continue; // try different heap
         }
         if (apiCommand->captures.ret != nullptr) {
-            log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, cpuAddress, alignedSize, shmem, gpuDestructorClMem);
+            log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
+            ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, shmem, gpuDestructorClMem);
             apiCommand->implicitArgs.hostptr = cpuAddress;
-            apiCommand->implicitArgs.hostptr_shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.hostptr_offset_within_resource = 0U;
+            apiCommand->implicitArgs.hostptr_shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.hostptr_offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.hostptr_aligned_size = alignedSize;
             break;
         }
@@ -703,7 +703,7 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
 
         // Set host pointer to be used.
         apiCommand->captures.pptr = cpuAddress;
@@ -713,22 +713,22 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
                                                                                            apiCommand->args.alignment,
                                                                                            &apiCommand->captures.pptr);
         if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             apiCommand->captures.pptr = nullptr;
             heap.free(shmem);
             continue; // try different heap
         }
 
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.pptr);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.pptr);
 
-            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.offset_within_resource = 0U;
+            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, gpuDestructorUsm);
+            apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
         } else {
-            log<Verbosity::error>("ICD ignored request to use given host memory in zeMemAllocHost - would break USM agreements on client side (expected!=requested , %p != %p)",
+            log<Verbosity::error>("ICD ignored request to use given host memory in zeMemAllocHost - would break USM agreements on client side (expected!=got , %p != %p)",
                                   cpuAddress, apiCommand->captures.pptr);
 
             Cal::Service::Apis::LevelZero::Standard::zeMemFree(apiCommand->args.hContext, apiCommand->captures.pptr);
@@ -779,7 +779,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
         if (false == shmem.isValid()) {
             continue;
         }
-        void *cpuAddress = shmem.getMmappedPtr();
+        void *cpuAddress = shmem.getSubAllocationPtr();
 
         // Set host pointer to be used.
         apiCommand->captures.pptr = cpuAddress;
@@ -791,22 +791,22 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
                                                                                              apiCommand->args.hDevice,
                                                                                              &apiCommand->captures.pptr);
         if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
-            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end);
+            log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             apiCommand->captures.pptr = nullptr;
             heap.free(shmem);
             continue; // try different heap
         }
 
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
-            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getMmapRange().start, heap.getMmapRange().end, apiCommand->captures.pptr);
+            log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.pptr);
 
-            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, cpuAddress, alignedSize, shmem, gpuDestructorUsm);
-            apiCommand->implicitArgs.shmem_resource = shmem.getShmemId();
-            apiCommand->implicitArgs.offset_within_resource = 0U;
+            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, gpuDestructorUsm);
+            apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
+            apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
             break;
         } else {
-            log<Verbosity::error>("ICD ignored request to use given host memory in zeMemAllocShared - would break USM agreements on client side (expected!=requested , %p != %p)",
+            log<Verbosity::error>("ICD ignored request to use given host memory in zeMemAllocShared - would break USM agreements on client side (expected!=got , %p != %p)",
                                   cpuAddress, apiCommand->captures.pptr);
 
             Cal::Service::Apis::LevelZero::Standard::zeMemFree(apiCommand->args.hContext, apiCommand->captures.pptr);

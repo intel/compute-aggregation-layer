@@ -36,15 +36,6 @@ inline std::optional<Cal::Utils::AddressRange> negotiateUsmRangeWithClient(Cal::
     return negotiateUsmRangeWithClient(remoteConnection, requestedUsmBase, requestedUsmSize, maxTriesWhenNegotiatingUsmRange);
 }
 
-struct UsmSharedHostAlloc {
-    void *ctx = nullptr;
-    void *ptr = nullptr;
-    size_t alignedSize = 0;
-    Cal::Ipc::MmappedShmemAllocationT shmem;
-
-    void (*gpuDestructor)(void *ctx, void *ptr) = nullptr;
-};
-
 // thread-safe
 using UsmMmappedShmemAllocatorBaseT = Cal::Allocators::AllocatorWithBoundedMmapToFd<Cal::Ipc::ShmemAllocator, true>;
 class UsmMmappedShmemAllocator : public UsmMmappedShmemAllocatorBaseT {
@@ -137,6 +128,17 @@ class UsmShmemImporter {
 
   protected:
     Cal::Ipc::ShmemImporter &base;
+};
+
+// thread-safe
+using UsmMmappedShmemArenaAllocatorBaseT = Cal::Allocators::ArenaAllocator<UsmMmappedShmemAllocator, false>;
+class UsmMmappedShmemArenaAllocator : public UsmMmappedShmemArenaAllocatorBaseT {
+  public:
+    static_assert(UsmMmappedShmemArenaAllocatorBaseT::isThreadSafe);
+
+    UsmMmappedShmemArenaAllocator(Cal::Ipc::ShmemAllocator &shmemAllocator, Cal::Utils::AddressRange bounds)
+        : UsmMmappedShmemArenaAllocatorBaseT(UsmMmappedShmemAllocator(shmemAllocator, bounds), Cal::Utils::MB * 64) {
+    }
 };
 
 } // namespace Usm

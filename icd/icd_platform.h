@@ -38,6 +38,15 @@ enum class MemoryAdvice : std::uint32_t {
     clearDevicePreferredLocation = 4,
 };
 
+struct UsmSharedHostAlloc {
+    void *ctx = nullptr;
+    void *ptr = nullptr;
+    size_t alignedSize = 0;
+    Cal::Ipc::MmappedShmemSubAllocationT shmem;
+
+    void (*gpuDestructor)(void *ctx, void *ptr) = nullptr;
+};
+
 class PageFaultManager {
   public:
     enum class Placement : uint32_t {
@@ -320,12 +329,12 @@ class IcdPlatform {
             const auto &usmHeap = this->usmHeaps.heaps[i];
             if (usmHeap.contains(assignedUsmPtr)) {
                 log<Verbosity::debug>("Opening new USM host/shared allocation %p from heap %d", i);
-                auto shmem = shmemImporter.open(shmemResource, size, assignedUsmPtr);
+                auto shmem = shmemImporter.open(shmemResource, offsetWithinResource, size, assignedUsmPtr);
                 if (false == shmem.isValid()) {
-                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d", assignedUsmPtr, i);
+                    log<Verbosity::error>("Failed to open shmem for USM host/shared allocation %p from heap %d using shmemId %d and offset %zu", assignedUsmPtr, i, shmemResource, offsetWithinResource);
                     return false;
                 }
-                usmHeaps.allocations[assignedUsmPtr] = Cal::Usm::UsmSharedHostAlloc{ctx, assignedUsmPtr, size, shmem};
+                usmHeaps.allocations[assignedUsmPtr] = UsmSharedHostAlloc{ctx, assignedUsmPtr, size, shmem};
                 return true;
             }
         }
@@ -410,7 +419,7 @@ class IcdPlatform {
             return;
         }
 
-        Cal::Usm::UsmSharedHostAlloc descriptor;
+        UsmSharedHostAlloc descriptor;
         {
             auto heapsLock = usmHeaps.lock();
             auto it = usmHeaps.allocations.find(usmPtr);
@@ -549,7 +558,7 @@ class IcdPlatform {
     struct {
         std::unique_lock<std::mutex> lock() { return std::unique_lock<std::mutex>(criticalSection); }
         std::mutex criticalSection;
-        std::unordered_map<void *, Cal::Usm::UsmSharedHostAlloc> allocations;
+        std::unordered_map<void *, UsmSharedHostAlloc> allocations;
         std::vector<Cal::Utils::AddressRange> heaps;
     } usmHeaps;
 

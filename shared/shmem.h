@@ -45,6 +45,7 @@ class ShmemAllocation : public BaseAllocationType {
   public:
     static constexpr bool isThreadSafe = true && BaseAllocationType::isThreadSafe;
     static constexpr bool isShmemAllocation = true;
+    using BaseT = BaseAllocationType;
 
     template <typename BaseAllocationTypeInitT>
     ShmemAllocation(BaseAllocationTypeInitT &&baseAllocation, ShmemIdT shmemId, bool isShmemOwner)
@@ -77,6 +78,9 @@ class ShmemAllocation : public BaseAllocationType {
 // thread-safe
 using OpenedShmemAllocationT = Cal::Allocators::FdAllocation<ShmemAllocation<>>;
 using MmappedShmemAllocationT = Cal::Allocators::MmappedAllocation<OpenedShmemAllocationT>;
+
+using OpenedShmemSubAllocationT = Cal::Allocators::FdSubAllocation<OpenedShmemAllocationT>;
+using MmappedShmemSubAllocationT = Cal::Allocators::MmappedAllocation<OpenedShmemSubAllocationT>;
 
 // thread-safe
 class ShmemAllocator final {
@@ -157,6 +161,7 @@ class ShmemAllocator final {
 
 struct RemoteShmemDesc {
     ShmemIdT id = invalidShmemId;
+    size_t offset = 0U;
     size_t size = 0U;
 
     bool isValid() const {
@@ -169,14 +174,14 @@ class ShmemImporter {
   public:
     static constexpr bool isThreadSafe = true;
 
-    using AllocationT = MmappedShmemAllocationT;
+    using AllocationT = MmappedShmemSubAllocationT;
 
     ShmemImporter() = default;
     ShmemImporter(const std::string &path) : basePath(path) {
     }
     mockable ~ShmemImporter() = default;
 
-    mockable AllocationT open(ShmemIdT id, size_t size, void *enforcedVaForMmap) {
+    mockable AllocationT open(ShmemIdT id, size_t offset, size_t size, void *enforcedVaForMmap) {
         if (invalidShmemId == id) {
             log<Verbosity::critical>("Request to open invalid remote shmem");
             return {};
@@ -199,19 +204,23 @@ class ShmemImporter {
             log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
             return {};
         }
-        void *ptr = Cal::Sys::mmap(enforcedVaForMmap, size, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMmap ? MAP_FIXED : 0), shmemFd, 0);
+        void *ptr = Cal::Sys::mmap(enforcedVaForMmap, size, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMmap ? MAP_FIXED : 0), shmemFd, offset);
         if (ptr == MAP_FAILED) {
-            log<Verbosity::error>("Failed to mmap for shmem %s of size : %zu", path.c_str(), size);
+            log<Verbosity::error>("Failed to mmap for shmem %s (offset : %zu) of size : %zu", path.c_str(), offset, size);
             Cal::Sys::shm_unlink(path.c_str());
             return {};
         }
-        log<Verbosity::debug>("Opened shmem %s of size : %zu and mapped it as %p", path.c_str(), size, ptr);
+        log<Verbosity::debug>("Opened shmem %s (offset : %zu) of size : %zu and mapped it as %p", path.c_str(), offset, size, ptr);
         using namespace Cal::Allocators;
-        return AllocationT(FdAllocation<ShmemAllocation<>>(ShmemAllocation<>(id, false), shmemFd, size, true), ptr, size);
+        return AllocationT(OpenedShmemSubAllocationT(OpenedShmemAllocationT(ShmemAllocation<>(id, false), shmemFd, offset + size, true), offset), ptr, size);
+    }
+
+    mockable AllocationT open(ShmemIdT id, size_t size, void *enforcedVaForMmap) {
+        return this->open(id, 0U, size, enforcedVaForMmap);
     }
 
     AllocationT open(const RemoteShmemDesc &desc, void *enforcedVaForMmap) {
-        return this->open(desc.id, desc.size, enforcedVaForMmap);
+        return this->open(desc.id, desc.offset, desc.size, enforcedVaForMmap);
     }
 
     AllocationT open(const RemoteShmemDesc &desc) {
@@ -271,8 +280,9 @@ inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnect
     }
 
     RemoteShmemDesc ret;
-    ret.size = response.size;
     ret.id = response.id;
+    ret.offset = 0U;
+    ret.size = response.size;
     return ret;
 }
 
@@ -293,14 +303,28 @@ class NonUsmMmappedShmemAllocator : public NonUsmMmappedShmemAllocatorBaseT {
 };
 
 // thread-safe
+using NonUsmMmappedShmemArenaAllocatorBaseT = Cal::Allocators::ArenaAllocator<NonUsmMmappedShmemAllocator, false>;
+class NonUsmMmappedShmemArenaAllocator : public NonUsmMmappedShmemArenaAllocatorBaseT {
+  public:
+    static_assert(NonUsmMmappedShmemArenaAllocatorBaseT::isThreadSafe);
+
+    NonUsmMmappedShmemArenaAllocator(ShmemAllocator &shmemAllocator)
+        : NonUsmMmappedShmemArenaAllocatorBaseT(NonUsmMmappedShmemAllocator(shmemAllocator), Cal::Utils::MB * 64) {
+    }
+};
+
+// thread-safe
 class GlobalShmemAllocators {
+  public:
     static_assert(Cal::Ipc::ShmemAllocator::isThreadSafe);
-    static_assert(Cal::Ipc::NonUsmMmappedShmemAllocator::isThreadSafe);
+    static_assert(Cal::Ipc::NonUsmMmappedShmemArenaAllocator::isThreadSafe);
     static constexpr bool isThreadSafe = true;
 
-  public:
+    using NonUsmShmemAllocationT = Cal::Ipc::NonUsmMmappedShmemAllocator::AllocationT;
+    using NonUsmShmemArenaAllocationT = Cal::Ipc::NonUsmMmappedShmemArenaAllocator::AllocationT;
+
     GlobalShmemAllocators(const std::string &basePath)
-        : baseAllocator(basePath), nonUsmMmappedShmemAllocator(baseAllocator) {
+        : baseAllocator(basePath), nonUsmMmappedShmemAllocator(baseAllocator), nonUsmMmappedShmemArenaAllocator(baseAllocator) {
     }
 
     Cal::Ipc::ShmemAllocator &getBaseAllocator() {
@@ -311,9 +335,14 @@ class GlobalShmemAllocators {
         return nonUsmMmappedShmemAllocator;
     }
 
+    Cal::Ipc::NonUsmMmappedShmemArenaAllocator &getNonUsmMmappedArenaAllocator() {
+        return nonUsmMmappedShmemArenaAllocator;
+    }
+
   protected:
     ShmemAllocator baseAllocator;
     NonUsmMmappedShmemAllocator nonUsmMmappedShmemAllocator;
+    NonUsmMmappedShmemArenaAllocator nonUsmMmappedShmemArenaAllocator;
 };
 
 class BasicMemoryBlock {
