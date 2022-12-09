@@ -7,6 +7,7 @@
 
 #include "generated_rpc_messages_level_zero.h"
 #include "gtest/gtest.h"
+#include "service/service.h"
 
 #include <array>
 #include <cstdint>
@@ -445,6 +446,101 @@ TEST(CapturesAssignFrom, GivenTwoCapturesWithTheSameDynMemSizeWhenTryingToAssign
     ASSERT_TRUE(firstCommand->captures.assignFrom(secondCommand->captures));
     ASSERT_NE(firstCommand->captures.desc.pKernelName, secondCommand->captures.desc.pKernelName);
     EXPECT_STREQ(firstCommand->captures.desc.pKernelName, secondCommand->captures.desc.pKernelName);
+}
+
+struct MockModuleCache : public Cal::Service::Provider::ModuleCache {
+    using Cal::Service::Provider::ModuleCache::cache;
+};
+TEST(L0Service, givenServiceWhenStoreNativeBinaryThenBinaryIsStoredWithModuleDesc) {
+    MockModuleCache cache;
+    EXPECT_TRUE(cache.cache.empty());
+
+    ze_context_handle_t hContext = reinterpret_cast<ze_context_handle_t>(0x1234);
+    ze_device_handle_t hDevice = reinterpret_cast<ze_device_handle_t>(0x5678);
+    uint8_t binary[] = {1, 2, 3, 4, 5, 0, 6, 7, 8, 9};
+    constexpr size_t nativeSize = 5;
+    auto native = new uint8_t[nativeSize];
+    for (uint32_t i = 0u; i < nativeSize; ++i) {
+        native[i] = 10 + i;
+    }
+    char buildOptions[] = {"--build=option"};
+    uint32_t ids[] = {1, 5, 9};
+    uint64_t values[] = {0x13, 0x45, 0x89};
+    uint64_t *pValues[] = {values, values + 1, values + 2};
+    ze_module_constants_t constants;
+    constants.numConstants = 3u;
+    constants.pConstantIds = ids;
+    constants.pConstantValues = reinterpret_cast<const void **>(&pValues);
+    ze_module_desc_t desc = {};
+    desc.stype = ZE_STRUCTURE_TYPE_MODULE_DESC;
+    desc.format = ZE_MODULE_FORMAT_IL_SPIRV;
+    desc.inputSize = sizeof(binary);
+    desc.pBuildFlags = buildOptions;
+    desc.pInputModule = binary;
+    desc.pConstants = &constants;
+
+    cache.store(hContext, hDevice, &desc, nativeSize, native);
+    EXPECT_EQ(cache.cache.size(), 1u);
+    EXPECT_EQ(cache.cache[0].hContext, hContext);
+    EXPECT_EQ(cache.cache[0].hDevice, hDevice);
+    EXPECT_EQ(cache.cache[0].format, desc.format);
+    EXPECT_EQ(cache.cache[0].inputSize, desc.inputSize);
+    EXPECT_EQ(cache.cache[0].nativeSize, nativeSize);
+    EXPECT_EQ(cache.cache[0].pNativeBinary, native);
+    EXPECT_EQ(cache.cache[0].binaryHash, std::hash<std::string>{}(std::string(reinterpret_cast<const char *>(desc.pInputModule), desc.inputSize)));
+    EXPECT_EQ(cache.cache[0].buildOptionsHash, std::hash<std::string>{}(std::string(reinterpret_cast<const char *>(desc.pBuildFlags))));
+    EXPECT_EQ(cache.cache[0].constants.numConstants, desc.pConstants->numConstants);
+    for (uint32_t i = 0; i < desc.pConstants->numConstants; ++i) {
+        EXPECT_EQ(cache.cache[0].constants.pConstantIds[i], desc.pConstants->pConstantIds[i]);
+        EXPECT_EQ(reinterpret_cast<uint64_t *>(cache.cache[0].constants.pConstantValues)[i], *static_cast<const uint64_t *>(desc.pConstants->pConstantValues[i]));
+    }
+
+    {
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_TRUE(ret.has_value());
+    }
+    {
+        ze_context_handle_t hContext = reinterpret_cast<ze_context_handle_t>(0x11223344);
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_TRUE(ret.has_value());
+    }
+    {
+        ze_device_handle_t hDevice = reinterpret_cast<ze_device_handle_t>(0x55667788);
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_FALSE(ret.has_value());
+    }
+    {
+        values[1] = 0x126;
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_FALSE(ret.has_value());
+        values[1] = 0x45;
+    }
+    {
+        binary[6] = 1;
+        binary[7] = 2;
+        binary[8] = 3;
+        binary[9] = 4;
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_FALSE(ret.has_value());
+        binary[6] = 6;
+        binary[7] = 7;
+        binary[8] = 8;
+        binary[9] = 9;
+    }
+    {
+        desc.pBuildFlags = nullptr;
+        auto ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_FALSE(ret.has_value());
+        auto native2 = new uint8_t[nativeSize];
+        for (uint32_t i = 0u; i < nativeSize; ++i) {
+            native2[i] = native[i];
+        }
+        cache.store(hContext, hDevice, &desc, nativeSize, native2);
+
+        ret = cache.find(hContext, hDevice, &desc);
+        EXPECT_TRUE(ret.has_value());
+        EXPECT_EQ(cache.cache.size(), 2u);
+    }
 }
 
 } // namespace Cal::Rpc::LevelZero

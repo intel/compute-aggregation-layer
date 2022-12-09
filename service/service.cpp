@@ -897,6 +897,52 @@ bool zeModuleGetKernelNamesRpcHelperHandler(Provider &service, Cal::Rpc::Channel
     return true;
 }
 
+inline bool zeModuleCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeModuleCreate");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM *>(command);
+    apiCommand->captures.reassembleNestedStructs();
+    const auto desc = apiCommand->args.desc ? &apiCommand->captures.desc : nullptr;
+    auto module = apiCommand->args.phModule ? &apiCommand->captures.phModule : nullptr;
+    auto buildLog = apiCommand->args.phBuildLog ? &apiCommand->captures.phBuildLog : nullptr;
+    auto lock = service.moduleCache.obtainOwnership();
+    if (auto cacheEntry = service.moduleCache.find(apiCommand->args.hContext, apiCommand->args.hDevice, desc)) {
+        ze_module_desc_t nativeDesc{};
+        nativeDesc.stype = ZE_STRUCTURE_TYPE_MODULE_DESC;
+        nativeDesc.format = ZE_MODULE_FORMAT_NATIVE;
+        nativeDesc.inputSize = cacheEntry.value()->nativeSize;
+        nativeDesc.pInputModule = cacheEntry.value()->pNativeBinary;
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleCreate(apiCommand->args.hContext, apiCommand->args.hDevice, &nativeDesc, module, buildLog);
+    } else {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleCreate(
+            apiCommand->args.hContext,
+            apiCommand->args.hDevice,
+            desc,
+            module,
+            buildLog);
+        if (isSuccessful(apiCommand->captures.ret)) {
+            size_t nativeSize = 0;
+            Cal::Service::Apis::LevelZero::Standard::zeModuleGetNativeBinary(*module, &nativeSize, nullptr);
+            auto pNativeBinary = new uint8_t[nativeSize];
+            Cal::Service::Apis::LevelZero::Standard::zeModuleGetNativeBinary(*module, &nativeSize, pNativeBinary);
+            service.moduleCache.store(apiCommand->args.hContext, apiCommand->args.hDevice, desc, nativeSize, pNativeBinary);
+        }
+    }
+
+    if (isSuccessful(apiCommand->captures.ret)) {
+        const auto &resource = apiCommand->args.phModule ? &apiCommand->captures.phModule : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+        }
+    }
+    {
+        const auto &resource = apiCommand->args.phBuildLog ? &apiCommand->captures.phBuildLog : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+        }
+    }
+    return true;
+}
+
 bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM *>(command);

@@ -372,6 +372,113 @@ class Provider {
 
     Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, ServiceConfig &&serviceConfig);
 
+    struct ModuleCache {
+        struct Entry {
+            ze_context_handle_t hContext = {};
+            ze_device_handle_t hDevice = {};
+            ze_module_format_t format = {};
+            ze_module_constants_t constants = {};
+            size_t inputSize = {};
+            size_t binaryHash = {};
+            size_t buildOptionsHash = {};
+            uint8_t *pNativeBinary;
+            size_t nativeSize = 0u;
+        };
+        using Cache = std::vector<Entry>;
+
+        bool compareDesc(const ze_module_desc_t *desc, const Entry &entry) {
+            auto ret = desc->format == entry.format;
+            ret &= desc->pNext == nullptr;
+            ret &= desc->inputSize == entry.inputSize;
+            if (!ret) {
+                return false;
+            }
+
+            ret &= std::hash<std::string>{}(std::string(reinterpret_cast<const char *>(desc->pInputModule), desc->inputSize)) == entry.binaryHash;
+            if (!ret) {
+                return false;
+            }
+
+            if (desc->pBuildFlags) {
+                ret &= std::hash<std::string>{}(desc->pBuildFlags) == entry.buildOptionsHash;
+            } else {
+                ret &= entry.buildOptionsHash == 0;
+            }
+            if (!ret) {
+                return false;
+            }
+
+            if (desc->pConstants) {
+                ret &= desc->pConstants->numConstants == entry.constants.numConstants;
+                if (ret && (desc->pConstants->numConstants > 0u)) {
+                    ret &= memcmp(desc->pConstants->pConstantIds, entry.constants.pConstantIds, desc->pConstants->numConstants * sizeof(uint32_t)) == 0;
+                    auto values = reinterpret_cast<uint64_t *>(entry.constants.pConstantValues);
+                    for (uint32_t i = 0; i < desc->pConstants->numConstants; ++i) {
+                        ret &= *static_cast<const uint64_t *>(desc->pConstants->pConstantValues[i]) == values[i];
+                    }
+                }
+            } else {
+                ret &= entry.constants.numConstants == 0;
+            }
+            return ret;
+        }
+
+        std::optional<Cache::iterator> find(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t *desc) {
+            for (auto entry = cache.begin(); entry != cache.end(); ++entry) {
+                if (hDevice == entry->hDevice &&
+                    compareDesc(desc, *entry)) {
+                    return entry;
+                }
+            }
+            return std::nullopt;
+        }
+
+        void store(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t *desc, size_t nativeSize, uint8_t *pNativeBinary) {
+            if (desc->pNext) {
+                return;
+            }
+            auto &entry = cache.emplace_back();
+            entry.hContext = hContext;
+            entry.hDevice = hDevice;
+            if (desc->pBuildFlags) {
+                entry.buildOptionsHash = std::hash<std::string>{}(desc->pBuildFlags);
+            }
+            entry.binaryHash = std::hash<std::string>{}(std::string(reinterpret_cast<const char *>(desc->pInputModule), desc->inputSize));
+            entry.nativeSize = nativeSize;
+            entry.pNativeBinary = pNativeBinary;
+            entry.format = desc->format;
+            entry.inputSize = desc->inputSize;
+            if (desc->pConstants && desc->pConstants->numConstants > 0u) {
+                entry.constants.numConstants = desc->pConstants->numConstants;
+                auto ids = new uint32_t[desc->pConstants->numConstants];
+                memcpy(ids, desc->pConstants->pConstantIds, desc->pConstants->numConstants * sizeof(uint32_t));
+                entry.constants.pConstantIds = ids;
+                auto values = new uint64_t[desc->pConstants->numConstants];
+                for (uint32_t i = 0; i < desc->pConstants->numConstants; ++i) {
+                    values[i] = *static_cast<const uint64_t *>(desc->pConstants->pConstantValues[i]);
+                }
+                entry.constants.pConstantValues = reinterpret_cast<const void **>(values);
+            }
+        }
+
+        [[nodiscard]] auto obtainOwnership() {
+            return std::unique_lock<std::mutex>(mtx);
+        }
+
+        ~ModuleCache() {
+            for (auto &entry : cache) {
+                delete[] entry.pNativeBinary;
+                delete[] entry.constants.pConstantIds;
+                auto values = reinterpret_cast<uint64_t *>(entry.constants.pConstantValues);
+                delete[] values;
+            }
+        }
+
+      protected:
+        Cache cache;
+        std::mutex mtx;
+    } moduleCache;
+
     int run() {
         if (this->isRunning) {
             log<Verbosity::critical>("Service is already running");

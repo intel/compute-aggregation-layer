@@ -951,31 +951,7 @@ inline bool zexMemOpenIpcHandlesHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 );
     return true;
 }
-inline bool zeModuleCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeModuleCreate");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM*>(command);
-    apiCommand->captures.reassembleNestedStructs();
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleCreate(
-                                                apiCommand->args.hContext, 
-                                                apiCommand->args.hDevice, 
-                                                apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
-                                                apiCommand->args.phModule ? &apiCommand->captures.phModule : nullptr, 
-                                                apiCommand->args.phBuildLog ? &apiCommand->captures.phBuildLog : nullptr
-                                                );
-    if(isSuccessful(apiCommand->captures.ret)) {
-        const auto& resource = apiCommand->args.phModule ? &apiCommand->captures.phModule : nullptr;
-        if (resource) {
-            ctx.trackAllocatedResource(*resource);
-        }
-    }
-    {
-        const auto& resource = apiCommand->args.phBuildLog ? &apiCommand->captures.phBuildLog : nullptr;
-        if (resource) {
-            ctx.trackAllocatedResource(*resource);
-        }
-    }
-    return true;
-}
+bool zeModuleCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeModuleDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleDestroy");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDestroyRpcM*>(command);

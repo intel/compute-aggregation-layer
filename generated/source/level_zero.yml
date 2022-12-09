@@ -5119,6 +5119,9 @@ config:
     #
     - name: zeModuleCreate
       latency: 2.0
+      special_handling:
+        rpc:
+          custom_handler: True
       ddi_category: Module
       returns:
         type: ze_result_t
