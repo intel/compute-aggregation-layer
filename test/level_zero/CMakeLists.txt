@@ -14,7 +14,6 @@ add_executable(l0_test_ult_icd
                ${cal_source_root_dir}/icd/icd_ocl.cpp
 
                ${cal_source_root_dir}/shared/allocators.cpp
-               ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
 
@@ -22,6 +21,8 @@ add_executable(l0_test_ult_icd
                ${generated_dir}/generated_rpc_messages_ocl.cpp
 
                ${ICD_L0_OBJECTS_SOURCES}
+
+               ${cal_source_root_dir}/test/mocks/sys_mock.cpp
 )
 
 target_link_libraries(l0_test_ult_icd Threads::Threads rt dl ${common_library_dependencies} gmock-gtest)

@@ -1036,7 +1036,6 @@ config:
           CommandList.zeCommandListAppendImageCopyToMemory,
           CommandList.zeCommandListAppendImageCopyFromMemory,
           CommandList.zeCommandListAppendMemoryPrefetch,
-          CommandList.zeCommandListAppendMemAdvise,
           CommandList.zeCommandListAppendQueryKernelTimestamps,
           EventExp.zeEventQueryTimestampsExp,
           FabricVertexExp.zeFabricVertexGetExp,
@@ -2863,34 +2862,40 @@ config:
     #                    type : size_t
     #                    kind : scalar
     #
-    #        - name : zeCommandListAppendMemAdvise
-    #          ddi_category :  CommandList
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hCommandList
-    #                    type : ze_command_list_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 3 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 4 :
-    #                    name : advice
-    #                    type : ze_memory_advice_t
-    #                    kind : scalar
-    #
+    - name: zeCommandListAppendMemAdvise
+      latency: 0.0
+      special_handling:
+        icd:
+          handler_only_suffix: "RpcHelper"
+      ddi_category: CommandList
+      returns:
+        type: ze_result_t
+        kind : scalar
+        default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+      args:
+        0:
+          name: hCommandList
+          type: ze_command_list_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+        1:
+          name: hDevice
+          type: ze_device_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+        2:
+          name: ptr
+          type: const void*
+          kind: pointer
+        3:
+          name: size
+          type: size_t
+          kind: scalar
+        4:
+          name: advice
+          type: ze_memory_advice_t
+          kind: scalar
+
     - name: zeDeviceGet
       latency: 0.0
       special_handling:

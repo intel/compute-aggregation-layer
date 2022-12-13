@@ -99,7 +99,7 @@ class ConnectionMock : public Cal::Ipc::Connection {
         } sendFds;
 
         struct {
-            std::optional<std::function<int(const void *data, size_t dataSize)>> impl;
+            std::optional<std::function<int(void *data, size_t dataSize)>> impl;
             int defaultReturnValue = 0;
         } receive;
 

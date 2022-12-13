@@ -30,6 +30,23 @@ ze_result_t zeDeviceGetCacheProperties(ze_device_handle_t hDevice, uint32_t *pCo
 ze_result_t zeDeviceGetCommandQueueGroupProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_command_queue_group_properties_t *pCommandQueueGroupProperties);
 ze_result_t zeDeviceGetMemoryProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_memory_properties_t *pMemProperties);
 
+ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void *ptr, size_t size, ze_memory_advice_t advice);
+ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
+                                          void *dstptr,
+                                          const void *srcptr,
+                                          size_t size,
+                                          ze_event_handle_t hSignalEvent,
+                                          uint32_t numWaitEvents,
+                                          ze_event_handle_t *phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
+                                          void *ptr,
+                                          const void *pattern,
+                                          size_t pattern_size,
+                                          size_t size,
+                                          ze_event_handle_t hSignalEvent,
+                                          uint32_t numWaitEvents,
+                                          ze_event_handle_t *phWaitEvents);
+
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 

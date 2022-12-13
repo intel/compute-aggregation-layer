@@ -43,6 +43,7 @@ extern ze_result_t (*zeContextDestroy)(ze_context_handle_t hContext);
 extern ze_result_t (*zeContextGetStatus)(ze_context_handle_t hContext);
 extern ze_result_t (*zeCommandListAppendMemoryCopy)(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeCommandListAppendMemoryFill)(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+extern ze_result_t (*zeCommandListAppendMemAdvise)(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice);
 extern ze_result_t (*zeDeviceGet)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices);
 extern ze_result_t (*zeDeviceGetSubDevices)(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices);
 extern ze_result_t (*zeDeviceGetProperties)(ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties);
@@ -384,6 +385,18 @@ inline bool zeCommandListAppendMemoryFillRpcHelperMalloc2UsmHandler(Provider &se
     return true;
 }
 bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool zeCommandListAppendMemAdviseHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemAdvise");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemAdvise(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.advice
+                                                );
+    return true;
+}
 inline bool zeDeviceGetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGet");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetRpcM*>(command);
@@ -1235,6 +1248,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler;
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperMalloc2UsmHandler;
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler;
+    outHandlers[ZeCommandListAppendMemAdviseRpcM::messageSubtype] = zeCommandListAppendMemAdviseHandler;
     outHandlers[ZeDeviceGetRpcM::messageSubtype] = zeDeviceGetHandler;
     outHandlers[ZeDeviceGetSubDevicesRpcM::messageSubtype] = zeDeviceGetSubDevicesHandler;
     outHandlers[ZeDeviceGetPropertiesRpcM::messageSubtype] = zeDeviceGetPropertiesHandler;
@@ -1529,6 +1543,15 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHe
                                                 apiCommand.args.hSignalEvent, 
                                                 apiCommand.args.numWaitEvents, 
                                                 apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemAdvise(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.advice
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceGetRpcM &apiCommand) {
@@ -2107,6 +2130,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM*>(command)); break;

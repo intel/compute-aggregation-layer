@@ -72,6 +72,10 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
    return {};
 }
 
+ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice){
+   return {};
+}
+
 ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices){
    return {};
 }

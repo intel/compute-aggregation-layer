@@ -7,12 +7,69 @@
 
 #include "gtest/gtest.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "test/mocks/connection_mock.h"
 #include "test/mocks/icd_l0_command_list_mock.h"
 #include "test/mocks/log_mock.h"
+#include "test/mocks/page_fault_manager_mock.h"
+#include "test/mocks/sys_mock.h"
 
 #include <cstddef>
 
 namespace Cal::Icd::LevelZero {
+
+class IcdMemAdviceTest : public ::testing::Test {
+  public:
+    void SetUp() override {
+        auto alwaysSuccessfulSend = [](const void *data, size_t dataSize) { return dataSize; };
+        connectionMock.apiConfig.send.impl = alwaysSuccessfulSend;
+
+        auto alwaysSuccessfulReceive = [](void *data, size_t dataSize) { return dataSize; };
+        connectionMock.apiConfig.receive.impl = alwaysSuccessfulReceive;
+
+        memory.resize(4096 * 4);
+        pageFaultManager.registerSharedAlloc(memory.data(), memory.size(), Cal::Icd::PageFaultManager::Placement::DEVICE);
+    }
+
+  protected:
+    std::vector<char> memory{};
+    Cal::Mocks::SysCallsContext sysCallsContext{};
+    Cal::Mocks::ConnectionMock connectionMock{};
+    Cal::Mocks::PageFaultManagerMock pageFaultManager{connectionMock};
+};
+
+TEST_F(IcdMemAdviceTest, GivenPageFaultManagerWhenUpdatingMemAdviceFlagsWithReadOnlyAndDevicePreferredLocationThenIsCpuMigrationBlockedIsSetOnPageFaultVerification) {
+    auto sharedAllocDesc = pageFaultManager.findSharedAlloc(memory.data());
+    ASSERT_NE(pageFaultManager.sharedAllocMap.end(), sharedAllocDesc);
+
+    auto &flags = sharedAllocDesc->second.flags;
+    ASSERT_EQ(0u, flags.isCpuMigrationBlocked);
+
+    pageFaultManager.updateMemAdviceFlags(memory.data(), MemoryAdvice::setReadOnly);
+    pageFaultManager.updateMemAdviceFlags(memory.data(), MemoryAdvice::setDevicePreferredLocation);
+
+    ASSERT_EQ(1u, flags.isReadOnly);
+    ASSERT_EQ(1u, flags.isDevicePreferredLocation);
+
+    ASSERT_TRUE(pageFaultManager.verifyPageFault(memory.data()));
+    EXPECT_EQ(1u, flags.isCpuMigrationBlocked);
+    EXPECT_EQ(2u, sysCallsContext.apiConfig.mprotect.callCount);
+}
+
+TEST_F(IcdMemAdviceTest, GivenPageFaultManagerWhenUpdatingMemAdviceFlagsByClearingReadOnlyAndDevicePreferredLocationThenIsCpuMigrationBlockedIsAlsoCleared) {
+    auto sharedAllocDesc = pageFaultManager.findSharedAlloc(memory.data());
+    ASSERT_NE(pageFaultManager.sharedAllocMap.end(), sharedAllocDesc);
+
+    auto &flags = sharedAllocDesc->second.flags;
+    flags.isReadOnly = 1u;
+    flags.isCpuMigrationBlocked = 1u;
+    flags.isDevicePreferredLocation = 1u;
+
+    pageFaultManager.updateMemAdviceFlags(memory.data(), MemoryAdvice::clearReadOnly);
+    EXPECT_EQ(1u, flags.isCpuMigrationBlocked);
+
+    pageFaultManager.updateMemAdviceFlags(memory.data(), MemoryAdvice::clearDevicePreferredLocation);
+    EXPECT_EQ(0u, flags.isCpuMigrationBlocked);
+}
 
 class IcdL0CommandListTest : public ::testing::Test {
   protected:

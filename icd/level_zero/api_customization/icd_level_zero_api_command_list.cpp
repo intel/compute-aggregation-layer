@@ -244,4 +244,34 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
     }
 }
 
+static MemoryAdvice translateToApiAgnosticAdvice(ze_memory_advice_t advice) {
+    switch (advice) {
+    case ZE_MEMORY_ADVICE_SET_READ_MOSTLY:
+        return MemoryAdvice::setReadOnly;
+    case ZE_MEMORY_ADVICE_CLEAR_READ_MOSTLY:
+        return MemoryAdvice::clearReadOnly;
+    case ZE_MEMORY_ADVICE_SET_PREFERRED_LOCATION:
+        return MemoryAdvice::setDevicePreferredLocation;
+    case ZE_MEMORY_ADVICE_CLEAR_PREFERRED_LOCATION:
+        return MemoryAdvice::clearDevicePreferredLocation;
+    default:
+        return MemoryAdvice::ignored;
+    }
+}
+
+ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void *ptr, size_t size, ze_memory_advice_t advice) {
+    const auto rpcCallResult = zeCommandListAppendMemAdviseRpcHelper(hCommandList, hDevice, ptr, size, advice);
+    if (rpcCallResult != ZE_RESULT_SUCCESS) {
+        return rpcCallResult;
+    }
+
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *pageFaultManager = globalL0Platform->getPageFaultManager();
+
+    const auto apiAgnosticAdvice = translateToApiAgnosticAdvice(advice);
+    pageFaultManager->updateMemAdviceFlags(ptr, apiAgnosticAdvice);
+
+    return ZE_RESULT_SUCCESS;
+}
+
 } // namespace Cal::Icd::LevelZero

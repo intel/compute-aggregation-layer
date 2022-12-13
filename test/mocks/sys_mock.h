@@ -69,6 +69,19 @@ struct SysCallsContext {
         return munmapBaseImpl(addr, length);
     }
 
+    virtual int mprotect(void *addr, size_t len, int prot) {
+        ++apiConfig.mprotect.callCount;
+        if (apiConfig.mprotect.returnValue) {
+            return apiConfig.mprotect.returnValue.value();
+        }
+
+        if (apiConfig.mprotect.impl) {
+            return apiConfig.mprotect.impl.value()(addr, len, prot);
+        }
+
+        return 0;
+    }
+
     virtual char *getenv(const char *name) {
         ++apiConfig.getenv.callCount;
         if (apiConfig.getenv.returnValue) {
@@ -465,6 +478,12 @@ struct SysCallsContext {
             std::optional<std::function<int(int fd, off_t length)>> impl;
             uint64_t callCount = 0U;
         } ftruncate;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(void *addr, size_t len, int prot)>> impl;
+            uint64_t callCount = 0U;
+        } mprotect;
     } apiConfig;
 };
 

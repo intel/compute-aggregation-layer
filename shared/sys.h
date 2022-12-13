@@ -17,7 +17,6 @@
 #include <unistd.h>
 
 namespace Cal {
-
 namespace Sys {
 
 extern void *(*mmap)(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -28,6 +27,8 @@ extern int (*setenv)(const char *name, const char *value, int overwrite);
 extern int (*unsetenv)(const char *name);
 
 extern std::unique_ptr<std::istream> (*openFileForRead)(const char *filename, std::ios_base::openmode mode);
+
+extern int (*mprotect)(void *addr, size_t len, int prot);
 
 extern int (*shm_open)(const char *name, int oflag, mode_t mode);
 extern int (*shm_unlink)(const char *name);
@@ -41,5 +42,4 @@ extern int (*ftruncate)(int fd, off_t length);
 extern int (*close)(int fd);
 
 } // namespace Sys
-
 } // namespace Cal

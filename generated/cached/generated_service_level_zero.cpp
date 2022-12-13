@@ -35,6 +35,7 @@ ze_result_t (*zeContextDestroy)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeContextGetStatus)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryCopy)(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryFill)(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
+ze_result_t (*zeCommandListAppendMemAdvise)(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) = nullptr;
 ze_result_t (*zeDeviceGet)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) = nullptr;
 ze_result_t (*zeDeviceGetSubDevices)(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices) = nullptr;
 ze_result_t (*zeDeviceGetProperties)(ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) = nullptr;
@@ -223,6 +224,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeCommandListAppendMemoryFill = reinterpret_cast<decltype(zeCommandListAppendMemoryFill)>(dlsym(libraryHandle, "zeCommandListAppendMemoryFill"));
     if(nullptr == zeCommandListAppendMemoryFill){
         log<Verbosity::error>("Missing symbol zeCommandListAppendMemoryFill in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeCommandListAppendMemAdvise = reinterpret_cast<decltype(zeCommandListAppendMemAdvise)>(dlsym(libraryHandle, "zeCommandListAppendMemAdvise"));
+    if(nullptr == zeCommandListAppendMemAdvise){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendMemAdvise in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -720,6 +727,7 @@ void unloadLevelZeroLibrary() {
     zeContextGetStatus = nullptr;
     zeCommandListAppendMemoryCopy = nullptr;
     zeCommandListAppendMemoryFill = nullptr;
+    zeCommandListAppendMemAdvise = nullptr;
     zeDeviceGet = nullptr;
     zeDeviceGetSubDevices = nullptr;
     zeDeviceGetProperties = nullptr;
