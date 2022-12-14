@@ -1035,7 +1035,6 @@ config:
           CommandList.zeCommandListAppendImageCopyRegion,
           CommandList.zeCommandListAppendImageCopyToMemory,
           CommandList.zeCommandListAppendImageCopyFromMemory,
-          CommandList.zeCommandListAppendMemoryPrefetch,
           CommandList.zeCommandListAppendQueryKernelTimestamps,
           EventExp.zeEventQueryTimestampsExp,
           FabricVertexExp.zeFabricVertexGetExp,
@@ -2842,26 +2841,28 @@ config:
     #                    type : ze_event_handle_t*
     #                    kind : pointer
     #
-    #        - name : zeCommandListAppendMemoryPrefetch
-    #          ddi_category :  CommandList
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hCommandList
-    #                    type : ze_command_list_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #
+    - name: zeCommandListAppendMemoryPrefetch
+      latency: 0.0
+      ddi_category: CommandList
+      returns:
+        type: ze_result_t
+        kind: scalar
+        default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+      args:
+        0:
+          name: hCommandList
+          type: ze_command_list_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+        1:
+          name: ptr
+          type: const void*
+          kind: pointer
+        2:
+          name: size
+          type: size_t
+          kind: scalar
+
     - name: zeCommandListAppendMemAdvise
       latency: 0.0
       special_handling:

@@ -823,6 +823,26 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list
 
     return ret;
 }
+ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryPrefetch");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList, ptr, size);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandListAppendMemAdviseRpcHelper (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemAdvise");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2937,6 +2957,9 @@ ze_result_t zeCommandListAppendMemoryCopy (ze_command_list_handle_t hCommandList
 }
 ze_result_t zeCommandListAppendMemoryFill (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendMemoryFill(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+}
+ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zeCommandListAppendMemoryPrefetch(hCommandList, ptr, size);
 }
 ze_result_t zeCommandListAppendMemAdvise (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) {
     return Cal::Icd::LevelZero::zeCommandListAppendMemAdvise(hCommandList, hDevice, ptr, size, advice);

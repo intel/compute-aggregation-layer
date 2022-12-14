@@ -28,7 +28,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("CommandList.zeCommandListAppendImageCopyRegion");
     ret.push_back("CommandList.zeCommandListAppendImageCopyToMemory");
     ret.push_back("CommandList.zeCommandListAppendImageCopyFromMemory");
-    ret.push_back("CommandList.zeCommandListAppendMemoryPrefetch");
     ret.push_back("CommandList.zeCommandListAppendQueryKernelTimestamps");
     ret.push_back("EventExp.zeEventQueryTimestampsExp");
     ret.push_back("FabricVertexExp.zeFabricVertexGetExp");

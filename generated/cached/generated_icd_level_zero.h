@@ -51,6 +51,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size);
 ze_result_t zeCommandListAppendMemAdviseRpcHelper (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice);
 ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices);
 ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices);
@@ -178,10 +179,6 @@ inline void zeCommandListAppendImageCopyToMemoryUnimpl() {
 }
 inline void zeCommandListAppendImageCopyFromMemoryUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyFromMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeCommandListAppendMemoryPrefetchUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryPrefetch is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendQueryKernelTimestampsUnimpl() {
@@ -919,6 +916,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Context.pfnGetStatus = Cal::Icd::LevelZero::zeContextGetStatus;
     dt.CommandList.pfnAppendMemoryCopy = Cal::Icd::LevelZero::zeCommandListAppendMemoryCopy;
     dt.CommandList.pfnAppendMemoryFill = Cal::Icd::LevelZero::zeCommandListAppendMemoryFill;
+    dt.CommandList.pfnAppendMemoryPrefetch = Cal::Icd::LevelZero::zeCommandListAppendMemoryPrefetch;
     dt.CommandList.pfnAppendMemAdvise = Cal::Icd::LevelZero::zeCommandListAppendMemAdvise;
     dt.Device.pfnGet = Cal::Icd::LevelZero::zeDeviceGet;
     dt.Device.pfnGetSubDevices = Cal::Icd::LevelZero::zeDeviceGetSubDevices;
@@ -1011,7 +1009,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendImageCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyRegion)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyRegionUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemory)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemory)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryUnimpl);
-    dt.CommandList.pfnAppendMemoryPrefetch = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryPrefetch)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryPrefetchUnimpl);
     dt.CommandList.pfnAppendQueryKernelTimestamps = reinterpret_cast<decltype(dt.CommandList.pfnAppendQueryKernelTimestamps)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendQueryKernelTimestampsUnimpl);
     dt.EventExp.pfnQueryTimestampsExp = reinterpret_cast<decltype(dt.EventExp.pfnQueryTimestampsExp)>(Cal::Icd::LevelZero::Unimplemented::zeEventQueryTimestampsExpUnimpl);
     dt.FabricVertexExp.pfnGetExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetExp)>(Cal::Icd::LevelZero::Unimplemented::zeFabricVertexGetExpUnimpl);

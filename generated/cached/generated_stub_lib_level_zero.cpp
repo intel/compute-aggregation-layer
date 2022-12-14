@@ -72,6 +72,10 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
    return {};
 }
 
+ze_result_t zeCommandListAppendMemoryPrefetch(ze_command_list_handle_t hCommandList, const void* ptr, size_t size){
+   return {};
+}
+
 ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice){
    return {};
 }
