@@ -528,11 +528,11 @@ class ChannelClient : public CommandsChannel {
 
     CompletionStampT *submitCommand(void *command) {
         CompletionStampT *completionStamp = completionStamps.allocate();
-        *completionStamp = CompletionStampNotReady;
         if (nullptr == completionStamp) {
             log<Verbosity::critical>("Could allocate completion stamp");
             return nullptr;
         }
+        *completionStamp = CompletionStampNotReady;
         auto commandOffsetWithinRingBuffer = getAsShmemOffset(command);
         auto stampOffsetWithinRingBuffer = getAsShmemOffset(completionStamp);
         if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer})) {
