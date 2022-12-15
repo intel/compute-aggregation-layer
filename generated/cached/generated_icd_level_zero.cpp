@@ -1989,6 +1989,31 @@ ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
 
     return ret;
 }
+ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
+    log<Verbosity::bloat>("Establishing RPC for zeKernelSchedulingHintExp");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeKernelSchedulingHintExpRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hKernel, pHint);
+    command->copyFromCaller();
+    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    if(pHint)
+    {
+        ensureNull("zeKernelSchedulingHintExp: pHint->pNext", pHint->pNext);
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocShared");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3101,6 +3126,9 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
 }
 ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
     return Cal::Icd::LevelZero::zeImageDestroy(hImage);
+}
+ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
+    return Cal::Icd::LevelZero::zeKernelSchedulingHintExp(hKernel, pHint);
 }
 ze_result_t zeMemAllocShared (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     return Cal::Icd::LevelZero::zeMemAllocShared(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);

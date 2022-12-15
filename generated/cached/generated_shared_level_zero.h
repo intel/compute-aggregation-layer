@@ -43,7 +43,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("ImageExp.zeImageGetMemoryPropertiesExp");
     ret.push_back("Image.zeImageGetAllocPropertiesExt");
     ret.push_back("ImageExp.zeImageViewCreateExp");
-    ret.push_back("KernelExp.zeKernelSchedulingHintExp");
     ret.push_back("Module.zeModuleInspectLinkageExt");
     ret.push_back("Mem.zeMemFreeExt");
     ret.push_back("Kernel.zeKernelGetSourceAttributes");

@@ -99,6 +99,7 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
 ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 ze_result_t zeImageDestroy (ze_image_handle_t hImage);
+ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint);
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM);
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::ImplicitArgs &implArgsForZeMemAllocHostRpcM);
@@ -239,10 +240,6 @@ inline void zeImageGetAllocPropertiesExtUnimpl() {
 }
 inline void zeImageViewCreateExpUnimpl() {
     log<Verbosity::critical>("Function ImageExp.zeImageViewCreateExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeKernelSchedulingHintExpUnimpl() {
-    log<Verbosity::critical>("Function KernelExp.zeKernelSchedulingHintExp is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeModuleInspectLinkageExtUnimpl() {
@@ -964,6 +961,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Image.pfnGetProperties = Cal::Icd::LevelZero::zeImageGetProperties;
     dt.Image.pfnCreate = Cal::Icd::LevelZero::zeImageCreate;
     dt.Image.pfnDestroy = Cal::Icd::LevelZero::zeImageDestroy;
+    dt.KernelExp.pfnSchedulingHintExp = Cal::Icd::LevelZero::zeKernelSchedulingHintExp;
     dt.Mem.pfnAllocShared = Cal::Icd::LevelZero::zeMemAllocShared;
     dt.Mem.pfnAllocDevice = Cal::Icd::LevelZero::zeMemAllocDevice;
     dt.Mem.pfnAllocHost = Cal::Icd::LevelZero::zeMemAllocHost;
@@ -1024,7 +1022,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.ImageExp.pfnGetMemoryPropertiesExp = reinterpret_cast<decltype(dt.ImageExp.pfnGetMemoryPropertiesExp)>(Cal::Icd::LevelZero::Unimplemented::zeImageGetMemoryPropertiesExpUnimpl);
     dt.Image.pfnGetAllocPropertiesExt = reinterpret_cast<decltype(dt.Image.pfnGetAllocPropertiesExt)>(Cal::Icd::LevelZero::Unimplemented::zeImageGetAllocPropertiesExtUnimpl);
     dt.ImageExp.pfnViewCreateExp = reinterpret_cast<decltype(dt.ImageExp.pfnViewCreateExp)>(Cal::Icd::LevelZero::Unimplemented::zeImageViewCreateExpUnimpl);
-    dt.KernelExp.pfnSchedulingHintExp = reinterpret_cast<decltype(dt.KernelExp.pfnSchedulingHintExp)>(Cal::Icd::LevelZero::Unimplemented::zeKernelSchedulingHintExpUnimpl);
     dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
     dt.Mem.pfnFreeExt = reinterpret_cast<decltype(dt.Mem.pfnFreeExt)>(Cal::Icd::LevelZero::Unimplemented::zeMemFreeExtUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);

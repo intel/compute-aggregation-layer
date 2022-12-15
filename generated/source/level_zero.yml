@@ -291,6 +291,22 @@ config:
           type: ze_context_flags_t
           kind: scalar
 
+    - name: ze_scheduling_hint_exp_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: const void*
+          kind: scalar
+          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+        2:
+          name: flags
+          type: ze_scheduling_hint_exp_flags_t
+          kind: scalar
+
     - name: ze_device_properties_t
       members:
         0:
@@ -1050,7 +1066,6 @@ config:
           ImageExp.zeImageGetMemoryPropertiesExp,
           Image.zeImageGetAllocPropertiesExt,
           ImageExp.zeImageViewCreateExp,
-          KernelExp.zeKernelSchedulingHintExp,
           Module.zeModuleInspectLinkageExt,
           Mem.zeMemFreeExt,
           Kernel.zeKernelGetSourceAttributes,
@@ -4562,22 +4577,31 @@ config:
     #                    type : ze_image_handle_t*
     #                    kind : pointer
     #
-    #        - name : zeKernelSchedulingHintExp
-    #          ddi_category :  KernelExp
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hKernel
-    #                    type : ze_kernel_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : pHint
-    #                    type : ze_scheduling_hint_exp_desc_t*
-    #                    kind : pointer
-    #
+    - name: zeKernelSchedulingHintExp
+      latency: 0.0
+      ddi_category:  KernelExp
+      returns:
+        type: ze_result_t
+        kind: scalar
+        default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+      args:
+        0:
+          name: hKernel
+          type: ze_kernel_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+        1:
+          name: pHint
+          type: ze_scheduling_hint_exp_desc_t*
+          kind: ptr_array
+          kind_details:
+            num_elements: "1"
+            can_be_null: True
+            element:
+              type: ze_scheduling_hint_exp_desc_t
+              kind: struct
+            server_access: read
+
     #        - name : zeModuleInspectLinkageExt
     #          ddi_category :  Module
     #          returns :

@@ -264,6 +264,10 @@ ze_result_t zeImageDestroy(ze_image_handle_t hImage){
    return {};
 }
 
+ze_result_t zeKernelSchedulingHintExp(ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint){
+   return {};
+}
+
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr){
    return {};
 }

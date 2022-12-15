@@ -6328,9 +6328,70 @@ struct ZeImageDestroyRpcM {
     
 };
 static_assert(std::is_standard_layout_v<ZeImageDestroyRpcM>);
-struct ZeMemAllocSharedRpcM {
+struct ZeKernelSchedulingHintExpRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 73;
+    static constexpr float latency = 0.0;
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_kernel_handle_t hKernel = {};
+        ze_scheduling_hint_exp_desc_t* pHint = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hKernel == rhs.hKernel;
+            equal &= this->pHint == rhs.pHint;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        ze_scheduling_hint_exp_desc_t pHint;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeKernelSchedulingHintExpRpcM() = default;
+
+    ZeKernelSchedulingHintExpRpcM(ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hKernel = hKernel;
+        args.pHint = pHint;
+    }
+    
+    static void fillWithoutCapture(ZeKernelSchedulingHintExpRpcM &message, ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hKernel = hKernel;
+        message.args.pHint = pHint;
+    }
+    
+
+    void copyFromCaller(){
+        if(args.pHint){
+            captures.pHint = *args.pHint;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeKernelSchedulingHintExpRpcM>);
+struct ZeMemAllocSharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 74;
     static constexpr float latency = 1.0;
 
     using ReturnValueT = ze_result_t;
@@ -6538,7 +6599,7 @@ struct ZeMemAllocSharedRpcM {
 static_assert(std::is_standard_layout_v<ZeMemAllocSharedRpcM>);
 struct ZeMemAllocDeviceRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 74;
+    static constexpr uint16_t messageSubtype = 75;
     static constexpr float latency = 1.0;
 
     using ReturnValueT = ze_result_t;
@@ -6622,7 +6683,7 @@ struct ZeMemAllocDeviceRpcM {
 static_assert(std::is_standard_layout_v<ZeMemAllocDeviceRpcM>);
 struct ZeMemAllocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 75;
+    static constexpr uint16_t messageSubtype = 76;
     static constexpr float latency = 1.0;
 
     using ReturnValueT = ze_result_t;
@@ -6818,7 +6879,7 @@ struct ZeMemAllocHostRpcM {
 static_assert(std::is_standard_layout_v<ZeMemAllocHostRpcM>);
 struct ZeMemFreeRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 76;
+    static constexpr uint16_t messageSubtype = 77;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -6872,7 +6933,7 @@ struct ZeMemFreeRpcM {
 static_assert(std::is_standard_layout_v<ZeMemFreeRpcM>);
 struct ZeMemGetAllocPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 77;
+    static constexpr uint16_t messageSubtype = 78;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -6951,7 +7012,7 @@ struct ZeMemGetAllocPropertiesRpcM {
 static_assert(std::is_standard_layout_v<ZeMemGetAllocPropertiesRpcM>);
 struct ZeMemGetAddressRangeRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 78;
+    static constexpr uint16_t messageSubtype = 79;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7024,7 +7085,7 @@ struct ZeMemGetAddressRangeRpcM {
 static_assert(std::is_standard_layout_v<ZeMemGetAddressRangeRpcM>);
 struct ZeMemGetIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 79;
+    static constexpr uint16_t messageSubtype = 80;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7089,7 +7150,7 @@ struct ZeMemGetIpcHandleRpcM {
 static_assert(std::is_standard_layout_v<ZeMemGetIpcHandleRpcM>);
 struct ZeMemOpenIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 80;
+    static constexpr uint16_t messageSubtype = 81;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7162,7 +7223,7 @@ struct ZeMemOpenIpcHandleRpcM {
 static_assert(std::is_standard_layout_v<ZeMemOpenIpcHandleRpcM>);
 struct ZeMemCloseIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 81;
+    static constexpr uint16_t messageSubtype = 82;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7216,7 +7277,7 @@ struct ZeMemCloseIpcHandleRpcM {
 static_assert(std::is_standard_layout_v<ZeMemCloseIpcHandleRpcM>);
 struct ZexMemGetIpcHandlesRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 82;
+    static constexpr uint16_t messageSubtype = 83;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7307,7 +7368,7 @@ struct ZexMemGetIpcHandlesRpcM {
 static_assert(std::is_standard_layout_v<ZexMemGetIpcHandlesRpcM>);
 struct ZexMemOpenIpcHandlesRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 83;
+    static constexpr uint16_t messageSubtype = 84;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7403,7 +7464,7 @@ struct ZexMemOpenIpcHandlesRpcM {
 static_assert(std::is_standard_layout_v<ZexMemOpenIpcHandlesRpcM>);
 struct ZeModuleCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 84;
+    static constexpr uint16_t messageSubtype = 85;
     static constexpr float latency = 2.0;
 
     using ReturnValueT = ze_result_t;
@@ -7739,7 +7800,7 @@ struct ZeModuleCreateRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleCreateRpcM>);
 struct ZeModuleDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 85;
+    static constexpr uint16_t messageSubtype = 86;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7789,7 +7850,7 @@ struct ZeModuleDestroyRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleDestroyRpcM>);
 struct ZeModuleDynamicLinkRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 86;
+    static constexpr uint16_t messageSubtype = 87;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7876,7 +7937,7 @@ struct ZeModuleDynamicLinkRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleDynamicLinkRpcM>);
 struct ZeModuleBuildLogDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 87;
+    static constexpr uint16_t messageSubtype = 88;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -7926,7 +7987,7 @@ struct ZeModuleBuildLogDestroyRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleBuildLogDestroyRpcM>);
 struct ZeModuleBuildLogGetStringRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 88;
+    static constexpr uint16_t messageSubtype = 89;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8013,7 +8074,7 @@ struct ZeModuleBuildLogGetStringRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleBuildLogGetStringRpcM>);
 struct ZeModuleGetNativeBinaryRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 89;
+    static constexpr uint16_t messageSubtype = 90;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8100,7 +8161,7 @@ struct ZeModuleGetNativeBinaryRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleGetNativeBinaryRpcM>);
 struct ZeModuleGetGlobalPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 90;
+    static constexpr uint16_t messageSubtype = 91;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8199,7 +8260,7 @@ static_assert(std::is_standard_layout_v<ZeModuleGetGlobalPointerRpcM>);
  // zeModuleGetKernelNames ignored in generator - based on dont_generate_rpc_message flag
 struct ZeModuleGetKernelNamesRpcHelperRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 91;
+    static constexpr uint16_t messageSubtype = 92;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8286,7 +8347,7 @@ struct ZeModuleGetKernelNamesRpcHelperRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleGetKernelNamesRpcHelperRpcM>);
 struct ZeModuleGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 92;
+    static constexpr uint16_t messageSubtype = 93;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8353,7 +8414,7 @@ struct ZeModuleGetPropertiesRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleGetPropertiesRpcM>);
 struct ZeKernelCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 93;
+    static constexpr uint16_t messageSubtype = 94;
     static constexpr float latency = 0.5;
 
     using ReturnValueT = ze_result_t;
@@ -8526,7 +8587,7 @@ struct ZeKernelCreateRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelCreateRpcM>);
 struct ZeKernelDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 94;
+    static constexpr uint16_t messageSubtype = 95;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8576,7 +8637,7 @@ struct ZeKernelDestroyRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelDestroyRpcM>);
 struct ZeModuleGetFunctionPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 95;
+    static constexpr uint16_t messageSubtype = 96;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8660,7 +8721,7 @@ struct ZeModuleGetFunctionPointerRpcM {
 static_assert(std::is_standard_layout_v<ZeModuleGetFunctionPointerRpcM>);
 struct ZeKernelSetGroupSizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 96;
+    static constexpr uint16_t messageSubtype = 97;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8722,7 +8783,7 @@ struct ZeKernelSetGroupSizeRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSetGroupSizeRpcM>);
 struct ZeKernelSuggestGroupSizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 97;
+    static constexpr uint16_t messageSubtype = 98;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8811,7 +8872,7 @@ struct ZeKernelSuggestGroupSizeRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSuggestGroupSizeRpcM>);
 struct ZeKernelSuggestMaxCooperativeGroupCountRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 98;
+    static constexpr uint16_t messageSubtype = 99;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8872,7 +8933,7 @@ struct ZeKernelSuggestMaxCooperativeGroupCountRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSuggestMaxCooperativeGroupCountRpcM>);
 struct ZeKernelSetArgumentValueRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 99;
+    static constexpr uint16_t messageSubtype = 100;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -8953,7 +9014,7 @@ struct ZeKernelSetArgumentValueRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSetArgumentValueRpcM>);
 struct ZeKernelSetIndirectAccessRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 100;
+    static constexpr uint16_t messageSubtype = 101;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9007,7 +9068,7 @@ struct ZeKernelSetIndirectAccessRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSetIndirectAccessRpcM>);
 struct ZeKernelGetIndirectAccessRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 101;
+    static constexpr uint16_t messageSubtype = 102;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9068,7 +9129,7 @@ struct ZeKernelGetIndirectAccessRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelGetIndirectAccessRpcM>);
 struct ZeKernelSetCacheConfigRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 102;
+    static constexpr uint16_t messageSubtype = 103;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9122,7 +9183,7 @@ struct ZeKernelSetCacheConfigRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelSetCacheConfigRpcM>);
 struct ZeKernelGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 103;
+    static constexpr uint16_t messageSubtype = 104;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9335,7 +9396,7 @@ struct ZeKernelGetPropertiesRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelGetPropertiesRpcM>);
 struct ZeKernelGetNameRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 104;
+    static constexpr uint16_t messageSubtype = 105;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9422,7 +9483,7 @@ struct ZeKernelGetNameRpcM {
 static_assert(std::is_standard_layout_v<ZeKernelGetNameRpcM>);
 struct ZeCommandListAppendLaunchKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 105;
+    static constexpr uint16_t messageSubtype = 106;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9515,7 +9576,7 @@ struct ZeCommandListAppendLaunchKernelRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendLaunchKernelRpcM>);
 struct ZeCommandListAppendLaunchKernelIndirectRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 106;
+    static constexpr uint16_t messageSubtype = 107;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9604,7 +9665,7 @@ struct ZeCommandListAppendLaunchKernelIndirectRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendLaunchKernelIndirectRpcM>);
 struct ZeDevicePciGetPropertiesExtRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 107;
+    static constexpr uint16_t messageSubtype = 108;
     static constexpr float latency = 0.0;
 
     using ReturnValueT = ze_result_t;
@@ -9745,6 +9806,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageGetPropertiesRpcM::messageSubtype).id, "zeImageGetProperties"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageCreateRpcM::messageSubtype).id, "zeImageCreate"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageDestroyRpcM::messageSubtype).id, "zeImageDestroy"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelSchedulingHintExpRpcM::messageSubtype).id, "zeKernelSchedulingHintExp"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocSharedRpcM::messageSubtype).id, "zeMemAllocShared"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocDeviceRpcM::messageSubtype).id, "zeMemAllocDevice"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocHostRpcM::messageSubtype).id, "zeMemAllocHost"),
@@ -9865,6 +9927,7 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeImageGetProperties", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageGetPropertiesRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeImageCreate", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageCreateRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeImageDestroy", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageDestroyRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeKernelSchedulingHintExp", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelSchedulingHintExpRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeMemAllocShared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocSharedRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeMemAllocDevice", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocDeviceRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeMemAllocHost", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocHostRpcM::messageSubtype)),
@@ -9983,6 +10046,7 @@ static constexpr RpcCallId zeKernelSetGlobalOffsetExp = {Cal::Rpc::RpcMessageHea
 static constexpr RpcCallId zeImageGetProperties = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageGetPropertiesRpcM::messageSubtype};
 static constexpr RpcCallId zeImageCreate = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageCreateRpcM::messageSubtype};
 static constexpr RpcCallId zeImageDestroy = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeImageDestroyRpcM::messageSubtype};
+static constexpr RpcCallId zeKernelSchedulingHintExp = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeKernelSchedulingHintExpRpcM::messageSubtype};
 static constexpr RpcCallId zeMemAllocShared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocSharedRpcM::messageSubtype};
 static constexpr RpcCallId zeMemAllocDevice = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocDeviceRpcM::messageSubtype};
 static constexpr RpcCallId zeMemAllocHost = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeMemAllocHostRpcM::messageSubtype};
@@ -10094,6 +10158,7 @@ using zeKernelSetGlobalOffsetExp = ZeKernelSetGlobalOffsetExpRpcM;
 using zeImageGetProperties = ZeImageGetPropertiesRpcM;
 using zeImageCreate = ZeImageCreateRpcM;
 using zeImageDestroy = ZeImageDestroyRpcM;
+using zeKernelSchedulingHintExp = ZeKernelSchedulingHintExpRpcM;
 using zeMemAllocShared = ZeMemAllocSharedRpcM;
 using zeMemAllocDevice = ZeMemAllocDeviceRpcM;
 using zeMemAllocHost = ZeMemAllocHostRpcM;

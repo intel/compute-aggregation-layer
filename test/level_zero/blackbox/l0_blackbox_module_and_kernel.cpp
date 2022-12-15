@@ -339,9 +339,8 @@ bool suggestGroupSize(ze_kernel_handle_t kernel, uint32_t xSize, uint32_t ySize,
     return true;
 }
 
-bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint32_t suggestedGroupSizeY,
-                  uint32_t suggestedGroupSizeZ) {
-    log<Verbosity::info>("Setting kernel group size via zeKernelSetGroupSize() for CopyBuffer kernel!");
+bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint32_t suggestedGroupSizeY, uint32_t suggestedGroupSizeZ) {
+    log<Verbosity::info>("Setting kernel group size via zeKernelSetGroupSize() for kernel (%p)!", static_cast<void *>(kernel));
 
     const auto zeKernelSetGroupSizeResult =
         zeKernelSetGroupSize(kernel, suggestedGroupSizeX, suggestedGroupSizeY, suggestedGroupSizeZ);
@@ -352,6 +351,20 @@ bool setGroupSize(ze_kernel_handle_t kernel, uint32_t suggestedGroupSizeX, uint3
     }
 
     log<Verbosity::info>("Call to zeKernelSetGroupSize() has been successful!");
+    return true;
+}
+
+bool setSchedulingHint(ze_kernel_handle_t kernel, ze_scheduling_hint_exp_desc_t &hint) {
+    log<Verbosity::info>("Setting kernel scheduling hint via zeKernelSchedulingHintExp() for kernel (%p)!", static_cast<void *>(kernel));
+
+    const auto zeKernelSchedulingHintExpResult = zeKernelSchedulingHintExp(kernel, &hint);
+    if (zeKernelSchedulingHintExpResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeKernelSchedulingHintExp() call has failed! Error code: %d",
+                              static_cast<int>(zeKernelSchedulingHintExpResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Scheduling hint has been successfully set!");
     return true;
 }
 
@@ -524,6 +537,14 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getTotalGroupCount(copyBufferKernel));
     RUN_REQUIRED_STEP(getKernelProperties(copyBufferKernel));
     RUN_REQUIRED_STEP(setCacheConfig(copyBufferKernel, ZE_CACHE_CONFIG_FLAG_LARGE_SLM));
+
+    ze_scheduling_hint_exp_desc_t schedulingHint = {
+        ZE_STRUCTURE_TYPE_SCHEDULING_HINT_EXP_DESC, // stype
+        nullptr,                                    // pNext
+        ZE_SCHEDULING_HINT_EXP_FLAG_ROUND_ROBIN     // flags
+    };
+
+    RUN_REQUIRED_STEP(setSchedulingHint(copyBufferKernel, schedulingHint));
 
     ze_kernel_indirect_access_flags_t indirectAccessFlags{};
     RUN_REQUIRED_STEP(getIndirectAccessFlags(copyBufferKernel, indirectAccessFlags));
