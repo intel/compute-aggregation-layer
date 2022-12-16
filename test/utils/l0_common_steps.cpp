@@ -163,11 +163,11 @@ bool getComputeQueueOrdinal(ze_device_handle_t device, uint32_t &ordinal) {
 }
 
 bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal,
-                        ze_command_queue_handle_t &queue) {
+                        ze_command_queue_handle_t &queue, ze_command_queue_mode_t mode) {
     ze_command_queue_desc_t queueDescription{};
 
     queueDescription.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
-    queueDescription.mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS;
+    queueDescription.mode = mode;
     queueDescription.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
     queueDescription.ordinal = ordinal;
 

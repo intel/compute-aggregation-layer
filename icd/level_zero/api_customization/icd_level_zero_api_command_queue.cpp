@@ -46,8 +46,14 @@ ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommand
         }
     }
 
-    queueLock.unlock();
-    return zeCommandQueueExecuteCommandListsRpcHelper(hCommandQueue, numCommandLists, phCommandLists, hFence);
+    auto result = zeCommandQueueExecuteCommandListsRpcHelper(hCommandQueue, numCommandLists, phCommandLists, hFence);
+
+    if (icdCommandQueue->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
+        result = icdCommandQueue->readMemoryRequiredByCurrentlyExecutedCommandLists();
+        icdCommandQueue->clearExecutedCommandListsPointers();
+    }
+
+    return result;
 }
 
 } // namespace Cal::Icd::LevelZero

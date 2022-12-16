@@ -571,7 +571,7 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getComputeQueueOrdinal(devices[0], ordinal));
 
     ze_command_queue_handle_t queue{};
-    RUN_REQUIRED_STEP(createCommandQueue(context, devices[0], ordinal, queue));
+    RUN_REQUIRED_STEP(createCommandQueue(context, devices[0], ordinal, queue, ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS));
 
     ze_command_list_handle_t cmdList{};
     RUN_REQUIRED_STEP(createCommandList(context, devices[0], ordinal, cmdList));

@@ -221,6 +221,10 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
     }
 }
 
+ze_command_queue_mode_t IcdL0CommandQueue::getCommandQueueMode() {
+    return mode;
+}
+
 ze_result_t IcdL0CommandQueue::readMemoryRequiredByCurrentlyExecutedCommandLists() {
     for (const auto &commandList : currentlyExecutedCommandLists) {
         const auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);

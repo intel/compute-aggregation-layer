@@ -25,7 +25,7 @@ bool createContext(ze_driver_handle_t driver, ze_context_handle_t &context);
 bool destroyContext(ze_context_handle_t &context);
 
 bool getComputeQueueOrdinal(ze_device_handle_t device, uint32_t &ordinal);
-bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_handle_t &queue);
+bool createCommandQueue(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_handle_t &queue, ze_command_queue_mode_t mode);
 bool executeCommandLists(ze_command_queue_handle_t queue, uint32_t numCmdLists, ze_command_list_handle_t *cmdLists, ze_fence_handle_t fence);
 bool synchronizeCommandQueue(ze_command_queue_handle_t queue);
 bool destroyCommandQueue(ze_command_queue_handle_t &queue);

@@ -11,6 +11,10 @@ full :
         test_binary : "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
         preserve_logs : False
 
+    append_mem_fill_copy_synchronous :
+        test_binary : "l0_blackbox_append_mem_fill_copy_synchronous"
+        preserve_logs : False
+
     context :
         test_binary : "l0_blackbox_context"
         preserve_logs : False
@@ -58,6 +62,10 @@ limited :
 
     append_mem_fill_copy_immediate_synchronous :
         test_binary : "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
+        preserve_logs : False
+
+    append_mem_fill_copy_synchronous :
+        test_binary : "l0_blackbox_append_mem_fill_copy_synchronous"
         preserve_logs : False
 
     context :

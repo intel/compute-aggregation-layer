@@ -482,6 +482,8 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
 
     void moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
 
+    ze_command_queue_mode_t getCommandQueueMode();
+
   private:
     friend IcdL0Platform;
     void setCommandQueueType(ze_command_queue_mode_t mode) {
