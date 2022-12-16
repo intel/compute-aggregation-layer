@@ -79,6 +79,9 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %     for arg in func_base.traits.get_standalone_args():
     command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFor${arg.name}.get());
 %     endfor # arg in func_base.traits.get_standalone_args()
+%     if func_base.traits.emit_reassemblation_in_icd:
+    command->captures.reassembleNestedStructs();
+%     endif # func_base.traits.emit_reassemblation_in_icd
 %     for arg in get_args_requiring_translation_before(func_base):
 %       if can_be_null(arg):
     if(${arg.name})

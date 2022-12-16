@@ -8,6 +8,7 @@
 #pragma once
 
 #include "icd/icd_global_state.h"
+#include "icd/level_zero/icd_level_zero.h"
 #include "icd_level_zero_api.h"
 #include "shared/control_messages.h"
 #include "shared/log.h"

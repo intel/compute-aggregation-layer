@@ -2024,10 +2024,11 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
     auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
     command->copyFromCaller(dynMemTraits, implArgsForZeMemAllocSharedRpcM);
+    command->captures.reassembleNestedStructs();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     if(device_desc)
     {
-        ensureNull("zeMemAllocShared: device_desc->pNext", device_desc->pNext);
+        translateRequiredPNextExtensions(command->captures.device_desc.pNext);
     }
     if(hDevice)
     {
@@ -2051,13 +2052,15 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hContext, device_desc, size, alignment, hDevice, pptr);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hContext, device_desc, size, alignment, hDevice, pptr);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hContext, device_desc, size, alignment, hDevice, pptr);
+    command->copyFromCaller(dynMemTraits);
+    command->captures.reassembleNestedStructs();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     if(device_desc)
     {
-        ensureNull("zeMemAllocDevice: device_desc->pNext", device_desc->pNext);
+        translateRequiredPNextExtensions(command->captures.device_desc.pNext);
     }
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
@@ -2067,7 +2070,7 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     if(pptr)
     {
         pptr[0] = globalL0Platform->validateNewUsmDevicePointer(pptr[0], size);

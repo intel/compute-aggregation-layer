@@ -57,7 +57,7 @@ bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t a
 bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
                           void *&usmSharedBuffer);
 bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
-                          void *&usmDeviceBuffer);
+                          void *&usmDeviceBuffer, const void *descPNext = nullptr);
 bool freeMemory(ze_context_handle_t context, void *&buffer);
 bool closeMemIpcHandle(ze_context_handle_t context, void *ptr);
 

@@ -896,6 +896,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
 inline bool zeMemAllocDeviceHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemAllocDevice");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemAllocDevice(
                                                 apiCommand->args.hContext, 
                                                 apiCommand->args.device_desc ? &apiCommand->captures.device_desc : nullptr, 

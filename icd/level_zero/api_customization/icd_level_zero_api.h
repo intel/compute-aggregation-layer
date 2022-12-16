@@ -79,4 +79,6 @@ ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properti
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue);
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties);
 
+void translateRequiredPNextExtensions(const void *pNext);
+
 } // namespace Cal::Icd::LevelZero

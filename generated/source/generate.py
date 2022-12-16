@@ -180,6 +180,7 @@ class KindDetails:
         self.underlying_type = UnderlyingType(src.get("underlying_type", {}))
         self.iterator_type = src.get("iterator_type", "")
         self.opaque_traits_name = src.get("opaque_traits_name", "")
+        self.requires_opaque_elements_translation_before = src.get("requires_opaque_elements_translation_before", False)
 
 class CaptureMode:
     def __init__(self, src: str):
@@ -340,6 +341,10 @@ class StructureTraits:
             struct_type = self.struct.all_structures_description[variable.type.str]
             return not struct_type.traits.is_trivial()
 
+    def requires_opaque_elements_translation_before(self):
+        members_to_captures = self.struct.members_to_capture()
+        return any(member.kind_details.requires_opaque_elements_translation_before for member in members_to_captures)
+
 
 class Structure:
     def __init__(self, src: dict):
@@ -420,6 +425,7 @@ class FunctionTraits:
 
         self.emit_copy_from_caller = self.requires_copy_from_caller(ptr_array_args, function.implicit_args)
         self.emit_copy_to_caller = self.requires_copy_to_caller(ptr_array_args, function.implicit_args)
+        self.emit_reassemblation_in_icd = self.requires_opaque_elements_translation_before(ptr_array_args)
 
         self.uses_inline_dynamic_mem = self.num_of_all_args_with_inline_dynamic_mem > 0
         self.is_extension = function.special_handling and function.special_handling.is_extension()
@@ -453,6 +459,11 @@ class FunctionTraits:
         capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in writable_struct_args]
 
         return any(struct.traits.requires_copy_to_caller() for struct in capturable_structs)
+
+    def requires_opaque_elements_translation_before(self, ptr_array_args):
+        capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
+        capturable_structs = [self.function.structures[arg.kind_details.element.type.str] for arg in capturable_struct_args]
+        return any(struct.traits.requires_opaque_elements_translation_before() for struct in capturable_structs)
 
     def count_of_capturable_struct_members_includig_nested(self, args):
         total_count = 0

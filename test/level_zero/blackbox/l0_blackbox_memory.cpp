@@ -201,6 +201,20 @@ int main(int argc, const char *argv[]) {
         ze_ipc_mem_handle_t ipcHandleOfUsmDeviceBuffer{};
         RUN_REQUIRED_STEP(getIpcHandle(context, usmDeviceBuffer, ipcHandleOfUsmDeviceBuffer));
 
+        int fileDescriptor{};
+        std::memcpy(&fileDescriptor, ipcHandleOfUsmDeviceBuffer.data, sizeof(int));
+
+        const ze_external_memory_import_fd_t importFdExtension = {
+            ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMPORT_FD, // stype
+            nullptr,                                     // pNext
+            ZE_EXTERNAL_MEMORY_TYPE_FLAG_DMA_BUF,        // flags
+            fileDescriptor                               // fd
+        };
+
+        void *reopenedUsmDeviceBufferViaPNext{nullptr};
+        RUN_REQUIRED_STEP(allocateDeviceMemory(context, bufferSize, alignment, devices[0], reopenedUsmDeviceBufferViaPNext, &importFdExtension));
+        RUN_REQUIRED_STEP(freeMemory(context, reopenedUsmDeviceBufferViaPNext));
+
         void *reopenedUsmDeviceBuffer{};
         RUN_REQUIRED_STEP(openIpcHandle(context, devices[0], ipcHandleOfUsmDeviceBuffer, reopenedUsmDeviceBuffer));
         RUN_REQUIRED_STEP(closeIpcHandle(context, reopenedUsmDeviceBuffer));

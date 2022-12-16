@@ -389,8 +389,8 @@ bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t
     return true;
 }
 
-bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer) {
-    ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC};
+bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmDeviceBuffer, const void *descPNext) {
+    ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC, descPNext};
     deviceMemAllocDesc.flags = ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_UNCACHED;
     deviceMemAllocDesc.ordinal = 0;
 
