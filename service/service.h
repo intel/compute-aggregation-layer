@@ -695,7 +695,7 @@ class Provider {
         } availableApis;
         Cal::Utils::CpuInfo cpuInfo = {};
     } systemInfo;
-    bool yieldThreads = false;
+    bool yieldThreads = true;
     std::unique_ptr<ChoreographyLibrary> knownChoreographies;
     struct {
         std::unique_lock<std::mutex> lock() {
