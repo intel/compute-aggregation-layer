@@ -186,8 +186,6 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
 cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t *buffer_offset, const size_t *host_offset, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
 cl_int clGetHostTimer(cl_device_id device, cl_ulong *host_timestamp);
 
-cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
-cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value);
 cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const void *argValue);
 cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue);
@@ -567,9 +565,68 @@ struct ClBufferRecycler {
     std::atomic_bool isCleaningUp = false;
 };
 
+struct InfoCache {
+    struct Entry {
+        cl_uint paramName = {};
+        size_t paramValueSize = {};
+        uint8_t *paramValue = nullptr;
+    };
+
+    bool find(cl_uint paramName, void *paramValue, size_t *paramValueSize) {
+        std::shared_lock lock(mutex);
+        auto it = findImpl(paramName);
+        if (it != cache.end()) {
+            if (paramValue) {
+                if (it->paramValue) {
+                    memcpy(paramValue, it->paramValue, it->paramValueSize);
+                } else {
+                    return false;
+                }
+            }
+            if (paramValueSize) {
+                *paramValueSize = it->paramValueSize;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void store(cl_uint paramName, void *paramValue, size_t paramValueSize) {
+        std::lock_guard<std::shared_mutex> lock(mutex);
+        auto it = findImpl(paramName);
+        auto &entry = it != cache.end() ? *it : cache.emplace_back();
+        entry.paramValueSize = paramValueSize;
+        entry.paramName = paramName;
+        if (paramValue) {
+            entry.paramValue = new uint8_t[entry.paramValueSize];
+            memcpy(entry.paramValue, paramValue, entry.paramValueSize);
+        }
+    }
+
+    ~InfoCache() {
+        for (auto &entry : cache) {
+            delete[] entry.paramValue;
+        }
+    }
+
+  protected:
+    std::vector<Entry>::iterator findImpl(cl_uint paramName) {
+        for (auto it = cache.begin(); it != cache.end(); ++it) {
+            if (it->paramName == paramName) {
+                return it;
+            }
+        }
+        return cache.end();
+    }
+
+    std::vector<Entry> cache;
+    std::shared_mutex mutex;
+};
+
 struct IcdOclDevice : Cal::Shared::RefCountedWithParent<_cl_device_id, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
     bool isSubDevice = false;
+    InfoCache cache;
 };
 
 struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter> {
@@ -599,6 +656,7 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
 
     std::vector<cl_device_id> devices;
     ClBufferRecycler clBufferRecycler;
+    InfoCache cache;
     cl_command_queue implicitQueue = nullptr;
     bool skipTransferOnHostPtrMatch = false;
 };

@@ -28,9 +28,7 @@ IcdGlobalState::IcdGlobalState() {
 
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
 }
-IcdGlobalState::~IcdGlobalState() {
-    this->cache.clear();
-}
+IcdGlobalState::~IcdGlobalState() = default;
 
 Cal::Icd::Ocl::IcdOclPlatform *IcdGlobalState::getOclPlatform() {
     std::call_once(oclPlatform.onceFlag, [this]() {

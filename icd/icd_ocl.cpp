@@ -400,90 +400,6 @@ cl_int clGetHostTimer(cl_device_id device, cl_ulong *host_timestamp) {
     }
 }
 
-cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-    log<Verbosity::bloat>("Establishing RPC for clGetDeviceInfo");
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    using CommandT = Cal::Rpc::Ocl::ClGetDeviceInfoRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(device, param_name, param_value_size, param_value, param_value_size_ret);
-    auto commandPtr = std::make_unique<char[]>(sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-    auto command = new (commandPtr.get()) CommandT(dynMemTraits, device, param_name, param_value_size, param_value, param_value_size_ret);
-    command->args.device = static_cast<IcdOclDevice *>(device)->asRemoteObject();
-    auto cached = Cal::Icd::icdGlobalState.isCommandReturnValueCached(*command);
-    if (!cached) {
-        auto &channel = globalOclPlatform->getRpcChannel();
-        auto lock = channel.lock();
-        auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        memcpy(space.get(), command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-        command = static_cast<CommandT *>(space.get());
-        commandPtr.reset();
-        if (false == channel.callSynchronous(command)) {
-            return command->returnValue();
-        }
-    }
-
-    command->copyToCaller(dynMemTraits);
-    if (!cached) {
-        globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
-
-        if (param_value) {
-            memcpy(command->captures.param_value, param_value, command->args.param_value_size);
-        }
-        if (param_value_size_ret) {
-            command->captures.param_value_size_ret = *param_value_size_ret;
-        }
-
-        Cal::Icd::icdGlobalState.cacheReturnValue(*command);
-    }
-    cl_int ret = command->captures.ret;
-    return ret;
-}
-
-cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-    log<Verbosity::bloat>("Establishing RPC for clGetContextInfo");
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    using CommandT = Cal::Rpc::Ocl::ClGetContextInfoRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, param_name, param_value_size, param_value, param_value_size_ret);
-    auto commandPtr = std::make_unique<char[]>(sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-    auto command = new (commandPtr.get()) CommandT(dynMemTraits, context, param_name, param_value_size, param_value, param_value_size_ret);
-    command->args.context = static_cast<IcdOclContext *>(context)->asRemoteObject();
-    auto cached = Cal::Icd::icdGlobalState.isCommandReturnValueCached(*command);
-    if (!cached) {
-        auto &channel = globalOclPlatform->getRpcChannel();
-        auto lock = channel.lock();
-        auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        memcpy(space.get(), command, sizeof(CommandT) + dynMemTraits.totalDynamicSize);
-        command = static_cast<CommandT *>(space.get());
-        commandPtr.reset();
-        if (false == channel.callSynchronous(command)) {
-            return command->returnValue();
-        }
-    }
-
-    command->copyToCaller(dynMemTraits);
-    if (!cached) {
-        if (param_value) {
-            auto base = reinterpret_cast<char *>(param_value);
-            auto numEntries = param_value_size;
-            for (size_t i = 0; i < numEntries; ++i) {
-                if ((param_name == CL_CONTEXT_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {
-                    *reinterpret_cast<cl_device_id *>(&base[i]) = globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id *>(&base[i]), context);
-                };
-            }
-        }
-        globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
-        if (param_value) {
-            memcpy(command->captures.param_value, param_value, command->args.param_value_size);
-        }
-        if (param_value_size_ret) {
-            command->captures.param_value_size_ret = *param_value_size_ret;
-        }
-
-        Cal::Icd::icdGlobalState.cacheReturnValue(*command);
-    }
-    cl_int ret = command->captures.ret;
-    return ret;
-}
-
 cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value) {
     log<Verbosity::bloat>("Establishing RPC for clSetKernelArg");
     auto oclKernel = static_cast<IcdOclKernel *>(kernel);
@@ -496,20 +412,7 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
     cl_int ret = CL_SUCCESS;
 
     if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
-        auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-        auto &channel = globalOclPlatform->getRpcChannel();
-        auto lock = channel.lock();
-        using CommandT = Cal::Rpc::Ocl::ClSetKernelArgRpcM;
-        const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, arg_index, arg_size, arg_value);
-        auto space = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-        auto command = new (space.get()) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
-        command->copyFromCaller(dynMemTraits);
-        command->args.kernel = oclKernel->asRemoteObject();
-        oclKernel->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
-        if (false == channel.callSynchronous(command)) {
-            return command->returnValue();
-        }
-        ret = command->captures.ret;
+        ret = Cal::Icd::Ocl::clSetKernelArgRpcHelper(kernel, arg_index, arg_size, arg_value);
 
         if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
             oclKernel->clSetKernelArgCache.cacheKernelArg(arg_index, arg_size, arg_value);
@@ -532,18 +435,7 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
     cl_int ret = CL_SUCCESS;
 
     if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
-        auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-        auto &channel = globalOclPlatform->getRpcChannel();
-        auto lock = channel.lock();
-        using CommandT = Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM;
-        auto space = channel.getSpace<CommandT>(0);
-        auto command = new (space.get()) CommandT(kernel, argIndex, argValue);
-        command->args.kernel = oclKernel->asRemoteObject();
-        if (false == channel.callSynchronous(command)) {
-            return command->returnValue();
-        }
-
-        ret = command->captures.ret;
+        ret = Cal::Icd::Ocl::clSetKernelArgMemPointerINTELRpcHelper(kernel, argIndex, argValue);
 
         if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
             oclKernel->clSetKernelArgCache.cacheKernelArg(argIndex, 0u, argValue);

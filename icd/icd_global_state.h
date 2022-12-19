@@ -120,72 +120,6 @@ class IcdGlobalState final {
     bool isCacheEnabled() { return this->enableCache; };
     ~IcdGlobalState();
 
-    struct CacheBase {};
-
-    template <typename ArgsT, typename CapturesT>
-    struct Cache : public CacheBase {
-        struct Pair {
-            CapturesT *getCaptures() {
-                return std::launder(reinterpret_cast<CapturesT *>(capturesMem.get()));
-            }
-
-            ArgsT args;
-            std::unique_ptr<char[]> capturesMem;
-        };
-        std::vector<Pair> cache;
-
-        auto find(ArgsT &args) {
-            return std::find_if(cache.begin(), cache.end(), [&args](Pair &el) {
-                return args.shallowCompareEquals(el.args);
-            });
-        }
-    };
-
-    template <typename CommandT>
-    bool isCommandReturnValueCached(CommandT &command) {
-        std::lock_guard<std::mutex> lock(this->cacheMutex);
-        using CommandCacheT = Cache<typename CommandT::Args, typename CommandT::Captures>;
-
-        if (!this->enableCache) {
-            return false;
-        }
-
-        if (this->cache.size() < CommandT::messageSubtype + 1) {
-            cache.resize(CommandT::messageSubtype + 1);
-        }
-
-        if (this->cache[CommandT::messageSubtype].get() == nullptr) {
-            this->cache[CommandT::messageSubtype] = std::make_unique<CommandCacheT>();
-            return false;
-        }
-
-        auto commandCache = static_cast<CommandCacheT *>(this->cache[CommandT::messageSubtype].get());
-        auto cachedCommandRet = commandCache->find(command.args);
-        if (cachedCommandRet != commandCache->cache.end()) {
-            if (!command.captures.assignFrom(*cachedCommandRet->getCaptures())) {
-                log<Verbosity::bloat>("Tried to assign cached value, which has different dynamic memory size!");
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    template <typename CommandT>
-    void cacheReturnValue(CommandT &command) {
-        std::lock_guard<std::mutex> lock(this->cacheMutex);
-        using CommandCacheT = Cache<typename CommandT::Args, typename CommandT::Captures>;
-
-        if (!this->enableCache) {
-            return;
-        }
-
-        auto commandCache = static_cast<CommandCacheT *>(this->cache[CommandT::messageSubtype].get());
-        commandCache->cache.push_back({command.args, command.captures.clone()});
-    }
-
   protected:
     friend struct IcdGlobalsRegistryAtExitWatcher;
     void notifyAtExit() {
@@ -207,8 +141,6 @@ class IcdGlobalState final {
     std::unique_ptr<Cal::Usm::UsmShmemImporter> usmShmemImporter;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager> mallocShmemZeroCopyManager;
 
-    std::mutex cacheMutex;
-    std::vector<std::unique_ptr<IcdGlobalState::CacheBase>> cache;
     bool enableCache = false;
 
     struct AtExit {
