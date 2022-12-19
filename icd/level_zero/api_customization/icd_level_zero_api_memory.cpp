@@ -49,7 +49,43 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_a
     return result;
 }
 
+static ze_result_t zeMemGetAllocPropertiesWithExtensions(ze_context_handle_t hContext,
+                                                         const void *ptr,
+                                                         ze_memory_allocation_properties_t *pMemAllocProperties,
+                                                         ze_device_handle_t *phDevice) {
+    struct FdIpcHandleWrapper {
+        int *data{};
+    };
+
+    const auto result = zeMemGetAllocPropertiesRpcHelper(hContext, ptr, pMemAllocProperties, phDevice);
+    if (result != ZE_RESULT_SUCCESS) {
+        return result;
+    }
+
+    auto current = pMemAllocProperties->pNext;
+    while (current) {
+        auto baseDesc = static_cast<ze_base_desc_t *>(current);
+        if (baseDesc->stype == ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD) {
+            auto exportFdExt = static_cast<ze_external_memory_export_fd_t *>(current);
+            FdIpcHandleWrapper ipcHandle{&exportFdExt->fd};
+
+            const auto translationResult = Cal::Icd::LevelZero::Ipc::translateIpcHandles("ze_external_memory_export_fd_t", 1u, &ipcHandle);
+            if (translationResult != ZE_RESULT_SUCCESS) {
+                return translationResult;
+            }
+        }
+
+        current = const_cast<void *>(baseDesc->pNext);
+    }
+
+    return ZE_RESULT_SUCCESS;
+}
+
 ze_result_t zeMemGetAllocProperties(ze_context_handle_t hContext, const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice) {
+    if (pMemAllocProperties->pNext) {
+        return zeMemGetAllocPropertiesWithExtensions(hContext, ptr, pMemAllocProperties, phDevice);
+    }
+
     auto l0Context = static_cast<IcdL0Context *>(hContext);
     auto found = l0Context->allocPropertiesCache.obtainProperties(ptr, pMemAllocProperties, phDevice);
     if (found) {

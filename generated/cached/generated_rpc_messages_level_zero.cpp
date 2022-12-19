@@ -976,6 +976,50 @@ size_t ZeMemAllocHostRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
 }
 
+ZeMemGetAllocPropertiesRpcM::Captures::DynamicTraits ZeMemGetAllocPropertiesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pMemAllocProperties) {
+        ret.pMemAllocPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pMemAllocPropertiesNestedTraits.count = 1;
+        ret.pMemAllocPropertiesNestedTraits.size = ret.pMemAllocPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_memory_allocation_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pMemAllocPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pMemAllocPropertiesNestedTraits.count; ++i) {
+            const auto& pMemAllocPropertiesPNext = pMemAllocProperties[i].pNext;
+            if(!pMemAllocPropertiesPNext){
+                continue;
+            }
+
+            const auto pMemAllocPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pMemAllocProperties[i].pNext)));
+            if(!pMemAllocPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pMemAllocPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pMemAllocPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pMemAllocProperties[i].pNext);
+            for(uint32_t j = 0; j < pMemAllocPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pMemAllocPropertiesPNextListElement));
+                pMemAllocPropertiesPNextListElement = getNext(pMemAllocPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeMemGetAllocPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeMemGetAllocPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     DynamicTraits ret = {};
     ret.pIpcHandles.count = (numIpcHandles ? *numIpcHandles : 0);

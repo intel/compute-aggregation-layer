@@ -30,6 +30,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return 0;
     }
 
+    if (ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD == desc->stype) {
+        return sizeof(ze_external_memory_export_fd_t);
+    }
+
     if (ZE_STRUCTURE_TYPE_DEVICE_P2P_BANDWIDTH_EXP_PROPERTIES == desc->stype) {
         return sizeof(ze_device_p2p_bandwidth_exp_properties_t);
     }

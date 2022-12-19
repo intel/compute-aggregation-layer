@@ -131,6 +131,13 @@ struct DynamicStructTraits<ze_host_mem_alloc_desc_t> {
 };
 
 template <>
+struct DynamicStructTraits<ze_memory_allocation_properties_t> {
+    int32_t pNextOffset{-1};
+    int32_t pNextCount{-1};
+    void* pNextFirstOriginalElement{nullptr};
+};
+
+template <>
 struct DynamicStructTraits<ze_kernel_properties_t> {
     int32_t pNextOffset{-1};
     int32_t pNextCount{-1};
@@ -7126,15 +7133,72 @@ struct ZeMemGetAllocPropertiesRpcM {
 
     struct Captures {
 
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
+            uint32_t totalDynamicSize = 0;
+            uint32_t dynamicStructMembersOffset = 0;
+            DynamicArgTraits pMemAllocPropertiesNestedTraits = {};
+        };
+
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         ze_memory_allocation_properties_t pMemAllocProperties;
         ze_device_handle_t phDevice;
+        uint32_t dynamicStructMembersOffset = 0;
+        uint32_t pMemAllocPropertiesNestedTraitsOffset = 0;
+        uint32_t pMemAllocPropertiesNestedTraitsCount = 0;
 
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+            dynamicStructMembersOffset = dynamicTraits.dynamicStructMembersOffset;
+            pMemAllocPropertiesNestedTraitsOffset = dynamicTraits.pMemAllocPropertiesNestedTraits.offset;
+            pMemAllocPropertiesNestedTraitsCount = dynamicTraits.pMemAllocPropertiesNestedTraits.count;
+            dynMemSize = dynamicTraits.totalDynamicSize;
+        }
+        
+        uint32_t dynMemSize = 0;
+        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
         size_t getCaptureTotalSize() const;
         size_t getCaptureDynMemSize() const;
+        void reassembleNestedStructs() {
+            using Cal::Utils::alignUpPow2;
+
+            uint32_t currentOffset = dynamicStructMembersOffset;
+
+            if(pMemAllocPropertiesNestedTraitsCount > 0){
+                assert(currentOffset == pMemAllocPropertiesNestedTraitsOffset);
+                auto* pMemAllocPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_memory_allocation_properties_t>*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pMemAllocPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_memory_allocation_properties_t>));
+                auto* destPMemAllocProperties = &pMemAllocProperties;
+
+                for (uint32_t i = 0; i < pMemAllocPropertiesNestedTraitsCount; ++i) {
+                    if(pMemAllocPropertiesTraits[i].pNextOffset == -1){
+                        forcePointerWrite(destPMemAllocProperties[i].pNext, nullptr);
+                        continue;
+                    }
+
+                    auto pMemAllocPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                    currentOffset += alignUpPow2<8>(pMemAllocPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                    forcePointerWrite(destPMemAllocProperties[i].pNext, dynMem + pMemAllocPropertiesPNextListElementTraits[0].extensionOffset);
+                    currentOffset += alignUpPow2<8>(getUnderlyingSize(static_cast<const ze_base_desc_t*>(destPMemAllocProperties[i].pNext)));
+
+                    auto pMemAllocPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPMemAllocProperties[i].pNext);
+                    for(int32_t j = 1; j < pMemAllocPropertiesTraits[i].pNextCount; ++j){
+                        const auto extensionOffset = pMemAllocPropertiesPNextListElementTraits[j].extensionOffset;
+                        forcePointerWrite(getNextField(*pMemAllocPropertiesPNextListElement), dynMem + extensionOffset);
+
+                        const auto pNextElement = getNext(pMemAllocPropertiesPNextListElement);
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                        pMemAllocPropertiesPNextListElement = pNextElement;
+                    }
+
+                }
+        }
+    }
 
     }captures;
     
@@ -7145,13 +7209,14 @@ struct ZeMemGetAllocPropertiesRpcM {
 
     ZeMemGetAllocPropertiesRpcM() = default;
 
-    ZeMemGetAllocPropertiesRpcM(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
+    ZeMemGetAllocPropertiesRpcM(const Captures::DynamicTraits &dynamicTraits, ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hContext = hContext;
         args.ptr = ptr;
         args.pMemAllocProperties = pMemAllocProperties;
         args.phDevice = phDevice;
+        captures.adjustCaptureLayout(dynamicTraits);
     }
     
     static void fillWithoutCapture(ZeMemGetAllocPropertiesRpcM &message, ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
@@ -7164,18 +7229,104 @@ struct ZeMemGetAllocPropertiesRpcM {
     }
     
 
-    void copyFromCaller(){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pMemAllocProperties){
             captures.pMemAllocProperties = *args.pMemAllocProperties;
         }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pMemAllocProperties){
+            assert(currentOffset == captures.pMemAllocPropertiesNestedTraitsOffset);
+            auto* pMemAllocPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_memory_allocation_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pMemAllocPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_memory_allocation_properties_t>));
+
+            for (uint32_t i = 0; i < captures.pMemAllocPropertiesNestedTraitsCount; ++i) {
+                const auto& pMemAllocPropertiesPNext = args.pMemAllocProperties[i].pNext;
+                if(!pMemAllocPropertiesPNext){
+                    pMemAllocPropertiesTraits[i].pNextOffset = -1;
+                    pMemAllocPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                const auto pMemAllocPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pMemAllocProperties[i].pNext)));
+                if(!pMemAllocPropertiesPNextCount){
+                    pMemAllocPropertiesTraits[i].pNextOffset = -1;
+                    pMemAllocPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                pMemAllocPropertiesTraits[i].pNextOffset = currentOffset;
+                pMemAllocPropertiesTraits[i].pNextCount = pMemAllocPropertiesPNextCount;
+                pMemAllocPropertiesTraits[i].pNextFirstOriginalElement = args.pMemAllocProperties[i].pNext;
+
+                auto pMemAllocPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pMemAllocPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+                auto pMemAllocPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(args.pMemAllocProperties[i].pNext);
+                for(int32_t j = 0; j < pMemAllocPropertiesPNextCount; ++j){
+                    pMemAllocPropertiesPNextListElementTraits[j].extensionType = getExtensionType(pMemAllocPropertiesPNextListElement);
+                    pMemAllocPropertiesPNextListElementTraits[j].extensionOffset = currentOffset;
+
+                    const auto sizeInBytes = getUnderlyingSize(pMemAllocPropertiesPNextListElement);
+                    std::memcpy(dynMem + currentOffset, pMemAllocPropertiesPNextListElement, sizeInBytes);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    pMemAllocPropertiesPNextListElement = getNext(pMemAllocPropertiesPNextListElement);
+                }
+
+            }
+        }
     }
 
-    void copyToCaller(){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pMemAllocProperties){
             *args.pMemAllocProperties = captures.pMemAllocProperties;
         }
         if(args.phDevice){
             *args.phDevice = captures.phDevice;
+        }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pMemAllocProperties) {
+            assert(currentOffset == captures.pMemAllocPropertiesNestedTraitsOffset);
+            auto* pMemAllocPropertiesTraits = reinterpret_cast<DynamicStructTraits<ze_memory_allocation_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pMemAllocPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<ze_memory_allocation_properties_t>));
+
+            auto* destPMemAllocProperties = args.pMemAllocProperties;
+
+            for (uint32_t i = 0; i < captures.pMemAllocPropertiesNestedTraitsCount; ++i) {
+                if(pMemAllocPropertiesTraits[i].pNextOffset == -1){
+                    continue;
+                }
+
+                destPMemAllocProperties[i].pNext = pMemAllocPropertiesTraits[i].pNextFirstOriginalElement;
+
+                auto pMemAllocPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pMemAllocPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                auto pMemAllocPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPMemAllocProperties[i].pNext);
+                for(int32_t j = 0; j < pMemAllocPropertiesTraits[i].pNextCount; ++j){
+                    const auto sizeInBytes = getUnderlyingSize(pMemAllocPropertiesPNextListElement);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    const auto extensionType = getExtensionType(pMemAllocPropertiesPNextListElement);
+                    if (!isReadOnly(extensionType)) {
+                        auto originalNextOpaqueElement = getNext(pMemAllocPropertiesPNextListElement);
+                        const auto extensionOffset = pMemAllocPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pMemAllocPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+
+                        getNextField(*destination) = originalNextOpaqueElement;
+                    }
+
+                    pMemAllocPropertiesPNextListElement = getNext(pMemAllocPropertiesPNextListElement);
+                }
+
+            }
         }
     }
 };

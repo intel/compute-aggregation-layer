@@ -33,6 +33,13 @@ bool getAllocationProperties(ze_context_handle_t context, void *buffer, ze_memor
                          static_cast<int>(outProperties.pageSize),
                          static_cast<int>(outProperties.type),
                          static_cast<int>(outProperties.id));
+
+    auto baseDescExt = static_cast<const ze_base_desc_t *>(outProperties.pNext);
+    if (baseDescExt && baseDescExt->stype == ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD) {
+        auto exportFdExtension = static_cast<const ze_external_memory_export_fd_t *>(outProperties.pNext);
+        log<Verbosity::info>("Received exported file descriptor of allocation = %d!", exportFdExtension->fd);
+    }
+
     return true;
 }
 
@@ -180,7 +187,7 @@ int main(int argc, const char *argv[]) {
     void *usmDeviceBuffer{nullptr};
     RUN_REQUIRED_STEP(allocateDeviceMemory(context, bufferSize, alignment, devices[0], usmDeviceBuffer));
 
-    ze_memory_allocation_properties_t usmDeviceBufferAllocProps{};
+    ze_memory_allocation_properties_t usmDeviceBufferAllocProps = {ZE_STRUCTURE_TYPE_MEMORY_ALLOCATION_PROPERTIES};
     ze_device_handle_t usmDeviceBufferDeviceHandle{};
 
     RUN_REQUIRED_STEP(getAllocationProperties(context, usmDeviceBuffer, usmDeviceBufferAllocProps, usmDeviceBufferDeviceHandle));
@@ -198,17 +205,24 @@ int main(int argc, const char *argv[]) {
     if (!skipIpcHandlesTests) {
         RUN_REQUIRED_STEP(getIpcHandleOfNonUsmDeviceMemory(context, usmHostBuffer));
 
+        ze_external_memory_export_fd_t exportFdExtension = {
+            ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD, // stype
+            nullptr,                                     // pNext
+            ZE_EXTERNAL_MEMORY_TYPE_FLAG_DMA_BUF,        // flags
+            0                                            // fd
+        };
+
+        usmDeviceBufferAllocProps = {ZE_STRUCTURE_TYPE_MEMORY_ALLOCATION_PROPERTIES, &exportFdExtension};
+        RUN_REQUIRED_STEP(getAllocationProperties(context, usmDeviceBuffer, usmDeviceBufferAllocProps, usmDeviceBufferDeviceHandle));
+
         ze_ipc_mem_handle_t ipcHandleOfUsmDeviceBuffer{};
         RUN_REQUIRED_STEP(getIpcHandle(context, usmDeviceBuffer, ipcHandleOfUsmDeviceBuffer));
-
-        int fileDescriptor{};
-        std::memcpy(&fileDescriptor, ipcHandleOfUsmDeviceBuffer.data, sizeof(int));
 
         const ze_external_memory_import_fd_t importFdExtension = {
             ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMPORT_FD, // stype
             nullptr,                                     // pNext
             ZE_EXTERNAL_MEMORY_TYPE_FLAG_DMA_BUF,        // flags
-            fileDescriptor                               // fd
+            exportFdExtension.fd                         // fd
         };
 
         void *reopenedUsmDeviceBufferViaPNext{nullptr};

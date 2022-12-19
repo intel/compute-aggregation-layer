@@ -912,6 +912,7 @@ bool zeMemFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, Clien
 inline bool zeMemGetAllocPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemGetAllocProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemGetAllocProperties(
                                                 apiCommand->args.hContext, 
                                                 apiCommand->args.ptr, 
