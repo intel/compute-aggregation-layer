@@ -50,6 +50,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_device_raytracing_ext_properties_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_RAYTRACING_MEM_ALLOC_EXT_DESC == desc->stype) {
+        return sizeof(ze_raytracing_mem_alloc_ext_desc_t);
+    }
+
     if (ZE_STRUCTURE_TYPE_DEVICE_MEMORY_EXT_PROPERTIES == desc->stype) {
         return sizeof(ze_device_memory_ext_properties_t);
     }
@@ -114,6 +118,9 @@ inline bool isReadOnly(ze_structure_type_t stype) {
     static constexpr std::array readOnlyExtensions = {
         ZE_STRUCTURE_TYPE_POWER_SAVING_HINT_EXP_DESC,
         ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC,
+        ZE_STRUCTURE_TYPE_RAYTRACING_MEM_ALLOC_EXT_DESC,
+        ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMPORT_FD,
+        ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_DESC,
     };
 
     for (const auto extensionType : readOnlyExtensions) {

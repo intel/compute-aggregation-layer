@@ -808,10 +808,8 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n{spaces}    forcePointerWrite(getNextField(*{list_element_name}), dynMem + extensionOffset);\n"
 
                 reassemble_nested_structs += f"\n{spaces}    const auto pNextElement = getNext({list_element_name});"
-                reassemble_nested_structs += f"\n{spaces}    if (pNextElement) {{"
-                reassemble_nested_structs += f"\n{spaces}        const auto sizeInBytes = getUnderlyingSize(pNextElement);"
-                reassemble_nested_structs += f"\n{spaces}        {current_offset_var} += alignUpPow2<8>(sizeInBytes);"
-                reassemble_nested_structs += f"\n{spaces}    }}\n"
+                reassemble_nested_structs += f"\n{spaces}    const auto sizeInBytes = getUnderlyingSize(pNextElement);"
+                reassemble_nested_structs += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
 
                 reassemble_nested_structs += f"\n{spaces}    {list_element_name} = pNextElement;"
                 reassemble_nested_structs += f"\n{spaces}}}\n"

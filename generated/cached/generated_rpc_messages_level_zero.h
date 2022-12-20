@@ -961,10 +961,8 @@ struct ZeContextCreateRpcM {
                         forcePointerWrite(getNextField(*descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         descPNextListElement = pNextElement;
                     }
@@ -1150,10 +1148,8 @@ struct ZeContextCreateExRpcM {
                         forcePointerWrite(getNextField(*descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         descPNextListElement = pNextElement;
                     }
@@ -2879,10 +2875,8 @@ struct ZeDeviceGetPropertiesRpcM {
                         forcePointerWrite(getNextField(*pDevicePropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pDevicePropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pDevicePropertiesPNextListElement = pNextElement;
                     }
@@ -3159,10 +3153,8 @@ struct ZeDeviceGetModulePropertiesRpcM {
                         forcePointerWrite(getNextField(*pModulePropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pModulePropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pModulePropertiesPNextListElement = pNextElement;
                     }
@@ -3472,10 +3464,8 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
                         forcePointerWrite(getNextField(*pMemPropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pMemPropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pMemPropertiesPNextListElement = pNextElement;
                     }
@@ -3770,10 +3760,8 @@ struct ZeDeviceGetCachePropertiesRpcM {
                         forcePointerWrite(getNextField(*pCachePropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pCachePropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pCachePropertiesPNextListElement = pNextElement;
                     }
@@ -4127,10 +4115,8 @@ struct ZeDeviceGetP2PPropertiesRpcM {
                         forcePointerWrite(getNextField(*pP2PPropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pP2PPropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pP2PPropertiesPNextListElement = pNextElement;
                     }
@@ -6498,10 +6484,8 @@ struct ZeMemAllocSharedRpcM {
                         forcePointerWrite(getNextField(*device_descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(device_descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         device_descPNextListElement = pNextElement;
                     }
@@ -6532,10 +6516,8 @@ struct ZeMemAllocSharedRpcM {
                         forcePointerWrite(getNextField(*host_descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(host_descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         host_descPNextListElement = pNextElement;
                     }
@@ -6770,10 +6752,8 @@ struct ZeMemAllocDeviceRpcM {
                         forcePointerWrite(getNextField(*device_descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(device_descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         device_descPNextListElement = pNextElement;
                     }
@@ -6965,10 +6945,8 @@ struct ZeMemAllocHostRpcM {
                         forcePointerWrite(getNextField(*host_descPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(host_descPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         host_descPNextListElement = pNextElement;
                     }
@@ -9450,10 +9428,8 @@ struct ZeKernelGetPropertiesRpcM {
                         forcePointerWrite(getNextField(*pKernelPropertiesPNextListElement), dynMem + extensionOffset);
 
                         const auto pNextElement = getNext(pKernelPropertiesPNextListElement);
-                        if (pNextElement) {
-                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
-                            currentOffset += alignUpPow2<8>(sizeInBytes);
-                        }
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
 
                         pKernelPropertiesPNextListElement = pNextElement;
                     }

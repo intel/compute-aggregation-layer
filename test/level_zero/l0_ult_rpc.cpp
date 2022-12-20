@@ -16,6 +16,106 @@
 
 namespace Cal::Rpc::LevelZero {
 
+TEST(ZeMemAllocSharedExtensionsTest, GivenOpaqueListsAttachedToTwoDifferentFunctionArgumentsWhenCopyingAndReassemblingTwiceMessageThenExtensionsAreProperlyHandled) {
+    ze_relaxed_allocation_limits_exp_desc_t relaxedLimitsDescForDeviceMemDesc = {
+        ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC, // stype
+        nullptr,                                              // pNext
+        ZE_RELAXED_ALLOCATION_LIMITS_EXP_FLAG_MAX_SIZE        // flags
+    };
+
+    ze_raytracing_mem_alloc_ext_desc_t raytracingMemAllocDesc = {
+        ZE_STRUCTURE_TYPE_RAYTRACING_MEM_ALLOC_EXT_DESC, // stype
+        &relaxedLimitsDescForDeviceMemDesc,              // pNext
+        0                                                // flags
+    };
+
+    // First function argument. Contains two extension defined as opaque list.
+    ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC, &raytracingMemAllocDesc};
+
+    ze_relaxed_allocation_limits_exp_desc_t relaxedLimitsDescForHostMemDesc1 = {
+        ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC, // stype
+        nullptr,                                              // pNext
+        ZE_RELAXED_ALLOCATION_LIMITS_EXP_FLAG_MAX_SIZE        // flags
+    };
+
+    ze_relaxed_allocation_limits_exp_desc_t relaxedLimitsDescForHostMemDesc2 = {
+        ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC, // stype
+        &relaxedLimitsDescForHostMemDesc1,                    // pNext
+        ZE_RELAXED_ALLOCATION_LIMITS_EXP_FLAG_MAX_SIZE        // flags
+    };
+
+    // Second function argument. Contains two extensions defined as opaque list.
+    ze_host_mem_alloc_desc_t hostMemAllocDesc = {ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC, &relaxedLimitsDescForHostMemDesc2};
+
+    // Dummy parameters needed to create message object.
+    ze_context_handle_t contextHandle{};
+    ze_device_handle_t deviceHandle{};
+    void *usmSharedBuffer{};
+    size_t bufferSize{};
+    size_t alignment{};
+
+    Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs implicitArgs{};
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(contextHandle, &deviceMemAllocDesc, &hostMemAllocDesc, bufferSize, alignment, deviceHandle, &usmSharedBuffer);
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, contextHandle, &deviceMemAllocDesc, &hostMemAllocDesc, bufferSize, alignment, deviceHandle, &usmSharedBuffer);
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits, implicitArgs);
+
+    // 4. Ensure that address was only shallow-copied and pointers are invalid.
+    ASSERT_EQ(&raytracingMemAllocDesc, command->captures.device_desc.pNext);
+    ASSERT_EQ(&relaxedLimitsDescForHostMemDesc2, command->captures.host_desc.pNext);
+
+    // 5. Reassemble captures twice. We simulate a situation, when reassemble is called firstly in ICD to transform opaque lists and then
+    //    it is called in service to allow passing to UMD.
+    command->captures.reassembleNestedStructs();
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify pointers.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    // Second function argument.
+    EXPECT_EQ(hostMemAllocDesc.stype, command->captures.host_desc.stype);
+    ASSERT_NE(&relaxedLimitsDescForHostMemDesc2, command->captures.host_desc.pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.host_desc.pNext));
+
+    auto *relaxedLimitsDescForHost2InDynMem = static_cast<const ze_relaxed_allocation_limits_exp_desc_t *>(command->captures.host_desc.pNext);
+    EXPECT_EQ(relaxedLimitsDescForHostMemDesc2.stype, relaxedLimitsDescForHost2InDynMem->stype);
+    ASSERT_NE(&relaxedLimitsDescForHostMemDesc1, relaxedLimitsDescForHost2InDynMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(relaxedLimitsDescForHost2InDynMem->pNext));
+
+    auto *relaxedLimitsDescForHost1InDynMem = static_cast<const ze_relaxed_allocation_limits_exp_desc_t *>(relaxedLimitsDescForHost2InDynMem->pNext);
+    EXPECT_EQ(relaxedLimitsDescForHostMemDesc1.stype, relaxedLimitsDescForHost1InDynMem->stype);
+    ASSERT_EQ(nullptr, relaxedLimitsDescForHost1InDynMem->pNext);
+
+    // First function argument.
+    EXPECT_EQ(deviceMemAllocDesc.stype, command->captures.device_desc.stype);
+    ASSERT_NE(&raytracingMemAllocDesc, command->captures.device_desc.pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.device_desc.pNext));
+
+    auto *raytracingMemAllocDescInMem = static_cast<const ze_raytracing_mem_alloc_ext_desc_t *>(command->captures.device_desc.pNext);
+    EXPECT_EQ(raytracingMemAllocDesc.stype, raytracingMemAllocDescInMem->stype);
+    ASSERT_NE(&relaxedLimitsDescForDeviceMemDesc, raytracingMemAllocDescInMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(raytracingMemAllocDescInMem->pNext));
+
+    auto *relaxedLimitsDescForDeviceMemDescInDynMem = static_cast<const ze_relaxed_allocation_limits_exp_desc_t *>(raytracingMemAllocDescInMem->pNext);
+    EXPECT_EQ(relaxedLimitsDescForDeviceMemDesc.stype, relaxedLimitsDescForDeviceMemDescInDynMem->stype);
+    ASSERT_EQ(nullptr, relaxedLimitsDescForDeviceMemDescInDynMem->pNext);
+}
+
 TEST(ZeDeviceGetPropertiesExtensionsTest, GivenPassedExtensionsWhenCopyingAndReassemblingMessageThenExtensionsAreProperlyHandled) {
     // 0. Prepare two extensions and form opaque list from them.
     ze_eu_count_ext_t euCountExtension = {
