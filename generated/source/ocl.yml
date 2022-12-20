@@ -307,6 +307,7 @@ config:
           kind_details:
             num_elements: "1"
             can_be_null: True
+            always_queried: True
             element:
               type: size_t
               kind: scalar
@@ -468,6 +469,7 @@ config:
           kind_details:
             num_elements: "1"
             can_be_null: True
+            always_queried: True
             element:
               type: size_t
               kind: scalar

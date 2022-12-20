@@ -181,6 +181,7 @@ class KindDetails:
         self.iterator_type = src.get("iterator_type", "")
         self.opaque_traits_name = src.get("opaque_traits_name", "")
         self.requires_opaque_elements_translation_before = src.get("requires_opaque_elements_translation_before", False)
+        self.always_queried = src.get("always_queried", False)
 
 class CaptureMode:
     def __init__(self, src: str):
@@ -273,6 +274,9 @@ class Arg:
 
     def create_traits(self, parent_function) -> None:
         self.traits = ArgTraits(self, parent_function)
+
+    def is_always_queried(self) -> bool:
+        return self.is_kind_complex() and self.kind_details.always_queried
 
 
 class Member:
@@ -1495,6 +1499,8 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         return rpc_func.capture_layout.struct_members_layouts
 
     def get_arg_from_api_command_struct(rpc_func, arg):
+        if arg.is_always_queried():
+            return f"&apiCommand->captures.{arg.name}"
         if arg.kind.is_pointer_to_array() and not arg.traits.uses_standalone_allocation:
             if arg.kind_details.num_elements.is_constant() or not rpc_func.traits.uses_dynamic_arg_getters:
                 captured_arg = f"{'&' if (arg.kind_details.num_elements.get_constant() == 1) else ''}apiCommand->captures.{arg.name}"
