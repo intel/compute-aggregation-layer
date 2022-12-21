@@ -845,6 +845,7 @@ inline bool zeKernelSetGlobalOffsetExpHandler(Provider &service, Cal::Rpc::Chann
 inline bool zeImageGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeImageGetProperties");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeImageGetProperties(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
@@ -855,6 +856,7 @@ inline bool zeImageGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServ
 inline bool zeImageCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeImageCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeImageCreateRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeImageCreate(
                                                 apiCommand->args.hContext, 
                                                 apiCommand->args.hDevice, 

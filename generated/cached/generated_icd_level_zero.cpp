@@ -1951,13 +1951,15 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hDevice, desc, pImageProperties);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, desc, pImageProperties);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, desc, pImageProperties);
+    command->copyFromCaller(dynMemTraits);
+    command->captures.reassembleNestedStructs();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeImageGetProperties: desc->pNext", desc->pNext);
+        translateRequiredPNextExtensions(command->captures.desc.pNext);
     }
     if(pImageProperties)
     {
@@ -1970,7 +1972,7 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -1981,14 +1983,16 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
     auto &channel = globalL0Platform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeImageCreateRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, desc, phImage);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hContext, hDevice, desc, phImage);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hContext, hDevice, desc, phImage);
+    command->copyFromCaller(dynMemTraits);
+    command->captures.reassembleNestedStructs();
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeImageCreate: desc->pNext", desc->pNext);
+        translateRequiredPNextExtensions(command->captures.desc.pNext);
     }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1997,7 +2001,7 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     if(phImage)
     {
         phImage[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phImage[0]);

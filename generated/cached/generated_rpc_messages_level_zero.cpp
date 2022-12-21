@@ -817,6 +817,94 @@ size_t ZeCommandListAppendWaitOnEventsRpcM::Captures::getCaptureDynMemSize() con
      return size;
 }
 
+ZeImageGetPropertiesRpcM::Captures::DynamicTraits ZeImageGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (desc) {
+        ret.descNestedTraits.offset = ret.totalDynamicSize;
+        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_image_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
+            const auto& descPNext = desc[i].pNext;
+            if(!descPNext){
+                continue;
+            }
+
+            const auto descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(desc[i].pNext)));
+            if(!descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+            auto descPNextListElement = static_cast<const ze_base_desc_t*>(desc[i].pNext);
+            for(uint32_t j = 0; j < descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
+                descPNextListElement = getNext(descPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeImageGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeImageGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
+ZeImageCreateRpcM::Captures::DynamicTraits ZeImageCreateRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (desc) {
+        ret.descNestedTraits.offset = ret.totalDynamicSize;
+        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_image_desc_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
+            const auto& descPNext = desc[i].pNext;
+            if(!descPNext){
+                continue;
+            }
+
+            const auto descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(desc[i].pNext)));
+            if(!descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+            auto descPNextListElement = static_cast<const ze_base_desc_t*>(desc[i].pNext);
+            for(uint32_t j = 0; j < descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
+                descPNextListElement = getNext(descPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeImageCreateRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeImageCreateRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeMemAllocSharedRpcM::Captures::DynamicTraits ZeMemAllocSharedRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     DynamicTraits ret = {};
 

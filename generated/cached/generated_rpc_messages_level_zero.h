@@ -151,6 +151,13 @@ struct DynamicStructTraits<ze_device_p2p_properties_t> {
     void* pNextFirstOriginalElement{nullptr};
 };
 
+template <>
+struct DynamicStructTraits<ze_image_desc_t> {
+    int32_t pNextOffset{-1};
+    int32_t pNextCount{-1};
+    const void* pNextFirstOriginalElement{nullptr};
+};
+
 
 template<typename T>
 inline char *asMemcpyDstT(T * ptr) {
@@ -6147,15 +6154,72 @@ struct ZeImageGetPropertiesRpcM {
 
     struct Captures {
 
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
+            uint32_t totalDynamicSize = 0;
+            uint32_t dynamicStructMembersOffset = 0;
+            DynamicArgTraits descNestedTraits = {};
+        };
+
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         ze_image_desc_t desc;
         ze_image_properties_t pImageProperties;
+        uint32_t dynamicStructMembersOffset = 0;
+        uint32_t descNestedTraitsOffset = 0;
+        uint32_t descNestedTraitsCount = 0;
 
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+            dynamicStructMembersOffset = dynamicTraits.dynamicStructMembersOffset;
+            descNestedTraitsOffset = dynamicTraits.descNestedTraits.offset;
+            descNestedTraitsCount = dynamicTraits.descNestedTraits.count;
+            dynMemSize = dynamicTraits.totalDynamicSize;
+        }
+        
+        uint32_t dynMemSize = 0;
+        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
         size_t getCaptureTotalSize() const;
         size_t getCaptureDynMemSize() const;
+        void reassembleNestedStructs() {
+            using Cal::Utils::alignUpPow2;
+
+            uint32_t currentOffset = dynamicStructMembersOffset;
+
+            if(descNestedTraitsCount > 0){
+                assert(currentOffset == descNestedTraitsOffset);
+                auto* descTraits = reinterpret_cast<DynamicStructTraits<ze_image_desc_t>*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(descNestedTraitsCount * sizeof(DynamicStructTraits<ze_image_desc_t>));
+                auto* destDesc = &desc;
+
+                for (uint32_t i = 0; i < descNestedTraitsCount; ++i) {
+                    if(descTraits[i].pNextOffset == -1){
+                        forcePointerWrite(destDesc[i].pNext, nullptr);
+                        continue;
+                    }
+
+                    auto descPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                    currentOffset += alignUpPow2<8>(descTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                    forcePointerWrite(destDesc[i].pNext, dynMem + descPNextListElementTraits[0].extensionOffset);
+                    currentOffset += alignUpPow2<8>(getUnderlyingSize(static_cast<const ze_base_desc_t*>(destDesc[i].pNext)));
+
+                    auto descPNextListElement = static_cast<const ze_base_desc_t*>(destDesc[i].pNext);
+                    for(int32_t j = 1; j < descTraits[i].pNextCount; ++j){
+                        const auto extensionOffset = descPNextListElementTraits[j].extensionOffset;
+                        forcePointerWrite(getNextField(*descPNextListElement), dynMem + extensionOffset);
+
+                        const auto pNextElement = getNext(descPNextListElement);
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                        descPNextListElement = pNextElement;
+                    }
+
+                }
+        }
+    }
 
     }captures;
     
@@ -6166,12 +6230,13 @@ struct ZeImageGetPropertiesRpcM {
 
     ZeImageGetPropertiesRpcM() = default;
 
-    ZeImageGetPropertiesRpcM(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
+    ZeImageGetPropertiesRpcM(const Captures::DynamicTraits &dynamicTraits, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hDevice = hDevice;
         args.desc = desc;
         args.pImageProperties = pImageProperties;
+        captures.adjustCaptureLayout(dynamicTraits);
     }
     
     static void fillWithoutCapture(ZeImageGetPropertiesRpcM &message, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
@@ -6183,16 +6248,61 @@ struct ZeImageGetPropertiesRpcM {
     }
     
 
-    void copyFromCaller(){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.desc){
             captures.desc = *args.desc;
         }
         if(args.pImageProperties){
             captures.pImageProperties = *args.pImageProperties;
         }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.desc){
+            assert(currentOffset == captures.descNestedTraitsOffset);
+            auto* descTraits = reinterpret_cast<DynamicStructTraits<ze_image_desc_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.descNestedTraitsCount * sizeof(DynamicStructTraits<ze_image_desc_t>));
+
+            for (uint32_t i = 0; i < captures.descNestedTraitsCount; ++i) {
+                const auto& descPNext = args.desc[i].pNext;
+                if(!descPNext){
+                    descTraits[i].pNextOffset = -1;
+                    descTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                const auto descPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.desc[i].pNext)));
+                if(!descPNextCount){
+                    descTraits[i].pNextOffset = -1;
+                    descTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                descTraits[i].pNextOffset = currentOffset;
+                descTraits[i].pNextCount = descPNextCount;
+                descTraits[i].pNextFirstOriginalElement = args.desc[i].pNext;
+
+                auto descPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+                auto descPNextListElement = static_cast<const ze_base_desc_t*>(args.desc[i].pNext);
+                for(int32_t j = 0; j < descPNextCount; ++j){
+                    descPNextListElementTraits[j].extensionType = getExtensionType(descPNextListElement);
+                    descPNextListElementTraits[j].extensionOffset = currentOffset;
+
+                    const auto sizeInBytes = getUnderlyingSize(descPNextListElement);
+                    std::memcpy(dynMem + currentOffset, descPNextListElement, sizeInBytes);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    descPNextListElement = getNext(descPNextListElement);
+                }
+
+            }
+        }
     }
 
-    void copyToCaller(){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pImageProperties){
             *args.pImageProperties = captures.pImageProperties;
         }
@@ -6224,15 +6334,72 @@ struct ZeImageCreateRpcM {
 
     struct Captures {
 
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
+            uint32_t totalDynamicSize = 0;
+            uint32_t dynamicStructMembersOffset = 0;
+            DynamicArgTraits descNestedTraits = {};
+        };
+
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         ze_image_desc_t desc;
         ze_image_handle_t phImage;
+        uint32_t dynamicStructMembersOffset = 0;
+        uint32_t descNestedTraitsOffset = 0;
+        uint32_t descNestedTraitsCount = 0;
 
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+            dynamicStructMembersOffset = dynamicTraits.dynamicStructMembersOffset;
+            descNestedTraitsOffset = dynamicTraits.descNestedTraits.offset;
+            descNestedTraitsCount = dynamicTraits.descNestedTraits.count;
+            dynMemSize = dynamicTraits.totalDynamicSize;
+        }
+        
+        uint32_t dynMemSize = 0;
+        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
         size_t getCaptureTotalSize() const;
         size_t getCaptureDynMemSize() const;
+        void reassembleNestedStructs() {
+            using Cal::Utils::alignUpPow2;
+
+            uint32_t currentOffset = dynamicStructMembersOffset;
+
+            if(descNestedTraitsCount > 0){
+                assert(currentOffset == descNestedTraitsOffset);
+                auto* descTraits = reinterpret_cast<DynamicStructTraits<ze_image_desc_t>*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(descNestedTraitsCount * sizeof(DynamicStructTraits<ze_image_desc_t>));
+                auto* destDesc = &desc;
+
+                for (uint32_t i = 0; i < descNestedTraitsCount; ++i) {
+                    if(descTraits[i].pNextOffset == -1){
+                        forcePointerWrite(destDesc[i].pNext, nullptr);
+                        continue;
+                    }
+
+                    auto descPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                    currentOffset += alignUpPow2<8>(descTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                    forcePointerWrite(destDesc[i].pNext, dynMem + descPNextListElementTraits[0].extensionOffset);
+                    currentOffset += alignUpPow2<8>(getUnderlyingSize(static_cast<const ze_base_desc_t*>(destDesc[i].pNext)));
+
+                    auto descPNextListElement = static_cast<const ze_base_desc_t*>(destDesc[i].pNext);
+                    for(int32_t j = 1; j < descTraits[i].pNextCount; ++j){
+                        const auto extensionOffset = descPNextListElementTraits[j].extensionOffset;
+                        forcePointerWrite(getNextField(*descPNextListElement), dynMem + extensionOffset);
+
+                        const auto pNextElement = getNext(descPNextListElement);
+                        const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                        currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                        descPNextListElement = pNextElement;
+                    }
+
+                }
+        }
+    }
 
     }captures;
     
@@ -6243,13 +6410,14 @@ struct ZeImageCreateRpcM {
 
     ZeImageCreateRpcM() = default;
 
-    ZeImageCreateRpcM(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
+    ZeImageCreateRpcM(const Captures::DynamicTraits &dynamicTraits, ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hContext = hContext;
         args.hDevice = hDevice;
         args.desc = desc;
         args.phImage = phImage;
+        captures.adjustCaptureLayout(dynamicTraits);
     }
     
     static void fillWithoutCapture(ZeImageCreateRpcM &message, ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
@@ -6262,16 +6430,61 @@ struct ZeImageCreateRpcM {
     }
     
 
-    void copyFromCaller(){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.desc){
             captures.desc = *args.desc;
         }
         if(args.phImage){
             captures.phImage = *args.phImage;
         }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.desc){
+            assert(currentOffset == captures.descNestedTraitsOffset);
+            auto* descTraits = reinterpret_cast<DynamicStructTraits<ze_image_desc_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.descNestedTraitsCount * sizeof(DynamicStructTraits<ze_image_desc_t>));
+
+            for (uint32_t i = 0; i < captures.descNestedTraitsCount; ++i) {
+                const auto& descPNext = args.desc[i].pNext;
+                if(!descPNext){
+                    descTraits[i].pNextOffset = -1;
+                    descTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                const auto descPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.desc[i].pNext)));
+                if(!descPNextCount){
+                    descTraits[i].pNextOffset = -1;
+                    descTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                descTraits[i].pNextOffset = currentOffset;
+                descTraits[i].pNextCount = descPNextCount;
+                descTraits[i].pNextFirstOriginalElement = args.desc[i].pNext;
+
+                auto descPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+                auto descPNextListElement = static_cast<const ze_base_desc_t*>(args.desc[i].pNext);
+                for(int32_t j = 0; j < descPNextCount; ++j){
+                    descPNextListElementTraits[j].extensionType = getExtensionType(descPNextListElement);
+                    descPNextListElementTraits[j].extensionOffset = currentOffset;
+
+                    const auto sizeInBytes = getUnderlyingSize(descPNextListElement);
+                    std::memcpy(dynMem + currentOffset, descPNextListElement, sizeInBytes);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    descPNextListElement = getNext(descPNextListElement);
+                }
+
+            }
+        }
     }
 
-    void copyToCaller(){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.phImage){
             *args.phImage = captures.phImage;
         }

@@ -949,9 +949,13 @@ config:
           kind: scalar
         1:
           name: pNext
-          type: void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          type: const void*
+          kind: opaque_list
+          kind_details:
+            iterator_type : ze_base_desc_t
+            opaque_traits_name : NestedPNextTraits
+            requires_opaque_elements_translation_before: True
+          translate_before: 'translateRequiredPNextExtensions({dst_captures})'
         2:
           name: flags
           type: ze_image_flags_t

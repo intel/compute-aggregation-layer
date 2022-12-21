@@ -16,6 +16,29 @@
 
 using namespace Cal::Testing::Utils::LevelZero;
 
+ze_image_desc_t createImageDescription(void *pNext = nullptr) {
+    return ze_image_desc_t{
+        ZE_STRUCTURE_TYPE_IMAGE_DESC, // stype
+        pNext,                        // pNext
+        0,                            // flags
+        ZE_IMAGE_TYPE_1D,             // type
+        {
+            // format
+            ZE_IMAGE_FORMAT_LAYOUT_8,  // layout
+            ZE_IMAGE_FORMAT_TYPE_UINT, // type
+            ZE_IMAGE_FORMAT_SWIZZLE_R, // x
+            ZE_IMAGE_FORMAT_SWIZZLE_G, // y
+            ZE_IMAGE_FORMAT_SWIZZLE_B, // z
+            ZE_IMAGE_FORMAT_SWIZZLE_A  // w
+        },
+        16, // width
+        0,  // height
+        0,  // depth
+        0,  // arraylevels
+        0   // miplevels
+    };
+}
+
 bool createImage(ze_context_handle_t context, ze_device_handle_t device, ze_image_handle_t &hImage, ze_image_desc_t &imageDescription) {
     auto zeImageCreateResult = zeImageCreate(context, device, &imageDescription, &hImage);
     if (zeImageCreateResult != ZE_RESULT_SUCCESS) {
@@ -64,26 +87,8 @@ int main(int argc, const char *argv[]) {
     ze_context_handle_t context{};
     RUN_REQUIRED_STEP(createContext(drivers[0], context));
 
-    ze_image_desc_t imageDescription{
-        ZE_STRUCTURE_TYPE_IMAGE_DESC, // stype
-        nullptr,                      // pNext
-        0,                            // flags
-        ZE_IMAGE_TYPE_1D,             // type
-        {
-            // format
-            ZE_IMAGE_FORMAT_LAYOUT_8,  // layout
-            ZE_IMAGE_FORMAT_TYPE_UINT, // type
-            ZE_IMAGE_FORMAT_SWIZZLE_R, // x
-            ZE_IMAGE_FORMAT_SWIZZLE_G, // y
-            ZE_IMAGE_FORMAT_SWIZZLE_B, // z
-            ZE_IMAGE_FORMAT_SWIZZLE_A  // w
-        },
-        16, // width
-        0,  // height
-        0,  // depth
-        0,  // arraylevels
-        0   // miplevels
-    };
+    ze_image_view_planar_exp_desc_t imageViewPlanarExtension = {ZE_STRUCTURE_TYPE_IMAGE_VIEW_PLANAR_EXP_DESC};
+    ze_image_desc_t imageDescription = createImageDescription(&imageViewPlanarExtension);
 
     ze_image_handle_t hImage{};
     RUN_REQUIRED_STEP(createImage(context, devices[0], hImage, imageDescription));

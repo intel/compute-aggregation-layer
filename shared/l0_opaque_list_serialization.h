@@ -94,6 +94,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_memory_compression_hints_ext_desc_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_IMAGE_VIEW_PLANAR_EXP_DESC == desc->stype) {
+        return sizeof(ze_image_view_planar_exp_desc_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
     std::abort();
     return 0;
@@ -125,6 +129,7 @@ inline bool isReadOnly(ze_structure_type_t stype) {
         ZE_STRUCTURE_TYPE_RAYTRACING_MEM_ALLOC_EXT_DESC,
         ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMPORT_FD,
         ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_DESC,
+        ZE_STRUCTURE_TYPE_IMAGE_VIEW_PLANAR_EXP_DESC,
     };
 
     for (const auto extensionType : readOnlyExtensions) {
