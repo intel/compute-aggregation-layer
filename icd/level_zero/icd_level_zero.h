@@ -540,6 +540,40 @@ struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_
 
 struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+    enum State : uint32_t {
+        STATE_SIGNALED = 0u,
+        STATE_CLEARED
+    } state = {};
+    ze_kernel_timestamp_result_t timestamp = {};
+
+    void setAllowIcdState(const ze_command_list_handle_t commandList) {
+        this->allowIcdState &= static_cast<IcdL0CommandList *>(commandList)->isImmediate();
+    }
+    void signal() {
+        this->state = State::STATE_SIGNALED;
+    }
+    void clear() {
+        this->state = State::STATE_CLEARED;
+        memset(&timestamp, 0u, sizeof(ze_kernel_timestamp_result_t));
+    }
+    bool isSignaled() const {
+        return this->allowIcdState && this->state == State::STATE_SIGNALED;
+    }
+    bool isCleared() const {
+        return this->allowIcdState && this->state == State::STATE_CLEARED;
+    }
+    void getTimestamp(ze_kernel_timestamp_result_t *queriedTimestamp) const {
+        memcpy(queriedTimestamp, &timestamp, sizeof(ze_kernel_timestamp_result_t));
+    }
+    void storeTimestamp(const ze_kernel_timestamp_result_t *queriedTimestamp) {
+        memcpy(&timestamp, queriedTimestamp, sizeof(ze_kernel_timestamp_result_t));
+    }
+    bool isTimestamp() {
+        return this->allowIcdState && timestamp.context.kernelStart != 0u;
+    }
+
+  protected:
+    bool allowIcdState = true;
 };
 
 struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, IcdL0TypePrinter> {

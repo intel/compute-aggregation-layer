@@ -1556,6 +1556,10 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     return ret;
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1592,6 +1596,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     return ret;
 }
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1616,6 +1621,9 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     return ret;
 }
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
+    for (uint32_t i = 0; i < numEvents; ++i) {
+        static_cast<IcdL0Event*>(phEvents[i])->setAllowIcdState(hCommandList);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWaitOnEvents");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1668,6 +1676,9 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
     return ret;
 }
 ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout) {
+    if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {
+        return ZE_RESULT_SUCCESS;
+    }
     log<Verbosity::bloat>("Establishing RPC for zeEventHostSynchronize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1685,9 +1696,16 @@ ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t 
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (ret == ZE_RESULT_SUCCESS) {
+        static_cast<IcdL0Event*>(hEvent)->signal();
+    }
     return ret;
 }
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
+    if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {
+        return ZE_RESULT_SUCCESS;
+    }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryStatus");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1705,9 +1723,19 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (ret == ZE_RESULT_SUCCESS) {
+        static_cast<IcdL0Event*>(hEvent)->signal();
+    }
     return ret;
 }
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);
+    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {
+        return ZE_RESULT_SUCCESS;
+    }
+    static_cast<IcdL0Event*>(hEvent)->clear();
+
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendEventReset");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1729,6 +1757,10 @@ ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList
     return ret;
 }
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
+    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {
+        return ZE_RESULT_SUCCESS;
+    }
+    static_cast<IcdL0Event*>(hEvent)->clear();
     log<Verbosity::bloat>("Establishing RPC for zeEventHostReset");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1749,6 +1781,10 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     return ret;
 }
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr) {
+    if (static_cast<IcdL0Event*>(hEvent)->isTimestamp()) {
+        static_cast<IcdL0Event*>(hEvent)->getTimestamp(dstptr);
+        return ZE_RESULT_SUCCESS;
+    }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryKernelTimestamp");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1767,6 +1803,10 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (ret == ZE_RESULT_SUCCESS) {
+        static_cast<IcdL0Event*>(hEvent)->storeTimestamp(dstptr);
+    }
     return ret;
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {

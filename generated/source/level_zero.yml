@@ -3805,6 +3805,9 @@ config:
 
     - name: zeCommandListAppendBarrier
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);\n    }"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -3842,6 +3845,9 @@ config:
 
     - name: zeCommandListAppendSignalEvent
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -3863,6 +3869,9 @@ config:
 
     - name: zeCommandListAppendWaitOnEvents
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        static_cast<IcdL0Event*>(phEvents[i])->setAllowIcdState(hCommandList);\n    }"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -3909,6 +3918,8 @@ config:
       special_handling:
         icd:
           handler_only_suffix: "RpcHelper"
+          handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
+          handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
       ddi_category: Event
       returns:
         type: ze_result_t
@@ -3927,6 +3938,10 @@ config:
 
     - name: zeEventQueryStatus
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
+          handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
       ddi_category: Event
       returns:
         type: ze_result_t
@@ -3940,6 +3955,9 @@ config:
           translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
 
     - name: zeCommandListAppendEventReset
+      special_handling:
+        icd:
+          handler_prologue: "static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);\n    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    static_cast<IcdL0Event*>(hEvent)->clear();\n"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -3959,6 +3977,9 @@ config:
 
     - name: zeEventHostReset
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    static_cast<IcdL0Event*>(hEvent)->clear();"
       ddi_category: Event
       returns:
         type: ze_result_t
@@ -3973,6 +3994,10 @@ config:
 
     - name: zeEventQueryKernelTimestamp
       latency: 0.0
+      special_handling:
+        icd:
+          handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isTimestamp()) {\n        static_cast<IcdL0Event*>(hEvent)->getTimestamp(dstptr);\n        return ZE_RESULT_SUCCESS;\n    }"
+          handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->storeTimestamp(dstptr);\n    }"
       ddi_category: Event
       returns:
         type: ze_result_t
