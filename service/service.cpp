@@ -259,7 +259,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
     properties.push_back(0);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        auto shmem = heap.allocateAsStandalone(alignedSize, Cal::Utils::pageSize64KB);
         if (false == shmem.isValid()) {
             continue;
         }
@@ -775,7 +775,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        auto shmem = heap.allocateAsStandalone(alignedSize, Cal::Utils::pageSize64KB);
         if (false == shmem.isValid()) {
             continue;
         }
