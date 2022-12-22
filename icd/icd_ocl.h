@@ -881,6 +881,10 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         v = this;
     }
 
+    void translateRemoteObjectToLocalObject(cl_device_id &calDevice) {
+        translateRemoteObjectToLocalObject(mappings.deviceMap, calDevice);
+    }
+
     template <typename OclObjT>
     auto &getObjectsMap() {
         using ElT = std::remove_pointer_t<OclObjT>;

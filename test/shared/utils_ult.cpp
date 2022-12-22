@@ -138,30 +138,42 @@ TEST(AddressRange, givenDifferentConstructionMethodsThenRangeIsExpressedProperly
     Cal::Utils::AddressRange defaultAddr;
     EXPECT_EQ(0U, defaultAddr.start);
     EXPECT_EQ(std::numeric_limits<uintptr_t>::max(), defaultAddr.end);
+    EXPECT_FALSE(defaultAddr.empty());
 
     Cal::Utils::AddressRange uintptrUintptr(start, end);
     EXPECT_EQ(start, uintptrUintptr.start);
     EXPECT_EQ(end, uintptrUintptr.end);
+    EXPECT_FALSE(uintptrUintptr.empty());
 
     Cal::Utils::AddressRange u32U32(static_cast<uint32_t>(start), static_cast<uint32_t>(end));
     EXPECT_EQ(start, u32U32.start);
     EXPECT_EQ(end, u32U32.end);
+    EXPECT_FALSE(u32U32.empty());
 
     Cal::Utils::AddressRange ptrPtr(reinterpret_cast<void *>(start), reinterpret_cast<void *>(end));
     EXPECT_EQ(start, ptrPtr.start);
     EXPECT_EQ(end, ptrPtr.end);
+    EXPECT_FALSE(ptrPtr.empty());
 
     Cal::Utils::AddressRange ptrSize(reinterpret_cast<void *>(start), end - start);
     EXPECT_EQ(start, ptrSize.start);
     EXPECT_EQ(end, ptrSize.end);
+    EXPECT_FALSE(ptrSize.empty());
 
     Cal::Utils::AddressRange ptr(reinterpret_cast<void *>(start));
     EXPECT_EQ(start, ptr.start);
     EXPECT_EQ(start + 1, ptr.end);
+    EXPECT_FALSE(ptr.empty());
 
     Cal::Utils::AddressRange withinSize = Cal::Utils::AddressRange::withinSize(static_cast<size_t>(end));
     EXPECT_EQ(0U, withinSize.start);
     EXPECT_EQ(end, withinSize.end);
+    EXPECT_FALSE(withinSize.empty());
+
+    Cal::Utils::AddressRange emptyAddr = Cal::Utils::AddressRange::createEmpty();
+    EXPECT_EQ(0U, emptyAddr.start);
+    EXPECT_EQ(0U, emptyAddr.end);
+    EXPECT_TRUE(emptyAddr.empty());
 }
 
 TEST(AddressRange, sizeReturnsDifferenceBetweenStartAndEnd) {
@@ -170,6 +182,7 @@ TEST(AddressRange, sizeReturnsDifferenceBetweenStartAndEnd) {
 
     Cal::Utils::AddressRange range(start, end);
 
+    EXPECT_FALSE(range.empty());
     EXPECT_EQ(4097U, range.size());
 }
 

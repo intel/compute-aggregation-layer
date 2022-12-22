@@ -446,6 +446,11 @@ TEST(AddressRangeAllocator, whenAllocatingAddressessThenAlignmentsAreTakenIntoAc
     EXPECT_TRUE(Cal::Utils::isAlignedPow2<4096U>(ptr3));
 }
 
+TEST(BaseAllocation, whenQueuriedForRangeThenReturnsEmptyRange) {
+    Cal::Allocators::BaseAllocation baseAlloc;
+    EXPECT_TRUE(baseAlloc.getRange().empty());
+}
+
 TEST(FdAllocation, whenCheckedIfIsValidThenVerifiesFileDescriptor) {
     {
         FdAllocation<BaseAllocation> fdAllocation;
@@ -461,6 +466,12 @@ TEST(FdAllocation, whenCheckedIfIsValidThenVerifiesFileDescriptor) {
         EXPECT_TRUE(fdAllocation.isOwnerOfFd());
         EXPECT_TRUE(fdAllocation.isValid());
     }
+}
+
+TEST(FdAllocation, whenQueuriedForRangeThenReturnsFrom0ToSize) {
+    size_t size = 4096U;
+    Cal::Allocators::FdAllocation fdAllocation(2, size, true);
+    EXPECT_EQ(Cal::Utils::AddressRange(uintptr_t(0U), size), fdAllocation.getRange());
 }
 
 TEST(FdAllocation, givenBaseAllocationThenForwarwadsItAsInitializerForBaseClass) {
@@ -503,6 +514,13 @@ TEST(FdSubAllocation, whenCheckedIfIsValidThenVerifiesOffset) {
     }
 }
 
+TEST(FdSubAllocation, whenQueuriedForRangeThenReturnsFromOffsetToSize) {
+    size_t wholeAllocSize = 8192U;
+    size_t offset = 4096U;
+    FdSubAllocation<> fdSubAllocation(FdAllocation<>(2, wholeAllocSize, false), offset);
+    EXPECT_EQ(Cal::Utils::AddressRange(uintptr_t(offset), wholeAllocSize), fdSubAllocation.getRange());
+}
+
 TEST(FdSubAllocation, givenBaseAllocationThenForwarwadsItAsInitializerForBaseClass) {
     FdSubAllocation<> fdSubAllocation(FdAllocation<>(-1, 4096U, false), 0);
     EXPECT_EQ(0U, fdSubAllocation.getFdSubAllocationOffset());
@@ -535,6 +553,14 @@ TEST(MmappedAllocation, whenCheckedIfIsValidThenVerifiesPtrAndSize) {
         EXPECT_EQ(0U, mmappedAllocation.getMmappedSize());
         EXPECT_FALSE(mmappedAllocation.isValid());
     }
+}
+
+TEST(MmappedAllocation, whenQueuriedForRangeThenReturnsMmapedRange) {
+    size_t wholeAllocSize = 8192U;
+    size_t mmapedSize = 4096U;
+    int i = 0;
+    MmappedAllocation<FdAllocation<>> mmappedAllocation(FdAllocation<>(2, wholeAllocSize, true), &i, mmapedSize);
+    EXPECT_EQ(Cal::Utils::AddressRange(&i, mmapedSize), mmappedAllocation.getRange());
 }
 
 TEST(MmappedAllocation, givenBaseAllocationThenForwarwadsItAsInitializerForBaseClass) {
@@ -572,6 +598,26 @@ TEST(SubAllocation, whenCheckedIfIsValidThenVerifiesSourceAllocationAndSize) {
         EXPECT_EQ(0U, subAlloc.getSubAllocationSize());
         EXPECT_EQ(&fdAlloc, subAlloc.getSourceAllocation());
         EXPECT_FALSE(subAlloc.isValid());
+    }
+}
+
+TEST(SubAllocation, whenQueuriedForRangeThenReturnsRangeFromOffsetToSize) {
+    size_t subAllocOffset = 128U;
+    size_t subAllocSize = 256U;
+    size_t wholeAllocSize = 4096U;
+
+    {
+        FdAllocation<> fdAlloc{2, wholeAllocSize, true};
+        SubAllocation<FdAllocation<>> subAlloc(&fdAlloc, subAllocOffset, subAllocSize);
+        EXPECT_EQ(Cal::Utils::AddressRange(subAllocOffset, subAllocOffset + subAllocSize), subAlloc.getRange());
+    }
+
+    {
+        int i = 0;
+        MmappedAllocation<FdAllocation<>> mmappedAllocation(FdAllocation<>(2, 4096U, true), &i, 4096U);
+        SubAllocation<MmappedAllocation<FdAllocation<>>> subAlloc(&mmappedAllocation, subAllocOffset, subAllocSize);
+        auto expectedRangeOffset = reinterpret_cast<uintptr_t>(&i) + subAllocOffset;
+        EXPECT_EQ(Cal::Utils::AddressRange(expectedRangeOffset, expectedRangeOffset + subAllocSize), subAlloc.getRange());
     }
 }
 

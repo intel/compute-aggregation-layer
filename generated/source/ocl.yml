@@ -460,7 +460,7 @@ config:
             element:
               type: void
               kind: scalar
-              translate_after: "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{ *reinterpret_cast<cl_device_id*>(&{dst})= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), context, reinterpret_cast<IcdOclDevice*>(baseMutable[i])->isSubDevice); }}"
+              translate_after: "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{  globalOclPlatform->translateRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg})); }}"
             server_access: write
         4:
           name: param_value_size_ret

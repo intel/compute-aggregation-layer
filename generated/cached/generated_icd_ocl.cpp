@@ -255,7 +255,7 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
         auto numEntries = param_value_size;
 
         for(size_t i = 0; i < numEntries; ++i){
-            if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) { *reinterpret_cast<cl_device_id*>(&baseMutable[i])= globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&baseMutable[i]), context, reinterpret_cast<IcdOclDevice*>(baseMutable[i])->isSubDevice); };
+            if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {  globalOclPlatform->translateRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&baseMutable[i])); };
         }
         globalOclPlatform->translateRemoteObjectToLocalObjectInParams(param_value, param_name);
     }

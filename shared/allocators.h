@@ -305,6 +305,10 @@ class BaseAllocation {
     bool isValid() const {
         return true;
     }
+
+    Cal::Utils::OffsetRange getRange() const {
+        return Cal::Utils::OffsetRange{0U, 0U};
+    }
 };
 
 // thread-safe decoration
@@ -344,6 +348,10 @@ class FdAllocation : public BaseAllocationType {
         return (-1 != fd) && BaseAllocationType::isValid();
     }
 
+    Cal::Utils::OffsetRange getRange() const {
+        return Cal::Utils::OffsetRange{uintptr_t{0U}, this->fileSize};
+    }
+
   protected:
     size_t fileSize = 0U;   // file size
     int fd = -1;            // opened FD
@@ -377,6 +385,10 @@ class FdSubAllocation : public BaseAllocationType {
 
     bool isValid() const {
         return (fdOffset < this->fileSize) && BaseAllocationType::isValid();
+    }
+
+    Cal::Utils::OffsetRange getRange() const {
+        return Cal::Utils::OffsetRange{fdOffset, this->fileSize};
     }
 
   protected:
@@ -414,6 +426,10 @@ class MmappedAllocation : public BaseAllocationType {
 
     bool isValid() const {
         return (mmappedPtr && mmappedSize) && BaseAllocationType::isValid();
+    }
+
+    Cal::Utils::OffsetRange getRange() const {
+        return Cal::Utils::OffsetRange{mmappedPtr, mmappedSize};
     }
 
   protected:
@@ -475,6 +491,13 @@ class SubAllocation {
         return subAllocationSize && sourceAllocation && (sourceAllocation->isValid());
     }
 
+    Cal::Utils::OffsetRange getRange() const {
+        auto range = sourceAllocation->getRange();
+        range.start += subAllocationOffset;
+        range.end = range.start + subAllocationSize;
+        return range;
+    }
+
   protected:
     const SourceAllocationType *sourceAllocation = nullptr;
     size_t subAllocationOffset = 0U;
@@ -492,8 +515,12 @@ class SubAllocator final {
     using AllocationT = AllocationType;
     static constexpr size_t minAlignment = MinAlignment;
 
+    SubAllocator(UnderlyingAllocationType underlyingAllocation, Cal::Utils::OffsetRange offsetsRange, bool offsetRangeIsRelativeToUnderlingAllocation)
+        : underlyingAllocation(underlyingAllocation), rangeAllocator(offsetsRange), offsetRangeIsRelativeToUnderlingAllocation(offsetRangeIsRelativeToUnderlingAllocation) {
+    }
+
     SubAllocator(UnderlyingAllocationType underlyingAllocation, Cal::Utils::OffsetRange offsetsRange)
-        : underlyingAllocation(underlyingAllocation), rangeAllocator(offsetsRange) {
+        : SubAllocator(underlyingAllocation, offsetsRange, false) {
     }
 
     mockable ~SubAllocator() = default;
@@ -511,7 +538,11 @@ class SubAllocator final {
         if (assignedOffset.has_value() == false) {
             return AllocationType{};
         }
-        AllocationType ret{&underlyingAllocation, assignedOffset.value(), size};
+        auto relativeOffset = assignedOffset.value();
+        if (false == offsetRangeIsRelativeToUnderlingAllocation) {
+            relativeOffset -= rangeAllocator->getRange().start;
+        }
+        AllocationType ret{&underlyingAllocation, relativeOffset, size};
         return ret;
     }
 
@@ -521,7 +552,11 @@ class SubAllocator final {
 
     void free(const AllocationType &allocation) {
         auto rangeAllocatorLock = rangeAllocator.lock();
-        rangeAllocator->free(AllocationType::getSubAllocationOffset(static_cast<const AllocationType &>(allocation)));
+        auto offset = AllocationType::getSubAllocationOffset(static_cast<const AllocationType &>(allocation));
+        if (false == offsetRangeIsRelativeToUnderlingAllocation) {
+            offset += rangeAllocator->getRange().start;
+        }
+        rangeAllocator->free(offset);
     }
 
     const UnderlyingAllocationType &getUnderlyingAllocation() const {
@@ -540,6 +575,7 @@ class SubAllocator final {
   protected:
     UnderlyingAllocationType underlyingAllocation;
     Cal::Utils::Lockable<OffsetRangeAllocator> rangeAllocator;
+    bool offsetRangeIsRelativeToUnderlingAllocation = false;
 };
 
 struct MmapConfig {
@@ -832,7 +868,7 @@ class ArenaAllocator {
         if (entryArenaAllocation.isValid() == false) {
             log<Verbosity::critical>("Could not allocate entry memory arena");
         }
-        auto entryArena = std::make_unique<ArenaT>(entryArenaAllocation, Cal::Utils::OffsetRange{uintptr_t{0U}, uintptr_t{entryArenaSize}});
+        auto entryArena = std::make_unique<ArenaT>(entryArenaAllocation, getArenaOffsetRange(entryArenaAllocation, underlyingAllocationGranularity), false);
         latestArena->store(entryArena.get());
         allArenas->push_back(std::move(entryArena));
     }
@@ -925,7 +961,7 @@ class ArenaAllocator {
                 log<Verbosity::error>("Failed to allocate new memory arena");
                 return {};
             }
-            auto newArena = std::make_unique<ArenaT>(newArenaAllocation, Cal::Utils::OffsetRange{uintptr_t{0U}, uintptr_t{underlyingAllocationGranularity}});
+            auto newArena = std::make_unique<ArenaT>(newArenaAllocation, getArenaOffsetRange(newArenaAllocation, underlyingAllocationGranularity), false);
             auto arena = newArena.get();
             allArenas->push_back(std::move(newArena));
             alloc = arena->allocate(size, alignment);
@@ -982,6 +1018,14 @@ class ArenaAllocator {
     }
 
   protected:
+    Cal::Utils::OffsetRange getArenaOffsetRange(const UnderlyingAllocationT &alloc, size_t sizeAllocated) {
+        auto range = alloc.getRange();
+        if (range.empty() && alloc.isValid()) {
+            range = {uintptr_t{0U}, uintptr_t{sizeAllocated}}; // allocation does not keep range information, use default
+        }
+        return range;
+    }
+
     UnderlyingAllocatorVarT underlyingAllocator;
     size_t underlyingAllocationGranularity = 0U;
     size_t standaloneAllocationThreshold = 0U;

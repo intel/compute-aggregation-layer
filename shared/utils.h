@@ -403,7 +403,7 @@ struct AddressRange {
         return AddressRange(uintptr_t(0U), uintptr_t(size));
     }
 
-    static AddressRange empty() {
+    static AddressRange createEmpty() {
         return AddressRange(uintptr_t(0U), uintptr_t(0U));
     }
 
@@ -425,6 +425,10 @@ struct AddressRange {
 
     size_t size() const {
         return end - start;
+    }
+
+    bool empty() const {
+        return this->size() == 0;
     }
 
     uintptr_t start = 0;

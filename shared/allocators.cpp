@@ -11,7 +11,7 @@ namespace Cal::Allocators {
 
 Cal::Utils::AddressRange RangeAllocator::allocate(size_t sizeInBytes, size_t alignment) {
     if (this->getSizeLeft() < sizeInBytes) {
-        return Cal::Utils::AddressRange::empty();
+        return Cal::Utils::AddressRange::createEmpty();
     }
 
     void *const invalidAddr = reinterpret_cast<void *>(std::numeric_limits<uintptr_t>::max());
@@ -42,7 +42,7 @@ Cal::Utils::AddressRange RangeAllocator::allocate(size_t sizeInBytes, size_t ali
             }
             if (invalidAddr == addr) {
                 log<Verbosity::debug>("Failed to allocate range");
-                return Cal::Utils::AddressRange::empty();
+                return Cal::Utils::AddressRange::createEmpty();
             }
         }
     }
