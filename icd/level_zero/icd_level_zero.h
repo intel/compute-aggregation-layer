@@ -543,7 +543,7 @@ struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, IcdL0T
     enum State : uint32_t {
         STATE_SIGNALED = 0u,
         STATE_CLEARED
-    } state = {};
+    } state = STATE_CLEARED;
     ze_kernel_timestamp_result_t timestamp = {};
 
     void setAllowIcdState(const ze_command_list_handle_t commandList) {
