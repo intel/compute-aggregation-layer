@@ -548,6 +548,95 @@ TEST(CapturesAssignFrom, GivenTwoCapturesWithTheSameDynMemSizeWhenTryingToAssign
     EXPECT_STREQ(firstCommand->captures.desc.pKernelName, secondCommand->captures.desc.pKernelName);
 }
 
+struct MockProvider : public Cal::Service::Provider {
+    using Cal::Service::Provider::commandQueueGroups;
+    using Cal::Service::Provider::Provider;
+};
+
+TEST(CopyGroupAssign, givenParsedCommandQueueGroupsWhenOverrideClientsDescsThenAssignProperCopyQueueGroups) {
+    MockProvider service(nullptr, Cal::Service::ServiceConfig());
+
+    std::array<ze_command_queue_group_properties_t, 4u> prop{};
+    prop[0].flags |= ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE;
+    prop[0].numQueues = 1u;
+    prop[0].stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_GROUP_PROPERTIES;
+    prop[1].flags |= (ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE | ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COPY);
+    prop[1].numQueues = 3u;
+    prop[1].stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_GROUP_PROPERTIES;
+    prop[2].flags |= ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COPY;
+    prop[2].numQueues = 56u;
+    prop[2].stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_GROUP_PROPERTIES;
+    prop[3].flags |= ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COPY;
+    prop[3].numQueues = 1u;
+    prop[3].stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_GROUP_PROPERTIES;
+    uint32_t size = 4u;
+
+    service.parseCommandQueueGroups(&size, prop.data());
+
+    EXPECT_EQ(service.commandQueueGroups.linkedCopyGroupIndex, 2u);
+    EXPECT_EQ(service.commandQueueGroups.copyGroupIndex, 3u);
+    EXPECT_EQ(service.commandQueueGroups.numLinkedCopyEngines, 56u);
+    EXPECT_EQ(service.commandQueueGroups.selector.load(), 0u);
+
+    std::string path("path");
+    Cal::Ipc::GlobalShmemAllocators allocator(path);
+    Cal::Service::ClientContext ctx(allocator, false);
+    ze_command_queue_desc_t desc{};
+    desc.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
+    desc.index = 0u;
+    desc.ordinal = 1u;
+    {
+        service.overrideCommandQueueDesc(&desc, ctx);
+
+        EXPECT_EQ(service.commandQueueGroups.selector.load(), 0u);
+        EXPECT_EQ(ctx.getCopyCommandQueueGroupIndex(), std::numeric_limits<uint32_t>::max());
+        EXPECT_EQ(desc.ordinal, 1u);
+        EXPECT_EQ(desc.index, 0u);
+    }
+    {
+        desc.ordinal = 2u;
+        desc.index = 3u;
+        service.overrideCommandQueueDesc(&desc, ctx);
+
+        EXPECT_EQ(service.commandQueueGroups.selector.load(), 1u);
+        EXPECT_EQ(ctx.getCopyCommandQueueGroupIndex(), 0u);
+        EXPECT_EQ(desc.ordinal, 3u);
+        EXPECT_EQ(desc.index, 0u);
+    }
+    {
+        desc.ordinal = 2u;
+        desc.index = 5u;
+        service.overrideCommandQueueDesc(&desc, ctx);
+
+        EXPECT_EQ(service.commandQueueGroups.selector.load(), 1u);
+        EXPECT_EQ(ctx.getCopyCommandQueueGroupIndex(), 0u);
+        EXPECT_EQ(desc.ordinal, 3u);
+        EXPECT_EQ(desc.index, 0u);
+    }
+    {
+        ze_command_list_desc_t desc{};
+        desc.stype = ZE_STRUCTURE_TYPE_COMMAND_LIST_DESC;
+        desc.commandQueueGroupOrdinal = 2u;
+        service.overrideCommandListDesc(&desc, ctx);
+
+        EXPECT_EQ(service.commandQueueGroups.selector.load(), 1u);
+        EXPECT_EQ(ctx.getCopyCommandQueueGroupIndex(), 0u);
+        EXPECT_EQ(desc.commandQueueGroupOrdinal, 3u);
+    }
+    {
+        Cal::Service::ClientContext ctx2(allocator, false);
+        desc.ordinal = 3u;
+        desc.index = 1u;
+        service.overrideCommandQueueDesc(&desc, ctx2);
+
+        EXPECT_EQ(service.commandQueueGroups.selector.load(), 2u);
+        EXPECT_EQ(ctx.getCopyCommandQueueGroupIndex(), 0u);
+        EXPECT_EQ(ctx2.getCopyCommandQueueGroupIndex(), 1u);
+        EXPECT_EQ(desc.ordinal, 2u);
+        EXPECT_EQ(desc.index, 0u);
+    }
+}
+
 struct MockModuleCache : public Cal::Service::Provider::ModuleCache {
     using Cal::Service::Provider::ModuleCache::cache;
 };

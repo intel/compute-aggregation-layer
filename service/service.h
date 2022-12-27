@@ -277,6 +277,10 @@ class ClientContext {
         return mallocShmemZeroCopyHandler.get();
     }
 
+    uint32_t getCopyCommandQueueGroupIndex() { return this->copyCommandQueueGroupIndex; }
+    void setCopyCommandQueueGroupIndex(uint32_t value) { this->copyCommandQueueGroupIndex = value; }
+    [[nodiscard]] std::unique_lock<std::mutex> obtainCommandQueueGroupsLock() { return std::unique_lock<std::mutex>(this->commandQueueGroupsMtx); }
+
     template <typename HandleT>
     void trackAllocatedResource(HandleT handle) {
         if (automaticCleanupOfApiHandles) {
@@ -342,6 +346,8 @@ class ClientContext {
 
     Cal::Ipc::GlobalShmemAllocators &globalShmemAllocators;
     bool automaticCleanupOfApiHandles = false;
+    uint32_t copyCommandQueueGroupIndex = std::numeric_limits<uint32_t>::max();
+    std::mutex commandQueueGroupsMtx;
     std::atomic_bool isStopping = false;
     std::mutex criticalSection;
     std::vector<Cal::Usm::UsmMmappedShmemArenaAllocator> usmHeaps;
@@ -669,6 +675,83 @@ class Provider {
         }
     }
 
+    void parseCommandQueueGroups(uint32_t *count, ze_command_queue_group_properties_t *properties) {
+        if (count == nullptr || properties == nullptr) {
+            return;
+        }
+        if (this->commandQueueGroups.initialized) {
+            return;
+        }
+        for (uint32_t i = 0u; i < *count; ++i) {
+            if ((properties[i].flags & ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COPY) &&
+                !(properties[i].flags & ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE)) {
+                if (properties[i].numQueues == 1u) {
+                    this->commandQueueGroups.copyGroupIndex = i;
+                } else {
+                    this->commandQueueGroups.linkedCopyGroupIndex = i;
+                    this->commandQueueGroups.numLinkedCopyEngines = properties[i].numQueues;
+                }
+            }
+        }
+        if (this->commandQueueGroups.copyGroupIndex != std::numeric_limits<uint32_t>::max() &&
+            this->commandQueueGroups.linkedCopyGroupIndex != std::numeric_limits<uint32_t>::max() &&
+            this->commandQueueGroups.numLinkedCopyEngines != std::numeric_limits<uint32_t>::max()) {
+            this->commandQueueGroups.initialized = true;
+        }
+    }
+
+    void overrideCommandQueueDesc(ze_command_queue_desc_t *desc, ClientContext &ctx) {
+        if (desc == nullptr) {
+            return;
+        }
+        if (!this->commandQueueGroups.initialized) {
+            return;
+        }
+        if (desc->ordinal != this->commandQueueGroups.copyGroupIndex && desc->ordinal != this->commandQueueGroups.linkedCopyGroupIndex) {
+            return;
+        }
+        auto index = ctx.getCopyCommandQueueGroupIndex();
+        if (index == std::numeric_limits<uint32_t>::max()) {
+            auto lock = ctx.obtainCommandQueueGroupsLock();
+            if (index == std::numeric_limits<uint32_t>::max()) {
+                index = this->commandQueueGroups.selector.fetch_add(1u) % (this->commandQueueGroups.numLinkedCopyEngines + 1);
+                ctx.setCopyCommandQueueGroupIndex(index);
+            }
+        }
+        if (index == 0u) {
+            desc->ordinal = this->commandQueueGroups.copyGroupIndex;
+            desc->index = 0u;
+        } else {
+            desc->ordinal = this->commandQueueGroups.linkedCopyGroupIndex;
+            desc->index = index - 1;
+        }
+    }
+
+    void overrideCommandListDesc(ze_command_list_desc_t *desc, ClientContext &ctx) {
+        if (desc == nullptr) {
+            return;
+        }
+        if (!this->commandQueueGroups.initialized) {
+            return;
+        }
+        if (desc->commandQueueGroupOrdinal != this->commandQueueGroups.copyGroupIndex && desc->commandQueueGroupOrdinal != this->commandQueueGroups.linkedCopyGroupIndex) {
+            return;
+        }
+        auto index = ctx.getCopyCommandQueueGroupIndex();
+        if (index == std::numeric_limits<uint32_t>::max()) {
+            auto lock = ctx.obtainCommandQueueGroupsLock();
+            if (index == std::numeric_limits<uint32_t>::max()) {
+                index = this->commandQueueGroups.selector.fetch_add(1u) % (this->commandQueueGroups.numLinkedCopyEngines + 1);
+                ctx.setCopyCommandQueueGroupIndex(index);
+            }
+        }
+        if (index == 0u) {
+            desc->commandQueueGroupOrdinal = this->commandQueueGroups.copyGroupIndex;
+        } else {
+            desc->commandQueueGroupOrdinal = this->commandQueueGroups.linkedCopyGroupIndex;
+        }
+    }
+
   protected:
     ServiceConfig serviceConfig;
     struct {
@@ -716,6 +799,14 @@ class Provider {
         std::unordered_map<pid_t, pid_t> pidToPpidMapForNewSpectacles;
         std::vector<std::unique_ptr<ISpectacle>> active;
     } spectacles;
+
+    struct CommandQueueGroups {
+        std::atomic_uint32_t selector{0u};
+        uint32_t copyGroupIndex = std::numeric_limits<uint32_t>::max();
+        uint32_t linkedCopyGroupIndex = std::numeric_limits<uint32_t>::max();
+        uint32_t numLinkedCopyEngines = std::numeric_limits<uint32_t>::max();
+        bool initialized = false;
+    } commandQueueGroups;
 
     std::unique_ptr<Cal::Ipc::ConnectionListener> createConnectionListener();
 

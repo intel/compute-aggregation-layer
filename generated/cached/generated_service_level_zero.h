@@ -137,6 +137,7 @@ bool isSuccessful(ze_result_t result);
 bool zeInitHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListCreate");
+    service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListCreate(
                                                 apiCommand->args.hContext, 
@@ -154,6 +155,7 @@ inline bool zeCommandListCreateHandler(Provider &service, Cal::Rpc::ChannelServe
 }
 inline bool zeCommandListCreateImmediateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListCreateImmediate");
+    service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->args.altdesc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->captures.altdesc : nullptr, ctx);
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListCreateImmediate(
                                                 apiCommand->args.hContext, 
@@ -201,6 +203,7 @@ inline bool zeCommandListResetHandler(Provider &service, Cal::Rpc::ChannelServer
 }
 inline bool zeCommandQueueCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueCreate");
+    service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->captures.desc : nullptr, ctx);
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandQueueCreate(
                                                 apiCommand->args.hContext, 
@@ -466,6 +469,7 @@ inline bool zeDeviceGetCommandQueueGroupPropertiesHandler(Provider &service, Cal
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
                                                 apiCommand->args.pCommandQueueGroupProperties ? apiCommand->captures.pCommandQueueGroupProperties : nullptr
                                                 );
+    service.parseCommandQueueGroups(apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, apiCommand->args.pCommandQueueGroupProperties ? apiCommand->captures.pCommandQueueGroupProperties : nullptr);
     return true;
 }
 inline bool zeDeviceGetMemoryPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {

@@ -404,6 +404,12 @@ class SpecialHandling:
             self.handler_only_suffix = src.get("handler_only_suffix", "")
             self.custom_handler = src.get("custom_handler", False)
             self.emit_copy_assignment = src.get("emit_copy_assignment", False)
+            self.handler_prologue = src.get("handler_prologue", None)
+            self.handler_epilogue = src.get("handler_epilogue", None)
+            if self.handler_prologue and not isinstance(self.handler_prologue, list):
+                self.handler_prologue = [self.handler_prologue]
+            if self.handler_epilogue and not isinstance(self.handler_epilogue, list):
+                self.handler_epilogue = [self.handler_epilogue]
 
     def __init__(self, src: dict):
         self.icd = SpecialHandling.Icd(src["icd"]) if "icd" in src.keys() else None
@@ -1533,7 +1539,11 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         get_arg_from_api_command_struct=get_arg_from_api_command_struct,
         requires_malloc_shmem_zero_copy_handler=requires_malloc_shmem_zero_copy_handler,
         to_pascal_case=to_pascal_case,
-        get_struct_members_layouts=get_struct_members_layouts)
+        get_struct_members_layouts=get_struct_members_layouts,
+        prologue=lambda f: f.special_handling.rpc.handler_prologue if (
+            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_prologue) else "",
+        epilogue=lambda f: f.special_handling.rpc.handler_epilogue if (
+            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "")
 
 
 def generate_service_cpp(config: Config, additional_file_headers: list) -> str:

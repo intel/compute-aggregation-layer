@@ -48,6 +48,9 @@ bool ${rpc_func.name}Handler(Provider &service, Cal::Rpc::ChannelServer &channel
 %  if not use_rpc_custom_handler(rpc_func):
 inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for ${rpc_func.name}");
+%    for prologue_line in prologue(rpc_func):
+    ${prologue_line}
+%    endfor # prologue(rpc_func)
 %     if requires_malloc_shmem_zero_copy_handler(rpc_func):
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
@@ -91,6 +94,9 @@ ${", " if not loop.last else ""}
     }
 %     endif # arg.daemon_action_at_end
 %    endfor # rpc_func.args
+%    for epilogue_line in epilogue(rpc_func):
+    ${epilogue_line}
+%    endfor # epilogue(rpc_func)
     return true;
 }
 %  endif # not use_rpc_custom_handler

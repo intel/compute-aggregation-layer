@@ -1417,6 +1417,9 @@ config:
     #
     - name: zeCommandListCreate
       latency: 0.0
+      special_handling:
+        rpc:
+          handler_prologue: "service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -1460,6 +1463,9 @@ config:
 
     - name: zeCommandListCreateImmediate
       latency: 0.0
+      special_handling:
+        rpc:
+          handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->args.altdesc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->captures.altdesc : nullptr, ctx);"
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -1579,6 +1585,9 @@ config:
     #
     - name: zeCommandQueueCreate
       latency: 1.0
+      special_handling:
+        rpc:
+          handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
       ddi_category: CommandQueue
       returns:
         type: ze_result_t
@@ -3097,6 +3106,8 @@ config:
       special_handling:
         icd:
           handler_only_suffix: "RpcHelper"
+        rpc:
+          handler_epilogue: "service.parseCommandQueueGroups(apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, apiCommand->args.pCommandQueueGroupProperties ? apiCommand->captures.pCommandQueueGroupProperties : nullptr);"
       ddi_category: Device
       returns:
         type: ze_result_t

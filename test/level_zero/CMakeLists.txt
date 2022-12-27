@@ -35,6 +35,8 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
 
+               ${cal_source_root_dir}/service/service.cpp
+
                ${cal_source_root_dir}/shared/allocators.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
@@ -42,6 +44,8 @@ add_executable(l0_test_ult_rpc
 
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
+               ${generated_dir}/generated_service_level_zero.cpp
+               ${generated_dir}/generated_service_ocl.cpp
 
                ${ICD_L0_OBJECTS_SOURCES}
 )
