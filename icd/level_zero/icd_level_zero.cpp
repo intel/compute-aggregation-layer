@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -183,7 +183,7 @@ ze_result_t IcdL0CommandList::readRequiredMemory() {
 
 void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
     if (kernel->sharedIndirectAccessSet) {
-        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllAllocationsToGpu();
+        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
     } else {
         for (auto &alloc : kernel->allocationsToMigrate) {
             moveSharedAllocationsToGpuImpl(alloc);
@@ -193,7 +193,7 @@ void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
 
 void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {
     if (this->isImmediate()) {
-        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllocationToGpu(ptr);
+        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(ptr);
     } else {
         this->usedAllocations.push_back(ptr);
     }
@@ -204,7 +204,7 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
     for (uint32_t i = 0; i < numCommandLists; i++) {
         auto l0CmdList = static_cast<IcdL0CommandList *>(phCommandLists[i]);
         if (l0CmdList->sharedIndirectAccessSet) {
-            Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllAllocationsToGpu();
+            Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
             indirectAccessSet = true;
             break;
         }
@@ -214,7 +214,7 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
         auto &allocs = l0CmdList->getUsedAllocations();
         if (!indirectAccessSet) {
             for (auto &alloc : allocs) {
-                Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->moveAllocationToGpu(alloc);
+                Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(alloc);
             }
         }
         allocs.clear();

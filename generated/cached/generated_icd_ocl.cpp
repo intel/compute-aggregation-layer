@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -3912,7 +3912,7 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
     return ret;
 }
 cl_int clMemFreeINTEL (cl_context context, void* ptr) {
-    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->unregisterSharedAlloc(ptr);
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().unregisterSharedAlloc(ptr);
     invalidateKernelArgCache();
     log<Verbosity::bloat>("Establishing RPC for clMemFreeINTEL");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();

@@ -6859,7 +6859,7 @@ config:
         icd:
           not_in_dispatch_table: True
           in_get_extension_function_address: True
-          handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
+          handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
         rpc:
           custom_handler: True
       returns:

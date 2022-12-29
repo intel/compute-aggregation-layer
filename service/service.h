@@ -503,7 +503,6 @@ class Provider {
         }
         this->isRunning = true;
         log<Verbosity::info>("Starting Compute Aggregation Layer service from PID : %d", getpid());
-        this->config.init();
         this->mallocShmemZeroCopyManager.loadLibrary();
         if (this->mallocShmemZeroCopyManager.isAvailable()) {
             strncpy(this->config.mallocShmemLibraryPath, this->mallocShmemZeroCopyManager.getLibrarySoPath().c_str(), sizeof(this->config.mallocShmemLibraryPath));
@@ -533,7 +532,7 @@ class Provider {
             this->systemInfo.cpuInfo = cpuInfoOpt.value();
             log<Verbosity::debug>("Cpu virtual address bits : %d", this->systemInfo.cpuInfo.virtual_);
         } else {
-            log<Verbosity::error>("Could note information about the CPU virtual address bits - will have impact on USM device memory");
+            log<Verbosity::error>("Could not read information about the CPU virtual address bits - will have impact on USM device memory");
         }
 
         listener = createConnectionListener();
@@ -876,23 +875,20 @@ class Provider {
             return;
         }
 
-        Cal::Messages::ReqHandshake handshake;
+        Cal::Messages::ReqHandshake handshake{false};
         log<Verbosity::debug>("Performing handshake with client #%d", clientConnection->getId());
         if ((false == clientConnection->receive(handshake)) || handshake.isInvalid()) {
             log<Verbosity::error>("Handshake with client #%d has FAILED", clientConnection->getId());
             return;
         }
-        if (false == service.isClientSupported(handshake.clientApiType)) {
-            log<Verbosity::error>("Client #%d requested %s API which is not available in the system (missing loader)", clientConnection->getId(), handshake.clientTypeStr());
-            return;
-        }
+
         auto handshakeResp = service.getConfig();
         handshakeResp.assignedClientOrdinal = clientOrdinal;
         if (false == clientConnection->send(handshakeResp)) {
             log<Verbosity::error>("Failed to send service config to client #%d", clientConnection->getId());
             return;
         }
-        log<Verbosity::info>("Handshake with client #%d has SUCCEEDED (pid:%d, ppid:%d, api:%s, process:%s)", clientConnection->getId(), handshake.pid, handshake.ppid, handshake.clientTypeStr(), handshake.clientProcessName);
+        log<Verbosity::info>("Handshake with client #%d has SUCCEEDED (pid:%d, ppid:%d, process:%s)", clientConnection->getId(), handshake.pid, handshake.ppid, handshake.clientProcessName);
         ClientContext ctx(service.getGlobalShmemAllocators(), isPersistentMode);
         service.assignToSpectacle(handshake.ppid, handshake.pid, handshake.clientProcessName, ctx);
         if (ctx.getSpectacleAssignment()) {
@@ -902,7 +898,7 @@ class Provider {
         while (false == (brokenConnection || service.isServiceStopping())) {
             Cal::Ipc::ControlMessageHeader messageHeader;
             if (false == clientConnection->peek(messageHeader)) {
-                log<Verbosity::debug>("Client : %d terminated connection", clientConnection->getId(), handshake.pid, handshake.clientTypeStr());
+                log<Verbosity::debug>("Client : %d (pid : %d) terminated connection", clientConnection->getId(), handshake.pid);
                 brokenConnection = true;
                 break;
             }
@@ -943,6 +939,9 @@ class Provider {
         switch (messageHeader.subtype) {
         default:
             log<Verbosity::error>("Client : %d sent broken CAL request message (type:%u, unknown subtype:%u)", clientConnection.getId(), messageHeader.type, messageHeader.subtype);
+            return false;
+        case Cal::Messages::ReqHandshake::messageSubtype:
+            log<Verbosity::error>("Client : %d unxpectedly sent handshake request (ReqHandshake)", clientConnection.getId());
             return false;
         case Cal::Messages::ReqAllocateShmem::messageSubtype: {
             Cal::Messages::ReqAllocateShmem request;
@@ -996,6 +995,14 @@ class Provider {
             Cal::Messages::ReqReverseTransferFd request{0};
             if ((false == clientConnection.receive(request)) || request.isInvalid()) {
                 log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqReverseTransferFd)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
+        case Cal::Messages::ReqCheckApiAvailability::messageSubtype: {
+            Cal::Messages::ReqCheckApiAvailability request;
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqCheckApiAvailability)", clientConnection.getId());
                 return false;
             }
             return service(request, clientConnection, ctx);
@@ -1151,6 +1158,32 @@ class Provider {
 
         if (false == clientConnection.send(response)) {
             log<Verbosity::error>("Could not send response RespImportAddressSpace to client : %d", clientConnection.getId());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool service(const Cal::Messages::ReqCheckApiAvailability &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        bool available = false;
+        switch (request.api) {
+        default:
+            log<Verbosity::error>("Client : %d requested unknown API : %s (%d)", clientConnection.getId(), Cal::asStr(request.api), static_cast<uint32_t>(request.api));
+            break;
+        case Cal::ApiType::OpenCL:
+            available = systemInfo.availableApis.ocl;
+            break;
+        case Cal::ApiType::LevelZero:
+            available = systemInfo.availableApis.l0;
+            break;
+        }
+
+        log<Verbosity::debug>("Client : %d is checking availability of %s API which is %savailable", clientConnection.getId(), Cal::asStr(request.api), available ? " " : "NOT ");
+        Cal::Messages::RespCheckApiAvailability response = {};
+        response.available = available;
+
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response for ReqReverseTransferFd!");
             return false;
         }
 

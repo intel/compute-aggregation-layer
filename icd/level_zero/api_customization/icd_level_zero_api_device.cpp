@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -17,7 +17,7 @@ namespace Cal::Icd::LevelZero {
 
 ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices) {
     auto platform = Cal::Icd::icdGlobalState.getL0Platform();
-    if (!platform || !platform->valid() || hDriver != static_cast<ze_driver_handle_t>(platform)) {
+    if (!platform || hDriver != static_cast<ze_driver_handle_t>(platform)) {
         return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
     }
 

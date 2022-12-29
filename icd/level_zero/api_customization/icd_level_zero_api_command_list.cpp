@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -266,10 +266,10 @@ ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, 
     }
 
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto *pageFaultManager = globalL0Platform->getPageFaultManager();
+    auto &pageFaultManager = globalL0Platform->getPageFaultManager();
 
     const auto apiAgnosticAdvice = translateToApiAgnosticAdvice(advice);
-    pageFaultManager->updateMemAdviceFlags(ptr, apiAgnosticAdvice);
+    pageFaultManager.updateMemAdviceFlags(ptr, apiAgnosticAdvice);
 
     return ZE_RESULT_SUCCESS;
 }

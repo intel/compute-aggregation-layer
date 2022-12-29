@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -34,7 +34,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
         return CL_SUCCESS;
     }
     auto platform = Cal::Icd::icdGlobalState.getOclPlatform();
-    if ((nullptr == platform) || (false == platform->valid())) {
+    if (nullptr == platform) {
         if (num_platforms) {
             log<Verbosity::debug>("CAL service not available - returning num_platforms=0");
             *num_platforms = 0U;
@@ -230,7 +230,7 @@ void *clHostMemAllocINTEL(cl_context context, const cl_mem_properties_intel *pro
     return ptr;
 }
 void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret) {
-    if (!Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->getSharedAllocationsEnabled()) {
+    if (!Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().getSharedAllocationsEnabled()) {
         return Cal::Icd::Ocl::clHostMemAllocINTEL(context, properties, size, alignment, errcode_ret);
     }
 
@@ -248,13 +248,13 @@ void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_me
         }
         return ptr;
     }
-    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->registerSharedAlloc(ptr, size, getSharedAllocationPlacement(properties));
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().registerSharedAlloc(ptr, size, getSharedAllocationPlacement(properties));
     return ptr;
 }
 
 cl_int clEnqueueMemcpyINTEL(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(dstPtr, srcPtr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     const void *ptrs[] = {dstPtr, srcPtr};
     bool testResults[2] = {};
     globalOclPlatform->areUsm(2, ptrs, testResults);
@@ -275,7 +275,7 @@ cl_int clEnqueueMemcpyINTEL(cl_command_queue commandQueue, cl_bool blocking, voi
 
 cl_int clEnqueueSVMMemcpy(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(dstPtr, srcPtr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     const void *ptrs[] = {dstPtr, srcPtr};
     bool testResults[2] = {};
     globalOclPlatform->areUsm(2, ptrs, testResults);
@@ -296,7 +296,7 @@ cl_int clEnqueueSVMMemcpy(cl_command_queue commandQueue, cl_bool blocking, void 
 
 cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(ptr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueReadBufferRpcHelperUsmHost(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -309,7 +309,7 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
 
 cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t *buffer_offset, const size_t *host_offset, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(ptr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueReadBufferRectRpcHelperUsmHost(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -322,7 +322,7 @@ cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl
 
 cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(ptr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueWriteBufferRpcHelperUsmHost(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -335,7 +335,7 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
 
 cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t *buffer_offset, const size_t *host_offset, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager()->moveAllocationToGpu(ptr);
+    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueWriteBufferRectRpcHelperUsmHost(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -593,10 +593,10 @@ bool IcdOclKernel::initTraits(const IcdOclKernel *sourceKernel) {
 
 void IcdOclKernel::moveArgsToGpu() {
     if (sharedIndirectAccessSet) {
-        Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->moveAllAllocationsToGpu();
+        Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllAllocationsToGpu();
     } else {
         for (auto &alloc : this->allocationsToMigrate) {
-            Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager()->moveAllocationToGpu(alloc);
+            Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(alloc);
         }
     }
 }

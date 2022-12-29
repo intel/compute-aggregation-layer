@@ -4875,7 +4875,7 @@ config:
       latency: 0.0
       special_handling:
         icd:
-          handler_prologue: "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
+          handler_prologue: "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
         rpc:
           custom_handler: True
       ddi_category: Mem

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -606,8 +606,8 @@ class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, 
 
 class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
   public:
-    IcdL0Platform(Cal::Ipc::ShmemImporter &shmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager)
-        : IcdPlatform(shmemImporter, usmShmemImporter, mallocShmemZeroCopyManager, Cal::ApiType::LevelZero) {}
+    IcdL0Platform(Cal::Icd::IcdGlobalState &globalState)
+        : IcdPlatform(globalState, Cal::ApiType::LevelZero) {}
 
     ze_driver_handle_t asRemoteObject() {
         return calDriverHandle;
@@ -743,7 +743,7 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
     }
 
     void *openUsmDevicePointerFromIpcHandle(ze_context_handle_t context, void *newUsmPtr) {
-        if (!newUsmPtr || !cpuInfo.isAccessibleByApplication(newUsmPtr)) {
+        if (!newUsmPtr || !globalState.getCpuInfo().isAccessibleByApplication(newUsmPtr)) {
             return newUsmPtr;
         }
 

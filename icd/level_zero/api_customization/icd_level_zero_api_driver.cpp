@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -15,7 +15,7 @@ namespace Cal::Icd::LevelZero {
 
 ze_result_t zeInit(ze_init_flags_t flags) {
     const auto platform = Cal::Icd::icdGlobalState.getL0Platform();
-    if (!platform || !platform->valid()) {
+    if (!platform) {
         log<Verbosity::error>("CAL service not available. zeInit() cannot be performed!");
         return ZE_RESULT_ERROR_UNINITIALIZED;
     }
@@ -26,7 +26,7 @@ ze_result_t zeInit(ze_init_flags_t flags) {
 
 ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
     const auto platform = Cal::Icd::icdGlobalState.getL0Platform();
-    if (!platform || !platform->valid()) {
+    if (!platform) {
         log<Verbosity::debug>("CAL service not available. Trying to return zero available drivers!");
         if (pCount) {
             *pCount = 0;

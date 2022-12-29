@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -16,5 +16,16 @@ enum class ApiType : std::uint32_t {
     OpenCL = 1,
     LevelZero = 2,
 };
+
+inline const char *asStr(ApiType apiType) {
+    switch (apiType) {
+    default:
+        return "unknown";
+    case Cal::ApiType::OpenCL:
+        return "OpenCL";
+    case Cal::ApiType::LevelZero:
+        return "LevelZero";
+    }
+}
 
 } // namespace Cal

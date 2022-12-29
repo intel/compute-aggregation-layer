@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -37,23 +37,19 @@ struct ReqHandshake {
     pid_t pid = 0;
     pid_t ppid = 0;
     char clientProcessName[512] = {};
-    Cal::ApiType clientApiType = Cal::ApiType::Unknown;
 
-    ReqHandshake() {
-        this->header.subtype = ReqHandshake::messageSubtype;
-    }
-
-    ReqHandshake(Cal::ApiType clientApiType) {
+    ReqHandshake(bool initClientInfo) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqHandshake::messageSubtype;
-        this->pid = getpid();
-        this->ppid = getppid();
-        this->clientApiType = clientApiType;
-        auto processName = Cal::Utils::getProcessName();
+        if (initClientInfo) {
+            this->pid = getpid();
+            this->ppid = getppid();
+            auto processName = Cal::Utils::getProcessName();
 
-        auto dstSize = sizeof(this->clientProcessName);
-        strncpy(this->clientProcessName, processName.data(), dstSize - 1);
-        this->clientProcessName[dstSize - 1] = '\0';
+            auto dstSize = sizeof(this->clientProcessName);
+            strncpy(this->clientProcessName, processName.data(), dstSize - 1);
+            this->clientProcessName[dstSize - 1] = '\0';
+        }
     }
 
     bool isInvalid() const {
@@ -61,22 +57,10 @@ struct ReqHandshake {
         invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
         invalid |= (this->header.subtype != ReqHandshake::messageSubtype) ? 1 : 0;
         invalid |= (this->pid == 0) ? 1 : 0;
-        invalid |= (((this->clientApiType != Cal::ApiType::OpenCL) ? 1 : 0) & ((this->clientApiType != Cal::ApiType::LevelZero) ? 1 : 0));
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqHandshake is not valid");
         }
         return 0 != invalid;
-    }
-
-    const char *clientTypeStr() const {
-        switch (this->clientApiType) {
-        default:
-            return "unknown";
-        case Cal::ApiType::OpenCL:
-            return "OpenCL";
-        case Cal::ApiType::LevelZero:
-            return "LevelZero";
-        }
     }
 };
 static_assert(std::is_standard_layout<ReqHandshake>::value);
@@ -86,7 +70,7 @@ struct RespHandshake {
 
     static constexpr uint16_t messageSubtype = 2;
 
-    void init() {
+    RespHandshake() {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = RespHandshake::messageSubtype;
         this->pid = getpid();
@@ -329,7 +313,7 @@ inline bool operator==(const RespLaunchRpcShmemRingBuffer &lhs, const RespLaunch
 struct ReqNegotiateUsmAddressRange {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 6;
+    static constexpr uint16_t messageSubtype = 7;
 
     ReqNegotiateUsmAddressRange() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -358,7 +342,7 @@ inline bool operator==(const ReqNegotiateUsmAddressRange &lhs, const ReqNegotiat
 struct RespNegotiateUsmAddressRange {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 7;
+    static constexpr uint16_t messageSubtype = 8;
 
     RespNegotiateUsmAddressRange() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -387,7 +371,7 @@ inline bool operator==(const RespNegotiateUsmAddressRange &lhs, const RespNegoti
 struct ReqImportAddressSpace {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 8;
+    static constexpr uint16_t messageSubtype = 9;
 
     ReqImportAddressSpace() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -410,7 +394,7 @@ static_assert(std::is_standard_layout<ReqImportAddressSpace>::value);
 struct RespImportAddressSpace {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 9;
+    static constexpr uint16_t messageSubtype = 10;
 
     RespImportAddressSpace() {
         header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -428,7 +412,7 @@ static_assert(std::is_standard_layout<RespImportAddressSpace>::value);
 struct ReqPageFault {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 10;
+    static constexpr uint16_t messageSubtype = 11;
 
     ReqPageFault(const void *ptr) : ptr(ptr) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -453,7 +437,7 @@ static_assert(std::is_standard_layout<ReqPageFault>::value);
 struct RespPageFault {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 11;
+    static constexpr uint16_t messageSubtype = 12;
 
     RespPageFault() {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
@@ -475,7 +459,7 @@ static_assert(std::is_standard_layout<RespPageFault>::value);
 struct ReqTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 11;
+    static constexpr uint16_t messageSubtype = 13;
     static constexpr uint16_t maxFdsCount = 4;
 
     ReqTransferFd(uint16_t usedFdsCount) : usedFdsCount{usedFdsCount} {
@@ -501,7 +485,7 @@ static_assert(std::is_standard_layout<ReqTransferFd>::value);
 struct ReqReverseTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 12;
+    static constexpr uint16_t messageSubtype = 14;
     static constexpr uint16_t maxFdsCount = 4;
 
     ReqReverseTransferFd(uint16_t numOfFds) : numOfFds(numOfFds) {
@@ -527,7 +511,7 @@ static_assert(std::is_standard_layout<ReqReverseTransferFd>::value);
 struct RespReverseTransferFd {
     Cal::Ipc::ControlMessageHeader header = {};
 
-    static constexpr uint16_t messageSubtype = 13;
+    static constexpr uint16_t messageSubtype = 15;
     static constexpr uint16_t maxFdsCount = 4;
 
     RespReverseTransferFd() {
@@ -548,6 +532,60 @@ struct RespReverseTransferFd {
     int remoteFds[maxFdsCount] = {};
 };
 static_assert(std::is_standard_layout<RespReverseTransferFd>::value);
+
+struct ReqCheckApiAvailability {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 16;
+    Cal::ApiType api = Cal::ApiType::Unknown;
+
+    ReqCheckApiAvailability() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqCheckApiAvailability::messageSubtype;
+    }
+
+    ReqCheckApiAvailability(Cal::ApiType api) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqCheckApiAvailability::messageSubtype;
+        this->api = api;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqCheckApiAvailability::messageSubtype) ? 1 : 0;
+        invalid |= (((this->api != Cal::ApiType::OpenCL) ? 1 : 0) & ((this->api != Cal::ApiType::LevelZero) ? 1 : 0));
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqCheckApiAvailability is not valid");
+        }
+        return 0 != invalid;
+    }
+};
+static_assert(std::is_standard_layout<ReqCheckApiAvailability>::value);
+
+struct RespCheckApiAvailability {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 17;
+
+    RespCheckApiAvailability() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = RespCheckApiAvailability::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespCheckApiAvailability::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespCheckApiAvailability is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    bool available = false;
+};
+static_assert(std::is_standard_layout<RespCheckApiAvailability>::value);
 
 } // namespace Messages
 } // namespace Cal

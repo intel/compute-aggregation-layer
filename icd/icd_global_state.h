@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include "shared/ipc.h"
 #include "shared/log.h"
+#include "shared/rpc.h"
 
 #include <algorithm>
 #include <functional>
@@ -29,6 +31,7 @@ class UsmShmemImporter;
 }
 
 namespace Icd {
+class PageFaultManager;
 
 namespace Ocl {
 class IcdOclPlatform;
@@ -120,6 +123,42 @@ class IcdGlobalState final {
     bool isCacheEnabled() { return this->enableCache; };
     ~IcdGlobalState();
 
+    Cal::Ipc::ShmemImporter &getGlobalShmemImporter() const {
+        return *this->globalShmemImporter;
+    }
+
+    Cal::Usm::UsmShmemImporter &getUsmShmemImporter() const {
+        return *this->usmShmemImporter;
+    }
+
+    Cal::Ipc::MallocShmemZeroCopyManager &getMallocShmemZeroCopyManager() const {
+        return *this->mallocShmemZeroCopyManager;
+    }
+
+    Cal::Icd::PageFaultManager &getPageFaultManager() const {
+        return *this->pageFaultManager;
+    }
+
+    Cal::Ipc::Connection &getConnection() const {
+        return *this->connection;
+    }
+
+    Cal::Rpc::ChannelClient &getRpcChannel() const {
+        return *this->rpcChannel;
+    }
+
+    bool isZeroCopyForMallocShmemEnabled() const {
+        return this->connectionTraits.isZeroCopyForMallocShmemAllowed;
+    }
+
+    const Cal::Utils::CpuInfo &getCpuInfo() const {
+        return this->cpuInfo;
+    }
+
+    const Cal::Utils::AddressRange &getInitialUsmHeap() const {
+        return initialUsmHeap;
+    }
+
   protected:
     friend struct IcdGlobalsRegistryAtExitWatcher;
     void notifyAtExit() {
@@ -129,17 +168,43 @@ class IcdGlobalState final {
         }
     }
 
+    bool ensureServiceIsAvailable();
+    bool ensureApiIsAvailable(ApiType api);
+
+    void connect();
+    const char *getSocketPath();
+
+    std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory() {
+        log<Verbosity::debug>("Creating connection listener based on local named socket");
+        return std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
+    }
+
     struct {
         std::unique_ptr<Cal::Icd::Ocl::IcdOclPlatform> platform;
         std::once_flag onceFlag;
     } oclPlatform;
+
     struct {
         std::unique_ptr<Cal::Icd::LevelZero::IcdL0Platform> platform;
         std::once_flag onceFlag;
     } l0Platform;
+
+    struct {
+        std::once_flag onceFlag;
+        bool isConnected = false;
+
+        std::string socketPath;
+        bool isZeroCopyForMallocShmemAllowed = false;
+    } connectionTraits;
+
     std::unique_ptr<Cal::Ipc::ShmemImporter> globalShmemImporter;
     std::unique_ptr<Cal::Usm::UsmShmemImporter> usmShmemImporter;
     std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager> mallocShmemZeroCopyManager;
+    std::unique_ptr<Cal::Icd::PageFaultManager> pageFaultManager;
+    std::unique_ptr<Cal::Ipc::Connection> connection;
+    std::unique_ptr<Cal::Rpc::ChannelClient> rpcChannel;
+    Cal::Utils::AddressRange initialUsmHeap;
+    Cal::Utils::CpuInfo cpuInfo;
 
     bool enableCache = false;
 

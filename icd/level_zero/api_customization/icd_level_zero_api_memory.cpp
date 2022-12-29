@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -30,7 +30,7 @@ ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc
 }
 
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t *device_desc, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void **pptr) {
-    if (!Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->getSharedAllocationsEnabled()) {
+    if (!Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().getSharedAllocationsEnabled()) {
         return Cal::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
     }
 
@@ -45,7 +45,7 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_a
         *pptr = nullptr;
         return result;
     }
-    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->registerSharedAlloc(*pptr, size, getSharedAllocationPlacement(device_desc, host_desc));
+    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().registerSharedAlloc(*pptr, size, getSharedAllocationPlacement(device_desc, host_desc));
     return result;
 }
 

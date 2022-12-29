@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -85,6 +85,10 @@ class UsmShmemImporter {
     using AllocationT = Cal::Ipc::ShmemImporter::AllocationT;
 
     UsmShmemImporter(Cal::Ipc::ShmemImporter &base) : base(base) {
+    }
+
+    AllocationT open(Cal::Ipc::ShmemIdT id, size_t offset, size_t size, void *enforcedVaForMmap) {
+        return base.open(id, offset, size, enforcedVaForMmap);
     }
 
     AllocationT open(Cal::Ipc::ShmemIdT id, size_t size, void *enforcedVaForMmap) {

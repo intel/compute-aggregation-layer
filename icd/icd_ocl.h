@@ -775,8 +775,8 @@ void objectCleanup(void *remote, void *local);
 
 class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
   public:
-    IcdOclPlatform(Cal::Ipc::ShmemImporter &globalShmemImporter, Cal::Usm::UsmShmemImporter &usmShmemImporter, Cal::Ipc::MallocShmemZeroCopyManager &mallocShmemZeroCopyManager)
-        : IcdPlatform(globalShmemImporter, usmShmemImporter, mallocShmemZeroCopyManager, Cal::ApiType::OpenCL) {
+    IcdOclPlatform(Cal::Icd::IcdGlobalState &globalState)
+        : IcdPlatform(globalState, Cal::ApiType::OpenCL) {
         this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
     }
 
@@ -785,7 +785,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
             return ptr;
         }
 
-        if (allowedToUseZeroCopyForMallocShmem) {
+        if (globalState.isZeroCopyForMallocShmemEnabled()) {
             return reinterpret_cast<char *>(buffer->asLocalObject()->apiHostPtr) + offset;
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -2147,7 +2147,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     return ret;
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
-    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager()->unregisterSharedAlloc(ptr);
+    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);
     Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
     static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
