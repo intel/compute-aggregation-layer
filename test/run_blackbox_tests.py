@@ -37,7 +37,7 @@ def get_config_entry(configs_path, selected_config):
         configs = yaml.load(f, Loader=yaml.Loader)
 
     if not selected_config in configs.keys():
-        print(f"Error: unknown config! Available configs: {str(configs.keys())}")
+        print(f"Error: unknown config! Available configs: {str(list(configs.keys()))}")
         sys.exit(-1)
 
     return configs[selected_config]
@@ -75,8 +75,10 @@ def run_all_tests(bin_dir_root, config):
 
         failed_tests_str = "\n".join(failed_tests)
         print(f"Failed tests:\n{failed_tests_str}")
+        sys.exit(-1)
     else:
         print("All tests passed! Result: SUCCESS!")
+        sys.exit(0)
 
 def single_test_body(test_name, bin_dir_root, test_desc):
     preserve_logs = test_desc.get("preserve_logs", False)
