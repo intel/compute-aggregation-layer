@@ -6,6 +6,7 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "generated_service_level_zero.h"
 
 #include <shared/log.h>

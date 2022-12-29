@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -46,7 +46,11 @@ full :
     module_and_kernel :
         test_binary : "l0_blackbox_module_and_kernel"
         preserve_logs : False
-    
+
+    module_create_via_pnext :
+        test_binary : "l0_blackbox_module_create_via_extension"
+        preserve_logs : False
+
     image :
         test_binary : "l0_blackbox_image"
         preserve_logs : False
@@ -92,6 +96,10 @@ limited :
 
     module_and_kernel :
         test_binary : "l0_blackbox_module_and_kernel"
+        preserve_logs : False
+
+    module_create_via_pnext :
+        test_binary : "l0_blackbox_module_create_via_extension"
         preserve_logs : False
 
     image :

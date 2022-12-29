@@ -7,8 +7,10 @@
 
 #pragma once
 // #### Generated code -- begin ####
+
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
+
 #include "icd/icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -29,6 +29,7 @@ add_l0_blackbox(l0_blackbox_fence ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_fence.
 add_l0_blackbox(l0_blackbox_experimental_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_experimental_memory.cpp)
 add_l0_blackbox(l0_blackbox_memory ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_memory.cpp)
 add_l0_blackbox(l0_blackbox_module_and_kernel ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_and_kernel.cpp)
+add_l0_blackbox(l0_blackbox_module_create_via_extension ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_create_via_extension.cpp)
 add_l0_blackbox(l0_blackbox_image ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_image.cpp)
 add_l0_blackbox(l0_blackbox_dynamic_link ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_dynamic_link.cpp)
 

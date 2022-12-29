@@ -6,6 +6,7 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "level_zero/ze_api.h"
 
 ze_result_t zeInit(ze_init_flags_t flags){

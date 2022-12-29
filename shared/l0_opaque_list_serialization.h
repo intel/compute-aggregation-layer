@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -96,6 +96,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
 
     if (ZE_STRUCTURE_TYPE_IMAGE_VIEW_PLANAR_EXP_DESC == desc->stype) {
         return sizeof(ze_image_view_planar_exp_desc_t);
+    }
+
+    if (ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC == desc->stype) {
+        return sizeof(ze_module_program_exp_desc_t);
     }
 
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));

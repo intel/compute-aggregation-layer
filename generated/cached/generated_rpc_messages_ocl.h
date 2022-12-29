@@ -7,8 +7,10 @@
 
 #pragma once
 // #### Generated code -- begin ####
+
 #include "shared/rpc_message.h"
 #include "shared/shmem_transfer_desc.h"
+
 #ifdef SLIM_OCL
 #   include "ocl_slim_def.h"
 #else 

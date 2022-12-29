@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -9,6 +9,7 @@ import re
 import sys
 import yaml
 
+from collections import defaultdict
 from mako.template import Template
 
 
@@ -180,6 +181,8 @@ class KindDetails:
         self.underlying_type = UnderlyingType(src.get("underlying_type", {}))
         self.iterator_type = src.get("iterator_type", "")
         self.opaque_traits_name = src.get("opaque_traits_name", "")
+        self.possible_nontrivial_nested_types = [OpaqueType(t) for t in src.get("possible_nontrivial_nested_types", {})]
+        self.possible_nontrivial_nested_types_by_name = {opaque_type.type_name : opaque_type for opaque_type in self.possible_nontrivial_nested_types}
         self.requires_opaque_elements_translation_before = src.get("requires_opaque_elements_translation_before", False)
         self.always_queried = src.get("always_queried", False)
 
@@ -529,14 +532,47 @@ class FunctionCaptureLayout:
             self.parent = None
             self.parent_layout = None
             self.children = []
+            self.extension_data = None
+            self.is_extension_child = False
+            self.function_capture_layout = None
+
+        def uses_extension_prefix(self):
+            return self.is_extension_child or self.extension_data
+
+        def get_children_per_extension(self):
+            children_per_ext_dict = defaultdict(list)
+            for child in self.children:
+                children_per_ext_dict[child.extension_data.extension_enum_value].append(child)
+
+            return children_per_ext_dict
+
+        def get_real_type(self, element):
+            if element.kind.is_opaque():
+                return element.kind_details.underlying_type.type.str
+            else:
+                return element.type.str
+
+        def get_real_count(self, element, parent_access, it, formatter, current_element_access):
+            nested_element = element.kind_details.element
+            if nested_element.kind.is_opaque():
+                return "1"
+            elif element.kind_details.num_elements.is_constant():
+                return element.kind_details.num_elements.get_constant()
+            elif element.kind_details.num_elements.is_nullterminated():
+                return f"Cal::Utils::countNullterminated({current_element_access})"
+            else:
+                access = formatter.trim_right_from(source=parent_access, needle=".")
+                count_format = access + f".{element.kind_details.num_elements.str}"
+                return count_format.format(it=it)
 
         def create_required_size_calculation(self, total_size_var, formatter, spaces_count, it):
             spaces = " " * spaces_count
             parent_it = str(chr(ord(it) - 1))
             current_member_name = formatter.get_full_member_name(self)
-            current_member_access = formatter.generate_member_access(self, parent_it)
+            prefix = "extension." if self.uses_extension_prefix() else ""
+            current_member_access = formatter.generate_member_access(self, parent_it, prefix)
             current_member_count_name = current_member_name + "Count"
-            current_member_count_access = formatter.generate_member_count_access(self, parent_it)
+            current_member_count_access = formatter.generate_member_count_access(self, parent_it, prefix)
             current_member_element_type = self.member.kind_details.element.type.str if not self.member.kind.is_opaque_list() else self.member.kind_details.opaque_traits_name
 
             member_size_calculation = f"""{spaces}const auto& {current_member_name} = {current_member_access};
@@ -559,6 +595,22 @@ class FunctionCaptureLayout:
                 member_size_calculation += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_member_access});"
                 member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {current_member_count_name}; ++{it}){{"
                 member_size_calculation += f"\n{spaces}    {total_size_var} += alignUpPow2<8>(getUnderlyingSize({list_element_name}));"
+                if self.children:
+                    member_size_calculation += f"\n\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
+
+                    children_per_ext_dict = self.get_children_per_extension()
+                    for enum_value, ext_children in children_per_ext_dict.items():
+                        extension_type = ext_children[0].extension_data.type_name
+                        member_size_calculation += f"\n{spaces}    if (extensionType == {enum_value}) {{"
+                        member_size_calculation += f"\n{spaces}        auto& extension = *reinterpret_cast<const {extension_type}*>({list_element_name});"
+                        member_size_calculation += f"\n{spaces}        {total_size_var} += alignUpPow2<8>(sizeof(DynamicStructTraits<{extension_type}>));"
+
+                        for child in ext_children:
+                            member_size_calculation += f"\n\n{spaces}        do {{"
+                            member_size_calculation += "\n" + child.create_required_size_calculation(total_size_var, formatter, spaces_count + 12, str(chr(ord(it) + 1)))
+                            member_size_calculation += f"\n{spaces}        }} while (0);"
+                        member_size_calculation += f"\n{spaces}    }}"
+
                 member_size_calculation += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
                 member_size_calculation += f"\n{spaces}}}\n"
 
@@ -567,10 +619,10 @@ class FunctionCaptureLayout:
                 member_size_calculation += f"\n{spaces}{total_size_var} += alignUpPow2<8>({current_member_count_name} * sizeof(DynamicStructTraits<{current_member_element_type}>));"
                 member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {current_member_count_name}; ++{it}){{\n"
                 member_size_calculation += self.create_nested_array_member_size_calculation(
-                    self.member.kind_details.element.kind_details.element, current_member_name, total_size_var, formatter, spaces_count + 4, str(chr(ord(it) + 1)))
+                    self.member.kind_details.element, current_member_name, current_member_access, total_size_var, formatter, spaces_count + 4, str(chr(ord(it) + 1)))
                 member_size_calculation += f"\n{spaces}}}\n"
 
-            if self.children:
+            if self.children and not self.member.kind.is_opaque_list():
                 member_size_calculation += f"\n{spaces}{total_size_var} += alignUpPow2<8>({current_member_count_name} * sizeof(DynamicStructTraits<{current_member_element_type}>));"
                 for child in self.children:
                     member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {current_member_count_name}; ++{it}){{\n"
@@ -580,18 +632,17 @@ class FunctionCaptureLayout:
 
             return member_size_calculation
 
-        def create_nested_array_member_size_calculation(self, element, parent_name, total_size_var, formatter, spaces_count, it):
-            # In case of requirement for dynamic size, a correct way of getting size needs to be implemented here.
-            assert element.kind.is_opaque() or element.kind_details.num_elements.is_constant()
-
-            spaces = " " * spaces_count
-            real_type = element.type.str if not element.kind.is_opaque() else element.kind_details.underlying_type.type.str
-            real_count = element.kind_details.num_elements.get_constant() if not element.kind.is_opaque() else "1"
-
+        def create_nested_array_member_size_calculation(self, element, parent_name, parent_access, total_size_var, formatter, spaces_count, it):
             prev_it = str(chr(ord(it) - 1))
             current_element_name = f"{parent_name}_{prev_it}"
             current_element_access = f"{parent_name}[{prev_it}]"
             current_element_count_name = f"{current_element_name}Count"
+
+            spaces = " " * spaces_count
+            nested_element = element.kind_details.element
+            real_type = self.get_real_type(nested_element)
+            real_count = self.get_real_count(element, parent_access, prev_it, formatter, current_element_access)
+
 
             member_size_calculation = f"""{spaces}const auto& {current_element_name} = {current_element_access};
 {spaces}if(!{current_element_name}){{
@@ -604,11 +655,22 @@ class FunctionCaptureLayout:
 {spaces}}}
 {spaces}{total_size_var} += alignUpPow2<8>({current_element_count_name} * sizeof({real_type}));"""
 
-            if element.kind_details.element.kind.is_pointer_to_array() or element.kind_details.element.kind.is_opaque():
+            if nested_element.kind.is_pointer_to_array():
                 member_size_calculation += f"\n{spaces}{total_size_var} += alignUpPow2<8>({current_element_count_name} * sizeof(DynamicStructTraits<{real_type}>));"
                 member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {real_count}; ++{it}){{\n"
                 member_size_calculation += self.create_nested_array_member_size_calculation(
-                    element.kind_details.element, current_element_name, total_size_var, formatter, spaces_count + 4, str(chr(ord(it) + 1)))
+                    nested_element, current_element_name, current_element_access, total_size_var, formatter, spaces_count + 4, str(chr(ord(it) + 1)))
+                member_size_calculation += f"\n{spaces}}}"
+            elif nested_element.kind.is_struct():
+                element.name = f"[{it}]"
+                struct_layout = self.function_capture_layout.prepare_nested_member_layouts(self.member, self, element, is_extension_child=True)
+
+                member_size_calculation += f"\n{spaces}{total_size_var} += alignUpPow2<8>({current_element_count_name} * sizeof(DynamicStructTraits<{real_type}>));"
+                member_size_calculation += f"\n\n{spaces}for(uint32_t {it} = 0; {it} < {real_count}; ++{it}){{"
+                for child in struct_layout.children:
+                    member_size_calculation += f"\n{spaces}    do {{"
+                    member_size_calculation += "\n" + child.create_required_size_calculation(total_size_var, formatter, spaces_count + 8, str(chr(ord(it) + 1)))
+                    member_size_calculation += f"\n{spaces}    }} while (0);"
                 member_size_calculation += f"\n{spaces}}}"
 
             return member_size_calculation
@@ -663,11 +725,20 @@ class FunctionCaptureLayout:
         def create_copy_from_caller(self, current_offset_var, formatter, spaces_count, it):
             spaces = " " * spaces_count
             current_member_name = formatter.get_full_member_name(self)
-            current_member_access = formatter.generate_member_access(self, it, prefix="args.")
+
+            prefix = "args." if not self.uses_extension_prefix() else "extension."
+            current_member_access = formatter.generate_member_access(self, it, prefix=prefix)
+
             current_member_count_name = current_member_name + "Count"
-            current_member_count_access = formatter.generate_member_count_access(self, it, prefix="args.")
+            current_member_count_access = formatter.generate_member_count_access(self, it, prefix=prefix)
             current_member_element_type = self.member.kind_details.element.type.str
-            parent_name = formatter.get_full_parent_name(self)
+
+            if not self.uses_extension_prefix():
+                parent_name = formatter.get_full_parent_name(self)
+            elif self.extension_data:
+                parent_name = "extension"
+            else:
+                parent_name = "nestedChild"
 
             copy_from_caller = f"""{spaces}const auto& {current_member_name} = {current_member_access};
 {spaces}if(!{current_member_name}){{
@@ -689,7 +760,7 @@ class FunctionCaptureLayout:
             if not self.member.kind.is_opaque_list():
                 copy_from_caller += f"\n\n{spaces}std::memcpy(dynMem + {current_offset_var}, {current_member_name}, {current_member_count_name} * sizeof({current_member_element_type}));"
                 copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({current_member_element_type}));"
-            else :
+            else:
                 next_it = str(chr(ord(it) + 1))
                 iterator_type = self.member.kind_details.iterator_type
                 list_element_name = f"{current_member_name}ListElement"
@@ -709,6 +780,23 @@ class FunctionCaptureLayout:
                 copy_from_caller += f"\n{spaces}    std::memcpy(dynMem + {current_offset_var}, {list_element_name}, sizeInBytes);"
                 copy_from_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
 
+                if self.children:
+                    copy_from_caller += f"\n\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
+
+                    children_per_ext_dict = self.get_children_per_extension()
+                    for enum_value, ext_children in children_per_ext_dict.items():
+                        extension_type = ext_children[0].extension_data.type_name
+                        copy_from_caller += f"\n{spaces}    if (extensionType == {enum_value}) {{"
+                        copy_from_caller += f"\n{spaces}        auto& extension = *reinterpret_cast<const {extension_type}*>({list_element_name});"
+                        copy_from_caller += f"\n{spaces}        auto* extensionTraits = reinterpret_cast<DynamicStructTraits<{extension_type}>*>(dynMem + {current_offset_var});"
+                        copy_from_caller += f"\n{spaces}        {current_offset_var} += alignUpPow2<8>(sizeof(DynamicStructTraits<{extension_type}>));"
+                        for child in ext_children:
+                            next_it_2 = str(chr(ord(next_it) + 1))
+                            copy_from_caller += f"\n\n{spaces}        for(int32_t {next_it_2} = 0; {next_it_2} < 1; ++{next_it_2}) {{"
+                            copy_from_caller += "\n" + child.create_copy_from_caller(current_offset_var, formatter, spaces_count + 12, next_it_2)
+                            copy_from_caller += f"\n{spaces}        }}"
+                        copy_from_caller += f"\n{spaces}    }}"
+
                 copy_from_caller += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
                 copy_from_caller += f"\n{spaces}}}\n"
 
@@ -721,10 +809,10 @@ class FunctionCaptureLayout:
                 next_it = str(chr(ord(it) + 1))
                 copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{\n"
                 copy_from_caller += self.create_nested_array_member_copy_from_caller(
-                    self.member.kind_details.element.kind_details.element, current_member_name, current_offset_var, formatter, spaces_count + 4, next_it)
+                    self.member.kind_details.element, current_member_name, current_member_access, current_offset_var, formatter, spaces_count + 4, next_it)
                 copy_from_caller += f"\n{spaces}}}\n"
 
-            if self.children:
+            if self.children and not self.member.kind.is_opaque_list():
                 copy_from_caller += f"\n\n{spaces}auto* {current_member_name}Traits = reinterpret_cast<DynamicStructTraits<{current_member_element_type}>*>(dynMem + {current_offset_var});"
                 copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof(DynamicStructTraits<{current_member_element_type}>));\n"
                 next_it = str(chr(ord(it) + 1))
@@ -736,18 +824,16 @@ class FunctionCaptureLayout:
 
             return copy_from_caller
 
-        def create_nested_array_member_copy_from_caller(self, element, parent_name, current_offset_var, formatter, spaces_count, it):
-            # In case of requirement for dynamic size, a correct way of getting size needs to be implemented here.
-            assert element.kind.is_opaque() or element.kind_details.num_elements.is_constant()
-
-            spaces = " " * spaces_count
-            real_type = element.type.str if not element.kind.is_opaque() else element.kind_details.underlying_type.type.str
-            real_count = element.kind_details.num_elements.get_constant() if not element.kind.is_opaque() else "1"
-
+        def create_nested_array_member_copy_from_caller(self, element, parent_name, parent_access, current_offset_var, formatter, spaces_count, it):
             parent_traits = f"{parent_name}Traits"
             current_element_name = f"{parent_name}_{it}"
             current_element_access = f"{parent_name}[{it}]"
             current_element_count_name = f"{current_element_name}Count"
+
+            spaces = " " * spaces_count
+            nested_element = element.kind_details.element
+            real_type = self.get_real_type(nested_element)
+            real_count = self.get_real_count(element, parent_access, it, formatter, current_element_access)
 
             copy_from_caller = f"""{spaces}const auto& {current_element_name} = {current_element_access};
 {spaces}if(!{current_element_name}){{
@@ -769,22 +855,39 @@ class FunctionCaptureLayout:
 {spaces}std::memcpy(dynMem + {current_offset_var}, {current_element_name}, {current_element_count_name} * sizeof({real_type}));
 {spaces}{current_offset_var} += alignUpPow2<8>({current_element_count_name} * sizeof({real_type}));"""
 
-            if element.kind_details.element.kind.is_pointer_to_array() or element.kind_details.element.kind.is_opaque():
+            if nested_element.kind.is_pointer_to_array():
                 copy_from_caller += f"\n\n{spaces}auto* {current_element_name}Traits = reinterpret_cast<DynamicStructTraits<{real_type}>*>(dynMem + {current_offset_var});"
                 copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count_name} * sizeof(DynamicStructTraits<{real_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
                 copy_from_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_element_count_name}; ++{next_it}){{\n"
                 copy_from_caller += self.create_nested_array_member_copy_from_caller(
-                    element.kind_details.element.kind_details.element, current_element_name, current_offset_var, formatter, spaces_count + 4, next_it)
+                    nested_element, current_element_name, current_element_access, current_offset_var, formatter, spaces_count + 4, next_it)
                 copy_from_caller += f"\n{spaces}}}\n"
+            elif nested_element.kind.is_struct():
+                next_it = str(chr(ord(it) + 1))
+                element.name = f"[{next_it}]"
+                struct_layout = self.function_capture_layout.prepare_nested_member_layouts(self.member, self, element, is_extension_child=True)
+
+                copy_from_caller += f"\n\n{spaces}auto* nestedChildTraits = reinterpret_cast<DynamicStructTraits<{real_type}>*>(dynMem + {current_offset_var});"
+                copy_from_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count_name} * sizeof(DynamicStructTraits<{real_type}>));\n"
+                copy_from_caller += f"\n\n{spaces}for(int32_t {next_it} = 0; {next_it} < {real_count}; ++{next_it}){{"
+                for child in struct_layout.children:
+                    copy_from_caller += f"\n{spaces}    do {{"
+                    copy_from_caller += "\n" + child.create_copy_from_caller(current_offset_var, formatter, spaces_count + 8, next_it)
+                    copy_from_caller += f"\n{spaces}    }} while (0);"
+                copy_from_caller += f"\n{spaces}}}"
 
             return copy_from_caller
 
         def create_reassemble_nested_structs(self, current_offset_var, formatter, spaces_count, it):
             spaces = " " * spaces_count
-            parent_name = formatter.get_full_parent_name(self)
-            current_dest_access = f"dest{formatter.capital(formatter.generate_member_access(self, it))}"
+            if self.uses_extension_prefix():
+                parent_name = "extension" if self.extension_data else "nestedChild"
+                current_dest_access = f"extension.{formatter.generate_member_access(self, it)}"
+            else:
+                parent_name = formatter.get_full_parent_name(self)
+                current_dest_access = f"dest{formatter.capital(formatter.generate_member_access(self, it))}"
 
             current_member_name = formatter.get_full_member_name(self)
             current_member_offset = f"{parent_name}Traits[{it}].{self.member.name}Offset"
@@ -808,20 +911,42 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n\n{spaces}auto {list_element_name}Traits = reinterpret_cast<{opaque_traits}*>(dynMem + {current_offset_var});"
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({opaque_traits}));"
 
-                reassemble_nested_structs += f"\n\n{spaces}forcePointerWrite({current_dest_access}, dynMem + {list_element_name}Traits[0].extensionOffset);"
+                reassemble_nested_structs += f"\n\n{spaces}assert(currentOffset == static_cast<uint32_t>({list_element_name}Traits[0].extensionOffset));"
+                reassemble_nested_structs += f"\n{spaces}forcePointerWrite({current_dest_access}, dynMem + {list_element_name}Traits[0].extensionOffset);"
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>(getUnderlyingSize(static_cast<const {iterator_type}*>({current_dest_access})));"
 
                 reassemble_nested_structs += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_dest_access});"
 
-                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 1; {next_it} < {current_member_count}; ++{next_it}){{"
-                reassemble_nested_structs += f"\n{spaces}    const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
-                reassemble_nested_structs += f"\n{spaces}    forcePointerWrite(getNextField(*{list_element_name}), dynMem + extensionOffset);\n"
+                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 1; {next_it} <= {current_member_count}; ++{next_it}){{"
+                reassemble_nested_structs += f"\n{spaces}    if ({next_it} < {current_member_count}) {{"
+                reassemble_nested_structs += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
+                reassemble_nested_structs += f"\n{spaces}        forcePointerWrite(getNextField(*{list_element_name}), dynMem + extensionOffset);"
+                reassemble_nested_structs += f"\n{spaces}    }}\n"
 
-                reassemble_nested_structs += f"\n{spaces}    const auto pNextElement = getNext({list_element_name});"
-                reassemble_nested_structs += f"\n{spaces}    const auto sizeInBytes = getUnderlyingSize(pNextElement);"
-                reassemble_nested_structs += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
+                if self.children:
+                    reassemble_nested_structs += f"\n{spaces}    const auto extensionType = {list_element_name}Traits[{next_it} - 1].extensionType;"
 
-                reassemble_nested_structs += f"\n{spaces}    {list_element_name} = pNextElement;"
+                    children_per_ext_dict = self.get_children_per_extension()
+                    for enum_value, ext_children in children_per_ext_dict.items():
+                        extension_type = ext_children[0].extension_data.type_name
+                        reassemble_nested_structs += f"\n{spaces}    if (extensionType == {enum_value}) {{"
+                        reassemble_nested_structs += f"\n{spaces}        auto& extension = *reinterpret_cast<const {extension_type}*>({list_element_name});"
+                        reassemble_nested_structs += f"\n{spaces}        auto* extensionTraits = reinterpret_cast<DynamicStructTraits<{extension_type}>*>(dynMem + {current_offset_var});"
+                        reassemble_nested_structs += f"\n{spaces}        {current_offset_var} += alignUpPow2<8>(sizeof(DynamicStructTraits<{extension_type}>));"
+                        for child in ext_children:
+                            next_it_2 = str(chr(ord(next_it) + 1))
+                            reassemble_nested_structs += f"\n\n{spaces}        for(int32_t {next_it_2} = 0; {next_it_2} < 1; ++{next_it_2}) {{"
+                            reassemble_nested_structs += "\n" + child.create_reassemble_nested_structs(current_offset_var, formatter, spaces_count + 12, next_it_2)
+                            reassemble_nested_structs += f"\n{spaces}        }}"
+                        reassemble_nested_structs += f"\n{spaces}    }}"
+
+                reassemble_nested_structs += f"\n{spaces}    if ({next_it} < {current_member_count}) {{"
+                reassemble_nested_structs += f"\n{spaces}        const auto pNextElement = getNext({list_element_name});"
+                reassemble_nested_structs += f"\n{spaces}        const auto sizeInBytes = getUnderlyingSize(pNextElement);"
+                reassemble_nested_structs += f"\n{spaces}        {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
+
+                reassemble_nested_structs += f"\n{spaces}        {list_element_name} = pNextElement;"
+                reassemble_nested_structs += f"\n{spaces}    }}\n"
                 reassemble_nested_structs += f"\n{spaces}}}\n"
 
             # Multi-dimensional array member
@@ -832,7 +957,7 @@ class FunctionCaptureLayout:
                 next_it = str(chr(ord(it) + 1))
                 reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{\n"
                 reassemble_nested_structs += self.create_nested_array_member_reassemble_structs(
-                    self.member.kind_details.element.kind_details.element,
+                    self.member.kind_details.element,
                     current_member_name,
                     current_dest_access,
                     current_offset_var,
@@ -841,7 +966,7 @@ class FunctionCaptureLayout:
                     next_it)
                 reassemble_nested_structs += f"\n{spaces}}}\n"
 
-            if self.children:
+            if self.children and not self.member.kind.is_opaque_list():
                 reassemble_nested_structs += f"\n\n{spaces}auto* {current_member_name}Traits = reinterpret_cast<DynamicStructTraits<{current_member_element_type}>*>(dynMem + {current_offset_var});"
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof(DynamicStructTraits<{current_member_element_type}>));\n"
                 next_it = str(chr(ord(it) + 1))
@@ -863,11 +988,9 @@ class FunctionCaptureLayout:
                 formatter,
                 spaces_count,
                 it):
-            # In case of requirement for dynamic size, a correct way of getting size needs to be implemented here.
-            assert element.kind.is_opaque() or element.kind_details.num_elements.is_constant()
-
             spaces = " " * spaces_count
-            real_type = element.type.str if not element.kind.is_opaque() else element.kind_details.underlying_type.type.str
+            nested_element = element.kind_details.element
+            real_type = self.get_real_type(nested_element)
 
             parent_traits = f"{parent_name}Traits"
             current_dest_access = f"{parent_dest_access}[{it}]"
@@ -883,14 +1006,14 @@ class FunctionCaptureLayout:
 {spaces}forcePointerWrite({current_dest_access}, dynMem + {current_element_offset});
 {spaces}{current_offset_var} += alignUpPow2<8>({current_element_count} * sizeof({real_type}));"""
 
-            if element.kind_details.element.kind.is_pointer_to_array() or element.kind_details.element.kind.is_opaque():
+            if nested_element.kind.is_pointer_to_array():
                 reassemble_nested_structs += f"\n\n{spaces}auto* {current_element_name}Traits = reinterpret_cast<DynamicStructTraits<{real_type}>*>(dynMem + {current_offset_var});"
                 reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count} * sizeof(DynamicStructTraits<{real_type}>));\n"
 
                 next_it = str(chr(ord(it) + 1))
                 reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_element_count}; ++{next_it}){{\n"
                 reassemble_nested_structs += self.create_nested_array_member_reassemble_structs(
-                    element.kind_details.element.kind_details.element,
+                    nested_element,
                     current_element_name,
                     current_dest_access,
                     current_offset_var,
@@ -898,6 +1021,19 @@ class FunctionCaptureLayout:
                     spaces_count + 4,
                     next_it)
                 reassemble_nested_structs += f"\n{spaces}}}\n"
+            elif nested_element.kind.is_struct():
+                next_it = str(chr(ord(it) + 1))
+                element.name = f"[{next_it}]"
+                struct_layout = self.function_capture_layout.prepare_nested_member_layouts(self.member, self, element, is_extension_child=True)
+
+                reassemble_nested_structs += f"\n\n{spaces}auto* nestedChildTraits = reinterpret_cast<DynamicStructTraits<{real_type}>*>(dynMem + {current_offset_var});"
+                reassemble_nested_structs += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_element_count} * sizeof(DynamicStructTraits<{real_type}>));\n"
+                reassemble_nested_structs += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_element_count}; ++{next_it}){{"
+                for child in struct_layout.children:
+                    reassemble_nested_structs += f"\n{spaces}    do {{"
+                    reassemble_nested_structs += "\n" + child.create_reassemble_nested_structs(current_offset_var, formatter, spaces_count + 8, next_it)
+                    reassemble_nested_structs += f"\n{spaces}    }} while (0);"
+                reassemble_nested_structs += f"\n{spaces}}}"
 
             return reassemble_nested_structs
 
@@ -962,22 +1098,44 @@ class FunctionCaptureLayout:
                                          1) or self.nested_capture_args_layouts or self.struct_members_layouts 
         
 
-    def prepare_nested_member_layouts(self, parent, parent_layout, member):
+    def prepare_nested_member_layouts(self, parent, parent_layout, member, extension=None, is_extension_child=False):
         member_layout = FunctionCaptureLayout.MemberCaptureLayout()
         member_layout.member = member
         member_layout.parent = parent
         member_layout.parent_layout = parent_layout
+        member_layout.children = []
+        member_layout.extension_data = extension
+        member_layout.is_extension_child = is_extension_child
+        member_layout.function_capture_layout = self
 
-        if not (member.kind_details.element.kind.is_struct() and member.kind_details.element.type.str in self.structures):
+        is_opaque_list_with_nontrivial_extension = member.kind.is_opaque_list() and member.kind_details.possible_nontrivial_nested_types
+        is_nontrivial_struct_member = member.kind_details.element.kind.is_struct() and member.kind_details.element.type.str in self.structures
+
+        if not is_opaque_list_with_nontrivial_extension and not is_nontrivial_struct_member:
             return member_layout
 
-        struct_type = self.structures[member.kind_details.element.type.str]
-        members_to_capture = struct_type.members_to_capture()
-        member_layout.children = [
-            self.prepare_nested_member_layouts(
-                member,
-                member_layout,
-                member_to_capture) for member_to_capture in members_to_capture]
+        if is_nontrivial_struct_member:
+            type_names = [member.kind_details.element.type.str]
+            extension_data = [None]
+        else:
+            type_names = [t.type_name for t in member.kind_details.possible_nontrivial_nested_types]
+            extension_data = [t for t in member.kind_details.possible_nontrivial_nested_types]
+            is_extension_child = True
+
+        for i in range(0, len(type_names)):
+            struct_type = self.structures[type_names[i]]
+            members_to_capture = struct_type.members_to_capture()
+
+            new_children = [
+                self.prepare_nested_member_layouts(
+                    member,
+                    member_layout,
+                    member_to_capture,
+                    extension_data[i],
+                    is_extension_child) for member_to_capture in members_to_capture]
+
+            for child in new_children:
+                member_layout.children.append(child)
 
         return member_layout
 
@@ -1078,9 +1236,13 @@ class MemberLayoutFormatter:
         # Only nested members have parent_layout. Args do not have it.
         if not member_layout.parent_layout:
             return f"{prefix}{member_layout.parent.name}[{it}].{member_layout.member.name}"
+        elif member_layout.extension_data:
+            return f"{prefix}{member_layout.member.name}"
         else:
             parent_it = str(chr(ord(it) - 1))
-            return f"{self.generate_member_access(member_layout.parent_layout, parent_it, prefix)}[{it}].{member_layout.member.name}"
+            member_access = f"{self.generate_member_access(member_layout.parent_layout, parent_it, prefix)}[{it}].{member_layout.member.name}"
+            # Nested array elements' names are [it]. This is added in generic case - we don't need to double it.
+            return self.trim_right_from(source=member_access, needle=".[")
 
     def generate_member_count_access(self, member_layout, it, prefix=""):
         if member_layout.member.kind_details.num_elements.is_constant():
@@ -1095,8 +1257,9 @@ class MemberLayoutFormatter:
         elif member_layout.member.kind_details.num_elements.is_nullterminated_key():
             return f"Cal::Utils::countNullterminatedKey({member_access})"
         else:
-            to_strip = member_access.rfind(f".{member_layout.member.name}")
-            return member_access[:to_strip] + f".{member_layout.member.kind_details.num_elements.str}"
+            # Access to count for members is generated via replacement of structure member name with its count member.
+            access = self.trim_right_from(source=member_access, needle=f".{member_layout.member.name}");
+            return f"{access}.{member_layout.member.kind_details.num_elements.str}"
 
     def get_full_parent_name(self, member_layout, recursive_call=False):
         if not recursive_call:
@@ -1111,14 +1274,29 @@ class MemberLayoutFormatter:
                 return f"{self.get_full_parent_name(member_layout.parent_layout, True)}{self.capital(member_layout.member.name)}"
 
     def get_full_member_name(self, member_layout):
+        # Nested array elements should not include [] in variable names.
+        name = self.trim_right_from(source=member_layout.member.name, needle="[")
+
         # Only nested members have parent_layout.
         if not member_layout.parent_layout:
-            return f"{member_layout.parent.name}{self.capital(member_layout.member.name)}"
+            return f"{member_layout.parent.name}{self.capital(name)}"
         else:
-            return f"{self.get_full_member_name(member_layout.parent_layout)}{self.capital(member_layout.member.name)}"
+            return f"{self.get_full_member_name(member_layout.parent_layout)}{self.capital(name)}"
 
     def capital(self, name):
-        return f"{name[0].upper() + name[1:]}"
+        if not name:
+            return ""
+        elif len(name) == 1:
+            return f"{name[0].upper()}"
+        else:
+            return f"{name[0].upper() + name[1:]}"
+
+    def trim_right_from(self, source, needle):
+        to_trim = source.rfind(needle)
+        if to_trim == -1:
+            return source
+        else:
+            return source[:to_trim]
 
 class Formater:
     class RpcMessage:

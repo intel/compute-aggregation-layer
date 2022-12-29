@@ -6,9 +6,11 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
+
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 
@@ -2355,10 +2357,6 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
     command->copyFromCaller(dynMemTraits);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    if(desc)
-    {
-        ensureNull("zeModuleCreate: desc->pNext", desc->pNext);
-    }
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;

@@ -6,6 +6,7 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "icd/icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
 #include "shared/utils.h"

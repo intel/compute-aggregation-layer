@@ -7,8 +7,10 @@
 
 #pragma once
 // #### Generated code -- begin ####
+
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
+
 #include "icd/level_zero/icd_level_zero.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -95,8 +95,13 @@ config:
         1:
           name: pNext
           type: const void*
-          kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+            possible_nontrivial_nested_types:
+              - extension_type: ze_module_program_exp_desc_t
+                extension_enum_value: ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC
         2:
           name: format
           type: ze_module_format_t
@@ -137,7 +142,6 @@ config:
             element:
               type: ze_module_constants_t
               kind: struct
-              default: "CL_DEVICE_NOT_AVAILABLE"
             server_access: read
 
     - name: ze_kernel_desc_t
@@ -1046,6 +1050,86 @@ config:
           name: preferredMultiple
           type: uint32_t
           kind: scalar
+
+    - name: ze_module_program_exp_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: count
+          type: uint32_t
+          kind: scalar
+        3:
+          name: inputSizes
+          type: "const size_t*"
+          kind: ptr_array
+          kind_details:
+            num_elements: "count"
+            can_be_null: True
+            element:
+              type: size_t
+              kind: scalar
+            server_access: read
+        4:
+          name: pInputModules
+          type: "const uint8_t**"
+          kind: ptr_array
+          kind_details:
+            num_elements: "count"
+            can_be_null: True
+            element:
+              type: "const uint8_t*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "inputSizes[{it}]"
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: scalar
+                server_access: read
+            server_access: read
+        5:
+          name: pBuildFlags
+          type: "const char**"
+          kind: ptr_array
+          kind_details:
+            num_elements: "count"
+            can_be_null: True
+            element:
+              type: "const char*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "nullterminated"
+                can_be_null: True
+                element:
+                  type: "char"
+                  kind: "scalar"
+                server_access: read
+            server_access: read
+        6:
+          name: pConstants
+          type: "const ze_module_constants_t**"
+          kind: ptr_array
+          kind_details:
+            num_elements: "count"
+            can_be_null: True
+            element:
+              type: "const ze_module_constants_t*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_module_constants_t
+                  kind: struct
+                server_access: read
+            server_access: read
 
   unimplemented:
     - name: "core"

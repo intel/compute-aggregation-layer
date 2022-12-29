@@ -6,6 +6,7 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "generated_service_ocl.h"
 
 #include <shared/log.h>

@@ -7,9 +7,11 @@
 
 #pragma once
 // #### Generated code -- begin ####
+
 #include "service/service.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
+
 #include "generated_rpc_messages_level_zero.h"
 
 #include <optional>

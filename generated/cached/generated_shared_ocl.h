@@ -7,6 +7,7 @@
 
 #pragma once
 // #### Generated code -- begin ####
+
 #include <string>
 #include <vector>
 

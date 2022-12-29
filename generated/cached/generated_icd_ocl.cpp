@@ -6,9 +6,11 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
+
 #include "generated_icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
 

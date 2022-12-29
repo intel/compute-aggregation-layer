@@ -6,6 +6,7 @@
  */
 
 // #### Generated code -- begin ####
+
 #include "icd/level_zero/icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 #include "shared/utils.h"
@@ -1157,6 +1158,175 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
         ret.descNestedTraits.count = 1;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_module_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
+            const auto& descPNext = desc[i].pNext;
+            if(!descPNext){
+                continue;
+            }
+
+            const auto descPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(desc[i].pNext)));
+            if(!descPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(descPNextCount * sizeof(NestedPNextTraits));
+
+            auto descPNextListElement = static_cast<const ze_base_desc_t*>(desc[i].pNext);
+            for(uint32_t j = 0; j < descPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
+
+                const auto extensionType = getExtensionType(descPNextListElement);
+                if (extensionType == ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC) {
+                    auto& extension = *reinterpret_cast<const ze_module_program_exp_desc_t*>(descPNextListElement);
+                    ret.totalDynamicSize += alignUpPow2<8>(sizeof(DynamicStructTraits<ze_module_program_exp_desc_t>));
+
+                    do {
+                        const auto& descPNextInputSizes = extension.inputSizes;
+                        if(!descPNextInputSizes){
+                            continue;
+                        }
+
+                        const auto descPNextInputSizesCount = static_cast<uint32_t>(extension.count);
+                        if(!descPNextInputSizesCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextInputSizesCount * sizeof(size_t));
+                    } while (0);
+
+                    do {
+                        const auto& descPNextPInputModules = extension.pInputModules;
+                        if(!descPNextPInputModules){
+                            continue;
+                        }
+
+                        const auto descPNextPInputModulesCount = static_cast<uint32_t>(extension.count);
+                        if(!descPNextPInputModulesCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPInputModulesCount * sizeof(const uint8_t*));
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPInputModulesCount * sizeof(DynamicStructTraits<const uint8_t*>));
+                        for(uint32_t k = 0; k < descPNextPInputModulesCount; ++k){
+                            const auto& descPNextPInputModules_k = descPNextPInputModules[k];
+                            if(!descPNextPInputModules_k){
+                                continue;
+                            }
+
+                            const auto descPNextPInputModules_kCount = static_cast<uint32_t>(extension.inputSizes[k]);
+                            if(!descPNextPInputModules_kCount){
+                                continue;
+                            }
+                            ret.totalDynamicSize += alignUpPow2<8>(descPNextPInputModules_kCount * sizeof(uint8_t));
+                        }
+
+                    } while (0);
+
+                    do {
+                        const auto& descPNextPBuildFlags = extension.pBuildFlags;
+                        if(!descPNextPBuildFlags){
+                            continue;
+                        }
+
+                        const auto descPNextPBuildFlagsCount = static_cast<uint32_t>(extension.count);
+                        if(!descPNextPBuildFlagsCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPBuildFlagsCount * sizeof(const char*));
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPBuildFlagsCount * sizeof(DynamicStructTraits<const char*>));
+                        for(uint32_t k = 0; k < descPNextPBuildFlagsCount; ++k){
+                            const auto& descPNextPBuildFlags_k = descPNextPBuildFlags[k];
+                            if(!descPNextPBuildFlags_k){
+                                continue;
+                            }
+
+                            const auto descPNextPBuildFlags_kCount = static_cast<uint32_t>(Cal::Utils::countNullterminated(descPNextPBuildFlags[k]));
+                            if(!descPNextPBuildFlags_kCount){
+                                continue;
+                            }
+                            ret.totalDynamicSize += alignUpPow2<8>(descPNextPBuildFlags_kCount * sizeof(char));
+                        }
+
+                    } while (0);
+
+                    do {
+                        const auto& descPNextPConstants = extension.pConstants;
+                        if(!descPNextPConstants){
+                            continue;
+                        }
+
+                        const auto descPNextPConstantsCount = static_cast<uint32_t>(extension.count);
+                        if(!descPNextPConstantsCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsCount * sizeof(const ze_module_constants_t*));
+                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsCount * sizeof(DynamicStructTraits<const ze_module_constants_t*>));
+                        for(uint32_t k = 0; k < descPNextPConstantsCount; ++k){
+                            const auto& descPNextPConstants_k = descPNextPConstants[k];
+                            if(!descPNextPConstants_k){
+                                continue;
+                            }
+
+                            const auto descPNextPConstants_kCount = static_cast<uint32_t>(1);
+                            if(!descPNextPConstants_kCount){
+                                continue;
+                            }
+                            ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstants_kCount * sizeof(ze_module_constants_t));
+                            ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstants_kCount * sizeof(DynamicStructTraits<ze_module_constants_t>));
+
+                            for(uint32_t l = 0; l < 1; ++l){
+                                do {
+                                    const auto& descPNextPConstantsPConstantIds = extension.pConstants[k][l].pConstantIds;
+                                    if(!descPNextPConstantsPConstantIds){
+                                        continue;
+                                    }
+
+                                    const auto descPNextPConstantsPConstantIdsCount = static_cast<uint32_t>(extension.pConstants[k][l].numConstants);
+                                    if(!descPNextPConstantsPConstantIdsCount){
+                                        continue;
+                                    }
+
+                                    ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsPConstantIdsCount * sizeof(uint32_t));
+                                } while (0);
+                                do {
+                                    const auto& descPNextPConstantsPConstantValues = extension.pConstants[k][l].pConstantValues;
+                                    if(!descPNextPConstantsPConstantValues){
+                                        continue;
+                                    }
+
+                                    const auto descPNextPConstantsPConstantValuesCount = static_cast<uint32_t>(extension.pConstants[k][l].numConstants);
+                                    if(!descPNextPConstantsPConstantValuesCount){
+                                        continue;
+                                    }
+
+                                    ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsPConstantValuesCount * sizeof(const void *));
+                                    ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsPConstantValuesCount * sizeof(DynamicStructTraits<const void *>));
+                                    for(uint32_t m = 0; m < descPNextPConstantsPConstantValuesCount; ++m){
+                                        const auto& descPNextPConstantsPConstantValues_m = descPNextPConstantsPConstantValues[m];
+                                        if(!descPNextPConstantsPConstantValues_m){
+                                            continue;
+                                        }
+
+                                        const auto descPNextPConstantsPConstantValues_mCount = static_cast<uint32_t>(1);
+                                        if(!descPNextPConstantsPConstantValues_mCount){
+                                            continue;
+                                        }
+                                        ret.totalDynamicSize += alignUpPow2<8>(descPNextPConstantsPConstantValues_mCount * sizeof(uint64_t));
+                                    }
+
+                                } while (0);
+                            }
+                        }
+
+                    } while (0);
+                }
+                descPNextListElement = getNext(descPNextListElement);
+            }
+
+        }
 
         for (uint32_t i = 0; i < ret.descNestedTraits.count; ++i) {
             const auto& descPInputModule = desc[i].pInputModule;

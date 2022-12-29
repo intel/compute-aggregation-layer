@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -15,6 +15,258 @@
 #include <memory>
 
 namespace Cal::Rpc::LevelZero {
+
+TEST(ZeModuleCreateExtensionsTest, GivenOpaqueListWithExtendedModuleDescriptionsWhenCopyingAndReassemblingMessageThenExtensionsAreProperlyHandled) {
+    // 0. Prepare extension and ze_module_desc_t.
+    constexpr uint32_t modulesCount{2u};
+
+    constexpr size_t firstModuleSize = 8u;
+    constexpr size_t secondModuleSize = 16u;
+    const std::array<size_t, modulesCount> inputSizes = {firstModuleSize, secondModuleSize};
+
+    constexpr uint8_t firstModule[firstModuleSize] = {1, 2, 3, 4, 5, 6, 7, 8};
+    constexpr uint8_t secondModule[secondModuleSize] = {9, 9, 9, 9, 1, 1, 1, 1, 4, 4, 4, 4, 3, 2, 5, 7};
+    std::array<const uint8_t *, modulesCount> inputModules = {&firstModule[0], &secondModule[0]};
+
+    constexpr const char *firstBuildFlags = "--some-flags --of-first-module";
+    constexpr const char *secondBuildFlags = "--some-other-flags --of-other-module";
+    std::array<const char *, modulesCount> buildFlags = {firstBuildFlags, secondBuildFlags};
+
+    constexpr static size_t firstConstantsCount = 3;
+    std::array<uint32_t, firstConstantsCount> firstConstantsIds = {3, 13, 53};
+    std::array<uint64_t, firstConstantsCount> firstConstantsValuesStorage = {7, 29, 33};
+    std::array<const void *, firstConstantsCount> firstConstantsValues = {&firstConstantsValuesStorage[0],
+                                                                          &firstConstantsValuesStorage[1],
+                                                                          &firstConstantsValuesStorage[2]};
+    ze_module_constants_t firstConstants = {
+        firstConstantsCount,
+        firstConstantsIds.data(),
+        firstConstantsValues.data()};
+
+    constexpr static size_t secondConstantsCount = 1;
+    std::array<uint32_t, secondConstantsCount> secondConstantsIds = {2};
+    std::array<uint64_t, secondConstantsCount> secondConstantsValuesStorage = {27};
+    std::array<const void *, secondConstantsCount> secondConstantsValues = {&secondConstantsValuesStorage[0]};
+
+    ze_module_constants_t secondConstants = {
+        secondConstantsCount,
+        secondConstantsIds.data(),
+        secondConstantsValues.data()};
+
+    std::array<const ze_module_constants_t *, modulesCount> constants = {&firstConstants, &secondConstants};
+
+    ze_module_program_exp_desc_t moduleExpDesc = {
+        ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC, // stype
+        nullptr,                                   // pNext
+        modulesCount,                              // count
+        inputSizes.data(),                         // inputSizes
+        inputModules.data(),                       // pInputModules
+        buildFlags.data(),                         // pBuildFlags
+        constants.data()                           // pConstants
+    };
+
+    // When the extension is used  pInputModule, pBuildFlags and pConstants are ignored.
+    // However, in this test case we want to check the generic code generator and thus we set SPIR-V fields.
+    constexpr static size_t spirvLen = 20;
+    std::array<uint8_t, spirvLen> spirV = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+    ze_module_desc_t moduleDescription = {
+        ZE_STRUCTURE_TYPE_MODULE_DESC, // stype
+        &moduleExpDesc,                // pNext
+        ZE_MODULE_FORMAT_IL_SPIRV,     // format
+        spirvLen,                      // inputSize
+        spirV.data(),                  // pInputModule
+    };
+
+    // Dummy objects. Handles are passed as values.
+    ze_context_handle_t contextHandle{};
+    ze_device_handle_t deviceHandle{};
+    ze_module_handle_t moduleHandle{};
+    ze_module_build_log_handle_t buildLogHandle{};
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeModuleCreateRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(contextHandle, deviceHandle, &moduleDescription, &moduleHandle, &buildLogHandle);
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, contextHandle, deviceHandle, &moduleDescription, &moduleHandle, &buildLogHandle);
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits);
+
+    // 4. Ensure that addresses were only shallow-copied and nullptrs were not changed.
+    ASSERT_EQ(&moduleExpDesc, command->captures.desc.pNext);
+    ASSERT_EQ(spirV.data(), command->captures.desc.pInputModule);
+    ASSERT_EQ(nullptr, command->captures.desc.pBuildFlags);
+    ASSERT_EQ(nullptr, command->captures.desc.pConstants);
+
+    // 5. Reassemble captures.
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify data.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.desc.pNext));
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.desc.pInputModule));
+    ASSERT_EQ(spirvLen, command->captures.desc.inputSize);
+    ASSERT_EQ(nullptr, command->captures.desc.pBuildFlags);
+    ASSERT_EQ(nullptr, command->captures.desc.pConstants);
+
+    EXPECT_EQ(0, std::memcmp(moduleDescription.pInputModule, command->captures.desc.pInputModule, spirvLen));
+
+    const auto extensionInDynMem = static_cast<const ze_module_program_exp_desc_t *>(command->captures.desc.pNext);
+    ASSERT_EQ(ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC, extensionInDynMem->stype);
+
+    EXPECT_EQ(nullptr, extensionInDynMem->pNext);
+    EXPECT_EQ(modulesCount, extensionInDynMem->count);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->inputSizes));
+    ASSERT_EQ(firstModuleSize, extensionInDynMem->inputSizes[0]);
+    ASSERT_EQ(secondModuleSize, extensionInDynMem->inputSizes[1]);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pInputModules));
+    EXPECT_EQ(0, std::memcmp(firstModule, extensionInDynMem->pInputModules[0], firstModuleSize));
+    EXPECT_EQ(0, std::memcmp(secondModule, extensionInDynMem->pInputModules[1], secondModuleSize));
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pBuildFlags));
+    EXPECT_STREQ(firstBuildFlags, extensionInDynMem->pBuildFlags[0]);
+    EXPECT_STREQ(secondBuildFlags, extensionInDynMem->pBuildFlags[1]);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants));
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[0]));
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[1]));
+
+    EXPECT_EQ(firstConstantsCount, extensionInDynMem->pConstants[0]->numConstants);
+    EXPECT_EQ(secondConstantsCount, extensionInDynMem->pConstants[1]->numConstants);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[0]->pConstantIds));
+    EXPECT_EQ(0, std::memcmp(firstConstantsIds.data(), extensionInDynMem->pConstants[0]->pConstantIds, sizeof(uint32_t) * firstConstantsCount));
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[1]->pConstantIds));
+    EXPECT_EQ(0, std::memcmp(secondConstantsIds.data(), extensionInDynMem->pConstants[1]->pConstantIds, sizeof(uint32_t) * secondConstantsCount));
+
+    for (auto i = 0u; i < firstConstantsCount; ++i) {
+        ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[0]->pConstantValues[i]));
+
+        auto *firstConstantValue = static_cast<const uint64_t *>(extensionInDynMem->pConstants[0]->pConstantValues[i]);
+        EXPECT_EQ(firstConstantsValuesStorage[i], *firstConstantValue);
+    }
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pConstants[1]->pConstantValues[0]));
+    auto *secondConstantValue = static_cast<const uint64_t *>(extensionInDynMem->pConstants[1]->pConstantValues[0]);
+    EXPECT_EQ(secondConstantsValuesStorage[0], *secondConstantValue);
+}
+
+TEST(ZeModuleCreateExtensionsTest, GivenOpaqueListWithExtendedModuleDescriptionsWithSomeNullptrFieldsWhenCopyingAndReassemblingMessageThenExtensionsAreProperlyHandled) {
+    // 0. Prepare extension and ze_module_desc_t.
+    constexpr uint32_t modulesCount{2u};
+
+    constexpr size_t firstModuleSize = 8u;
+    constexpr size_t secondModuleSize = 16u;
+    const std::array<size_t, modulesCount> inputSizes = {firstModuleSize, secondModuleSize};
+
+    constexpr uint8_t firstModule[firstModuleSize] = {1, 2, 3, 4, 5, 6, 7, 8};
+    constexpr uint8_t secondModule[secondModuleSize] = {9, 9, 9, 9, 1, 1, 1, 1, 4, 4, 4, 4, 3, 2, 5, 7};
+    std::array<const uint8_t *, modulesCount> inputModules = {&firstModule[0], &secondModule[0]};
+
+    constexpr const char *firstBuildFlags = "--some-flags --of-first-module";
+    constexpr const char *secondBuildFlags = "--some-other-flags --of-other-module";
+    std::array<const char *, modulesCount> buildFlags = {firstBuildFlags, secondBuildFlags};
+
+    ze_module_program_exp_desc_t moduleExpDesc = {
+        ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC, // stype
+        nullptr,                                   // pNext
+        modulesCount,                              // count
+        inputSizes.data(),                         // inputSizes
+        inputModules.data(),                       // pInputModules
+        buildFlags.data(),                         // pBuildFlags
+        nullptr                                    // pConstants
+    };
+
+    constexpr static size_t spirvLen = 20;
+    std::array<uint8_t, spirvLen> spirV = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+    ze_module_desc_t moduleDescription = {
+        ZE_STRUCTURE_TYPE_MODULE_DESC, // stype
+        &moduleExpDesc,                // pNext
+        ZE_MODULE_FORMAT_IL_SPIRV,     // format
+        spirvLen,                      // inputSize
+        spirV.data(),                  // pInputModule
+    };
+
+    // Dummy objects. Handles are passed as values.
+    ze_context_handle_t contextHandle{};
+    ze_device_handle_t deviceHandle{};
+    ze_module_handle_t moduleHandle{};
+    ze_module_build_log_handle_t buildLogHandle{};
+
+    // 1. Prepare required offsets and calculate size.
+    using CommandT = Cal::Rpc::LevelZero::ZeModuleCreateRpcM;
+
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(contextHandle, deviceHandle, &moduleDescription, &moduleHandle, &buildLogHandle);
+    const auto requiredBufferSize = sizeof(CommandT) + dynMemTraits.totalDynamicSize;
+
+    // 2. Allocate space and create command.
+    auto space = std::make_unique<char[]>(requiredBufferSize);
+    auto command = new (space.get()) CommandT(dynMemTraits, contextHandle, deviceHandle, &moduleDescription, &moduleHandle, &buildLogHandle);
+
+    // 3. Deep-copy all required data without reassemblation.
+    command->copyFromCaller(dynMemTraits);
+
+    // 4. Ensure that addresses were only shallow-copied and nullptrs were not changed.
+    ASSERT_EQ(&moduleExpDesc, command->captures.desc.pNext);
+    ASSERT_EQ(spirV.data(), command->captures.desc.pInputModule);
+    ASSERT_EQ(nullptr, command->captures.desc.pBuildFlags);
+    ASSERT_EQ(nullptr, command->captures.desc.pConstants);
+
+    // 5. Reassemble captures.
+    command->captures.reassembleNestedStructs();
+
+    // 6. Verify data.
+    const auto pointsToDynMemBuffer = [dynMem = command->captures.dynMem, dynMemSize = command->captures.dynMemSize](const auto &ptr) {
+        const auto dynMemBeginning = reinterpret_cast<uintptr_t>(dynMem);
+        const auto dynMemEnd = dynMemBeginning + dynMemSize;
+
+        const auto address = reinterpret_cast<uintptr_t>(ptr);
+        return (dynMemBeginning <= address && address < dynMemEnd);
+    };
+
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.desc.pNext));
+    ASSERT_TRUE(pointsToDynMemBuffer(command->captures.desc.pInputModule));
+    ASSERT_EQ(spirvLen, command->captures.desc.inputSize);
+    ASSERT_EQ(nullptr, command->captures.desc.pBuildFlags);
+    ASSERT_EQ(nullptr, command->captures.desc.pConstants);
+
+    EXPECT_EQ(0, std::memcmp(moduleDescription.pInputModule, command->captures.desc.pInputModule, spirvLen));
+
+    const auto extensionInDynMem = static_cast<const ze_module_program_exp_desc_t *>(command->captures.desc.pNext);
+    ASSERT_EQ(ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC, extensionInDynMem->stype);
+
+    EXPECT_EQ(nullptr, extensionInDynMem->pNext);
+    EXPECT_EQ(nullptr, extensionInDynMem->pConstants);
+    EXPECT_EQ(modulesCount, extensionInDynMem->count);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->inputSizes));
+    ASSERT_EQ(firstModuleSize, extensionInDynMem->inputSizes[0]);
+    ASSERT_EQ(secondModuleSize, extensionInDynMem->inputSizes[1]);
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pInputModules));
+    EXPECT_EQ(0, std::memcmp(firstModule, extensionInDynMem->pInputModules[0], firstModuleSize));
+    EXPECT_EQ(0, std::memcmp(secondModule, extensionInDynMem->pInputModules[1], secondModuleSize));
+
+    ASSERT_TRUE(pointsToDynMemBuffer(extensionInDynMem->pBuildFlags));
+    EXPECT_STREQ(firstBuildFlags, extensionInDynMem->pBuildFlags[0]);
+    EXPECT_STREQ(secondBuildFlags, extensionInDynMem->pBuildFlags[1]);
+}
 
 TEST(ZeMemAllocSharedExtensionsTest, GivenOpaqueListsAttachedToTwoDifferentFunctionArgumentsWhenCopyingAndReassemblingTwiceMessageThenExtensionsAreProperlyHandled) {
     ze_relaxed_allocation_limits_exp_desc_t relaxedLimitsDescForDeviceMemDesc = {
