@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -277,8 +277,10 @@ class ClientContext {
         return mallocShmemZeroCopyHandler.get();
     }
 
-    uint32_t getCopyCommandQueueGroupIndex() { return this->copyCommandQueueGroupIndex; }
+    uint32_t getCopyCommandQueueGroupIndex() const { return this->copyCommandQueueGroupIndex; }
     void setCopyCommandQueueGroupIndex(uint32_t value) { this->copyCommandQueueGroupIndex = value; }
+    uint32_t getComputeCommandQueueGroupIndex() const { return this->computeCommandQueueGroupIndex; }
+    void setComputeCommandQueueGroupIndex(uint32_t value) { this->computeCommandQueueGroupIndex = value; }
     [[nodiscard]] std::unique_lock<std::mutex> obtainCommandQueueGroupsLock() { return std::unique_lock<std::mutex>(this->commandQueueGroupsMtx); }
 
     template <typename HandleT>
@@ -347,6 +349,7 @@ class ClientContext {
     Cal::Ipc::GlobalShmemAllocators &globalShmemAllocators;
     bool automaticCleanupOfApiHandles = false;
     uint32_t copyCommandQueueGroupIndex = std::numeric_limits<uint32_t>::max();
+    uint32_t computeCommandQueueGroupIndex = std::numeric_limits<uint32_t>::max();
     std::mutex commandQueueGroupsMtx;
     std::atomic_bool isStopping = false;
     std::mutex criticalSection;
@@ -692,10 +695,16 @@ class Provider {
                     this->commandQueueGroups.numLinkedCopyEngines = properties[i].numQueues;
                 }
             }
+            if (properties[i].flags & ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE) {
+                this->commandQueueGroups.computeGroupindex = i;
+                this->commandQueueGroups.numComputeEngines = properties[i].numQueues;
+            }
         }
         if (this->commandQueueGroups.copyGroupIndex != std::numeric_limits<uint32_t>::max() &&
             this->commandQueueGroups.linkedCopyGroupIndex != std::numeric_limits<uint32_t>::max() &&
-            this->commandQueueGroups.numLinkedCopyEngines != std::numeric_limits<uint32_t>::max()) {
+            this->commandQueueGroups.numLinkedCopyEngines != std::numeric_limits<uint32_t>::max() &&
+            this->commandQueueGroups.computeGroupindex != std::numeric_limits<uint32_t>::max() &&
+            this->commandQueueGroups.numComputeEngines != std::numeric_limits<uint32_t>::max()) {
             this->commandQueueGroups.initialized = true;
         }
     }
@@ -707,23 +716,32 @@ class Provider {
         if (!this->commandQueueGroups.initialized) {
             return;
         }
-        if (desc->ordinal != this->commandQueueGroups.copyGroupIndex && desc->ordinal != this->commandQueueGroups.linkedCopyGroupIndex) {
-            return;
-        }
-        auto index = ctx.getCopyCommandQueueGroupIndex();
-        if (index == std::numeric_limits<uint32_t>::max()) {
-            auto lock = ctx.obtainCommandQueueGroupsLock();
+        if (desc->ordinal == this->commandQueueGroups.copyGroupIndex || desc->ordinal == this->commandQueueGroups.linkedCopyGroupIndex) {
+            auto index = ctx.getCopyCommandQueueGroupIndex();
             if (index == std::numeric_limits<uint32_t>::max()) {
-                index = this->commandQueueGroups.selector.fetch_add(1u) % (this->commandQueueGroups.numLinkedCopyEngines + 1);
-                ctx.setCopyCommandQueueGroupIndex(index);
+                auto lock = ctx.obtainCommandQueueGroupsLock();
+                if (index == std::numeric_limits<uint32_t>::max()) {
+                    index = this->commandQueueGroups.selector.fetch_add(1u) % (this->commandQueueGroups.numLinkedCopyEngines + 1);
+                    ctx.setCopyCommandQueueGroupIndex(index);
+                }
             }
-        }
-        if (index == 0u) {
-            desc->ordinal = this->commandQueueGroups.copyGroupIndex;
-            desc->index = 0u;
-        } else {
-            desc->ordinal = this->commandQueueGroups.linkedCopyGroupIndex;
-            desc->index = index - 1;
+            if (index == 0u) {
+                desc->ordinal = this->commandQueueGroups.copyGroupIndex;
+                desc->index = 0u;
+            } else {
+                desc->ordinal = this->commandQueueGroups.linkedCopyGroupIndex;
+                desc->index = index - 1;
+            }
+        } else if (desc->ordinal == this->commandQueueGroups.computeGroupindex) {
+            auto index = ctx.getComputeCommandQueueGroupIndex();
+            if (index == std::numeric_limits<uint32_t>::max()) {
+                auto lock = ctx.obtainCommandQueueGroupsLock();
+                if (index == std::numeric_limits<uint32_t>::max()) {
+                    index = this->commandQueueGroups.computeSelector.fetch_add(1u) % this->commandQueueGroups.numComputeEngines;
+                    ctx.setComputeCommandQueueGroupIndex(index);
+                }
+            }
+            desc->index = index;
         }
     }
 
@@ -802,9 +820,16 @@ class Provider {
 
     struct CommandQueueGroups {
         std::atomic_uint32_t selector{0u};
+
         uint32_t copyGroupIndex = std::numeric_limits<uint32_t>::max();
         uint32_t linkedCopyGroupIndex = std::numeric_limits<uint32_t>::max();
         uint32_t numLinkedCopyEngines = std::numeric_limits<uint32_t>::max();
+
+        std::atomic_uint32_t computeSelector{0u};
+
+        uint32_t computeGroupindex = std::numeric_limits<uint32_t>::max();
+        uint32_t numComputeEngines = std::numeric_limits<uint32_t>::max();
+
         bool initialized = false;
     } commandQueueGroups;
 
