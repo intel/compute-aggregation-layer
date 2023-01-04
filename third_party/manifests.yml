@@ -1,7 +1,7 @@
 components:
   cal-clang-format:
     dest_dir: tools/clang-format
-    revision: 11.0.0-1
+    revision: 15.0.6
     type: git
     branch: clang-format
   infra:

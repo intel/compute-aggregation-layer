@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -373,7 +373,7 @@ struct ClBufferRecycler {
                 auto waste = ((*it)->size - size) / float((*it)->size);
                 auto hostPtrMatch = (*it)->apiHostPtr == host_ptr;
 
-                //for CL_MEM_USE_HOST_PTR we must match host_ptr
+                // for CL_MEM_USE_HOST_PTR we must match host_ptr
                 if ((flags | CL_MEM_USE_HOST_PTR) && !hostPtrMatch) {
                     ++it;
                     continue;
