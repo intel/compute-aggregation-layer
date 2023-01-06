@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -77,6 +77,7 @@ EOF
     fi
 
     dch -v ${PKG_VERSION} -m "build $PKG_VERSION" -b
+    ulimit -n 65535 || true
     dpkg-buildpackage -j`nproc --all` -us -uc -b -rfakeroot
     sudo dpkg -i --force-depends ../*.deb
     if [ "${LOG_CCACHE_STATS}" == "1" ]; then
