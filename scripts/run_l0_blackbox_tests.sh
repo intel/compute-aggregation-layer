@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -12,4 +12,4 @@ then
     exit -1
 fi
 
-python3 ./run_blackbox_tests.py --all-configs-path ./l0_blackbox_runner_configs.yml --selected-config $1 --binaries-dir .
+python3 ./run_blackbox_tests.py --all-configs-path ./l0_blackbox_runner_configs.yml --selected-config $1
