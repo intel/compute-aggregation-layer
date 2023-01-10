@@ -207,7 +207,17 @@ class ClientContext {
         log<Verbosity::debug>("Performing client global shmem cleanup (num allocs : %zu)", globalShmemsMap.size());
         {
             for (const auto shmemIt : globalShmemsMap) {
-                globalShmemAllocators.getNonUsmMmappedAllocator().free(shmemIt.second);
+                bool wasSharedVaShmem = false;
+                for (auto &heap : usmHeaps) {
+                    if (heap.getUnderlyingAllocator().getMmapRange().contains(shmemIt.second.getMmappedPtr())) {
+                        globalShmemAllocators.getBaseAllocator().free(shmemIt.second); // already unmapped along with whole heap
+                        wasSharedVaShmem = true;
+                        break;
+                    }
+                }
+                if (false == wasSharedVaShmem) {
+                    globalShmemAllocators.getNonUsmMmappedAllocator().free(shmemIt.second);
+                }
             }
         }
         globalShmemsMap.clear();
@@ -1053,7 +1063,7 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqAllocateShmem &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested shmem (purpose : %s, size : %zu)", clientConnection.getId(), request.purposeStr(), request.size);
+        log<Verbosity::debug>("Client : %d requested shmem (purpose : %s, size : %zu, shared : %s)", clientConnection.getId(), request.purposeStr(), request.size, request.sharedVa ? "TRUE" : "FALSE");
         auto size = request.size;
         if (0 == size) {
             switch (request.purpose) {
@@ -1068,22 +1078,35 @@ class Provider {
         }
 
         Cal::Ipc::MmappedShmemAllocationT shmem;
-        shmem = globalShmemAllocators->getNonUsmMmappedAllocator().allocate(size);
+        if (request.sharedVa) {
+            auto ctxLock = ctx.lock();
+            for (auto &heap : ctx.getUsmHeaps()) {
+                shmem = *heap.allocateAsStandalone(size).getSourceAllocation();
+                if (shmem.isValid()) {
+                    break;
+                }
+            }
+        } else {
+            shmem = globalShmemAllocators->getNonUsmMmappedAllocator().allocate(size);
+        }
 
         if (false == shmem.isValid()) {
-            return false;
+            Cal::Messages::RespAllocateShmem shmemResponse;
+            log<Verbosity::debug>("Client : %d requested shmem (purpose : %s, size : %zu, shared : %s) could not be allocated", clientConnection.getId(), request.purposeStr(), request.size, request.sharedVa ? "TRUE" : "FALSE");
+            return clientConnection.send(shmemResponse);
         }
 
         Cal::Messages::RespAllocateShmem shmemResponse;
         shmemResponse.id = shmem.getShmemId();
         shmemResponse.size = shmem.getFileSize();
-        clientConnection.send(shmemResponse);
-
+        if (request.sharedVa) {
+            shmemResponse.sharedVa = shmem.getMmappedPtr();
+        }
         {
             auto lock = ctx.lock();
             ctx.registerShmem(shmem);
         }
-        return true;
+        return clientConnection.send(shmemResponse);
     }
 
     bool service(const Cal::Messages::ReqLaunchRpcShmemRingBuffer &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {

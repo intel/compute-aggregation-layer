@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -903,6 +903,10 @@ class ArenaAllocator {
         AllocationT fullSubAllocation{baseAllocation.get(), 0U, size};
         baseAllocation.release();
         return fullSubAllocation;
+    }
+
+    AllocationT allocateAsStandalone(size_t size) {
+        return this->allocateAsStandalone(size, minAlignment);
     }
 
     mockable AllocationT allocate(size_t size, size_t alignment) {

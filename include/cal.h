@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -35,6 +35,8 @@ constexpr std::string_view calYieldThreadsEnvName = "CAL_YIELD_THREADS";
 constexpr std::string_view calIcdBufferRecycleEnvName = "CAL_ICD_BUFFER_RECYCLE";
 // Set default RPC channel size (in MB)
 constexpr std::string_view calDefaultRpcChannelSizeEnvName = "CAL_DEFAULT_RPC_CHANNEL_SIZE_MB";
+// Allocate RPC channel within shared VA window
+constexpr std::string_view calUseSharedVaForRpcChannel = "CAL_USE_SHARED_VA_FOR_RPC_CHANNEL";
 
 constexpr std::string_view calPlatformName = "Compute Aggregation Layer for oneAPI Level Zero and OpenCL(TM) Applications";
 constexpr std::string_view calServiceProcessName = NAME_TO_STR(CAL_NAME);

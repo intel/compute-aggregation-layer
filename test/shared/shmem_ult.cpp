@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -49,7 +49,7 @@ TEST(ShmemImporterOpen, givenInvalidRemoteShmemThenReturnsInvalidShmem) {
     Cal::Ipc::ShmemImporter importer;
     Cal::Ipc::RemoteShmemDesc rshmem = {};
     EXPECT_FALSE(rshmem.isValid());
-    auto shmem = importer.open(rshmem, nullptr);
+    auto shmem = importer.open(rshmem);
 
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_FALSE(shmem.isValid());
@@ -66,7 +66,8 @@ TEST(ShmemImporterOpen, givenSpecificPointerToMapWhenPointerIsMisalignedThenRetu
     rshmem.size = Cal::Utils::pageSize4KB;
     EXPECT_TRUE(rshmem.isValid());
 
-    auto shmem = importer.open(rshmem, reinterpret_cast<void *>(static_cast<uintptr_t>(5)));
+    rshmem.sharedVa = reinterpret_cast<void *>(static_cast<uintptr_t>(5));
+    auto shmem = importer.open(rshmem);
 
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_FALSE(shmem.isValid());
@@ -83,7 +84,8 @@ TEST(ShmemImporterOpen, givenMisalignedSizeThenReturnsInvalidShmem) {
     rshmem.size = 7;
     EXPECT_TRUE(rshmem.isValid());
 
-    auto shmem = importer.open(rshmem, reinterpret_cast<void *>(static_cast<uintptr_t>(4096U)));
+    rshmem.sharedVa = reinterpret_cast<void *>(static_cast<uintptr_t>(4096U));
+    auto shmem = importer.open(rshmem);
     EXPECT_FALSE(shmem.isValid());
     EXPECT_FALSE(logs.empty());
     logs.clear();
@@ -106,7 +108,7 @@ TEST(ShmemImporterOpen, whenFailedToShmOpenThenReturnsInvalidShmem) {
     EXPECT_TRUE(rshmem.isValid());
 
     tempSysCallsCtx.apiConfig.shm_open.returnValue = -1;
-    auto shmem = importer.open(rshmem, nullptr);
+    auto shmem = importer.open(rshmem);
 
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.mmap.callCount);
@@ -126,7 +128,7 @@ TEST(ShmemImporterOpen, whenFailedToMmapOpenedFileToAddreessThenReturnsInvalidSh
 
     tempSysCallsCtx.apiConfig.shm_open.returnValue = 3;
     tempSysCallsCtx.apiConfig.mmap.returnValue = MAP_FAILED;
-    auto shmem = importer.open(rshmem, nullptr);
+    auto shmem = importer.open(rshmem);
 
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
@@ -148,7 +150,7 @@ TEST(ShmemImporterOpen, whenOpenedTheShmemFileAndMappedItToVaThenReturnsDescript
     void *va = reinterpret_cast<void *>(static_cast<uintptr_t>(4096U));
     tempSysCallsCtx.apiConfig.shm_open.returnValue = fd;
     tempSysCallsCtx.apiConfig.mmap.returnValue = va;
-    auto shmem = importer.open(rshmem, nullptr);
+    auto shmem = importer.open(rshmem);
 
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
@@ -186,7 +188,7 @@ TEST(ShmemImporterOpen, whenOpeningTheShmemFileThenUsesProperPathAndFlags) {
         return -1;
     };
 
-    importer.open(rshmem, nullptr);
+    importer.open(rshmem);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
     EXPECT_STREQ((std::string(testBasePath.data()) + std::to_string(rshmem.id)).c_str(), capturedName.c_str());
     EXPECT_EQ(O_RDWR, capturedOflag);
@@ -206,7 +208,8 @@ TEST(ShmemImporterOpen, whenMmapingTheShmemFileThenUsesProperFlagsAndFd) {
     int fd0 = 3;
     void *va0 = reinterpret_cast<void *>(static_cast<uintptr_t>(4096U));
     tempSysCallsCtx.apiConfig.shm_open.returnValue = fd0;
-    auto shmem0 = importer.open(rshmem, va0);
+    rshmem.sharedVa = va0;
+    auto shmem0 = importer.open(rshmem);
     EXPECT_TRUE(shmem0.isValid());
     EXPECT_EQ(fd0, shmem0.getFd());
     EXPECT_EQ(va0, shmem0.getMmappedPtr());
@@ -214,7 +217,8 @@ TEST(ShmemImporterOpen, whenMmapingTheShmemFileThenUsesProperFlagsAndFd) {
     int fd1 = 7;
     tempSysCallsCtx.apiConfig.shm_open.returnValue = fd1;
     rshmem.id = 13;
-    auto shmem1 = importer.open(rshmem, nullptr);
+    rshmem.sharedVa = nullptr;
+    auto shmem1 = importer.open(rshmem);
     EXPECT_TRUE(shmem1.isValid());
     EXPECT_EQ(fd1, shmem1.getFd());
     EXPECT_NE(nullptr, shmem1.getMmappedPtr());

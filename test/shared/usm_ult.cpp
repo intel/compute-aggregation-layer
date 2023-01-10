@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -784,9 +784,9 @@ TEST(UsmShmemImporterOpen, whenOpeningAllocationThenForwardsToGlobalShmemImporte
 
     MockBaseShmemImporter mockGlobalShmemImporter;
     Cal::Usm::UsmShmemImporter usmShmemImporter{mockGlobalShmemImporter};
-    usmShmemImporter.open(1, 4096U, nullptr);
+    usmShmemImporter.open(1, 4096U);
     EXPECT_EQ(1, mockGlobalShmemImporter.openCallsCount) << "Needs dedicated tests";
-    usmShmemImporter.open(Cal::Ipc::RemoteShmemDesc{1, 4096U}, nullptr);
+    usmShmemImporter.open(Cal::Ipc::RemoteShmemDesc{1, 4096U});
     EXPECT_EQ(2, mockGlobalShmemImporter.openCallsCount) << "Needs dedicated tests";
     usmShmemImporter.open(Cal::Ipc::RemoteShmemDesc{1, 4096U});
     EXPECT_EQ(3, mockGlobalShmemImporter.openCallsCount) << "Needs dedicated tests";

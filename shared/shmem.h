@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -163,6 +163,7 @@ struct RemoteShmemDesc {
     ShmemIdT id = invalidShmemId;
     size_t offset = 0U;
     size_t size = 0U;
+    void *sharedVa = nullptr;
 
     bool isValid() const {
         return invalidShmemId != this->id;
@@ -219,12 +220,8 @@ class ShmemImporter {
         return this->open(id, 0U, size, enforcedVaForMmap);
     }
 
-    AllocationT open(const RemoteShmemDesc &desc, void *enforcedVaForMmap) {
-        return this->open(desc.id, desc.offset, desc.size, enforcedVaForMmap);
-    }
-
     AllocationT open(const RemoteShmemDesc &desc) {
-        return this->open(desc, nullptr);
+        return this->open(desc.id, desc.offset, desc.size, desc.sharedVa);
     }
 
     mockable void release(const AllocationT &shmem) {
@@ -258,13 +255,14 @@ class ShmemImporter {
 
 inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,
                                              Cal::Messages::ReqAllocateShmem::AllocationPurpose purpose,
-                                             size_t minSize) {
+                                             size_t minSize, bool useSharedVa) {
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(minSize);
     Cal::Messages::ReqAllocateShmem request;
     Cal::Messages::RespAllocateShmem response;
     request.purpose = Cal::Messages::ReqAllocateShmem::rpcMessageChannel;
     request.size = alignedSize;
     request.purpose = purpose;
+    request.sharedVa = useSharedVa;
     {
         auto lock = remoteConnection.lock();
         log<Verbosity::debug>("Sending request for shmem to service (purpose : %s, size : %zu)", request.purposeStr(), request.size);
@@ -283,6 +281,7 @@ inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnect
     ret.id = response.id;
     ret.offset = 0U;
     ret.size = response.size;
+    ret.sharedVa = response.sharedVa;
     return ret;
 }
 

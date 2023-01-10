@@ -126,6 +126,7 @@ struct ReqAllocateShmem {
 
     size_t size = 0U;
     AllocationPurpose purpose = unknown;
+    bool sharedVa = false;
 };
 static_assert(std::is_standard_layout<ReqAllocateShmem>::value);
 
@@ -155,6 +156,7 @@ struct RespAllocateShmem {
 
     size_t size = 0U;
     int id = -1;
+    void *sharedVa = nullptr;
 };
 static_assert(std::is_standard_layout<RespAllocateShmem>::value);
 

@@ -13,6 +13,7 @@
 #include "shared/log.h"
 #include "shared/rpc_message.h"
 #include "shared/shmem.h"
+#include "shared/usm.h"
 #include "shared/utils.h"
 
 #include <atomic>
@@ -439,15 +440,19 @@ class ChannelClient : public CommandsChannel {
         }
     }
 
-    ChannelClient(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemImporter &shmemManager)
-        : connection(connection), shmemManager(shmemManager) {
+    ChannelClient(Cal::Ipc::Connection &connection, Cal::Ipc::ShmemImporter &globalShmemImporter, Cal::Usm::UsmShmemImporter &sharedVaShmemImporter)
+        : connection(connection), globalShmemImporter(globalShmemImporter), sharedVaShmemImporter(sharedVaShmemImporter) {
     }
 
     ~ChannelClient() {
-        this->shmemManager.release(this->underlyingShmem);
+        if (usesSharedVaForRpcChannel) {
+            this->sharedVaShmemImporter.release(this->underlyingShmem);
+        } else {
+            this->globalShmemImporter.release(this->underlyingShmem);
+        }
     }
 
-    bool init(ClientSynchronizationMethod clientSynchronizationMethod) {
+    bool init(ClientSynchronizationMethod clientSynchronizationMethod, bool useSharedVaForRpcChannel) {
         if (unknown == clientSynchronizationMethod) {
             log<Verbosity::critical>("Failed to RPC channel client with invalid client synchronization method : %s", asCStr(clientSynchronizationMethod));
             return false;
@@ -469,6 +474,7 @@ class ChannelClient : public CommandsChannel {
         }
 
         log<Verbosity::debug>("Creating RPC ring buffer");
+        this->usesSharedVaForRpcChannel = useSharedVaForRpcChannel;
         if (false == createRingBuffer()) {
             log<Verbosity::critical>("Failed to create RPC ring buffer");
             return false;
@@ -594,6 +600,10 @@ class ChannelClient : public CommandsChannel {
         return commandLatency > semaphoreWaitThreshold;
     }
 
+    bool isUsingSharedVaForRpcChannel() const {
+        return usesSharedVaForRpcChannel;
+    }
+
   protected:
     bool semaphoreWait(CompletionStampT *completionStamp) {
         log<Verbosity::bloat>("Waiting for packet to be processed - semaphores");
@@ -631,12 +641,16 @@ class ChannelClient : public CommandsChannel {
     }
 
     bool createRingBuffer() {
-        auto remoteShmem = Cal::Ipc::allocateShmemOnRemote(this->connection, Cal::Messages::ReqAllocateShmem::rpcMessageChannel, 0U); // let service choose size
+        auto remoteShmem = Cal::Ipc::allocateShmemOnRemote(this->connection, Cal::Messages::ReqAllocateShmem::rpcMessageChannel, 0U, usesSharedVaForRpcChannel); // let service choose size
         if (false == remoteShmem.isValid()) {
             log<Verbosity::debug>("Failed to allocate RPC ring buffer shmem on the service side");
             return false;
         }
-        this->underlyingShmem = shmemManager.open(remoteShmem, nullptr);
+        if (usesSharedVaForRpcChannel) {
+            this->underlyingShmem = sharedVaShmemImporter.open(remoteShmem);
+        } else {
+            this->underlyingShmem = globalShmemImporter.open(remoteShmem);
+        }
         if (nullptr == underlyingShmem.getMmappedPtr()) {
             log<Verbosity::debug>("Failed to map RPC ring buffer shmem on client side");
             return false;
@@ -675,7 +689,9 @@ class ChannelClient : public CommandsChannel {
     }
 
     Cal::Ipc::Connection &connection;
-    Cal::Ipc::ShmemImporter &shmemManager;
+    Cal::Ipc::ShmemImporter &globalShmemImporter;
+    Cal::Usm::UsmShmemImporter &sharedVaShmemImporter;
+    bool usesSharedVaForRpcChannel = false;
     Cal::Ipc::ShmemImporter::AllocationT underlyingShmem;
     std::atomic_bool stopped = false;
 

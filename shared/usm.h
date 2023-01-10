@@ -88,6 +88,10 @@ class UsmShmemImporter {
     }
 
     AllocationT open(Cal::Ipc::ShmemIdT id, size_t offset, size_t size, void *enforcedVaForMmap) {
+        if (nullptr == enforcedVaForMmap) {
+            log<Verbosity::error>("UsmShmemImporter expected valid VA for mmap, got NUL");
+            return {};
+        }
         return base.open(id, offset, size, enforcedVaForMmap);
     }
 
@@ -95,12 +99,12 @@ class UsmShmemImporter {
         return base.open(id, size, enforcedVaForMmap);
     }
 
-    AllocationT open(const Cal::Ipc::RemoteShmemDesc &desc, void *enforcedVaForMmap) {
-        return this->open(desc.id, desc.size, enforcedVaForMmap);
+    AllocationT open(Cal::Ipc::ShmemIdT id, size_t size) {
+        return base.open(id, size, nullptr);
     }
 
     AllocationT open(const Cal::Ipc::RemoteShmemDesc &desc) {
-        return this->open(desc, nullptr);
+        return this->open(desc.id, desc.size, desc.sharedVa);
     }
 
     void release(const AllocationT &shmem) {

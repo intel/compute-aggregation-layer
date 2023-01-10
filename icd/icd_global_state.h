@@ -209,6 +209,7 @@ class IcdGlobalState final {
     Cal::Utils::CpuInfo cpuInfo;
 
     bool enableCache = false;
+    bool usesSharedVaForRpcChannel = false;
 
     struct AtExit {
         std::mutex mutex;

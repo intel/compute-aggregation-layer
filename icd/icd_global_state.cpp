@@ -23,6 +23,7 @@ IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
+    this->usesSharedVaForRpcChannel = Cal::Utils::getCalEnvFlag(calUseSharedVaForRpcChannel, false);
     auto cpuInfoOpt = cpuInfo.read();
     if (cpuInfoOpt) {
         this->cpuInfo = cpuInfoOpt.value();
@@ -196,7 +197,7 @@ void IcdGlobalState::connect() {
     log<Verbosity::info>("USM HEAP : %p - %p (size : %zx)", initialUsmHeap.base(), Cal::Utils::moveByBytes(initialUsmHeap.base(), initialUsmHeap.size()), initialUsmHeap.size());
 
     log<Verbosity::debug>("Creating RPC channel");
-    rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, *this->globalShmemImporter);
+    rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, *this->globalShmemImporter, *this->usmShmemImporter);
     Cal::Rpc::ChannelClient::ClientSynchronizationMethod clientSynchMethod = Cal::Rpc::ChannelClient::activePolling;
     if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelClientEnvName, false)) {
         clientSynchMethod = Cal::Rpc::ChannelClient::semaphores;
@@ -204,7 +205,7 @@ void IcdGlobalState::connect() {
     if (Cal::Utils::getCalEnvFlag(calUseSemaphoresThresholdInChannelClientEnvName, false)) {
         clientSynchMethod = Cal::Rpc::ChannelClient::latencyBased;
     }
-    if (false == rpcChannel->init(clientSynchMethod)) {
+    if (false == rpcChannel->init(clientSynchMethod, this->usesSharedVaForRpcChannel)) {
         log<Verbosity::critical>("Failed to initialize RPC channel client");
         this->connection.reset();
         return;

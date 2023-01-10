@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -740,8 +740,9 @@ TEST(ChannelClientInit, givenInvalidSynchronizationMethodWhenInitializingThenFai
 
     Cal::Mocks::ConnectionMock connection;
     Cal::Mocks::MockShmemManager shmemManager;
-    ChannelClientWhiteBox channelClient{connection, shmemManager};
-    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::unknown));
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
+    ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::unknown, false));
     EXPECT_FALSE(logs.empty());
 }
 
@@ -757,9 +758,10 @@ TEST(ChannelClientInit, whenFailedToAllocateShmemForCommandsChannelThenFailsAndE
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
     std::get<0>(connection.inMessages).id = -1;
     Cal::Mocks::MockShmemManager shmemManager;
-    ChannelClientWhiteBox channelClient{connection, shmemManager};
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
+    ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
     EXPECT_EQ(0U, shmemManager.remoteShmemsLog.size());
-    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
     EXPECT_FALSE(logs.empty());
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
@@ -779,9 +781,10 @@ TEST(ChannelClientInit, whenFailedToMapAllocatedShmemForCommandsChannelThenFails
     std::get<0>(connection.inMessages).id = 1;
     std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
     Cal::Mocks::MockShmemManager shmemManager;
-    ChannelClientWhiteBox channelClient{connection, shmemManager};
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
+    ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
     EXPECT_EQ(0U, shmemManager.remoteShmemsLog.size());
-    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
     EXPECT_FALSE(logs.empty());
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
@@ -815,12 +818,13 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
     std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     auto shmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
-    ChannelClientMockFailPartition channelClient{connection, shmemManager};
+    ChannelClientMockFailPartition channelClient{connection, shmemManager, usmShmemImporter};
     std::get<0>(connection.inMessages).id = shmem.getShmemId();
     EXPECT_EQ(0U, shmemManager.remoteShmemsLog.size());
     EXPECT_EQ(0, channelClient.failedPartitionCallsCounter);
-    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
     EXPECT_FALSE(logs.empty());
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
@@ -855,6 +859,7 @@ TEST(ChannelClientInit, whenFailedToLaunchTheCommandsChannelThenFailsAndEmitsErr
     Cal::Mocks::LogCaptureContext logs;
 
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
     auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
 
@@ -862,8 +867,8 @@ TEST(ChannelClientInit, whenFailedToLaunchTheCommandsChannelThenFailsAndEmitsErr
     auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
     std::get<1>(connection.inMessages).serviceSynchronizationMethod = RespLaunchRpcShmemRingBuffer::unknown;
 
-    ChannelClientWhiteBox channelClient{connection, shmemManager};
-    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+    ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+    EXPECT_FALSE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
     EXPECT_FALSE(logs.empty());
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
@@ -874,14 +879,15 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
     auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
     auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     {
         auto connection = connectionTemplate;
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
-        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
         EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(Cal::Rpc::ChannelClient::SemaphoreThresholds::unreachableAlwaysActiveWait, channelClient.semaphoreWaitThreshold);
@@ -889,8 +895,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
 
     {
         auto connection = connectionTemplate;
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
-        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::semaphores));
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::semaphores, false));
         EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(Cal::Rpc::ChannelClient::SemaphoreThresholds::unreachableAlwaysSemaphores, channelClient.semaphoreWaitThreshold);
@@ -898,8 +904,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
 
     {
         auto connection = connectionTemplate;
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
-        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::latencyBased));
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::latencyBased, false));
         EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(Cal::Rpc::ChannelClient::SemaphoreThresholds::base, channelClient.semaphoreWaitThreshold);
@@ -911,6 +917,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
     auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
 
@@ -920,8 +927,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
     {
         auto connection = connectionTemplate;
         std::get<1>(connection.inMessages).serviceSynchronizationMethod = RespLaunchRpcShmemRingBuffer::activePolling;
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
-        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
         EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(RespLaunchRpcShmemRingBuffer::activePolling, channelClient.serviceSynchronizationMethod);
@@ -930,8 +937,8 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
     {
         auto connection = connectionTemplate;
         std::get<1>(connection.inMessages).serviceSynchronizationMethod = RespLaunchRpcShmemRingBuffer::semaphores;
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
-        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+        EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
         EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
         EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
         EXPECT_EQ(RespLaunchRpcShmemRingBuffer::semaphores, channelClient.serviceSynchronizationMethod);
@@ -944,12 +951,13 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
     auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
     auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
-    ChannelClientWhiteBox channelClient{connection, shmemManager};
-    EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling));
+    ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
+    EXPECT_TRUE(channelClient.init(ChannelClientWhiteBox::ClientSynchronizationMethod::activePolling, false));
     EXPECT_TRUE(connection.mismatchLogs.empty()) << " out messages issues : [" << connection.getMismatchLogFlat() << "]";
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
 
@@ -968,9 +976,10 @@ TEST(ChannelClient, WhenBeingDestroyedThenReleasesUnderlyingShmem) {
 
     Cal::Mocks::ConnectionMock connection;
     Cal::Mocks::MockShmemManager shmemManager;
+    Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     {
         auto alloc = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
-        ChannelClientWhiteBox channelClient{connection, shmemManager};
+        ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
         channelClient.underlyingShmem = Cal::Mocks::MmappedShmemSubAllocationWhiteBox{alloc, 0};
         EXPECT_FALSE(shmemManager.allocatedShmems.empty());
     }
