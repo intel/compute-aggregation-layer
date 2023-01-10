@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -553,13 +553,13 @@ class ChannelClient : public CommandsChannel {
             log<Verbosity::critical>("Synchronous call failed");
             return false;
         }
-        auto messageFlags = command->flags;
-        if (Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores == messageFlags) {
+        if (Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores == serviceSynchronizationMethod) {
             if (false == this->signalServiceSemaphore()) {
                 log<Verbosity::critical>("Failed to signal service with new RPC call");
                 return false;
             }
         }
+        auto messageFlags = command->flags;
         if (false == wait(completionStamp, messageFlags)) {
             log<Verbosity::critical>("Failed to get response for RPC call");
             return false;
@@ -772,20 +772,11 @@ class ChannelServer : public CommandsChannel {
 
     CommandPacket semaphoreWait() {
         log<Verbosity::bloat>("Waiting for new command packet request - semaphores");
-        if (ring.peekEmpty()) {
+        while (ring.peekEmpty()) {
             this->waitOnServiceSemaphore();
-        }
-        if (stopped) {
-            log<Verbosity::debug>("Aborting wait for command packet request");
-            return {};
-        }
-        if (ring.peekEmpty()) {
-            log<Verbosity::error>("Ring empty after woken up from semaphore wait");
-            while (ring.peekEmpty()) {
-                if (stopped) {
-                    log<Verbosity::debug>("Aborting wait for command packet request");
-                    return {};
-                }
+            if (stopped) {
+                log<Verbosity::debug>("Aborting wait for command packet request");
+                return {};
             }
         }
 
