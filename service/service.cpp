@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -12,6 +12,7 @@
 #include "generated_service_level_zero.h"
 #include "generated_service_ocl.h"
 
+#include <cstddef>
 #include <dlfcn.h>
 #include <fstream>
 #include <functional>
@@ -1216,10 +1217,16 @@ void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
         log<Verbosity::error>("Failed to execute %s", config.command.c_str());
         exit(EXIT_FAILURE);
     } else {
-        int status;
+        int status{};
         waitpid(childPid, &status, 0);
-        if (WIFEXITED(status) == false) {
-            log<Verbosity::error>("Failed to terminate child process");
+        if (WIFEXITED(status)) {
+            const int errorCode = WEXITSTATUS(status);
+            if (errorCode != EXIT_SUCCESS) {
+                log<Verbosity::error>("Child process has failed! Exit code = %d", errorCode);
+                exit(errorCode);
+            }
+        } else {
+            log<Verbosity::error>("Abnormal termination of child process!");
             exit(EXIT_FAILURE);
         }
     }
