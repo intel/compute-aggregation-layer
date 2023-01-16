@@ -62,7 +62,7 @@ struct KernelArgCache {
         return std::find_if(this->cache.begin(), this->cache.end(), [&](const KernelArgEntry &cacheElement) {
             if (arg_index == cacheElement.arg_index &&
                 arg_size == cacheElement.arg_size) {
-                if (cacheElement.arg_size != 0u) {
+                if (cacheElement.arg_size != 0u && arg_value) {
                     if (memcmp(arg_value, cacheElement.argValues, arg_size) == 0) {
                         return true;
                     }
@@ -86,7 +86,9 @@ struct KernelArgCache {
         cacheEntry.arg_index = arg_index;
         cacheEntry.arg_size = arg_size;
         cacheEntry.arg_value = arg_value;
-        memcpy(cacheEntry.argValues, arg_value, arg_size);
+        if (arg_value) {
+            memcpy(cacheEntry.argValues, arg_value, arg_size);
+        }
     }
 
     void invalidateCache() {
