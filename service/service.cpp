@@ -28,6 +28,7 @@ namespace Service {
 namespace Apis {
 
 static const char *intelGpuPlatformName = "Intel.*Graphics";
+static const char *intelGpuDeviceName = "Intel.*GPU";
 
 namespace Ocl {
 cl_platform_id globalOclPlatform = {};
@@ -546,7 +547,8 @@ bool LevelZeroSharedObjects::init() {
         return false;
     }
 
-    intelGpuDriver = getDriverByName(intelGpuPlatformName);
+    const char *regexes[2] = {intelGpuPlatformName, intelGpuDeviceName};
+    intelGpuDriver = getDriverByName(regexes, 2u);
     if (nullptr == intelGpuDriver) {
         return false;
     }
@@ -554,7 +556,7 @@ bool LevelZeroSharedObjects::init() {
     return true;
 }
 
-ze_driver_handle_t LevelZeroSharedObjects::getDriverByName(const char *regex) {
+ze_driver_handle_t LevelZeroSharedObjects::getDriverByName(const char **regexes, size_t count) {
     const auto drivers = getDrivers();
     if (!drivers.has_value()) {
         return nullptr;
@@ -574,9 +576,11 @@ ze_driver_handle_t LevelZeroSharedObjects::getDriverByName(const char *regex) {
                 continue;
             }
 
-            Cal::Utils::Regex r{regex};
-            if (r.matches(deviceProperties.name)) {
-                return driver;
+            for (size_t i = 0u; i < count; ++i) {
+                Cal::Utils::Regex r{regexes[i]};
+                if (r.matches(deviceProperties.name)) {
+                    return driver;
+                }
             }
         }
     }

@@ -119,7 +119,7 @@ class LevelZeroSharedObjects {
     }
 
   private:
-    ze_driver_handle_t getDriverByName(const char *regex);
+    ze_driver_handle_t getDriverByName(const char **regexes, size_t count);
     std::optional<std::vector<ze_driver_handle_t>> getDrivers();
     std::optional<std::vector<ze_device_handle_t>> getDevices(ze_driver_handle_t driverHandle);
 
