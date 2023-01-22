@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -33,7 +33,7 @@ Cal::Utils::AddressRange RangeAllocator::allocate(size_t sizeInBytes, size_t ali
             auto prev = vma.getSubRanges().begin();
             auto it = prev + 1;
             while (it != vma.getSubRanges().end()) {
-                if (Cal::Utils::alignUp(prev->getBoundingRange().end, alignment) - it->getBoundingRange().start >= sizeInBytes) {
+                if (it->getBoundingRange().start - Cal::Utils::alignUp(prev->getBoundingRange().end, alignment) >= sizeInBytes) {
                     addr = Cal::Utils::alignUp(prev->getBoundingRange().rightBound(), alignment);
                     break;
                 }

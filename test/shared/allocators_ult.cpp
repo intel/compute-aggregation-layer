@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -380,6 +380,35 @@ TEST(AddressRangeAllocator, whenAllocatingAndThereAreNoFreeAddressAtTheTopOfTheH
     EXPECT_EQ(0U, heap.getSizeLeft());
     auto ptr6 = heap.allocate(size6);
     EXPECT_EQ(nullptr, ptr6);
+}
+
+TEST(AddressRangeAllocator, whenAllocatingAndMiddleRangeNotBigEnoughThenDontUseIt) {
+    Cal::Utils::AddressRange heapRange = {4096U, 8193U};
+    Cal::Allocators::AddressRangeAllocator heap(heapRange);
+
+    size_t size0 = 64U;
+    size_t size1 = 128U;
+    size_t size3 = size1 + 1U;
+    size_t size2 = heap.getSizeLeft() - size0 - size3;
+
+    auto ptr0 = heap.allocate(size0);
+    auto ptr1 = heap.allocate(size1);
+    auto ptr2 = heap.allocate(size2);
+    EXPECT_NE(nullptr, ptr0);
+    EXPECT_NE(nullptr, ptr1);
+    EXPECT_NE(nullptr, ptr2);
+
+    EXPECT_EQ(1U, heap.getSizeLeft());
+    auto ptr3 = heap.allocate(size3);
+    EXPECT_EQ(nullptr, ptr3);
+
+    heap.free(ptr1);
+    EXPECT_EQ(size3, heap.getSizeLeft());
+
+    ptr3 = heap.allocate(size3);
+    EXPECT_EQ(nullptr, ptr3);
+    heap.free(ptr2);
+    heap.free(ptr0);
 }
 
 TEST(AddressRangeAllocator, whenAllocatingAndThereAreNoFreeAddressAtTheTopOfTheHeapThenReuseFreedBottomRange) {
