@@ -1558,7 +1558,7 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     return ret;
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);
+    if(hSignalEvent){static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);}
     for (uint32_t i = 0; i < numWaitEvents; ++i) {
         static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);
     }

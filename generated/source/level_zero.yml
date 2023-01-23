@@ -3906,7 +3906,7 @@ config:
       latency: 0.0
       special_handling:
         icd:
-          handler_prologue: "static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);\n    }"
+          handler_prologue: "if(hSignalEvent){static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);\n    }"
       ddi_category: CommandList
       returns:
         type: ze_result_t
