@@ -146,7 +146,11 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
         return getProgramBinariesSizes(program, param_name, param_value_size, param_value, param_value_size_ret);
     }
 
-    return clGetProgramInfoRpcHelper(program, param_name, param_value_size, param_value, param_value_size_ret);
+    auto ret = clGetProgramInfoRpcHelper(program, param_name, param_value_size, param_value, param_value_size_ret);
+    if ((param_name == CL_PROGRAM_NUM_DEVICES) && param_value && (param_value_size == 8)) {
+        *reinterpret_cast<uint64_t *>(param_value) = *reinterpret_cast<cl_uint *>(param_value);
+    }
+    return ret;
 }
 
 void *clGetExtensionFunctionAddress(const char *funcname) {
