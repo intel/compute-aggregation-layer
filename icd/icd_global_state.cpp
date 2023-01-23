@@ -199,7 +199,7 @@ void IcdGlobalState::connect() {
     log<Verbosity::debug>("Creating RPC channel");
     rpcChannel = std::make_unique<Cal::Rpc::ChannelClient>(*this->connection, *this->globalShmemImporter, *this->usmShmemImporter);
     Cal::Rpc::ChannelClient::ClientSynchronizationMethod clientSynchMethod = Cal::Rpc::ChannelClient::activePolling;
-    if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelClientEnvName, false)) {
+    if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelClientEnvName, true)) {
         clientSynchMethod = Cal::Rpc::ChannelClient::semaphores;
     }
     if (Cal::Utils::getCalEnvFlag(calUseSemaphoresThresholdInChannelClientEnvName, false)) {

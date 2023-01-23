@@ -1113,7 +1113,7 @@ class Provider {
         log<Verbosity::debug>("Client : %d requested RPC ring buffer", clientConnection.getId());
 
         auto serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::activePolling;
-        if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelServerEnvName)) {
+        if (Cal::Utils::getCalEnvFlag(calUseSemaphoresInChannelServerEnvName, true)) {
             serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores;
         }
 
