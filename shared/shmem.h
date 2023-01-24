@@ -762,6 +762,10 @@ class BasicMemoryBlocksManager {
     }
 
     MemoryBlockIterator getOverlappingBlocksBegin(const void *srcptr, size_t size) {
+        if (memoryBlocks.empty()) {
+            return memoryBlocks.end();
+        }
+
         auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         auto overlappingBegin = memoryBlocks.lower_bound(srcBegin);
 
