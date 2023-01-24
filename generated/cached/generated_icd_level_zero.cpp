@@ -182,6 +182,7 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;
     return ret;
@@ -1698,6 +1699,7 @@ ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t 
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
         static_cast<IcdL0Event*>(hEvent)->signal();
@@ -1725,6 +1727,7 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
         static_cast<IcdL0Event*>(hEvent)->signal();
@@ -1805,6 +1808,7 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
         static_cast<IcdL0Event*>(hEvent)->storeTimestamp(dstptr);
@@ -2761,6 +2765,7 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
     return ret;
@@ -2889,6 +2894,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;
@@ -2930,6 +2936,7 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     }
     ze_result_t ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;

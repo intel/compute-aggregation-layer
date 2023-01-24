@@ -148,6 +148,7 @@ cl_int clGetDeviceInfo (cl_device_id device, cl_device_info param_name, size_t p
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclDevice*>(device)->cache.store(param_name, param_value,command->captures.param_value_size_ret);
     return ret;
@@ -192,6 +193,7 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     cl_context ret = command->captures.ret;
 
     ret = globalOclPlatform->translateNewRemoteObjectToLocalObject(ret);
+    commandSpace.reset();
     channelLock.unlock();
     ret->asLocalObject()->setDevicesList(num_devices, devices);
     return ret;
@@ -263,6 +265,7 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclContext*>(context)->cache.store(param_name, param_value,command->captures.param_value_size_ret);
     return ret;
@@ -1387,6 +1390,7 @@ cl_int clFinish (cl_command_queue command_queue) {
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->synchronizeNow();
     return ret;
@@ -1429,6 +1433,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1469,6 +1474,7 @@ cl_int clEnqueueTask (cl_command_queue command_queue, cl_kernel kernel, cl_uint 
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1508,6 +1514,7 @@ cl_int clEnqueueMarkerWithWaitList (cl_command_queue command_queue, cl_uint num_
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1535,6 +1542,7 @@ cl_int clEnqueueMarker (cl_command_queue command_queue, cl_event* event) {
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1574,6 +1582,7 @@ cl_int clEnqueueBarrierWithWaitList (cl_command_queue command_queue, cl_uint num
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1596,6 +1605,7 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue) {
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1630,6 +1640,7 @@ cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_event
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1679,6 +1690,7 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2085,6 +2097,7 @@ cl_int clEnqueueWriteBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2129,6 +2142,7 @@ cl_int clEnqueueWriteBufferRpcHelperMallocHost (cl_command_queue command_queue, 
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2169,6 +2183,7 @@ cl_int clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem (cl_command_queue comman
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2209,6 +2224,7 @@ cl_int clEnqueueWriteBufferRectRpcHelperUsmHost (cl_command_queue command_queue,
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2253,6 +2269,7 @@ cl_int clEnqueueWriteBufferRectRpcHelperMallocHost (cl_command_queue command_que
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2293,6 +2310,7 @@ cl_int clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem (cl_command_queue co
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2333,6 +2351,7 @@ cl_int clEnqueueReadBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_m
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2373,6 +2392,7 @@ cl_int clEnqueueReadBufferRectRpcHelperUsmHost (cl_command_queue command_queue, 
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2417,6 +2437,7 @@ cl_int clEnqueueReadBufferRectRpcHelperMallocHost (cl_command_queue command_queu
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2457,6 +2478,7 @@ cl_int clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem (cl_command_queue com
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2502,6 +2524,7 @@ cl_int clEnqueueReadBufferRpcHelperMallocHost (cl_command_queue command_queue, c
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2542,6 +2565,7 @@ cl_int clEnqueueReadBufferRpcHelperZeroCopyMallocShmem (cl_command_queue command
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2583,6 +2607,7 @@ cl_int clEnqueueCopyBuffer (cl_command_queue command_queue, cl_mem src_buffer, c
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2624,6 +2649,7 @@ cl_int clEnqueueCopyBufferRect (cl_command_queue command_queue, cl_mem src_buffe
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2669,6 +2695,7 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2713,6 +2740,7 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2754,6 +2782,7 @@ cl_int clEnqueueCopyImage (cl_command_queue command_queue, cl_mem src_image, cl_
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2795,6 +2824,7 @@ cl_int clEnqueueCopyImageToBuffer (cl_command_queue command_queue, cl_mem src_im
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2836,6 +2866,7 @@ cl_int clEnqueueCopyBufferToImage (cl_command_queue command_queue, cl_mem src_bu
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2877,6 +2908,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     void* ret = command->captures.ret;
 
     ret = globalOclPlatform->translateMappedPointer(buffer, ret, offset);
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2917,6 +2949,7 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2957,6 +2990,7 @@ cl_int clEnqueueFillBuffer (cl_command_queue command_queue, cl_mem memobj, const
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2997,6 +3031,7 @@ cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const v
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3255,6 +3290,7 @@ cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3294,6 +3330,7 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3319,6 +3356,7 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);
     return ret;
@@ -3358,6 +3396,7 @@ cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3397,6 +3436,7 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3436,6 +3476,7 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Usm (cl_command_queue command_queue, cl_bo
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3479,6 +3520,7 @@ cl_int clEnqueueSVMMemcpyRpcHelperMalloc2Usm (cl_command_queue command_queue, cl
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3523,6 +3565,7 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Malloc (cl_command_queue command_queue, cl
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3665,6 +3708,7 @@ cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, cons
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3704,6 +3748,7 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Usm (cl_command_queue command_queue, cl_
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3747,6 +3792,7 @@ cl_int clEnqueueMemcpyINTELRpcHelperMalloc2Usm (cl_command_queue command_queue, 
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3791,6 +3837,7 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Malloc (cl_command_queue command_queue, 
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3993,6 +4040,7 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;

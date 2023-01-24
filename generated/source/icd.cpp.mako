@@ -202,6 +202,7 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %       endif # not arg.capture_details.reclaim_method.is_immediate_mode()
 %      endfor # arg in func_base.traits.get_standalone_args():
 %      if epilogue(f):
+    commandSpace.reset();
     channelLock.unlock();
 %      endif #epilogue(f)
 %      for epilogue_line in epilogue(f):
