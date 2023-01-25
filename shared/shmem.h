@@ -793,7 +793,7 @@ class BasicMemoryBlocksManager {
         const auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         const auto srcEnd = srcBegin + size;
 
-        return memoryBlocks.upper_bound(srcEnd);
+        return memoryBlocks.lower_bound(srcEnd);
     }
 
     void eraseUnneededBlocks(MemoryBlockIterator first, MemoryBlockIterator last) {

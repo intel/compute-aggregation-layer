@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -836,6 +836,20 @@ TEST_F(MemoryBlocksManagerTest, GivenNoMemoryBlocksWhenLookingForOverlappingBloc
 
     const auto overlappingMemoryBlocksEnd = memoryBlocksManager.getOverlappingBlocksEnd(srcAddress, chunkSize);
     EXPECT_EQ(memoryBlocksManager.memoryBlocks.end(), overlappingMemoryBlocksEnd);
+}
+
+TEST_F(MemoryBlocksManagerTest, GivenTwoConsecutiveMemoryBlocksWhenLookingForOverlappingBlocksEndThenSecondBlockIteratorIsReturned) {
+    const void *firstSrcAddress{reinterpret_cast<const void *>(firstPageAddress)};
+    const void *secondSrcAddress{reinterpret_cast<const void *>(firstPageAddress + pageSize)};
+    const size_t chunkSize{pageSize};
+
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, firstSrcAddress, chunkSize);
+    memoryBlocksManager.registerMemoryBlock(shmemManagerMock, secondSrcAddress, chunkSize);
+
+    ASSERT_EQ(2u, memoryBlocksManager.memoryBlocks.size());
+
+    const auto overlappingMemoryBlocksEnd = memoryBlocksManager.getOverlappingBlocksEnd(firstSrcAddress, chunkSize);
+    EXPECT_EQ(std::prev(memoryBlocksManager.memoryBlocks.end()), overlappingMemoryBlocksEnd);
 }
 
 TEST_F(MemoryBlocksManagerTest, GivenSingleMemoryBlockWithLowerAddressWhichDoesNotOverlapWhenLookingForOverlappingBlocksEndThenEndIsReturned) {
