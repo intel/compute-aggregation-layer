@@ -24,6 +24,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -415,6 +416,14 @@ class BasicMemoryBlock {
         return overlaps(srcBegin, srcEnd, blockBegin, blockEnd);
     }
 
+    auto getBlockStartAddress() const {
+        return chunks.front().firstPageAddress;
+    }
+
+    auto getBlockEndAddress() const {
+        return chunks.back().firstPageAddress + chunks.back().shmem.getFileSize();
+    }
+
     void extendBlockIfRequired(const void *srcptr, size_t size) {
         const auto srcBegin = reinterpret_cast<uintptr_t>(srcptr);
         const auto srcEnd = srcBegin + size;
@@ -714,6 +723,19 @@ class BasicMemoryBlocksManager {
         const auto overlappingBlocksCount = std::distance(overlappingBegin, overlappingEnd);
         if (overlappingBlocksCount != 1) {
             log<Verbosity::error>("Number of registered overlapping blocks should be 1! Actual value: %d", static_cast<int>(overlappingBlocksCount));
+
+            std::stringstream errorMessage;
+            errorMessage << "\tRequested chunk: (srcptr = " << reinterpret_cast<uintptr_t>(srcptr) << ", size = " << size << ")\n";
+            errorMessage << "\tAvailable memory blocks: \n";
+
+            for (const auto &[keyBeginAddress, block] : memoryBlocks) {
+                errorMessage << "\t\tKey: " << keyBeginAddress
+                             << "\t Block: (firstAddress = " << block.getBlockStartAddress() << ", lastAddress = " << block.getBlockEndAddress() << ")\n";
+            }
+
+            auto errorMessageStr = errorMessage.str();
+            log<Verbosity::debug>("State of memory blocks manager: \n%s", errorMessageStr.c_str());
+
             return nullptr;
         }
 
