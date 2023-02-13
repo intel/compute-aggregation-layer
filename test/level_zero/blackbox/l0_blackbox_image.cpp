@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -15,6 +15,35 @@
 #include "test/utils/l0_common_steps.h"
 
 using namespace Cal::Testing::Utils::LevelZero;
+
+enum class ImageSupported {
+    Yes = 0,
+    No = 1,
+    Error = 2,
+};
+
+ImageSupported isImageSupportedOnTestedDevice(ze_device_handle_t device) {
+    log<Verbosity::info>("Checking if images are supported on tested device!");
+
+    ze_device_image_properties_t imageProperties = {ZE_STRUCTURE_TYPE_DEVICE_IMAGE_PROPERTIES};
+    const auto zeDeviceGetImagePropertiesResult = zeDeviceGetImageProperties(device, &imageProperties);
+
+    if (zeDeviceGetImagePropertiesResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDeviceGetImageProperties() has failed! Error code: %d", static_cast<int>(zeDeviceGetImagePropertiesResult));
+        return ImageSupported::Error;
+    }
+
+    const auto imagesSupported = imageProperties.maxImageDims1D != 0u ||
+                                 imageProperties.maxImageDims2D != 0u ||
+                                 imageProperties.maxImageDims3D != 0u ||
+                                 imageProperties.maxImageBufferSize != 0u ||
+                                 imageProperties.maxImageArraySlices != 0u ||
+                                 imageProperties.maxSamplers != 0u ||
+                                 imageProperties.maxReadImageArgs != 0u ||
+                                 imageProperties.maxWriteImageArgs != 0u;
+
+    return imagesSupported ? ImageSupported::Yes : ImageSupported::No;
+}
 
 ze_image_desc_t createImageDescription(void *pNext = nullptr) {
     return ze_image_desc_t{
@@ -83,6 +112,17 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(initL0());
     RUN_REQUIRED_STEP(getDrivers(drivers));
     RUN_REQUIRED_STEP(getDevices(drivers[0], devices));
+
+    const auto imagesSupported = isImageSupportedOnTestedDevice(devices[0]);
+    if (imagesSupported == ImageSupported::Error) {
+        log<Verbosity::error>("Could not get information about support of images on given device! Aborting...");
+        return -1;
+    }
+
+    if (imagesSupported == ImageSupported::No) {
+        log<Verbosity::info>("Images are not supported on tested device! Skipping tests...");
+        return 0;
+    }
 
     ze_context_handle_t context{};
     RUN_REQUIRED_STEP(createContext(drivers[0], context));
