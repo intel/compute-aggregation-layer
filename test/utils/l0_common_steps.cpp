@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -687,7 +687,7 @@ bool createModule(ze_context_handle_t context, ze_device_handle_t device, const 
     log<Verbosity::info>("Creating module via zeModuleCreate()!");
 
     ze_module_desc_t moduleDescription = {
-        ZE_STRUCTURE_TYPE_MODULE_DESC, nullptr, binaryFormat, binary.size(), binary.data(), "", nullptr};
+        ZE_STRUCTURE_TYPE_MODULE_DESC, nullptr, binaryFormat, binary.size(), binary.data(), flags, nullptr};
 
     ze_module_build_log_handle_t buildLog{};
 
