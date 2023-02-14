@@ -402,18 +402,6 @@ inline bool zeCommandListAppendMemoryPrefetchHandler(Provider &service, Cal::Rpc
                                                 );
     return true;
 }
-inline bool zeCommandListAppendMemAdviseHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemAdvise");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemAdvise(
-                                                apiCommand->args.hCommandList, 
-                                                apiCommand->args.hDevice, 
-                                                apiCommand->args.ptr, 
-                                                apiCommand->args.size, 
-                                                apiCommand->args.advice
-                                                );
-    return true;
-}
 inline bool zeDeviceGetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDeviceGet");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetRpcM*>(command);
@@ -1280,7 +1268,6 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperMalloc2UsmHandler;
     outHandlers[ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler;
     outHandlers[ZeCommandListAppendMemoryPrefetchRpcM::messageSubtype] = zeCommandListAppendMemoryPrefetchHandler;
-    outHandlers[ZeCommandListAppendMemAdviseRpcM::messageSubtype] = zeCommandListAppendMemAdviseHandler;
     outHandlers[ZeDeviceGetRpcM::messageSubtype] = zeDeviceGetHandler;
     outHandlers[ZeDeviceGetSubDevicesRpcM::messageSubtype] = zeDeviceGetSubDevicesHandler;
     outHandlers[ZeDeviceGetPropertiesRpcM::messageSubtype] = zeDeviceGetPropertiesHandler;
@@ -1583,15 +1570,6 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchR
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.ptr, 
                                                 apiCommand.args.size
-                                                );
-}
-inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM &apiCommand) {
-    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemAdvise(
-                                                apiCommand.args.hCommandList, 
-                                                apiCommand.args.hDevice, 
-                                                apiCommand.args.ptr, 
-                                                apiCommand.args.size, 
-                                                apiCommand.args.advice
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceGetRpcM &apiCommand) {
@@ -2177,7 +2155,6 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchRpcM*>(command)); break;
-        case Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM*>(command)); break;

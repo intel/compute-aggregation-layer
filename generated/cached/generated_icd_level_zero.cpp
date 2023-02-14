@@ -846,27 +846,7 @@ ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommand
 
     return ret;
 }
-ze_result_t zeCommandListAppendMemAdviseRpcHelper (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) {
-    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemAdvise");
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto &channel = globalL0Platform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemAdviseRpcM;
-    auto commandSpace = channel.getSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(hCommandList, hDevice, ptr, size, advice);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    ze_result_t ret = command->captures.ret;
-
-    return ret;
-}
+ // zeCommandListAppendMemAdvise ignored in generator - based on dont_generate_handler flag
 ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGet");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();

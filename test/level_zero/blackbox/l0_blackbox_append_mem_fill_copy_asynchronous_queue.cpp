@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -21,19 +21,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-bool appendMemoryAdvise(ze_command_list_handle_t commandList, ze_device_handle_t device, const void *sharedPtr, size_t size, ze_memory_advice_t advice) {
-    log<Verbosity::info>("Appending memory advise operation to command list (%p)!", static_cast<void *>(commandList));
-
-    const auto zeCommandListAppendMemAdviseResult = zeCommandListAppendMemAdvise(commandList, device, sharedPtr, size, advice);
-    if (zeCommandListAppendMemAdviseResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Error! zeCommandListAppendMemAdvise() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemAdviseResult));
-        return false;
-    }
-
-    log<Verbosity::info>("Success! Memory advise operation has been appended!");
-    return true;
-}
 
 bool appendMemoryPrefetch(ze_command_list_handle_t commandList, const void *sharedPtr, size_t size) {
     log<Verbosity::info>("Appending memory prefetch operation to command list (%p)!", static_cast<void *>(commandList));
@@ -94,7 +81,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer));
     RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer, 0xBB, bufferSize));
 
-    RUN_REQUIRED_STEP(appendMemoryAdvise(cmdList, devices[0], usmSharedBuffer, bufferSize, ZE_MEMORY_ADVICE_SET_PREFERRED_LOCATION));
     RUN_REQUIRED_STEP(appendMemoryPrefetch(cmdList, usmSharedBuffer, bufferSize));
 
     void *usmDeviceBuffer{nullptr};

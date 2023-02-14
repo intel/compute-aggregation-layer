@@ -24,14 +24,6 @@
 
 namespace Cal::Icd {
 
-enum class MemoryAdvice : std::uint32_t {
-    ignored = 0,
-    setReadOnly = 1,
-    clearReadOnly = 2,
-    setDevicePreferredLocation = 3,
-    clearDevicePreferredLocation = 4,
-};
-
 class PageFaultManager {
   public:
     enum class Placement : uint32_t {
@@ -115,51 +107,14 @@ class PageFaultManager {
         }
     }
 
-    void updateMemAdviceFlags(const void *hostPtr, MemoryAdvice advice) {
-        if (MemoryAdvice::ignored == advice) {
-            return;
-        }
-
-        std::lock_guard<std::mutex> lock(this->mtx);
-
-        auto sharedAllocDesc = this->findSharedAlloc(hostPtr);
-        if (sharedAllocDesc == this->sharedAllocMap.end()) {
-            return;
-        }
-
-        auto &flags = sharedAllocDesc->second.flags;
-        if (MemoryAdvice::setReadOnly == advice) {
-            flags.isReadOnly = 1;
-        } else if (MemoryAdvice::clearReadOnly == advice) {
-            flags.isReadOnly = 0;
-        } else if (MemoryAdvice::setDevicePreferredLocation == advice) {
-            flags.isDevicePreferredLocation = 1;
-        } else if (MemoryAdvice::clearDevicePreferredLocation == advice) {
-            flags.isDevicePreferredLocation = 0;
-        }
-
-        // If read only and device preferred hints have been cleared, then CPU migration of shared memory can be re-enabled.
-        if (flags.isCpuMigrationBlocked && !flags.isReadOnly && !flags.isDevicePreferredLocation) {
-            Cal::Sys::mprotect(sharedAllocDesc->first, sharedAllocDesc->second.size, PROT_NONE);
-            flags.isCpuMigrationBlocked = 0;
-        }
-    }
-
     static void pageFaultHandlerWrapper(int signal, siginfo_t *info, void *context) {
         pageFaultHandler(signal, info, context);
     }
 
   protected:
-    struct MemAdviceFlags {
-        uint8_t isReadOnly : 1;
-        uint8_t isDevicePreferredLocation : 1;
-        uint8_t isCpuMigrationBlocked : 1;
-    };
-
     struct SharedAllocDesc {
         uint64_t size = 0;
         Placement placement = Placement::HOST;
-        MemAdviceFlags flags{};
 
         SharedAllocDesc(uint64_t size, Placement placement) : size(size), placement(placement) {}
     };
@@ -234,13 +189,7 @@ class PageFaultManager {
             }
         }
 
-        auto &flags = sharedAllocDesc->second.flags;
-        if (flags.isReadOnly && flags.isDevicePreferredLocation) {
-            flags.isCpuMigrationBlocked = 1;
-        } else {
-            sharedAllocDesc->second.placement = Placement::HOST;
-        }
-
+        sharedAllocDesc->second.placement = Placement::HOST;
         Cal::Sys::mprotect(sharedAllocDesc->first, sharedAllocDesc->second.size, PROT_READ | PROT_WRITE);
         log<Verbosity::debug>("Page fault verified successfully on address %p", ptr);
         return true;
