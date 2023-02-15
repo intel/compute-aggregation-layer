@@ -60,6 +60,12 @@ ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, 
 }
 
 ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properties_t *pDeviceProperties) {
+    static bool usePnext = Cal::Utils::getCalEnvFlag(calUsePnextInZeDeviceGetProperties, false);
+    if (usePnext == false) {
+        log<Verbosity::debug>("Ignoring pNext in zeDeviceGetProperties. To use this value, set %s", calUsePnextInZeDeviceGetProperties.data());
+        pDeviceProperties->pNext = nullptr;
+    }
+
     return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
 }
 
