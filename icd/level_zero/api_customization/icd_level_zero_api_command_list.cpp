@@ -245,8 +245,6 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
 }
 
 ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void *ptr, size_t size, ze_memory_advice_t advice) {
-    // According to the specification the driver is allowed to ignore the advice.
-    // It's a deliberate decision to ignore the request here. It may interfere with functionality of PageFaultManager.
     log<Verbosity::debug>("zeCommandListAppendMemAdvise(): Ignoring passed advice!");
     return ZE_RESULT_SUCCESS;
 }
