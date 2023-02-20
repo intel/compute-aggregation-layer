@@ -22,6 +22,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}")
 
 option(ENABLE_BLOATED_VERBOSITY "Enable all logs (a lot)" OFF)
 option(ENABLE_PERFORMANCE_DEBUG "Enable performance-related debug logs" ON)
+option(DISABLE_ULT "Disables unit tests from ALL target" OFF)
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(ENABLE_CALLSTACK_DUMPING_DEFAULT ON)
 else()
@@ -93,6 +95,10 @@ include_directories(${OpenCL_INCLUDE_DIRS}
 )
 
 add_custom_target(run_unit_tests ALL)
+if(DISABLE_ULT)
+  message(WARNING "Unit Testing is DISABLED")
+  set_target_properties(run_unit_tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest)
 macro(macro_add_run_gtest_for target)
