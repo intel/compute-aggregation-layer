@@ -14,6 +14,7 @@ endmacro()
 
 add_library(l0_blackbox_common OBJECT
             ${cal_source_root_dir}/test/utils/l0_common_steps.cpp
+            ${cal_source_root_dir}/shared/callstack.cpp
             ${cal_source_root_dir}/shared/utils.cpp
             ${cal_source_root_dir}/shared/sys.cpp
 )

@@ -22,6 +22,7 @@ namespace Icd {
 IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
+    Cal::Utils::initDynamicVerbosity();
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
     this->usesSharedVaForRpcChannel = Cal::Utils::getCalEnvFlag(calUseSharedVaForRpcChannel, false);
     auto cpuInfoOpt = cpuInfo.read();
@@ -45,7 +46,6 @@ Cal::Icd::Ocl::IcdOclPlatform *IcdGlobalState::getOclPlatform() {
         if (this->ensureApiIsAvailable(ApiType::OpenCL) == false) {
             return;
         }
-        Cal::Utils::initDynamicVerbosity();
         Cal::Icd::Ocl::initOclIcdDispatchTable(clIcdDispatchTable);
         log<Verbosity::info>("Creating Compute Aggregation Layer OCL platform from pid : %d", getpid());
         this->oclPlatform.platform = std::make_unique<Icd::Ocl::IcdOclPlatform>(*this);
@@ -58,7 +58,6 @@ Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
         if (this->ensureApiIsAvailable(ApiType::LevelZero) == false) {
             return;
         }
-        Cal::Utils::initDynamicVerbosity();
         Cal::Icd::LevelZero::initL0Ddi(l0Ddi);
         log<Verbosity::info>("Creating Compute Aggregation Layer Level Zero platform from pid : %d", getpid());
         this->l0Platform.platform = std::make_unique<Icd::LevelZero::IcdL0Platform>(*this);

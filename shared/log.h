@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -10,6 +10,7 @@
 #pragma GCC diagnostic ignored "-Wformat-security"
 
 #include "include/cal.h"
+#include "shared/callstack.h"
 #include "shared/utils.h"
 
 #include <cstdio>
@@ -36,6 +37,7 @@ class Log {
         info = 3,
         debug = 4,
         bloat = 5,
+        unknown = 6
     };
 
     virtual ~Log() = default;
@@ -103,7 +105,7 @@ class Log {
     }
 
     template <Verbosity V, typename... Args>
-    int add(bool useLoggerName, bool appendPID, const char *formatString, Args &&...args) {
+    int add(bool useLoggerName, bool appendPID, bool addCallStackDump, const char *formatString, Args &&...args) {
         isEmpty = false;
         auto len = snprintf(nullptr, 0, formatString, std::forward<Args>(args)...);
         if (len <= 0) {
@@ -111,6 +113,16 @@ class Log {
         }
         std::vector<char> buff(len + 1);
         snprintf(buff.data(), buff.size(), formatString, std::forward<Args>(args)...);
+        if constexpr (CAL_SUPPORT_CALLSTACK_DUMPING) {
+            if (addCallStackDump) {
+                std::string callStackInfo = Cal::Utils::concatenate(Cal::Utils::getCallStack(), "\n");
+                *buff.rbegin() = ' ';
+                std::string callStackInfoHeader = "- call stack dump :\n";
+                buff.insert(buff.end(), callStackInfoHeader.begin(), callStackInfoHeader.end());
+                buff.insert(buff.end(), callStackInfo.begin(), callStackInfo.end());
+                buff.push_back('\0');
+            }
+        }
         return log(useLoggerName, appendPID, V, buff.data());
     }
 
@@ -194,6 +206,7 @@ static constexpr bool enablePerformanceLogs = false;
 
 inline Verbosity minDynamicVerbosity = Verbosity::silent;
 inline Verbosity maxDynamicVerbosity = Verbosity::error;
+inline Verbosity maxDynamicCallStackVerbosity = Verbosity::silent;
 inline bool useLoggerName = false;
 inline bool appendPID = false;
 
@@ -219,7 +232,7 @@ inline std::string getListOfAllAvailableVerbosityLevels() {
     return available;
 }
 
-inline void initMaxDynamicVerbosity(Verbosity max) { // init as given
+inline void initMaxDynamicVerbosity(Verbosity max) {
     maxDynamicVerbosity = max;
     if (max > maxStaticVebosity) {
         auto available = getListOfAllAvailableVerbosityLevels();
@@ -228,7 +241,20 @@ inline void initMaxDynamicVerbosity(Verbosity max) { // init as given
     }
 }
 
-inline void initBenchmarkingMode(bool value) { // init as given
+inline void initMaxDynamicCallStackDumpingVerbosity(Verbosity max) {
+    if constexpr (0 == CAL_SUPPORT_CALLSTACK_DUMPING) {
+        log<Verbosity::error>("Requested callstack dumping verbosity level : %s, but build type does not support call stack dumping");
+        return;
+    }
+    maxDynamicCallStackVerbosity = max;
+    if (max > maxStaticVebosity) {
+        auto available = getListOfAllAvailableVerbosityLevels();
+        log<Verbosity::error>("Requested callstack dumping verbosity level : %s is higher than maximum available : %s (chosen statically at service build time - choose one of : %s)",
+                              Cal::Utils::Log::to_cstring(max), Cal::Utils::Log::to_cstring(maxStaticVebosity), available.c_str());
+    }
+}
+
+inline void initBenchmarkingMode(bool value) {
     if (value) {
         minDynamicVerbosity = Verbosity::performance;
         if (minStaticVebosity > Verbosity::performance) {
@@ -239,25 +265,41 @@ inline void initBenchmarkingMode(bool value) { // init as given
     }
 }
 
-inline void initDynamicVerbosity() { // init from env
+inline Verbosity parseVerbosity(const char *strV) {
+    for (int i = Verbosity::performance; i <= Verbosity::bloat; ++i) {
+        Verbosity v = static_cast<Verbosity>(i);
+        if (0 == strcmp(strV, Cal::Utils::Log::to_cstring(v))) {
+            return v;
+        }
+    }
+    return Verbosity::unknown;
+}
+
+inline void initDynamicVerbosity() {
     auto requestedBenchmarkingMode = getCalEnvFlag(calBenchmarkEnvName);
     initBenchmarkingMode(requestedBenchmarkingMode);
 
-    auto requestedVerbosity = getCalEnv(calVerbosityEnvName);
-    if (requestedVerbosity) {
-        int i = Verbosity::performance;
-        for (; i <= Verbosity::bloat; ++i) {
-            Verbosity v = static_cast<Verbosity>(i);
-            if (0 == strcmp(requestedVerbosity, Cal::Utils::Log::to_cstring(v))) {
-                initMaxDynamicVerbosity(v);
-                log<Verbosity::info>("Initialing verbosity level to %s based on %s environment variable", requestedVerbosity, calVerbosityEnvName.data());
-                break;
-            }
-        }
-
-        if (i > Verbosity::bloat) {
+    auto requestedVerbosityStr = getCalEnv(calVerbosityEnvName);
+    if (requestedVerbosityStr) {
+        auto requestedVerbosity = parseVerbosity(requestedVerbosityStr);
+        if (Verbosity::unknown != requestedVerbosity) {
+            initMaxDynamicVerbosity(requestedVerbosity);
+            log<Verbosity::info>("Initialing verbosity level to %s based on %s environment variable", requestedVerbosityStr, calVerbosityEnvName.data());
+        } else {
             std::string existing = getListOfAllExistingVerbosityLevels();
-            log<Verbosity::error>("Ignoring unkown verbosity level %s from %s environment variable (expected one of (case sensitive) : %s)", requestedVerbosity, calVerbosityEnvName.data(), existing.c_str());
+            log<Verbosity::error>("Ignoring unkown verbosity level %s from %s environment variable (expected one of (case sensitive) : %s)", requestedVerbosityStr, calVerbosityEnvName.data(), existing.c_str());
+        }
+    }
+
+    auto requestedCallStackVerbosityStr = getCalEnv(calVerbosityCallStackEnvName);
+    if (requestedCallStackVerbosityStr) {
+        auto requestedCallStackVerbosity = parseVerbosity(requestedCallStackVerbosityStr);
+        if (Verbosity::unknown != requestedCallStackVerbosity) {
+            initMaxDynamicCallStackDumpingVerbosity(requestedCallStackVerbosity);
+            log<Verbosity::info>("Initialing verbosity level of callstack dumping to %s based on %s environment variable", requestedCallStackVerbosityStr, calVerbosityCallStackEnvName.data());
+        } else {
+            std::string existing = getListOfAllExistingVerbosityLevels();
+            log<Verbosity::error>("Ignoring unkown callstack dumping verbosity level %s from %s environment variable (expected one of (case sensitive) : %s)", requestedCallStackVerbosityStr, calVerbosityCallStackEnvName.data(), existing.c_str());
         }
     }
 
@@ -289,5 +331,12 @@ int log(const char *formatString, Args &&...args) {
         return 0;
     }
 
-    return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, Cal::Utils::appendPID, formatString, std::forward<Args>(args)...);
+    bool addCallStackDump = false;
+    if constexpr (CAL_SUPPORT_CALLSTACK_DUMPING) {
+        if (V <= Cal::Utils::maxDynamicCallStackVerbosity) {
+            addCallStackDump = true;
+        }
+    }
+
+    return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, Cal::Utils::appendPID, addCallStackDump, formatString, std::forward<Args>(args)...);
 }

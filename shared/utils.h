@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -713,6 +713,13 @@ inline std::vector<std::string> split(const std::string &input, const char *deli
 }
 
 std::string concatenate(const char **beg, const char **end, const char *separator);
+std::string concatenate(const std::string *beg, const std::string *end, const char *separator);
+inline std::string concatenate(const std::vector<std::string> &vec, const char *separator) {
+    if (vec.empty()) {
+        return "";
+    }
+    return concatenate(vec.data(), vec.data() + vec.size(), separator);
+}
 std::string encodeIntAsPath(uint64_t v);
 uint64_t decodeIntFromPath(const char *str);
 

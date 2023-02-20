@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -22,6 +22,20 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}")
 
 option(ENABLE_BLOATED_VERBOSITY "Enable all logs (a lot)" OFF)
 option(ENABLE_PERFORMANCE_DEBUG "Enable performance-related debug logs" ON)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(ENABLE_CALLSTACK_DUMPING_DEFAULT ON)
+else()
+  set(ENABLE_CALLSTACK_DUMPING_DEFAULT OFF)
+endif()
+
+option(ENABLE_CALLSTACK_DUMPING "Enable dumping of callstack" ${ENABLE_CALLSTACK_DUMPING_DEFAULT})
+
+if(ENABLE_CALLSTACK_DUMPING)
+  add_definitions(-DCAL_SUPPORT_CALLSTACK_DUMPING=1)
+else()
+  add_definitions(-DCAL_SUPPORT_CALLSTACK_DUMPING=0)
+endif()
+message("ENABLE_CALLSTACK_DUMPING is ${ENABLE_CALLSTACK_DUMPING}")
 
 include(GNUInstallDirs)
 set(CAL_OPT_INSTALL_PATH "/opt/compute-aggregation-layer/")
@@ -29,10 +43,12 @@ set(CAL_OPT_INSTALL_PATH "/opt/compute-aggregation-layer/")
 if(ENABLE_BLOATED_VERBOSITY)
   add_definitions(-DENABLE_BLOATED_VERBOSITY=1)
 endif()
+message("BLOATED_VERBOSITY is ${ENABLE_BLOATED_VERBOSITY}")
 
 if(ENABLE_PERFORMANCE_DEBUG)
   add_definitions(-DPERFORMANCE_DEBUG=1)
 endif()
+message("PERFORMANCE_DEBUG is ${ENABLE_PERFORMANCE_DEBUG}")
 
 set(cal_source_root_dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(cal_binary_root_dir ${CMAKE_CURRENT_BINARY_DIR})

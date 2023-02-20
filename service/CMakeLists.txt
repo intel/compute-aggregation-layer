@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -13,6 +13,7 @@ add_executable(calrun # SERVICE
                ${CMAKE_CURRENT_SOURCE_DIR}${BRANCH_DIR_SUFFIX}/cochoreographer.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/service.cpp
                ${cal_source_root_dir}/shared/allocators.cpp
+               ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
@@ -26,6 +27,10 @@ install(TARGETS calrun
 )
 
 target_link_libraries(calrun ${common_library_dependencies})
+
+if(ENABLE_CALLSTACK_DUMPING)
+  target_link_options(calrun PUBLIC -rdynamic)
+endif()
 
 add_subdirectories()
 

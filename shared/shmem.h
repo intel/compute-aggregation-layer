@@ -9,6 +9,7 @@
 
 #include "include/cal.h"
 #include "shared/allocators.h"
+#include "shared/callstack.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/shmem_transfer_desc.h"

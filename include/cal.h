@@ -54,6 +54,8 @@ constexpr std::string_view calUsePnextInZeDeviceGetProperties = "CAL_USE_PNEXT_I
 // Debug
 // Sets required logging verbosity. Available levels: [performance, silent, critical, error, info, debug, bloat]. Warning: bloat verbosity requires CAL to be built with ENABLE_BLOATED_VERBOSITY=1 cmake option
 constexpr std::string_view calVerbosityEnvName = "CAL_MAX_VERBOSITY";
+// Sets maximum level of logs that will contain callstack dump information (if available), default is silent (no callstack logs)
+constexpr std::string_view calVerbosityCallStackEnvName = "CAL_MAX_VERBOSITY_CALLSTACK_DUMP";
 // Controls whether CAL should work in benchmarking mode, which prints performance logs for aggregation layer
 constexpr std::string_view calBenchmarkEnvName = "CAL_BENCHMARK";
 // Set name of logger that prints results to stdout

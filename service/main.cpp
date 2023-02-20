@@ -195,6 +195,7 @@ void printCalServiceHelp() {
     if (availableVerb != allVerb) {
         printf(" (AVAILABILITY WARNING: build was configured to support only: %s)", availableVerb.c_str());
     }
+    printf("CallStack dumping is %s\n", CAL_SUPPORT_CALLSTACK_DUMPING ? "AVAILABLE" : "NOT AVAILABLE (try different build mode if needed)");
     printf("\n");
     printf("%s: to set default RPC channel size (in MB), builtin default is: %dMB\n", calDefaultRpcChannelSizeEnvName.data(), Cal::Service::Provider::staticDefaultRpcMessageChannelSizeMB);
     printf("%s: to set default shared VA window size (in GB) per client, builtin default is: %dGB\n", calDefaultSharedVaSizeEnvName.data(), Cal::Service::Provider::staticDefaultSharedVaSizeGB);

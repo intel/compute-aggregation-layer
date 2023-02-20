@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -179,9 +179,9 @@ bool isDebuggerConnected() {
     return false;
 }
 
-std::string concatenate(const char **beg, const char **end, const char *separator) {
-    auto len = std::accumulate(beg, end, static_cast<size_t>(0U),
-                               [](size_t prev, const char *str) { return prev + strlen(str); });
+template <typename T>
+std::string concatenateBase(const T *beg, const T *end, const char *separator, size_t nonSeparatedTotalLen) {
+    size_t len = nonSeparatedTotalLen;
     auto sepLen = strlen(separator);
     len += (end - beg) * sepLen;
     std::string ret;
@@ -194,6 +194,18 @@ std::string concatenate(const char **beg, const char **end, const char *separato
         }
     }
     return ret;
+}
+
+std::string concatenate(const char **beg, const char **end, const char *separator) {
+    auto len = std::accumulate(beg, end, static_cast<size_t>(0U),
+                               [](size_t prev, const char *str) { return prev + strlen(str); });
+    return concatenateBase(beg, end, separator, len);
+}
+
+std::string concatenate(const std::string *beg, const std::string *end, const char *separator) {
+    auto len = std::accumulate(beg, end, static_cast<size_t>(0U),
+                               [](size_t prev, const std::string &str) { return prev + str.size(); });
+    return concatenateBase(beg, end, separator, len);
 }
 
 std::string encodeIntAsPath(uint64_t v) {

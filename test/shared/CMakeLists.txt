@@ -1,11 +1,12 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
 
 add_executable(shared_test_ult # ULTs
                ${cal_source_root_dir}/shared/allocators.cpp
+               ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/test/mocks/sys_mock.cpp
