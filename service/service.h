@@ -389,7 +389,7 @@ class Provider {
   public:
     using RpcHandler = bool (*)(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
     using RpcSubtypeHandlers = std::vector<RpcHandler>;
-    static constexpr size_t defaultUsmAddressRangeSizePerClient = 16 * Cal::Utils::GB;
+    static constexpr int32_t staticDefaultSharedVaSizeGB = 32;
     static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 256;
 
     enum ErrorCode : int {
@@ -786,6 +786,7 @@ class Provider {
         std::future<void> subprocess;
     } runnerConfig;
     std::unique_ptr<Cal::Ipc::ConnectionListener> listener;
+    int32_t defaultSharedVaSizeInGB = staticDefaultSharedVaSizeGB;
     int32_t defaultRpcMessageChannelSizeMB = staticDefaultRpcMessageChannelSizeMB;
     std::atomic_bool runInLoop = false;
     std::atomic_bool isRunning = false;
@@ -1152,7 +1153,7 @@ class Provider {
         static std::mutex mmapBloatGuardMutex;
         std::unique_lock<std::mutex> mmapBloatGuardMutexLock(mmapBloatGuardMutex);
 
-        size_t usmSize = request.proposedUsmSize ? request.proposedUsmSize : defaultUsmAddressRangeSizePerClient;
+        size_t usmSize = request.proposedUsmSize ? request.proposedUsmSize : (this->defaultSharedVaSizeInGB * Cal::Utils::GB);
         auto negotiatedUsmRangeOpt = Cal::Usm::negotiateUsmRangeWithClient(clientConnection, request.proposedUsmBase, usmSize);
         if (!negotiatedUsmRangeOpt) {
             log<Verbosity::critical>("Failed to negotatie initial USM heap");

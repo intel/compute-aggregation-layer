@@ -1132,10 +1132,15 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
         this->knownChoreographies = std::make_unique<ChoreographyLibrary>();
     }
     this->globalShmemAllocators = std::make_unique<Cal::Ipc::GlobalShmemAllocators>(Cal::Ipc::getCalShmemPathBase(getpid()));
-    auto requestedDefaultRpcChannelSize = Cal::Utils::getCalEnvI64(calDefaultRpcChannelSizeEnvName, 0);
-    if (requestedDefaultRpcChannelSize > 0) {
-        log<Verbosity::info>("Changing default rpc message channel size from %dMB to %dMB", this->defaultRpcMessageChannelSizeMB, requestedDefaultRpcChannelSize);
-        this->defaultRpcMessageChannelSizeMB = requestedDefaultRpcChannelSize;
+    auto requestedDefaultRpcChannelSizeMB = Cal::Utils::getCalEnvI64(calDefaultRpcChannelSizeEnvName, 0);
+    if (requestedDefaultRpcChannelSizeMB > 0) {
+        log<Verbosity::info>("Changing default rpc message channel size from %dMB to %dMB", this->defaultRpcMessageChannelSizeMB, requestedDefaultRpcChannelSizeMB);
+        this->defaultRpcMessageChannelSizeMB = requestedDefaultRpcChannelSizeMB;
+    }
+    auto requestedDefaultSharedVaSizeGB = Cal::Utils::getCalEnvI64(calDefaultSharedVaSizeEnvName, 0);
+    if (requestedDefaultSharedVaSizeGB > 0) {
+        log<Verbosity::info>("Changing default shared VA windows size per client from %dGB to %dGB", this->defaultSharedVaSizeInGB, requestedDefaultSharedVaSizeGB);
+        this->defaultSharedVaSizeInGB = requestedDefaultSharedVaSizeGB;
     }
 
     this->rpcHandlers.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero + 1);

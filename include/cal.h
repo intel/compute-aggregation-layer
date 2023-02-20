@@ -35,6 +35,8 @@ constexpr std::string_view calYieldThreadsEnvName = "CAL_YIELD_THREADS";
 constexpr std::string_view calIcdBufferRecycleEnvName = "CAL_ICD_BUFFER_RECYCLE";
 // Set default RPC channel size (in MB)
 constexpr std::string_view calDefaultRpcChannelSizeEnvName = "CAL_DEFAULT_RPC_CHANNEL_SIZE_MB";
+// Set default shared VA window size per client (in GB)
+constexpr std::string_view calDefaultSharedVaSizeEnvName = "CAL_DEFAULT_SHARED_VA_SIZE_GB";
 // Allocate RPC channel within shared VA window
 constexpr std::string_view calUseSharedVaForRpcChannel = "CAL_USE_SHARED_VA_FOR_RPC_CHANNEL";
 

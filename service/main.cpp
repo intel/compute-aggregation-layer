@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -197,6 +197,7 @@ void printCalServiceHelp() {
     }
     printf("\n");
     printf("%s: to set default RPC channel size (in MB), builtin default is: %dMB\n", calDefaultRpcChannelSizeEnvName.data(), Cal::Service::Provider::staticDefaultRpcMessageChannelSizeMB);
+    printf("%s: to set default shared VA window size (in GB) per client, builtin default is: %dGB\n", calDefaultSharedVaSizeEnvName.data(), Cal::Service::Provider::staticDefaultSharedVaSizeGB);
     printf("\n");
     printf("Default builtin max verbosity level in this build: %s\n", Cal::Utils::Log::to_cstring(Cal::Utils::maxDynamicVerbosity));
     printf("Default builtin benchmarking mode: %d\n", Cal::Utils::minDynamicVerbosity <= Verbosity::performance);
