@@ -68,3 +68,5 @@ constexpr std::string_view calOclDisableProfilingEnvName = "CAL_OCL_DISABLE_PROF
 constexpr std::string_view calDebugBreakClientOrdinalEnvName = "CAL_DEBUG_BREAK_CLIENT_ORDINAL";
 // By default CAL will abort any API call that uses structures with field pNext not set to nullptr, when the extension is not recognized by CAL. It effectively means, that usage of uninitialized pNext fields leads to abort of an application
 constexpr std::string_view calAbortOnNonNullPNext = "CAL_ABORT_ON_NON_NULL_PNEXT";
+// Use standalone allocations instead of allocating memory in an arena for zeMemAllocHost
+constexpr std::string_view calUseStandaloneAllocationsForZeMemAllocHost = "CAL_USE_STANDALONE_ALLOCATIONS_FOR_ZE_MEM_ALLOC_HOST";

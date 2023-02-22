@@ -702,9 +702,16 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
 
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
 
+    static bool useStandaloneAllocations = Utils::getCalEnvFlag(calUseStandaloneAllocationsForZeMemAllocHost, false);
+
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        Cal::Allocators::ArenaSubAllocation<Cal::Ipc::MmappedShmemAllocationT, void> shmem;
+        if (useStandaloneAllocations) {
+            shmem = heap.allocateAsStandalone(alignedSize, Cal::Utils::pageSize64KB);
+        } else {
+            shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        }
         if (false == shmem.isValid()) {
             continue;
         }
