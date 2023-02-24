@@ -702,11 +702,13 @@ class Provider {
                 } else {
                     this->commandQueueGroups.linkedCopyGroupIndex = i;
                     this->commandQueueGroups.numLinkedCopyEngines = properties[i].numQueues;
+                    log<Verbosity::debug>("Num Linked Copy Engines found: %d", properties[i].numQueues);
                 }
             }
             if (properties[i].flags & ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE) {
                 this->commandQueueGroups.computeGroupindex = i;
                 this->commandQueueGroups.numComputeEngines = properties[i].numQueues;
+                log<Verbosity::debug>("Num Compute Engines found: %d", this->commandQueueGroups.numComputeEngines);
             }
         }
         if (this->commandQueueGroups.copyGroupIndex != std::numeric_limits<uint32_t>::max() &&
@@ -741,6 +743,7 @@ class Provider {
                 desc->ordinal = this->commandQueueGroups.linkedCopyGroupIndex;
                 desc->index = index - 1;
             }
+            log<Verbosity::debug>("Overriding Copy Queue index: %d", index);
         } else if (desc->ordinal == this->commandQueueGroups.computeGroupindex) {
             auto index = ctx.getComputeCommandQueueGroupIndex();
             if (index == std::numeric_limits<uint32_t>::max()) {
@@ -750,6 +753,7 @@ class Provider {
                     ctx.setComputeCommandQueueGroupIndex(index);
                 }
             }
+            log<Verbosity::debug>("Overriding Compute Queue index: %d", index);
             desc->index = index;
         }
     }
