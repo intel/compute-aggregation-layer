@@ -204,6 +204,10 @@ static ze_result_t zeCommandListAppendMemoryCopyRegular(ze_command_list_handle_t
     }
 
     if (srcIsUsm) {
+        if (numWaitEvents > 0u && phWaitEvents != nullptr) {
+            log<Verbosity::error>("zeCommandListAppendMemoryCopy(): USM2Malloc cannot be synchronized via events yet! Results will be invalid!");
+        }
+
         icdCommandList->registerMemoryToRead(dstptr, size);
         return zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
@@ -215,6 +219,11 @@ static ze_result_t zeCommandListAppendMemoryCopyRegular(ze_command_list_handle_t
 
     icdCommandList->registerMemoryToWrite(srcptr, size);
     icdCommandList->registerMemoryToRead(dstptr, size);
+
+    if (numWaitEvents > 0u && phWaitEvents != nullptr) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopy(): Malloc2Malloc cannot be synchronized via events yet! Results will be invalid!");
+    }
+
     return zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 
