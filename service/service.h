@@ -391,6 +391,7 @@ class Provider {
     using RpcSubtypeHandlers = std::vector<RpcHandler>;
     static constexpr int32_t staticDefaultSharedVaSizeGB = 32;
     static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 256;
+    static constexpr int32_t staticSharedVaArenaSizeMB = 64;
 
     enum ErrorCode : int {
         Success = 0,
@@ -792,6 +793,7 @@ class Provider {
     std::unique_ptr<Cal::Ipc::ConnectionListener> listener;
     int32_t defaultSharedVaSizeInGB = staticDefaultSharedVaSizeGB;
     int32_t defaultRpcMessageChannelSizeMB = staticDefaultRpcMessageChannelSizeMB;
+    int32_t sharedVaArenaSizeMB = staticSharedVaArenaSizeMB;
     std::atomic_bool runInLoop = false;
     std::atomic_bool isRunning = false;
     std::atomic_bool isStopping = false;
@@ -1165,7 +1167,7 @@ class Provider {
         }
 
         mmapBloatGuardMutexLock.unlock();
-        ctx.addUsmHeap(Cal::Usm::UsmMmappedShmemArenaAllocator{this->globalShmemAllocators->getBaseAllocator(), negotiatedUsmRangeOpt.value()});
+        ctx.addUsmHeap(Cal::Usm::UsmMmappedShmemArenaAllocator{this->globalShmemAllocators->getBaseAllocator(), negotiatedUsmRangeOpt.value(), this->sharedVaArenaSizeMB * Cal::Utils::MB});
 
         return true;
     }

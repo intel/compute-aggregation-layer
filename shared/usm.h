@@ -144,8 +144,8 @@ class UsmMmappedShmemArenaAllocator : public UsmMmappedShmemArenaAllocatorBaseT 
   public:
     static_assert(UsmMmappedShmemArenaAllocatorBaseT::isThreadSafe);
 
-    UsmMmappedShmemArenaAllocator(Cal::Ipc::ShmemAllocator &shmemAllocator, Cal::Utils::AddressRange bounds)
-        : UsmMmappedShmemArenaAllocatorBaseT(UsmMmappedShmemAllocator(shmemAllocator, bounds), Cal::Utils::MB * 64) {
+    UsmMmappedShmemArenaAllocator(Cal::Ipc::ShmemAllocator &shmemAllocator, Cal::Utils::AddressRange bounds, size_t arenaSize)
+        : UsmMmappedShmemArenaAllocatorBaseT(UsmMmappedShmemAllocator(shmemAllocator, bounds), arenaSize) {
     }
 };
 

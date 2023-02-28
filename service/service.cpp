@@ -1149,6 +1149,11 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
         log<Verbosity::info>("Changing default shared VA windows size per client from %dGB to %dGB", this->defaultSharedVaSizeInGB, requestedDefaultSharedVaSizeGB);
         this->defaultSharedVaSizeInGB = requestedDefaultSharedVaSizeGB;
     }
+    auto requestedSharedVaArenaSizeMB = Cal::Utils::getCalEnvI64(calSharedVaArenaSizeEnvName, 0);
+    if (requestedSharedVaArenaSizeMB > 0) {
+        log<Verbosity::info>("Changing default shared VA arena size from %dMB to %dMB", this->sharedVaArenaSizeMB, requestedSharedVaArenaSizeMB);
+        this->sharedVaArenaSizeMB = requestedSharedVaArenaSizeMB;
+    }
 
     this->rpcHandlers.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero + 1);
     this->directCallCallbacks.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero + 1);
