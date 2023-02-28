@@ -1007,7 +1007,9 @@ class ArenaAllocator {
 
                 if (arena->getSizeLeft() >= standaloneAllocationThreshold) {
                     auto recycleLock = recycledArenas.lock();
-                    recycledArenas->push_back(arena);
+                    if (recycledArenas->end() == std::find(recycledArenas->begin(), recycledArenas->end(), arena)) {
+                        recycledArenas->push_back(arena);
+                    }
                 }
             }
         }
