@@ -50,6 +50,7 @@ add_executable(l0_test_ult_rpc
                ${generated_dir}/generated_service_ocl.cpp
 
                ${ICD_L0_OBJECTS_SOURCES}
+               $<TARGET_OBJECTS:service_l0_objects>
 )
 
 target_link_libraries(l0_test_ult_rpc Threads::Threads rt dl ${common_library_dependencies} gmock-gtest)

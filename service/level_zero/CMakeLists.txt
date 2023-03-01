@@ -1,0 +1,14 @@
+#
+# Copyright (C) 2022-2023 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+#
+
+set(SERVICE_L0_OBJECTS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/event_to_context_tracker.cpp
+)
+
+set_property(GLOBAL PROPERTY SERVICE_L0_OBJECTS_SOURCES_PROPERTY "${SERVICE_L0_OBJECTS_SOURCES}")
+
+add_library(service_l0_objects OBJECT ${SERVICE_L0_OBJECTS_SOURCES})
+set_property(TARGET service_l0_objects PROPERTY POSITION_INDEPENDENT_CODE ON)

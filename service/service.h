@@ -10,6 +10,7 @@
 #include "cal.h"
 #include "level_zero/ze_api.h"
 #include "service/cochoreographer.h"
+#include "service/level_zero/event_to_context_tracker.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/log.h"
@@ -279,6 +280,10 @@ class ClientContext {
         return memoryBlocksManager;
     }
 
+    Cal::Service::LevelZero::EventToContextTracker &getEventToContextTracker() {
+        return eventToContextTracker;
+    }
+
     void setMallocShmemZeroCopyHandler(std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> handler) {
         mallocShmemZeroCopyHandler = std::move(handler);
     }
@@ -383,6 +388,7 @@ class ClientContext {
     std::unordered_set<ze_image_handle_t> l0ImagesTracking{};
 
     Cal::Ipc::MemoryBlocksManager memoryBlocksManager{};
+    Cal::Service::LevelZero::EventToContextTracker eventToContextTracker{};
 };
 
 class Provider {
