@@ -5,6 +5,7 @@
 #
 
 get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)
+get_property(SERVICE_L0_OBJECTS_SOURCES GLOBAL PROPERTY SERVICE_L0_OBJECTS_SOURCES_PROPERTY)
 
 add_executable(l0_test_ult_icd
                ${CMAKE_CURRENT_SOURCE_DIR}/l0_ult_icd.cpp
@@ -50,7 +51,7 @@ add_executable(l0_test_ult_rpc
                ${generated_dir}/generated_service_ocl.cpp
 
                ${ICD_L0_OBJECTS_SOURCES}
-               $<TARGET_OBJECTS:service_l0_objects>
+               ${SERVICE_L0_OBJECTS_SOURCES}
 )
 
 target_link_libraries(l0_test_ult_rpc Threads::Threads rt dl ${common_library_dependencies} gmock-gtest)

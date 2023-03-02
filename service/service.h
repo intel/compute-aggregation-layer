@@ -11,6 +11,7 @@
 #include "level_zero/ze_api.h"
 #include "service/cochoreographer.h"
 #include "service/level_zero/command_list_to_context_tracker.h"
+#include "service/level_zero/l0_shared_objects.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/log.h"
@@ -104,34 +105,6 @@ class OclSharedObjects {
 void *getExtensionFuncAddress(const char *funcname);
 
 } // namespace Ocl
-
-namespace LevelZero {
-
-class LevelZeroSharedObjects {
-  public:
-    bool init();
-
-    static ze_driver_handle_t getIntelGpuDriver() {
-        return intelGpuDriver;
-    }
-
-    static ze_result_t getZeInitReturnValue() {
-        return zeInitReturnValue;
-    }
-
-  private:
-    ze_driver_handle_t getDriverByName(const char **regexes, size_t count);
-    std::optional<std::vector<ze_driver_handle_t>> getDrivers();
-    std::optional<std::vector<ze_device_handle_t>> getDevices(ze_driver_handle_t driverHandle);
-
-    inline static ze_result_t zeInitReturnValue{};
-    inline static ze_driver_handle_t intelGpuDriver{};
-};
-
-void *getExtensionFuncAddress(const char *funcname);
-
-} // namespace LevelZero
-
 } // namespace Apis
 
 struct UsmSharedHostAlloc {
@@ -615,7 +588,7 @@ class Provider {
         return sharedObjects.ocl;
     }
 
-    Cal::Service::Apis::LevelZero::LevelZeroSharedObjects &getL0SharedObjects() {
+    Cal::Service::Apis::LevelZero::L0SharedObjects &getL0SharedObjects() {
         return sharedObjects.l0;
     }
 
@@ -806,7 +779,7 @@ class Provider {
     std::atomic_int activeClients = 0;
     struct {
         Cal::Service::Apis::Ocl::OclSharedObjects ocl;
-        Cal::Service::Apis::LevelZero::LevelZeroSharedObjects l0;
+        Cal::Service::Apis::LevelZero::L0SharedObjects l0;
     } sharedObjects;
     Cal::Messages::RespHandshake config;
     std::unique_ptr<Cal::Ipc::GlobalShmemAllocators> globalShmemAllocators;

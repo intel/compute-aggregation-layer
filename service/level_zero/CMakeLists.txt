@@ -5,7 +5,10 @@
 #
 
 set(SERVICE_L0_OBJECTS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/artificial_events_allocator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/artificial_events_manager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/command_list_to_context_tracker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/l0_shared_objects.cpp
 )
 
 set_property(GLOBAL PROPERTY SERVICE_L0_OBJECTS_SOURCES_PROPERTY "${SERVICE_L0_OBJECTS_SOURCES}")
