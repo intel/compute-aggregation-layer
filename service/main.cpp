@@ -234,11 +234,13 @@ std::string getFullExePathIfExists(const char *fileName) {
         return std::string(fileName);
     }
 
-    std::string tmp;
-    std::istringstream ss(getenv("PATH"));
-    while (std::getline(ss, tmp, ':')) {
-        if (std::filesystem::exists(tmp + "/" + fileName)) {
-            return std::string(tmp + "/" + fileName);
+    if (auto *pathEnv = getenv("PATH"); pathEnv) {
+        std::string tmp;
+        std::istringstream ss(pathEnv);
+        while (std::getline(ss, tmp, ':')) {
+            if (std::filesystem::exists(tmp + "/" + fileName)) {
+                return std::string(tmp + "/" + fileName);
+            }
         }
     }
 

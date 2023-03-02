@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -47,13 +47,27 @@ struct TestLocalObject {
 
 using TestReferenceT = Cal::Shared::RefCounted<TestLocalObject, TestLocalObject>;
 
+std::function<void(TestReferenceT *)> createDeleter(bool &wasDestroyed) {
+    return [&wasDestroyed](TestReferenceT *p) {
+        if (wasDestroyed == false) {
+            auto counter = p->peekRefCount();
+            while (counter > 0) {
+                p->dec();
+                counter--;
+            }
+        }
+    };
+}
+
+using Deleter = std::function<void(TestReferenceT *)>;
+
 TEST(RefCounted, WhenRefcountReachesZeroThenLocalObjectGetsDestroyed) {
     bool localWasDestroyed = false;
     bool remoteWasDestroyed = false;
 
     TestLocalObject remoteObject;
     remoteObject.wasDestroyedFlag = &remoteWasDestroyed;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, nullptr);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, nullptr), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
     EXPECT_EQ(&remoteObject, localRef->asRemoteObject());
 
@@ -62,22 +76,24 @@ TEST(RefCounted, WhenRefcountReachesZeroThenLocalObjectGetsDestroyed) {
     ASSERT_FALSE(remoteWasDestroyed);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(RefCounted, GivenCustomCleanupFuncWhenDestroyingRefcountedObjectThenCallsTheCleanupFuncBeforeDelete) {
     bool localWasDestroyed = false;
     bool remoteWasDestroyed = false;
 
     TestLocalObject remoteObject;
     remoteObject.wasDestroyedFlag = &remoteWasDestroyed;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, TestLocalObject::cleanup);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, TestLocalObject::cleanup), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
 
     localRef->dec();
     EXPECT_TRUE(localWasDestroyed);
 
     ASSERT_FALSE(remoteWasDestroyed);
-    EXPECT_EQ(localRef, remoteObject.cleanedUpObjects.local);
+    EXPECT_EQ(localRef.get(), remoteObject.cleanedUpObjects.local);
     EXPECT_EQ(&remoteObject, remoteObject.cleanedUpObjects.remote);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(RefCounted, WhenManipulatingTheRefcountThenObjectGetsDestroyedOnlyIfRefcountReachesZero) {
     bool localWasDestroyed = false;
@@ -85,7 +101,7 @@ TEST(RefCounted, WhenManipulatingTheRefcountThenObjectGetsDestroyedOnlyIfRefcoun
 
     TestLocalObject remoteObject;
     remoteObject.wasDestroyedFlag = &remoteWasDestroyed;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, nullptr);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, nullptr), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
 
     EXPECT_EQ(1U, localRef->peekRefCount());
@@ -117,19 +133,21 @@ TEST(RefCounted, WhenManipulatingTheRefcountThenObjectGetsDestroyedOnlyIfRefcoun
     EXPECT_FALSE(remoteWasDestroyed);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(SingleReference, GivenAnyTypeThenCreatesTypeErasedReference) {
     bool localWasDestroyed = false;
     TestLocalObject remoteObject;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, nullptr);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, nullptr), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
 
     {
-        Cal::Shared::SingleReference singleRef = Cal::Shared::SingleReference::wrap(localRef);
+        Cal::Shared::SingleReference singleRef = Cal::Shared::SingleReference::wrap(localRef.get());
         localRef->dec();
         ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in singleRef";
     }
     EXPECT_TRUE(localWasDestroyed);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(SingleReference, WhenCreatedFromNullThenDoesNothingOnDelete) {
     Cal::Shared::SingleReference singleRef = Cal::Shared::SingleReference::wrap(nullptr);
@@ -138,13 +156,13 @@ TEST(SingleReference, WhenCreatedFromNullThenDoesNothingOnDelete) {
 TEST(SingleReference, WhenCloningThenIncreasesReference) {
     bool localWasDestroyed = false;
     TestLocalObject remoteObject;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, nullptr);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, nullptr), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
 
     {
         Cal::Shared::SingleReference ref1 = Cal::Shared::SingleReference::wrap(nullptr);
         {
-            Cal::Shared::SingleReference ref0 = Cal::Shared::SingleReference::wrap(localRef);
+            Cal::Shared::SingleReference ref0 = Cal::Shared::SingleReference::wrap(localRef.get());
             EXPECT_EQ(2U, localRef->peekRefCount());
             localRef->dec();
             ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in ref0";
@@ -157,16 +175,17 @@ TEST(SingleReference, WhenCloningThenIncreasesReference) {
     EXPECT_TRUE(localWasDestroyed);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(SingleReference, WhenMovingThenRefcountIsNotChanged) {
     bool localWasDestroyed = false;
     TestLocalObject remoteObject;
-    TestReferenceT *localRef = new TestReferenceT(&remoteObject, nullptr);
+    auto localRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteObject, nullptr), createDeleter(localWasDestroyed));
     localRef->wasDestroyedFlag = &localWasDestroyed;
 
     {
         Cal::Shared::SingleReference ref1 = Cal::Shared::SingleReference::wrap(nullptr);
         {
-            Cal::Shared::SingleReference ref0 = Cal::Shared::SingleReference::wrap(localRef);
+            Cal::Shared::SingleReference ref0 = Cal::Shared::SingleReference::wrap(localRef.get());
             EXPECT_EQ(2U, localRef->peekRefCount());
             localRef->dec();
             ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in ref0";
@@ -178,18 +197,19 @@ TEST(SingleReference, WhenMovingThenRefcountIsNotChanged) {
     }
     EXPECT_TRUE(localWasDestroyed);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(RefCountedWithParent, WhenCreatedWithParentObjectThenMaintainsASingleReferenceToThatParent) {
     bool localParentWasDestroyed = false;
     TestLocalObject remoteParentObject;
-    TestReferenceT *localParentRef = new TestReferenceT(&remoteParentObject, nullptr);
+    auto localParentRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteParentObject, nullptr), createDeleter(localParentWasDestroyed));
     localParentRef->wasDestroyedFlag = &localParentWasDestroyed;
     {
         bool localChildWasDestroyed = false;
         TestLocalObject remoteChildObject;
-        TestReferenceT *localParentRef = new TestReferenceT(&remoteParentObject, nullptr);
+        auto localParentRef = std::unique_ptr<TestReferenceT, Deleter>(new TestReferenceT(&remoteParentObject, nullptr), createDeleter(localChildWasDestroyed));
         EXPECT_EQ(1U, localParentRef->peekRefCount());
-        auto localChildRef = new Cal::Shared::RefCountedWithParent<TestLocalObject, TestLocalObject>(&remoteChildObject, localParentRef, nullptr);
+        auto localChildRef = new Cal::Shared::RefCountedWithParent<TestLocalObject, TestLocalObject>(&remoteChildObject, localParentRef.get(), nullptr);
         localChildRef->wasDestroyedFlag = &localChildWasDestroyed;
         EXPECT_EQ(2U, localParentRef->peekRefCount());
         localChildRef->dec();
