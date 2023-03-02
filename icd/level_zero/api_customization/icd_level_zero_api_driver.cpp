@@ -8,6 +8,7 @@
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/logic/imported_host_pointers_manager.h"
 #include "icd_level_zero_api.h"
 #include "shared/log.h"
 
@@ -78,7 +79,7 @@ ze_result_t zeDriverGetExtensionProperties(ze_driver_handle_t hDriver, uint32_t 
 static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
     log<Verbosity::bloat>("Handling zexDriverImportExternalPointer() solely via ICD!");
 
-    auto &instance = ImportedHostPointersManager::getInstance();
+    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
     return instance.importExternalPointer(ptr, size);
@@ -87,7 +88,7 @@ static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, vo
 static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
     log<Verbosity::bloat>("Handling zexDriverReleaseImportedPointer() solely via ICD!");
 
-    auto &instance = ImportedHostPointersManager::getInstance();
+    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
     return instance.releaseImportedPointer(ptr);
@@ -96,7 +97,7 @@ static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, v
 static ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
     log<Verbosity::bloat>("Handling zexDriverGetHostPointerBaseAddress() solely via ICD!");
 
-    auto &instance = ImportedHostPointersManager::getInstance();
+    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
     auto instanceLock = instance.lock();
 
     return instance.getHostPointerBaseAddress(ptr, baseAddress);

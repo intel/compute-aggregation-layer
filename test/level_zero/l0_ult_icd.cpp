@@ -7,10 +7,13 @@
 
 #include "gtest/gtest.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/logic/imported_host_pointers_manager.h"
 #include "test/mocks/icd_l0_command_list_mock.h"
 #include "test/mocks/log_mock.h"
 
 #include <cstddef>
+
+using Cal::Icd::LevelZero::Logic::ImportedHostPointersManager;
 
 namespace Cal::Icd::LevelZero {
 
