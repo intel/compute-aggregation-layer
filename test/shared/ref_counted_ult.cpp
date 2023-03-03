@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 #include "shared/ref_counted.h"
+#include "test/mocks/log_mock.h"
 
 #include <atomic>
 #include <string>
@@ -52,7 +53,7 @@ std::function<void(TestReferenceT *)> createDeleter(bool &wasDestroyed) {
         if (wasDestroyed == false) {
             auto counter = p->peekRefCount();
             while (counter > 0) {
-                p->dec();
+                p->dec(); // NOLINT(clang-analyzer-cplusplus.NewDelete)
                 counter--;
             }
         }
@@ -76,7 +77,6 @@ TEST(RefCounted, WhenRefcountReachesZeroThenLocalObjectGetsDestroyed) {
     ASSERT_FALSE(remoteWasDestroyed);
 }
 
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(RefCounted, GivenCustomCleanupFuncWhenDestroyingRefcountedObjectThenCallsTheCleanupFuncBeforeDelete) {
     bool localWasDestroyed = false;
     bool remoteWasDestroyed = false;
@@ -93,7 +93,6 @@ TEST(RefCounted, GivenCustomCleanupFuncWhenDestroyingRefcountedObjectThenCallsTh
     EXPECT_EQ(localRef.get(), remoteObject.cleanedUpObjects.local);
     EXPECT_EQ(&remoteObject, remoteObject.cleanedUpObjects.remote);
 }
-// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(RefCounted, WhenManipulatingTheRefcountThenObjectGetsDestroyedOnlyIfRefcountReachesZero) {
     bool localWasDestroyed = false;
@@ -133,7 +132,6 @@ TEST(RefCounted, WhenManipulatingTheRefcountThenObjectGetsDestroyedOnlyIfRefcoun
     EXPECT_FALSE(remoteWasDestroyed);
 }
 
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(SingleReference, GivenAnyTypeThenCreatesTypeErasedReference) {
     bool localWasDestroyed = false;
     TestLocalObject remoteObject;
@@ -142,12 +140,19 @@ TEST(SingleReference, GivenAnyTypeThenCreatesTypeErasedReference) {
 
     {
         Cal::Shared::SingleReference singleRef = Cal::Shared::SingleReference::wrap(localRef.get());
+        EXPECT_EQ(2U, localRef->peekRefCount());
         localRef->dec();
+        EXPECT_EQ(1U, localRef->peekRefCount());
+
+        Cal::Mocks::LogCaptureContext logs;
+        localRef->dec();
+        EXPECT_EQ(1U, localRef->peekRefCount());
+        EXPECT_FALSE(logs.empty());
+
         ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in singleRef";
     }
     EXPECT_TRUE(localWasDestroyed);
 }
-// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(SingleReference, WhenCreatedFromNullThenDoesNothingOnDelete) {
     Cal::Shared::SingleReference singleRef = Cal::Shared::SingleReference::wrap(nullptr);
@@ -170,12 +175,12 @@ TEST(SingleReference, WhenCloningThenIncreasesReference) {
             ref1 = ref0.clone();
             EXPECT_EQ(2U, localRef->peekRefCount());
         }
+        EXPECT_EQ(1U, localRef->peekRefCount());
         ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in ref1";
     }
     EXPECT_TRUE(localWasDestroyed);
 }
 
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete)
 TEST(SingleReference, WhenMovingThenRefcountIsNotChanged) {
     bool localWasDestroyed = false;
     TestLocalObject remoteObject;
@@ -197,7 +202,6 @@ TEST(SingleReference, WhenMovingThenRefcountIsNotChanged) {
     }
     EXPECT_TRUE(localWasDestroyed);
 }
-// NOLINTEND(clang-analyzer-cplusplus.NewDelete)
 
 TEST(RefCountedWithParent, WhenCreatedWithParentObjectThenMaintainsASingleReferenceToThatParent) {
     bool localParentWasDestroyed = false;
