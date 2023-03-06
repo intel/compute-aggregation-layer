@@ -5,7 +5,7 @@
 #
 
 set(SERVICE_L0_OBJECTS_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/event_to_context_tracker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/command_list_to_context_tracker.cpp
 )
 
 set_property(GLOBAL PROPERTY SERVICE_L0_OBJECTS_SOURCES_PROPERTY "${SERVICE_L0_OBJECTS_SOURCES}")

@@ -1543,7 +1543,7 @@ config:
               kind: scalar
               translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::CommandListType::Regular)"
             server_access: write
-          daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
+          daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
     - name: zeCommandListCreateImmediate
       latency: 0.0
@@ -1589,7 +1589,7 @@ config:
               kind: scalar
               translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::selectImmediateType(altdesc))"
             server_access: write
-          daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
+          daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
     - name: zeCommandListDestroy
       latency: 0.0
@@ -1605,7 +1605,7 @@ config:
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
           translate_after: "{arg}->asLocalObject()->dec()"
-          daemon_action_on_success: "ctx.removeResourceTracking({arg})"
+          daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getCommandListToContextTracker().deregisterCommandListMapping({arg})"
 
     - name: zeCommandListClose
       latency: 0.0
@@ -3754,7 +3754,7 @@ config:
               kind: scalar
               translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
             server_access: write
-          daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getEventToContextTracker().registerEventPoolToContextMapping({arg}, apiCommand->args.hContext)"
+          daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
     - name: zeEventPoolDestroy
       latency: 0.0
@@ -3770,7 +3770,7 @@ config:
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
           translate_after: "{arg}->asLocalObject()->dec()"
-          daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getEventToContextTracker().deregisterEventPoolMapping({arg})"
+          daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
     - name: zeEventCreate
       latency: 0.0
@@ -3808,7 +3808,7 @@ config:
               kind: scalar
               translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
             server_access: write
-          daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getEventToContextTracker().registerEventToEventPoolMapping({arg}, apiCommand->args.hEventPool)"
+          daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
     - name: zeEventDestroy
       latency: 0.0
@@ -3824,7 +3824,7 @@ config:
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
           translate_after: "{arg}->asLocalObject()->dec()"
-          daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getEventToContextTracker().deregisterEventMapping({arg})"
+          daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
     - name: zeEventPoolGetIpcHandle
       latency: 0.0
@@ -3886,7 +3886,7 @@ config:
               kind: scalar
               translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
             server_access: write
-          daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getEventToContextTracker().registerEventPoolToContextMapping({arg}, apiCommand->args.hContext)"
+          daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
     - name: zeEventPoolCloseIpcHandle
       latency: 0.0
@@ -3902,7 +3902,7 @@ config:
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
           translate_after: "{arg}->asLocalObject()->dec()"
-          daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getEventToContextTracker().deregisterEventPoolMapping({arg})"
+          daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
     - name: zeCommandListAppendBarrier
       latency: 0.0

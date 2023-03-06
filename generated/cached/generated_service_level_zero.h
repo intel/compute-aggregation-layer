@@ -151,6 +151,7 @@ inline bool zeCommandListCreateHandler(Provider &service, Cal::Rpc::ChannelServe
         const auto& resource = apiCommand->args.phCommandList ? &apiCommand->captures.phCommandList : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
+            ctx.getCommandListToContextTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -169,6 +170,7 @@ inline bool zeCommandListCreateImmediateHandler(Provider &service, Cal::Rpc::Cha
         const auto& resource = apiCommand->args.phCommandList ? &apiCommand->captures.phCommandList : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
+            ctx.getCommandListToContextTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -183,6 +185,7 @@ inline bool zeCommandListDestroyHandler(Provider &service, Cal::Rpc::ChannelServ
         const auto& resource = apiCommand->args.hCommandList;
         if (resource) {
             ctx.removeResourceTracking(resource);
+            ctx.getCommandListToContextTracker().deregisterCommandListMapping(resource);
         }
     }
     return true;
@@ -602,7 +605,6 @@ inline bool zeEventPoolCreateHandler(Provider &service, Cal::Rpc::ChannelServer 
         const auto& resource = apiCommand->args.phEventPool ? &apiCommand->captures.phEventPool : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
-            ctx.getEventToContextTracker().registerEventPoolToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -617,7 +619,6 @@ inline bool zeEventPoolDestroyHandler(Provider &service, Cal::Rpc::ChannelServer
         const auto& resource = apiCommand->args.hEventPool;
         if (resource) {
             ctx.removeResourceTracking(resource);
-            ctx.getEventToContextTracker().deregisterEventPoolMapping(resource);
         }
     }
     return true;
@@ -634,7 +635,6 @@ inline bool zeEventCreateHandler(Provider &service, Cal::Rpc::ChannelServer &cha
         const auto& resource = apiCommand->args.phEvent ? &apiCommand->captures.phEvent : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
-            ctx.getEventToContextTracker().registerEventToEventPoolMapping(*resource, apiCommand->args.hEventPool);
         }
     }
     return true;
@@ -649,7 +649,6 @@ inline bool zeEventDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         const auto& resource = apiCommand->args.hEvent;
         if (resource) {
             ctx.removeResourceTracking(resource);
-            ctx.getEventToContextTracker().deregisterEventMapping(resource);
         }
     }
     return true;
@@ -675,7 +674,6 @@ inline bool zeEventPoolOpenIpcHandleHandler(Provider &service, Cal::Rpc::Channel
         const auto& resource = apiCommand->args.phEventPool ? &apiCommand->captures.phEventPool : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
-            ctx.getEventToContextTracker().registerEventPoolToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -690,7 +688,6 @@ inline bool zeEventPoolCloseIpcHandleHandler(Provider &service, Cal::Rpc::Channe
         const auto& resource = apiCommand->args.hEventPool;
         if (resource) {
             ctx.removeResourceTracking(resource);
-            ctx.getEventToContextTracker().deregisterEventPoolMapping(resource);
         }
     }
     return true;

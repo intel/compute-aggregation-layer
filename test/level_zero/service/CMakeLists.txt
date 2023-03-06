@@ -6,7 +6,7 @@
 
 set(SERVICE_L0_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/l0_service_ult_main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_event_to_context_tracker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_command_list_to_context_tracker.cpp
 )
 
 set(SERVICE_L0_TESTS_SHARED_DEPENDECIES
