@@ -10,6 +10,7 @@
 #include "icd/icd_global_state.h"
 #include "icd/icd_platform.h"
 #include "icd/level_zero/api_customization/icd_level_zero_api.h"
+#include "icd/level_zero/api_type_wrapper/wrapper_base.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "shared/ipc.h"
@@ -25,42 +26,6 @@
 #include <optional>
 #include <string>
 #include <utility>
-
-extern ze_dditable_t l0Ddi;
-
-struct l0_icd_base {
-    ze_dditable_t *dt = &l0Ddi;
-};
-
-template <typename LocalObjectType>
-struct l0_icd_base_mapped : l0_icd_base {
-    using LocalObjectT = LocalObjectType;
-
-    LocalObjectT *asLocalObject() {
-        ensureIsLocalObject();
-        return static_cast<LocalObjectT *>(this);
-    }
-
-    const LocalObjectT *asLocalObject() const {
-        ensureIsLocalObject();
-        return static_cast<LocalObjectT *>(this);
-    }
-
-    void ensureIsLocalObject() {
-        if (this->isRemote()) {
-            log<Verbosity::critical>("Attempted to use remote object as local object");
-            std::abort();
-        }
-    }
-
-    bool isLocal() const {
-        return this->dt == &l0Ddi;
-    }
-
-    bool isRemote() const {
-        return false == this->isLocal();
-    }
-};
 
 namespace Cal {
 namespace Icd {
@@ -83,18 +48,18 @@ struct IcdL0Image;
 } // namespace Icd
 } // namespace Cal
 
-struct _ze_driver_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Platform> {};
-struct _ze_device_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Device> {};
-struct _ze_context_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Context> {};
-struct _ze_command_queue_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0CommandQueue> {};
-struct _ze_command_list_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0CommandList> {};
-struct _ze_module_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Module> {};
-struct _ze_module_build_log_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0ModuleBuildLog> {};
-struct _ze_kernel_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Kernel> {};
-struct _ze_event_pool_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0EventPool> {};
-struct _ze_event_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Event> {};
-struct _ze_fence_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Fence> {};
-struct _ze_image_handle_t : l0_icd_base_mapped<Cal::Icd::LevelZero::IcdL0Image> {};
+struct _ze_driver_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Platform> {};
+struct _ze_device_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Device> {};
+struct _ze_context_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Context> {};
+struct _ze_command_queue_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0CommandQueue> {};
+struct _ze_command_list_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0CommandList> {};
+struct _ze_module_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Module> {};
+struct _ze_module_build_log_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0ModuleBuildLog> {};
+struct _ze_kernel_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Kernel> {};
+struct _ze_event_pool_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0EventPool> {};
+struct _ze_event_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Event> {};
+struct _ze_fence_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Fence> {};
+struct _ze_image_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Image> {};
 
 namespace Cal {
 namespace Icd {
