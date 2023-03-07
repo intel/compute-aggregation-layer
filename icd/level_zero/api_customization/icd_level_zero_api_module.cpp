@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -8,11 +8,12 @@
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/logic/properties_cache.h"
 
 namespace Cal::Icd::LevelZero {
 
 ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properties_t *pModuleProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Module *>(hModule), pModuleProperties, zeModuleGetPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Module *>(hModule), pModuleProperties, zeModuleGetPropertiesRpcHelper);
 }
 
 ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount, const char **pNames) {

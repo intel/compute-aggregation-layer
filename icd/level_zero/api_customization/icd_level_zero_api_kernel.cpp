@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -8,6 +8,7 @@
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/logic/properties_cache.h"
 #include "icd_level_zero_api.h"
 
 namespace Cal::Icd::LevelZero {
@@ -31,7 +32,7 @@ ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argInd
 }
 
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Kernel *>(hKernel), pKernelProperties, zeKernelGetPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Kernel *>(hKernel), pKernelProperties, zeKernelGetPropertiesRpcHelper);
 }
 
 } // namespace Cal::Icd::LevelZero

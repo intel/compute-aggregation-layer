@@ -9,6 +9,7 @@
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "icd/level_zero/logic/imported_host_pointers_manager.h"
+#include "icd/level_zero/logic/properties_cache.h"
 #include "icd_level_zero_api.h"
 #include "shared/log.h"
 
@@ -65,15 +66,15 @@ ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
 }
 
 ze_result_t zeDriverGetProperties(ze_driver_handle_t hDriver, ze_driver_properties_t *pDriverProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pDriverProperties, zeDriverGetPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pDriverProperties, zeDriverGetPropertiesRpcHelper);
 }
 
 ze_result_t zeDriverGetIpcProperties(ze_driver_handle_t hDriver, ze_driver_ipc_properties_t *pIpcProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pIpcProperties, zeDriverGetIpcPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pIpcProperties, zeDriverGetIpcPropertiesRpcHelper);
 }
 
 ze_result_t zeDriverGetExtensionProperties(ze_driver_handle_t hDriver, uint32_t *pCount, ze_driver_extension_properties_t *pExtensionProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pCount, pExtensionProperties, zeDriverGetExtensionPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pCount, pExtensionProperties, zeDriverGetExtensionPropertiesRpcHelper);
 }
 
 static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {

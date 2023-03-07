@@ -11,6 +11,7 @@
 #include "icd/icd_platform.h"
 #include "icd/level_zero/api_customization/icd_level_zero_api.h"
 #include "icd/level_zero/api_type_wrapper/wrapper_base.h"
+#include "icd/level_zero/logic/properties_cache.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "shared/ipc.h"
@@ -78,71 +79,6 @@ inline PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_
     }
     return placement;
 }
-
-namespace PropertiesCache {
-template <typename... Ts>
-using VectorTuple = std::tuple<std::vector<Ts>...>;
-
-template <class, class = void>
-struct hasPNext : std::false_type {};
-
-template <class T>
-struct hasPNext<T, std::void_t<decltype(std::declval<T>().pNext)>> : std::true_type {};
-
-template <typename T, typename L0Obj>
-constexpr auto &getProperties(L0Obj *obj) {
-    return std::get<std::vector<T>>(obj->properties);
-}
-
-inline uint32_t defaultPropertiesCount = 1u;
-
-template <typename L0Obj, typename T, typename F>
-ze_result_t obtainProperties(L0Obj *obj, T *properties, F &&rpcHelper) {
-    if (properties == nullptr) {
-        return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
-    }
-
-    if constexpr (hasPNext<T>::value) {
-        if (properties->pNext) {
-            return rpcHelper(obj, properties);
-        }
-    }
-    ze_result_t ret = ZE_RESULT_SUCCESS;
-    auto &internalProperties = getProperties<T>(obj);
-    if (internalProperties.empty()) {
-        ret = rpcHelper(obj, properties);
-        internalProperties.resize(obj->template getPropertiesCount<T>());
-        memcpy(internalProperties.data(), properties, sizeof(T) * obj->template getPropertiesCount<T>());
-    } else {
-        memcpy(properties, internalProperties.data(), sizeof(T) * obj->template getPropertiesCount<T>());
-    }
-    return ret;
-}
-
-template <typename L0Obj, typename T, typename F>
-ze_result_t obtainProperties(L0Obj *obj, uint32_t *pCount, T *properties, F &&rpcHelper) {
-    if constexpr (hasPNext<T>::value) {
-        if (properties && properties->pNext) {
-            return rpcHelper(obj, pCount, properties);
-        }
-    }
-    ze_result_t ret = ZE_RESULT_SUCCESS;
-    if (*pCount == 0u) {
-        auto &internalPropertiesCount = obj->template getPropertiesCount<T>();
-        if (internalPropertiesCount == 0u) {
-            ret = rpcHelper(obj, pCount, properties);
-            internalPropertiesCount = *pCount;
-        } else {
-            *pCount = internalPropertiesCount;
-        }
-    } else {
-        ret = obtainProperties(obj, properties, [&rpcHelper, &pCount](L0Obj *hObj, T *properties) {
-            return rpcHelper(hObj, pCount, properties);
-        });
-    }
-    return ret;
-}
-} // namespace PropertiesCache
 
 struct IcdL0TypePrinter {
     template <typename ZeObjT>
@@ -256,15 +192,15 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
     bool isZeAffinityMaskPresent();
     const std::vector<ze_device_handle_t> &getFilteredDevices() const { return filteredDevices; };
 
-    PropertiesCache::VectorTuple<ze_device_properties_t,
-                                 ze_device_compute_properties_t,
-                                 ze_device_module_properties_t,
-                                 ze_device_memory_access_properties_t,
-                                 ze_device_image_properties_t,
-                                 ze_device_external_memory_properties_t,
-                                 ze_command_queue_group_properties_t,
-                                 ze_device_cache_properties_t,
-                                 ze_device_memory_properties_t>
+    Logic::PropertiesCache::VectorTuple<ze_device_properties_t,
+                                        ze_device_compute_properties_t,
+                                        ze_device_module_properties_t,
+                                        ze_device_memory_access_properties_t,
+                                        ze_device_image_properties_t,
+                                        ze_device_external_memory_properties_t,
+                                        ze_command_queue_group_properties_t,
+                                        ze_device_cache_properties_t,
+                                        ze_device_memory_properties_t>
         properties;
 
     struct PropertiesCount {
@@ -284,7 +220,7 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
         if constexpr (std::is_same_v<T, ze_device_memory_properties_t>) {
             return this->propertiesCount.memoryCount;
         }
-        return PropertiesCache::defaultPropertiesCount;
+        return Logic::PropertiesCache::defaultPropertiesCount;
     }
 
   private:
@@ -339,11 +275,11 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL
     using RefCountedWithParent::RefCountedWithParent;
     KernelArgCache zeKernelSetArgumentValueCache;
 
-    PropertiesCache::VectorTuple<ze_kernel_properties_t> properties;
+    Logic::PropertiesCache::VectorTuple<ze_kernel_properties_t> properties;
 
     template <typename T>
     constexpr uint32_t &getPropertiesCount() {
-        return PropertiesCache::defaultPropertiesCount;
+        return Logic::PropertiesCache::defaultPropertiesCount;
     }
 
     void storeKernelArg(const void *argValue, uint32_t argNum) {
@@ -477,11 +413,11 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
     bool recordGlobalPointer(void *ptr);
     bool removeGlobalPointer();
 
-    PropertiesCache::VectorTuple<ze_module_properties_t> properties;
+    Logic::PropertiesCache::VectorTuple<ze_module_properties_t> properties;
 
     template <typename T>
     constexpr uint32_t &getPropertiesCount() {
-        return PropertiesCache::defaultPropertiesCount;
+        return Logic::PropertiesCache::defaultPropertiesCount;
     }
 
   private:
@@ -722,9 +658,9 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         return nullptr;
     }
 
-    PropertiesCache::VectorTuple<ze_driver_properties_t,
-                                 ze_driver_ipc_properties_t,
-                                 ze_driver_extension_properties_t>
+    Logic::PropertiesCache::VectorTuple<ze_driver_properties_t,
+                                        ze_driver_ipc_properties_t,
+                                        ze_driver_extension_properties_t>
         properties;
 
     struct PropertiesCount {
@@ -736,7 +672,7 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         if constexpr (std::is_same_v<T, ze_driver_extension_properties_t>) {
             return this->propertiesCount.extensionCount;
         }
-        return PropertiesCache::defaultPropertiesCount;
+        return Logic::PropertiesCache::defaultPropertiesCount;
     }
 
   private:

@@ -8,6 +8,7 @@
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/logic/properties_cache.h"
 #include "icd_level_zero_api.h"
 
 #include <algorithm>
@@ -66,39 +67,39 @@ ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properti
         pDeviceProperties->pNext = nullptr;
     }
 
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetComputeProperties(ze_device_handle_t hDevice, ze_device_compute_properties_t *pComputeProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pComputeProperties, zeDeviceGetComputePropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pComputeProperties, zeDeviceGetComputePropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetModuleProperties(ze_device_handle_t hDevice, ze_device_module_properties_t *pModuleProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pModuleProperties, zeDeviceGetModulePropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pModuleProperties, zeDeviceGetModulePropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetMemoryAccessProperties(ze_device_handle_t hDevice, ze_device_memory_access_properties_t *pMemAccessProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pMemAccessProperties, zeDeviceGetMemoryAccessPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pMemAccessProperties, zeDeviceGetMemoryAccessPropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetImageProperties(ze_device_handle_t hDevice, ze_device_image_properties_t *pImageProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pImageProperties, zeDeviceGetImagePropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pImageProperties, zeDeviceGetImagePropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetExternalMemoryProperties(ze_device_handle_t hDevice, ze_device_external_memory_properties_t *pExternalMemoryProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pExternalMemoryProperties, zeDeviceGetExternalMemoryPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pExternalMemoryProperties, zeDeviceGetExternalMemoryPropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetCacheProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_cache_properties_t *pCacheProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCacheProperties, zeDeviceGetCachePropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCacheProperties, zeDeviceGetCachePropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetCommandQueueGroupProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_command_queue_group_properties_t *pCommandQueueGroupProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCommandQueueGroupProperties, zeDeviceGetCommandQueueGroupPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pCommandQueueGroupProperties, zeDeviceGetCommandQueueGroupPropertiesRpcHelper);
 }
 
 ze_result_t zeDeviceGetMemoryProperties(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_memory_properties_t *pMemProperties) {
-    return PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pMemProperties, zeDeviceGetMemoryPropertiesRpcHelper);
+    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pMemProperties, zeDeviceGetMemoryPropertiesRpcHelper);
 }
 
 } // namespace Cal::Icd::LevelZero
