@@ -15,7 +15,7 @@
 
 extern ze_dditable_t l0Ddi;
 
-namespace Cal::Icd::LevelZero::ApiTypeWrapper {
+namespace Cal::Icd::LevelZero {
 
 /*
  *  When custom handling is required for a specific L0 API type, then on ICD side
@@ -63,4 +63,4 @@ struct IcdMappedTypeWrapper : public IcdWrapperBase {
     }
 };
 
-} // namespace Cal::Icd::LevelZero::ApiTypeWrapper
+} // namespace Cal::Icd::LevelZero

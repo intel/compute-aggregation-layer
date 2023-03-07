@@ -31,7 +31,7 @@ ze_result_t obtainProperties(L0Obj *obj, T *properties, F &&rpcHelper) {
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if constexpr (hasPNext<T>::value) {
+    if constexpr (HasPNext<T>::value) {
         if (properties->pNext) {
             return rpcHelper(obj, properties);
         }
@@ -50,7 +50,7 @@ ze_result_t obtainProperties(L0Obj *obj, T *properties, F &&rpcHelper) {
 
 template <typename L0Obj, typename T, typename F>
 ze_result_t obtainProperties(L0Obj *obj, uint32_t *pCount, T *properties, F &&rpcHelper) {
-    if constexpr (hasPNext<T>::value) {
+    if constexpr (HasPNext<T>::value) {
         if (properties && properties->pNext) {
             return rpcHelper(obj, pCount, properties);
         }

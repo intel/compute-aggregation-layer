@@ -10,8 +10,9 @@
 #include "icd/icd_global_state.h"
 #include "icd/icd_platform.h"
 #include "icd/level_zero/api_customization/icd_level_zero_api.h"
-#include "icd/level_zero/api_type_wrapper/wrapper_base.h"
+#include "icd/level_zero/api_type_wrapper/handles_definitions.h"
 #include "icd/level_zero/logic/properties_cache.h"
+#include "icd/level_zero/logic/types_printer.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "shared/ipc.h"
@@ -32,40 +33,6 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 
-class IcdL0Platform;
-class IcdL0Module;
-class IcdL0CommandList;
-class IcdL0Device;
-class IcdL0CommandQueue;
-class IcdL0Fence;
-struct IcdL0Context;
-struct IcdL0ModuleBuildLog;
-struct IcdL0Kernel;
-struct IcdL0EventPool;
-struct IcdL0Event;
-struct IcdL0Image;
-
-} // namespace LevelZero
-} // namespace Icd
-} // namespace Cal
-
-struct _ze_driver_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Platform> {};
-struct _ze_device_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Device> {};
-struct _ze_context_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Context> {};
-struct _ze_command_queue_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0CommandQueue> {};
-struct _ze_command_list_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0CommandList> {};
-struct _ze_module_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Module> {};
-struct _ze_module_build_log_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0ModuleBuildLog> {};
-struct _ze_kernel_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Kernel> {};
-struct _ze_event_pool_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0EventPool> {};
-struct _ze_event_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Event> {};
-struct _ze_fence_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Fence> {};
-struct _ze_image_handle_t : Cal::Icd::LevelZero::ApiTypeWrapper::IcdMappedTypeWrapper<Cal::Icd::LevelZero::IcdL0Image> {};
-
-namespace Cal {
-namespace Icd {
-namespace LevelZero {
-
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local);
 
@@ -80,110 +47,7 @@ inline PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_
     return placement;
 }
 
-struct IcdL0TypePrinter {
-    template <typename ZeObjT>
-    static const char *getObjectTypeAsStr() {
-        if constexpr (std::is_same_v<ZeObjT, ze_driver_handle_t>) {
-            return "ze_driver_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_driver_handle_t>) {
-            return "_ze_driver_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_device_handle_t>) {
-            return "ze_device_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_device_handle_t>) {
-            return "_ze_device_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_context_handle_t>) {
-            return "ze_context_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_context_handle_t>) {
-            return "_ze_context_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_command_queue_handle_t>) {
-            return "ze_command_queue_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_command_queue_handle_t>) {
-            return "_ze_command_queue_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_command_list_handle_t>) {
-            return "ze_command_list_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_command_list_handle_t>) {
-            return "_ze_command_list_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_module_handle_t>) {
-            return "ze_module_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_module_handle_t>) {
-            return "_ze_module_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_module_build_log_handle_t>) {
-            return "ze_module_build_log_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_module_build_log_handle_t>) {
-            return "_ze_module_build_log_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_kernel_handle_t>) {
-            return "ze_kernel_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_kernel_handle_t>) {
-            return "_ze_kernel_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_event_pool_handle_t>) {
-            return "ze_event_pool_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_event_pool_handle_t>) {
-            return "_ze_event_pool_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_event_handle_t>) {
-            return "ze_event_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_event_handle_t>) {
-            return "_ze_event_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_fence_handle_t>) {
-            return "ze_fence_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_fence_handle_t>) {
-            return "_ze_fence_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, ze_image_handle_t>) {
-            return "ze_image_handle_t";
-        }
-
-        if constexpr (std::is_same_v<ZeObjT, _ze_image_handle_t>) {
-            return "_ze_image_handle_t";
-        }
-
-        return "unknown";
-    }
-};
-
-class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t, IcdL0TypePrinter> {
+class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
@@ -230,7 +94,7 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
     std::once_flag parseZeAffinityMaskOnce;
 };
 
-struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, IcdL0TypePrinter> {
+struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 
     struct AllocPropertiesCache {
@@ -271,7 +135,7 @@ struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Ic
     } allocPropertiesCache;
 };
 
-struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL0TypePrinter> {
+struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
     KernelArgCache zeKernelSetArgumentValueCache;
 
@@ -292,7 +156,7 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, IcdL
     std::vector<const void *> allocationsToMigrate;
 };
 
-class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, IcdL0TypePrinter> {
+class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, Logic::IcdL0TypePrinter> {
   protected:
     using ChunkEntry = Cal::Rpc::MemChunk;
 
@@ -369,7 +233,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     std::vector<const void *> usedAllocations{};
 };
 
-class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_queue_handle_t, IcdL0TypePrinter> {
+class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_queue_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
@@ -400,7 +264,7 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     ze_command_queue_mode_t mode{};
 };
 
-class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t, IcdL0TypePrinter> {
+class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
@@ -435,15 +299,15 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
     } globalPointers;
 };
 
-struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, IcdL0TypePrinter> {
+struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 };
 
-struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_t, IcdL0TypePrinter> {
+struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 };
 
-struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, IcdL0TypePrinter> {
+struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
     enum State : uint32_t {
         STATE_SIGNALED = 0u,
@@ -481,11 +345,11 @@ struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, IcdL0T
     bool allowIcdState = true;
 };
 
-struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, IcdL0TypePrinter> {
+struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 };
 
-class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, IcdL0TypePrinter> {
+class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
 
@@ -685,7 +549,7 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         std::lock_guard lock{mapMutex};
         const auto it = mapping.find(remoteHandle);
         if (it != mapping.end()) {
-            log<Verbosity::bloat>("Translating %s %p to %p", IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, it->second);
+            log<Verbosity::bloat>("Translating %s %p to %p", Logic::IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, it->second);
             return it->second;
         }
 
@@ -694,7 +558,7 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
                                       &objectCleanup<RemoteT, LocalT *>};
         mapping[remoteHandle] = localHandle;
 
-        log<Verbosity::bloat>("Translating %s %p to %p", IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
+        log<Verbosity::bloat>("Translating %s %p to %p", Logic::IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
         return localHandle;
     }
 
@@ -703,12 +567,12 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         std::lock_guard lock{mapMutex};
         const auto it = mapping.find(remoteHandle);
         if (it == mapping.end()) {
-            log<Verbosity::bloat>("Cannot remove mapping of %s [%p to %p]", IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
+            log<Verbosity::bloat>("Cannot remove mapping of %s [%p to %p]", Logic::IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
             return;
         }
 
         mapping.erase(it);
-        log<Verbosity::bloat>("Removed mapping of %s [%p to %p]", IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
+        log<Verbosity::bloat>("Removed mapping of %s [%p to %p]", Logic::IcdL0TypePrinter::getObjectTypeAsStr<RemoteT>(), remoteHandle, localHandle);
     }
 
     ze_driver_handle_t calDriverHandle{nullptr};
