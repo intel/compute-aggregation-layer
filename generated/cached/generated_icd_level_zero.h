@@ -8,19 +8,29 @@
 #pragma once
 // #### Generated code -- begin ####
 
-#include "icd/icd_global_state.h"
-#include "shared/rpc.h"
-
-#include "icd/level_zero/icd_level_zero.h"
+#include "shared/log.h"
+#include "shared/shmem_transfer_desc.h"
+#include "icd/level_zero/api_customization/icd_level_zero_api.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"
 #include "level_zero/zes_ddi.h"
 #include "level_zero/zet_api.h"
 #include "level_zero/zet_ddi.h"
-#include "generated_rpc_messages_level_zero.h"
 
 #include <cstdlib>
+
+// Forward declarations of used RPC types
+namespace Cal {
+namespace Rpc {
+namespace LevelZero {
+
+struct ZeMemAllocSharedRpcMImplicitArgs;
+struct ZeMemAllocHostRpcMImplicitArgs;
+
+} // namespace LevelZero
+} // namespace Rpc
+} // namespace Cal
 
 namespace Cal {
 namespace Icd {
@@ -102,9 +112,9 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 ze_result_t zeImageDestroy (ze_image_handle_t hImage);
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint);
-ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM);
+ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM);
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
-ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::ImplicitArgs &implArgsForZeMemAllocHostRpcM);
+ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implArgsForZeMemAllocHostRpcM);
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr);
 ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
 ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize);

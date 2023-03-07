@@ -204,7 +204,7 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
 }
 
 void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment) {
-    Cal::Rpc::Ocl::ClSVMAllocRpcM::ImplicitArgs implicitArgs;
+    Cal::Rpc::Ocl::ClSVMAllocRpcMImplicitArgs implicitArgs;
     auto ptr = Cal::Icd::Ocl::clSVMAllocRpcHelper(context, flags, size, alignment, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
@@ -218,7 +218,7 @@ void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uin
 }
 
 void *clHostMemAllocINTEL(cl_context context, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret) {
-    Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM::ImplicitArgs implicitArgs;
+    Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs implicitArgs;
     auto ptr = Cal::Icd::Ocl::clHostMemAllocINTELRpcHelper(context, properties, size, alignment, errcode_ret, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
@@ -238,7 +238,7 @@ void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_me
         return Cal::Icd::Ocl::clHostMemAllocINTEL(context, properties, size, alignment, errcode_ret);
     }
 
-    Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM::ImplicitArgs implicitArgs;
+    Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs implicitArgs;
     auto ptr = Cal::Icd::Ocl::clSharedMemAllocINTELRpcHelper(context, device, properties, size, alignment, errcode_ret, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
@@ -366,7 +366,7 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
     if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Icd::icdGlobalState.getOclPlatform()->isZeroCopyForMallocShmemEnabled()) {
         retMem = clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem(context, flags, size, host_ptr, errcode_ret);
     } else {
-        Cal::Rpc::Ocl::ClCreateBufferRpcM::ImplicitArgs implicitArgs = {};
+        Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs implicitArgs = {};
         retMem = clCreateBufferRpcHelper(context, flags, size, host_ptr, errcode_ret, implicitArgs);
         if (nullptr == retMem) {
             return nullptr;

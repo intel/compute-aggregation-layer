@@ -6,6 +6,7 @@
  */
 
 #include "generated_icd_level_zero.h"
+#include "generated_rpc_messages_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "icd_level_zero_api.h"
@@ -16,7 +17,7 @@
 namespace Cal::Icd::LevelZero {
 
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr) {
-    Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::ImplicitArgs implicitArgs;
+    Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs implicitArgs;
     auto result = Cal::Icd::LevelZero::zeMemAllocHostRpcHelper(hContext, host_desc, size, alignment, pptr, implicitArgs);
     if (result != ZE_RESULT_SUCCESS) {
         return result;
@@ -34,7 +35,7 @@ ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_a
         return Cal::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
     }
 
-    Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs implicitArgs;
+    Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs implicitArgs;
     auto result = Cal::Icd::LevelZero::zeMemAllocSharedRpcHelper(hContext, device_desc, host_desc, size, alignment, hDevice, pptr, implicitArgs);
     if (result != ZE_RESULT_SUCCESS) {
         return result;

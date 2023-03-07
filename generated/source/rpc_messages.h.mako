@@ -92,6 +92,17 @@ inline char *asMemcpyDstT(void * ptr) {
 %  if should_skip_message_generation(func):
  // ${func.name} ignored in generator - based on dont_generate_rpc_message flag
 %  else: # not should_skip_message_generation(func)
+\
+%   if func.implicit_args:
+struct ${func.message_name}ImplicitArgs {
+%    for arg in func.implicit_args:
+<%     assert arg.kind.is_scalar %>\
+    ${arg.type.str} ${arg.name} = {};
+%    endfor  # func.implicit_args
+};
+
+%   endif # implicit_args
+\
 struct ${func.message_name} {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = ${get_message_subtype(func)};
@@ -114,12 +125,7 @@ struct ${func.message_name} {
     }args;
 
 %   if func.implicit_args:
-    struct ImplicitArgs {
-%    for arg in func.implicit_args:
-<%     assert arg.kind.is_scalar %>
-           ${arg.type.str} ${arg.name} = {};
-%    endfor  # func.implicit_args
-    } implicitArgs;
+    ${func.message_name}ImplicitArgs implicitArgs{};
 %   endif # implicit_args
 ${func.capture_layout.generate_h()}
 %   if not func.returns.type.is_void():

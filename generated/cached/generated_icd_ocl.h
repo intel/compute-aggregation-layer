@@ -8,13 +8,23 @@
 #pragma once
 // #### Generated code -- begin ####
 
-#include "icd/icd_global_state.h"
-#include "shared/rpc.h"
-
 #include "icd/icd_ocl.h"
-#include "generated_rpc_messages_ocl.h"
 
 #include <cstdlib>
+
+// Forward declarations of used RPC types
+namespace Cal {
+namespace Rpc {
+namespace Ocl {
+
+struct ClCreateBufferRpcMImplicitArgs;
+struct ClSVMAllocRpcMImplicitArgs;
+struct ClHostMemAllocINTELRpcMImplicitArgs;
+struct ClSharedMemAllocINTELRpcMImplicitArgs;
+
+} // namespace Ocl
+} // namespace Rpc
+} // namespace Cal
 
 namespace Cal {
 namespace Icd {
@@ -83,7 +93,7 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue);
 cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_events, const cl_event* event_list);
 cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_mem_objects, const cl_mem* mem_objects, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 void* clGetExtensionFunctionAddressForPlatform (cl_platform_id platform, const char* funcname);
-cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcM::ImplicitArgs &implArgsForClCreateBufferRpcM);
+cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implArgsForClCreateBufferRpcM);
 cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
 cl_mem clCreateSubBuffer (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret);
 cl_mem clCreatePipe (cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties* properties, cl_int* errcode_ret);
@@ -129,7 +139,7 @@ cl_int clSetUserEventStatus (cl_event event, cl_int execution_status);
 cl_int clSetEventCallback (cl_event event, cl_int command_exec_callback_type, void (CL_CALLBACK* pfn_notify)(cl_event event, cl_int event_command_status, void *user_data), void* user_data);
 cl_int clGetDeviceAndHostTimer (cl_device_id device, cl_ulong* device_timestamp, cl_ulong* host_timestamp);
 cl_int clGetHostTimerRpcHelper (cl_device_id device, cl_ulong* host_timestamp);
-void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment, Cal::Rpc::Ocl::ClSVMAllocRpcM::ImplicitArgs &implArgsForClSVMAllocRpcM);
+void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment, Cal::Rpc::Ocl::ClSVMAllocRpcMImplicitArgs &implArgsForClSVMAllocRpcM);
 void clSVMFree (cl_context context, void* ptr);
 cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl_map_flags map_flags, void* svm_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
@@ -151,8 +161,8 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Malloc (cl_command_queue command_queue, 
 cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argIndex, const void* argValue);
 cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret);
-void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM::ImplicitArgs &implArgsForClHostMemAllocINTELRpcM);
-void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM::ImplicitArgs &implArgsForClSharedMemAllocINTELRpcM);
+void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs &implArgsForClHostMemAllocINTELRpcM);
+void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs &implArgsForClSharedMemAllocINTELRpcM);
 cl_int clMemFreeINTEL (cl_context context, void* ptr);
 cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr);
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);

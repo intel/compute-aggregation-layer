@@ -7,13 +7,7 @@
 
 #pragma once
 
-#include "icd/icd_global_state.h"
-#include "icd/icd_platform.h"
 #include "shared/ipc.h"
-#include "shared/ocl_fat_def.h"
-#include "shared/ref_counted.h"
-#include "shared/rpc.h"
-#include "shared/usm.h"
 
 #include <atomic>
 #include <csignal>

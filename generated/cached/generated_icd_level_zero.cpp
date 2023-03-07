@@ -11,6 +11,7 @@
 #include "shared/rpc.h"
 #include "shared/utils.h"
 
+#include "icd/level_zero/icd_level_zero.h"
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 
@@ -2044,7 +2045,7 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
 
     return ret;
 }
-ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
+ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocShared");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -2109,7 +2110,7 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
 
     return ret;
 }
-ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::ImplicitArgs &implArgsForZeMemAllocHostRpcM) {
+ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implArgsForZeMemAllocHostRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocHost");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();

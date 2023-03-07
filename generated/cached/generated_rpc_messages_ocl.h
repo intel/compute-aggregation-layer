@@ -4905,6 +4905,13 @@ struct ClEnqueueMigrateMemObjectsRpcM {
 };
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemObjectsRpcM>);
  // clGetExtensionFunctionAddressForPlatform ignored in generator - based on dont_generate_rpc_message flag
+struct ClCreateBufferRpcMImplicitArgs {
+    void* hostptr = {};
+    int hostptr_shmem_resource = {};
+    size_t hostptr_offset_within_resource = {};
+    size_t hostptr_aligned_size = {};
+};
+
 struct ClCreateBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 58;
@@ -4930,16 +4937,7 @@ struct ClCreateBufferRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           void* hostptr = {};
-
-           int hostptr_shmem_resource = {};
-
-           size_t hostptr_offset_within_resource = {};
-
-           size_t hostptr_aligned_size = {};
-    } implicitArgs;
+    ClCreateBufferRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -4994,13 +4992,13 @@ struct ClCreateBufferRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const ImplicitArgs &implicitArgs){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implicitArgs){
         if(args.host_ptr){
             memcpy(asMemcpyDstT(captures.host_ptr), args.host_ptr, dynMemTraits.host_ptr.size);
         }
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, ImplicitArgs &implicitArgs){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implicitArgs){
         if(args.errcode_ret){
             *args.errcode_ret = captures.errcode_ret;
         }
@@ -9685,6 +9683,12 @@ struct ClGetHostTimerRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClGetHostTimerRpcM>);
+struct ClSVMAllocRpcMImplicitArgs {
+    int shmem_resource = {};
+    size_t offset_within_resource = {};
+    size_t aligned_size = {};
+};
+
 struct ClSVMAllocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 104;
@@ -9708,14 +9712,7 @@ struct ClSVMAllocRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           int shmem_resource = {};
-
-           size_t offset_within_resource = {};
-
-           size_t aligned_size = {};
-    } implicitArgs;
+    ClSVMAllocRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         void* ret = {};
@@ -9754,7 +9751,7 @@ struct ClSVMAllocRpcM {
     }
     
 
-    void copyToCaller(ImplicitArgs &implicitArgs){
+    void copyToCaller(Cal::Rpc::Ocl::ClSVMAllocRpcMImplicitArgs &implicitArgs){
          implicitArgs.shmem_resource = this->implicitArgs.shmem_resource;
          implicitArgs.offset_within_resource = this->implicitArgs.offset_within_resource;
          implicitArgs.aligned_size = this->implicitArgs.aligned_size;
@@ -11728,6 +11725,12 @@ struct ClDeviceMemAllocINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClDeviceMemAllocINTELRpcM>);
+struct ClHostMemAllocINTELRpcMImplicitArgs {
+    int shmem_resource = {};
+    size_t offset_within_resource = {};
+    size_t aligned_size = {};
+};
+
 struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 126;
@@ -11753,14 +11756,7 @@ struct ClHostMemAllocINTELRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           int shmem_resource = {};
-
-           size_t offset_within_resource = {};
-
-           size_t aligned_size = {};
-    } implicitArgs;
+    ClHostMemAllocINTELRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -11815,13 +11811,13 @@ struct ClHostMemAllocINTELRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const ImplicitArgs &implicitArgs){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs &implicitArgs){
         if(args.properties){
             memcpy(asMemcpyDstT(captures.properties), args.properties, dynMemTraits.properties.size);
         }
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, ImplicitArgs &implicitArgs){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs &implicitArgs){
         if(args.errcode_ret){
             *args.errcode_ret = captures.errcode_ret;
         }
@@ -11831,6 +11827,12 @@ struct ClHostMemAllocINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClHostMemAllocINTELRpcM>);
+struct ClSharedMemAllocINTELRpcMImplicitArgs {
+    int shmem_resource = {};
+    size_t offset_within_resource = {};
+    size_t aligned_size = {};
+};
+
 struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 127;
@@ -11858,14 +11860,7 @@ struct ClSharedMemAllocINTELRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           int shmem_resource = {};
-
-           size_t offset_within_resource = {};
-
-           size_t aligned_size = {};
-    } implicitArgs;
+    ClSharedMemAllocINTELRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -11922,13 +11917,13 @@ struct ClSharedMemAllocINTELRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const ImplicitArgs &implicitArgs){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs &implicitArgs){
         if(args.properties){
             memcpy(asMemcpyDstT(captures.properties), args.properties, dynMemTraits.properties.size);
         }
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, ImplicitArgs &implicitArgs){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs &implicitArgs){
         if(args.errcode_ret){
             *args.errcode_ret = captures.errcode_ret;
         }

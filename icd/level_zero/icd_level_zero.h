@@ -15,11 +15,8 @@
 #include "icd/level_zero/logic/types_printer.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
-#include "shared/ipc.h"
 #include "shared/ref_counted.h"
-#include "shared/rpc.h"
 #include "shared/shmem_transfer_desc.h"
-#include "shared/usm.h"
 
 #include <atomic>
 #include <cstdlib>

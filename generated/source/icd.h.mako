@@ -5,14 +5,26 @@
 ##
 // #### Generated code -- begin ####
 
-#include "icd/icd_global_state.h"
-#include "shared/rpc.h"
-
 % for header in file_headers:
 ${header}
 % endfor
 
 #include <cstdlib>
+
+// Forward declarations of used RPC types
+% for namespace_part in rpc_namespace:
+namespace ${namespace_part} {
+% endfor # rpc_namespace
+
+% for f in functions:
+%  if f.implicit_args:
+struct ${f.message_name}ImplicitArgs;
+%  endif # f.implicit_args
+% endfor # functions
+
+% for namespace_part in reversed(rpc_namespace):
+} // namespace ${namespace_part}
+% endfor
 
 % for namespace_part in icd_namespace:
 namespace ${namespace_part} {

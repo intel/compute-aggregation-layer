@@ -306,7 +306,7 @@ TEST(ZeMemAllocSharedExtensionsTest, GivenOpaqueListsAttachedToTwoDifferentFunct
     size_t bufferSize{};
     size_t alignment{};
 
-    Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::ImplicitArgs implicitArgs{};
+    Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs implicitArgs{};
 
     // 1. Prepare required offsets and calculate size.
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM;

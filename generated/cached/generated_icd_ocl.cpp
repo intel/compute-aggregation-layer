@@ -1696,7 +1696,7 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
     return ret;
 }
  // clGetExtensionFunctionAddressForPlatform ignored in generator - based on dont_generate_handler flag
-cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcM::ImplicitArgs &implArgsForClCreateBufferRpcM) {
+cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implArgsForClCreateBufferRpcM) {
     log<Verbosity::bloat>("Establishing RPC for clCreateBuffer");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -3215,7 +3215,7 @@ cl_int clGetHostTimerRpcHelper (cl_device_id device, cl_ulong* host_timestamp) {
 
     return ret;
 }
-void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment, Cal::Rpc::Ocl::ClSVMAllocRpcM::ImplicitArgs &implArgsForClSVMAllocRpcM) {
+void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment, Cal::Rpc::Ocl::ClSVMAllocRpcMImplicitArgs &implArgsForClSVMAllocRpcM) {
     log<Verbosity::bloat>("Establishing RPC for clSVMAlloc");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -3913,7 +3913,7 @@ void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_m
     ret = Cal::Icd::icdGlobalState.getOclPlatform()->validateNewUsmDevicePointer(ret, size);
     return ret;
 }
-void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM::ImplicitArgs &implArgsForClHostMemAllocINTELRpcM) {
+void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs &implArgsForClHostMemAllocINTELRpcM) {
     log<Verbosity::bloat>("Establishing RPC for clHostMemAllocINTEL");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -3936,7 +3936,7 @@ void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_
 
     return ret;
 }
-void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM::ImplicitArgs &implArgsForClSharedMemAllocINTELRpcM) {
+void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret, Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs &implArgsForClSharedMemAllocINTELRpcM) {
     log<Verbosity::bloat>("Establishing RPC for clSharedMemAllocINTEL");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();

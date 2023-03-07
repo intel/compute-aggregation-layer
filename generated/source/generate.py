@@ -1412,9 +1412,12 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
     def get_message_subtype(func):
         return functions_with_messages.index(func)
 
+    def get_fq_message_name(func):
+        return '::'.join(config.rpc_namespace + [func.message_name])
+
     def get_copy_from_or_to_caller_args(func, const_iargs):
         return (["const Captures::DynamicTraits &dynMemTraits"] if func.traits.uses_inline_dynamic_mem else []) + \
-            ([f"{'const ' if const_iargs else ''}ImplicitArgs &implicitArgs"] if func.implicit_args else [])
+            ([f"{'const ' if const_iargs else ''}{get_fq_message_name(func)}ImplicitArgs &implicitArgs"] if func.implicit_args else [])
 
     def get_ptr_array_args(func):
         return func.traits.get_ptr_array_args()
@@ -1521,7 +1524,7 @@ def generate_icd_h(config: Config, additional_file_headers: list) -> str:
         return '::'.join(config.rpc_namespace + [f.message_name])
 
     def get_implicit_arg(f):
-        return [f"{get_fq_message_name(f)}::ImplicitArgs &implArgsFor{f.message_name}"] if f.implicit_args else []
+        return [f"{get_fq_message_name(f)}ImplicitArgs &implArgsFor{f.message_name}"] if f.implicit_args else []
 
     def get_func_handler_args_list_str(f):
         return ", ".join([f"{sarg}" for sarg in [arg.to_str() for arg in f.args] + get_implicit_arg(f)])
@@ -1542,6 +1545,7 @@ def generate_icd_h(config: Config, additional_file_headers: list) -> str:
         file_headers=config.file_headers.common +
         config.file_headers.icd_h +
         additional_file_headers,
+        rpc_namespace=config.rpc_namespace,
         icd_namespace=config.icd_namespace,
         icd_namespace_str='::'.join(
             config.icd_namespace),
@@ -1565,7 +1569,7 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
         return '::'.join(config.rpc_namespace + [f.message_name])
 
     def get_implicit_arg(f):
-        return [f"{get_fq_message_name(f)}::ImplicitArgs &implArgsFor{f.message_name}"] if f.implicit_args else []
+        return [f"{get_fq_message_name(f)}ImplicitArgs &implArgsFor{f.message_name}"] if f.implicit_args else []
 
     def get_implicit_call_param(f):
         return [f"implArgsFor{f.message_name}"] if f.implicit_args else []
@@ -1772,7 +1776,7 @@ def generate(config: Config, out_dir: str) -> str:
     fname_base = "generated"
     fpath_base = os.path.join(out_dir, fname_base)
 
-    icd_h = generate_icd_h(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
+    icd_h = generate_icd_h(config, [])
     dump(icd_h, fpath_base + f"_icd_{config.api_name}.h")
 
     icd_cpp = generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"",

@@ -8,11 +8,9 @@
 #include "icd_level_zero.h"
 
 #include "generated_icd_level_zero.h"
-#include "generated_rpc_messages_level_zero.h"
 #include "icd/icd_global_state.h"
 #include "include/cal.h"
 #include "shared/log.h"
-#include "shared/usm.h"
 
 #include <algorithm>
 #include <cstring>

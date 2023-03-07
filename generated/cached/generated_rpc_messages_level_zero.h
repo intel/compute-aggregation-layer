@@ -6608,6 +6608,12 @@ struct ZeKernelSchedulingHintExpRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeKernelSchedulingHintExpRpcM>);
+struct ZeMemAllocSharedRpcMImplicitArgs {
+    int shmem_resource = {};
+    size_t offset_within_resource = {};
+    size_t aligned_size = {};
+};
+
 struct ZeMemAllocSharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 73;
@@ -6637,14 +6643,7 @@ struct ZeMemAllocSharedRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           int shmem_resource = {};
-
-           size_t offset_within_resource = {};
-
-           size_t aligned_size = {};
-    } implicitArgs;
+    ZeMemAllocSharedRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -6799,7 +6798,7 @@ struct ZeMemAllocSharedRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const ImplicitArgs &implicitArgs){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implicitArgs){
         if(args.device_desc){
             captures.device_desc = *args.device_desc;
         }
@@ -6894,7 +6893,7 @@ struct ZeMemAllocSharedRpcM {
         }
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, ImplicitArgs &implicitArgs){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implicitArgs){
         if(args.pptr){
             *args.pptr = captures.pptr;
         }
@@ -7097,6 +7096,12 @@ struct ZeMemAllocDeviceRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeMemAllocDeviceRpcM>);
+struct ZeMemAllocHostRpcMImplicitArgs {
+    int shmem_resource = {};
+    size_t offset_within_resource = {};
+    size_t aligned_size = {};
+};
+
 struct ZeMemAllocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 75;
@@ -7122,14 +7127,7 @@ struct ZeMemAllocHostRpcM {
         }
     }args;
 
-    struct ImplicitArgs {
-
-           int shmem_resource = {};
-
-           size_t offset_within_resource = {};
-
-           size_t aligned_size = {};
-    } implicitArgs;
+    ZeMemAllocHostRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -7236,7 +7234,7 @@ struct ZeMemAllocHostRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const ImplicitArgs &implicitArgs){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implicitArgs){
         if(args.host_desc){
             captures.host_desc = *args.host_desc;
         }
@@ -7287,7 +7285,7 @@ struct ZeMemAllocHostRpcM {
         }
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, ImplicitArgs &implicitArgs){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implicitArgs){
         if(args.pptr){
             *args.pptr = captures.pptr;
         }
