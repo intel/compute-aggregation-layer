@@ -65,7 +65,6 @@ static ze_result_t zeCommandListAppendMemoryFillRegular(ze_command_list_handle_t
                                                         ze_event_handle_t hSignalEvent,
                                                         uint32_t numWaitEvents,
                                                         ze_event_handle_t *phWaitEvents) {
-    auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
     const auto [dstIsUsm, srcIsUsm] = arePointersUsm(ptr, pattern);
 
     if (dstIsUsm && srcIsUsm) {
@@ -77,7 +76,6 @@ static ze_result_t zeCommandListAppendMemoryFillRegular(ze_command_list_handle_t
     }
 
     if (srcIsUsm) {
-        icdCommandList->registerMemoryToRead(ptr, size);
         return zeCommandListAppendMemoryFillRpcHelperUsm2Malloc(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 
@@ -86,7 +84,6 @@ static ze_result_t zeCommandListAppendMemoryFillRegular(ze_command_list_handle_t
         return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
     }
 
-    icdCommandList->registerMemoryToRead(ptr, size);
     return zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 
@@ -147,8 +144,7 @@ static ze_result_t zeCommandListAppendMemoryCopyImmediateAsynchronous(bool dstIs
                                                                       uint32_t numWaitEvents,
                                                                       ze_event_handle_t *phWaitEvents) {
     if (srcIsUsm) {
-        log<Verbosity::error>("zeCommandListAppendMemoryCopy for USM2M is not supported for asynchronous immediate command lists yet!");
-        return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
+        return zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 
     if (IcdL0CommandList::rangesOverlap(srcptr, dstptr, size)) {
@@ -156,8 +152,7 @@ static ze_result_t zeCommandListAppendMemoryCopyImmediateAsynchronous(bool dstIs
         return ZE_RESULT_ERROR_OVERLAPPING_REGIONS;
     }
 
-    log<Verbosity::error>("zeCommandListAppendMemoryCopy for M2M is not supported for asynchronous immediate command lists yet!");
-    return ZE_RESULT_ERROR_UNSUPPORTED_FEATURE;
+    return zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 
 static ze_result_t zeCommandListAppendMemoryCopyImmediate(ze_command_list_handle_t hCommandList,
@@ -204,11 +199,6 @@ static ze_result_t zeCommandListAppendMemoryCopyRegular(ze_command_list_handle_t
     }
 
     if (srcIsUsm) {
-        if (numWaitEvents > 0u && phWaitEvents != nullptr) {
-            log<Verbosity::error>("zeCommandListAppendMemoryCopy(): USM2Malloc cannot be synchronized via events yet! Results will be invalid!");
-        }
-
-        icdCommandList->registerMemoryToRead(dstptr, size);
         return zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 
@@ -218,11 +208,6 @@ static ze_result_t zeCommandListAppendMemoryCopyRegular(ze_command_list_handle_t
     }
 
     icdCommandList->registerMemoryToWrite(srcptr, size);
-    icdCommandList->registerMemoryToRead(dstptr, size);
-
-    if (numWaitEvents > 0u && phWaitEvents != nullptr) {
-        log<Verbosity::error>("zeCommandListAppendMemoryCopy(): Malloc2Malloc cannot be synchronized via events yet! Results will be invalid!");
-    }
 
     return zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }

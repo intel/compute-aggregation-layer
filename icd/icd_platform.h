@@ -267,25 +267,6 @@ class IcdPlatform {
         return true;
     }
 
-    bool readRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
-        for (const auto &transfer : transferDescs) {
-            auto shmem = globalState.getGlobalShmemImporter().open(transfer.shmemId, transfer.underlyingSize, nullptr);
-            if (!shmem.isValid()) {
-                log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
-                return false;
-            }
-
-            const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromMapping;
-            const auto source = reinterpret_cast<const void *>(sourceAddress);
-            const auto destination = reinterpret_cast<void *>(transfer.transferStart);
-
-            std::memcpy(destination, source, transfer.bytesCountToCopy);
-            globalState.getGlobalShmemImporter().release(shmem);
-        }
-
-        return true;
-    }
-
     PageFaultManager &getPageFaultManager() {
         return globalState.getPageFaultManager();
     }

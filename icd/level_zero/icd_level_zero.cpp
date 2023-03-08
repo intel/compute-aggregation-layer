@@ -34,11 +34,6 @@ void IcdL0CommandList::registerMemoryToWrite(const void *srcPtr, size_t srcSize)
     registerMemoryToContainer(srcPtr, srcSize, memoryToWrite);
 }
 
-void IcdL0CommandList::registerMemoryToRead(const void *dstPtr, size_t dstSize) {
-    std::lock_guard lock{memoryToReadMutex};
-    registerMemoryToContainer(dstPtr, dstSize, memoryToRead);
-}
-
 void IcdL0CommandList::registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory) {
     const auto overlaps = [ptr, size](const auto &chunk) {
         return IcdL0CommandList::rangesOverlap(chunk.address, chunk.size, ptr, size);
@@ -142,44 +137,6 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
     return ZE_RESULT_SUCCESS;
 }
 
-ze_result_t IcdL0CommandList::readRequiredMemory() {
-    std::lock_guard lock{memoryToReadMutex};
-
-    if (memoryToRead.empty()) {
-        return ZE_RESULT_SUCCESS;
-    }
-
-    uint32_t transferDescsCount{0};
-    const auto queryCountResult = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToRead.size()),
-                                                                                       memoryToRead.data(),
-                                                                                       &transferDescsCount,
-                                                                                       nullptr);
-    if (queryCountResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Could not get total count of memory blocks to read from service! Execution of command list would be invalid!");
-        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-    }
-
-    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
-    transferDescs.resize(transferDescsCount);
-
-    const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToRead.size()),
-                                                                                         memoryToRead.data(),
-                                                                                         &transferDescsCount,
-                                                                                         transferDescs.data());
-    if (queryTransferDescs != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Could not get memory blocks to read from service! Execution of command list would be invalid!");
-        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-    }
-
-    auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    if (!globalL0Platform->readRequiredMemory(transferDescs)) {
-        log<Verbosity::error>("Could not read required memory to user's stack/heap! Results of execution of command list would be invalid!");
-        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-    }
-
-    return ZE_RESULT_SUCCESS;
-}
-
 void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
     if (kernel->sharedIndirectAccessSet) {
         Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
@@ -222,69 +179,6 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
 
 ze_command_queue_mode_t IcdL0CommandQueue::getCommandQueueMode() {
     return mode;
-}
-
-ze_result_t IcdL0CommandQueue::readMemoryRequiredByCurrentlyExecutedCommandLists() {
-    for (const auto &commandList : currentlyExecutedCommandLists) {
-        const auto icdCommandList = static_cast<IcdL0CommandList *>(commandList);
-        const auto readResult = icdCommandList->readRequiredMemory();
-
-        if (readResult != ZE_RESULT_SUCCESS) {
-            return readResult;
-        }
-    }
-
-    return ZE_RESULT_SUCCESS;
-}
-
-void IcdL0CommandQueue::storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists) {
-    currentlyExecutedCommandLists.insert(currentlyExecutedCommandLists.end(),
-                                         phCommandLists,
-                                         phCommandLists + numCommandLists);
-}
-
-void IcdL0CommandQueue::removeFromExecutedCommandLists(const std::vector<ze_command_list_handle_t> &commandListsToRemove) {
-    if (commandListsToRemove.empty()) {
-        return;
-    }
-
-    auto first = std::find(currentlyExecutedCommandLists.begin(), currentlyExecutedCommandLists.end(), commandListsToRemove.front());
-    auto last = std::find(currentlyExecutedCommandLists.begin(), currentlyExecutedCommandLists.end(), commandListsToRemove.back());
-    if (first == currentlyExecutedCommandLists.end() && last == currentlyExecutedCommandLists.end()) {
-        // Everything is fine. The range was synchronized in another call.
-        return;
-    }
-
-    if (first == currentlyExecutedCommandLists.end() || last == currentlyExecutedCommandLists.end()) {
-        log<Verbosity::error>("Could not remove executed command lists! Could not find all elements!");
-        return;
-    }
-
-    const auto realLast = std::next(last);
-    const auto foundRangeSize = std::distance(first, realLast);
-
-    if (foundRangeSize != static_cast<int64_t>(commandListsToRemove.size())) {
-        log<Verbosity::error>("Could not remove executed command lists! Invalid range! "
-                              "Expected range size: %d, actual range size: %d",
-                              static_cast<int>(commandListsToRemove.size()),
-                              static_cast<int>(foundRangeSize));
-        return;
-    }
-
-    currentlyExecutedCommandLists.erase(first, realLast);
-}
-
-std::vector<ze_command_list_handle_t> IcdL0Fence::clearExecutedCommandListsPointers() {
-    std::lock_guard lock{currentlyExecutedCommandListsMutex};
-    return std::move(currentlyExecutedCommandLists);
-}
-
-void IcdL0Fence::storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists) {
-    std::lock_guard lock{currentlyExecutedCommandListsMutex};
-
-    currentlyExecutedCommandLists.insert(currentlyExecutedCommandLists.end(),
-                                         phCommandLists,
-                                         phCommandLists + numCommandLists);
 }
 
 bool IcdL0Platform::isZeAffinityMaskPresent() {

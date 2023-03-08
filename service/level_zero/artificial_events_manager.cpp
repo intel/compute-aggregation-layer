@@ -145,4 +145,8 @@ void ArtificialEventsManager::returnObtainedEvent(ze_event_handle_t artificialEv
     log<Verbosity::error>("ArtificialEventsManager: Could not return event that was not obtained from manager! Event (%p)!", static_cast<void *>(artificialEvent));
 }
 
+void ArtificialEventsManager::resetObtainedEvent(ze_event_handle_t artificialEvent) {
+    eventsAllocator->resetEvent(artificialEvent);
+}
+
 } // namespace Cal::Service::LevelZero

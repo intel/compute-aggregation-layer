@@ -277,6 +277,9 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
@@ -301,7 +304,7 @@ ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunk
 
     return ret;
 }
-ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
+ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueSynchronize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -319,6 +322,9 @@ ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hComma
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
@@ -570,6 +576,78 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.getPhWaitEvents();
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.phWaitEvents;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -1660,7 +1738,7 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
 
     return ret;
 }
-ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout) {
+ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) {
     if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {
         return ZE_RESULT_SUCCESS;
     }
@@ -1681,6 +1759,9 @@ ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t 
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     commandSpace.reset();
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
@@ -1709,6 +1790,9 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     commandSpace.reset();
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
@@ -1821,7 +1905,7 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
     command->copyToCaller();
     if(phFence)
     {
-        phFence[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phFence[0], hCommandQueue);
+        phFence[0] = globalL0Platform->translateNewRemoteObjectToLocalObject(phFence[0]);
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1850,7 +1934,7 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
 
     return ret;
 }
-ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t timeout) {
+ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceHostSynchronize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -1868,6 +1952,9 @@ ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t 
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
@@ -1888,6 +1975,9 @@ ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
@@ -1905,9 +1995,6 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
     }
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
-    }
-    {
-        hFence->asLocalObject()->clearExecutedCommandListsPointers();
     }
     ze_result_t ret = command->captures.ret;
 

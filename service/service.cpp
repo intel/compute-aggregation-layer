@@ -534,6 +534,22 @@ inline bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer
 
 namespace LevelZero {
 
+bool updateHostptrCopies(Cal::Rpc::ChannelServer &channel, ClientContext &ctx) {
+    auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+    const auto finishedCopiesCount = copiesManager.updateAwaitedEvents();
+    if (finishedCopiesCount > 0u) {
+        const auto finishedCopies = copiesManager.acquireFinishedCopies(ctx.getArtificialEventsManager());
+        for (const auto &copyDescription : finishedCopies) {
+            if (false == channel.pushHostptrCopyToUpdate({copyDescription.destination, copyDescription.destinationSize})) {
+                log<Verbosity::error>("Could not notify client about update of hostptr copies!");
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 bool zeInitHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeInit");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeInitRpcM *>(command);
@@ -866,6 +882,103 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     return true;
 }
 
+bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandler(Provider &service,
+                                                                                  Cal::Rpc::ChannelServer &channel,
+                                                                                  ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command,
+                                                                                  size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM *>(command);
+
+    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
+    auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
+
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
+                                                                                                      mappedDstPtr,
+                                                                                                      apiCommand->args.srcptr,
+                                                                                                      apiCommand->args.size,
+                                                                                                      copyToHostptrEvent,
+                                                                                                      apiCommand->args.numWaitEvents,
+                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
+    }
+
+    return true;
+}
+
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHandler(Provider &service,
+                                                                                     Cal::Rpc::ChannelServer &channel,
+                                                                                     ClientContext &ctx,
+                                                                                     Cal::Rpc::RpcMessageHeader *command,
+                                                                                     size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM *>(command);
+
+    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
+    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
+    auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
+
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
+                                                                                                      mappedDstPtr,
+                                                                                                      apiCommand->args.srcptr ? apiCommand->captures.getSrcptr() : nullptr,
+                                                                                                      apiCommand->args.size,
+                                                                                                      copyToHostptrEvent,
+                                                                                                      apiCommand->args.numWaitEvents,
+                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
+    }
+
+    return true;
+}
+
 bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
@@ -894,13 +1007,40 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
     auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
     auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
 
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       mappedDstPtr,
                                                                                                       apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
-                                                                                                      apiCommand->args.hSignalEvent,
+                                                                                                      copyToHostptrEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
+    }
+
     return true;
 }
 
@@ -915,13 +1055,39 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.dstptr);
 
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       mappedDstPtr,
                                                                                                       mappedSrcPtr,
                                                                                                       apiCommand->args.size,
-                                                                                                      apiCommand->args.hSignalEvent,
+                                                                                                      copyToHostptrEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
+    }
+
     return true;
 }
 
@@ -933,15 +1099,42 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
     auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
 
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
         apiCommand->args.hCommandList,
         mappedDstPtr,
         apiCommand->args.pattern,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
-        apiCommand->args.hSignalEvent,
+        copyToHostptrEvent,
         apiCommand->args.numWaitEvents,
         apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.ptr, apiCommand->args.size, true);
+    }
+
     return true;
 }
 
@@ -953,15 +1146,42 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
     auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
     auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
 
+    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
+    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
+    if (!contextOfCommandList) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+        return true;
+    }
+
+    auto &artificialEventsManager = ctx.getArtificialEventsManager();
+    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    if (!copyToHostptrEvent) {
+        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        return true;
+    }
+
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
         apiCommand->args.hCommandList,
         mappedDstPtr,
         apiCommand->args.pattern ? apiCommand->captures.getPattern() : nullptr,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
-        apiCommand->args.hSignalEvent,
+        copyToHostptrEvent,
         apiCommand->args.numWaitEvents,
         apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
+                                                                                                       apiCommand->args.hSignalEvent,
+                                                                                                       1u,
+                                                                                                       &copyToHostptrEvent);
+    }
+
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.ptr, apiCommand->args.size, true);
+    }
+
     return true;
 }
 
@@ -1007,6 +1227,142 @@ bool zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler(Provider &servi
 
     apiCommand->captures.ret = wereTransfersRetrieved ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
     return true;
+}
+
+bool zeContextDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeContextDestroy");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextDestroyRpcM *>(command);
+
+    log<Verbosity::bloat>("Destroying artificial events belonging to the context (%p)", static_cast<void *>(apiCommand->args.hContext));
+    ctx.getArtificialEventsManager().clearDataForContext(apiCommand->args.hContext);
+
+    log<Verbosity::bloat>("Calling zeContextDestroy() for the context (%p)", static_cast<void *>(apiCommand->args.hContext));
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextDestroy(
+        apiCommand->args.hContext);
+    if (isSuccessful(apiCommand->captures.ret)) {
+        const auto &resource = apiCommand->args.hContext;
+        if (resource) {
+            ctx.removeResourceTracking(resource);
+        }
+    }
+    return true;
+}
+
+bool zeEventHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeEventHostSynchronize");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(
+        apiCommand->args.hEvent,
+        apiCommand->args.timeout);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
+bool zeEventQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeEventQueryStatus");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventQueryStatus(
+        apiCommand->args.hEvent);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
+bool zeFenceHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeFenceHostSynchronize");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFenceHostSynchronize(
+        apiCommand->args.hFence,
+        apiCommand->args.timeout);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
+bool zeFenceQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeFenceQueryStatus");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFenceQueryStatus(
+        apiCommand->args.hFence);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
+bool zeCommandQueueSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueSynchronize");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandQueueSynchronize(
+        apiCommand->args.hCommandQueue,
+        apiCommand->args.timeout);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
+bool zeCommandListResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListReset");
+
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListResetRpcM *>(command);
+    ctx.getOngoingHostptrCopiesManager().freeOperationsOfCommandList(apiCommand->args.hCommandList, ctx.getArtificialEventsManager());
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListReset(apiCommand->args.hCommandList);
+    return true;
+}
+
+bool zeCommandListDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListDestroy");
+
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM *>(command);
+    ctx.getOngoingHostptrCopiesManager().freeOperationsOfCommandList(apiCommand->args.hCommandList, ctx.getArtificialEventsManager());
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListDestroy(apiCommand->args.hCommandList);
+
+    if (isSuccessful(apiCommand->captures.ret)) {
+        const auto &resource = apiCommand->args.hCommandList;
+        if (resource) {
+            ctx.removeResourceTracking(resource);
+            ctx.getCommandListToContextTracker().deregisterCommandListMapping(resource);
+        }
+    }
+    return true;
+}
+
+bool zeCommandQueueExecuteCommandListsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueExecuteCommandLists");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandQueueExecuteCommandLists(
+        apiCommand->args.hCommandQueue,
+        apiCommand->args.numCommandLists,
+        apiCommand->args.phCommandLists ? apiCommand->captures.phCommandLists : nullptr,
+        apiCommand->args.hFence);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    auto &ongoingHostptrCopiesManager = ctx.getOngoingHostptrCopiesManager();
+    for (size_t i = 0; i < apiCommand->args.numCommandLists; ++i) {
+        ongoingHostptrCopiesManager.resubmitOperationsOfCommandList(apiCommand->captures.phCommandLists[i]);
+    }
+
+    return updateHostptrCopies(channel, ctx);
 }
 
 } // namespace LevelZero

@@ -45,7 +45,7 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue);
 ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs);
-ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
+ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
 ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext);
 ze_result_t zeContextDestroy (ze_context_handle_t hContext);
@@ -55,6 +55,8 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
@@ -97,14 +99,14 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent);
-ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout);
+ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent);
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr);
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence);
-ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t timeout);
+ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence);
 ze_result_t zeFenceReset (ze_fence_handle_t hFence);
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ);

@@ -33,7 +33,8 @@ class ArtificialEventsManager {
     ArtificialEventsManager &operator=(ArtificialEventsManager &&other) = delete;
 
     ze_event_handle_t obtainEventReplacement(ze_context_handle_t context);
-    void returnObtainedEvent(ze_event_handle_t artificialEvent);
+    mockable void returnObtainedEvent(ze_event_handle_t artificialEvent);
+    mockable void resetObtainedEvent(ze_event_handle_t artificialEvent);
     void clearDataForContext(ze_context_handle_t context);
 
   protected:

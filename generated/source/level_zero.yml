@@ -1595,6 +1595,9 @@ config:
 
     - name: zeCommandListDestroy
       latency: 0.0
+      special_handling:
+        rpc:
+          custom_handler: True
       ddi_category: CommandList
       returns:
         type: ze_result_t
@@ -1626,6 +1629,8 @@ config:
     - name: zeCommandListReset
       latency: 0.0
       special_handling:
+        rpc:
+          custom_handler: True
         icd:
           handler_epilogue: "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;"
       ddi_category: CommandList
@@ -1736,11 +1741,14 @@ config:
       special_handling:
         icd:
           handler_only_suffix: "RpcHelper"
+        rpc:
+          custom_handler: True
       ddi_category: CommandQueue
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hCommandQueue
@@ -1829,13 +1837,14 @@ config:
     - name: zeCommandQueueSynchronize
       latency: 2.0
       special_handling:
-        icd:
-          handler_only_suffix: "RpcHelper"
+        rpc:
+          custom_handler: True
       ddi_category: CommandQueue
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hCommandQueue
@@ -1942,6 +1951,9 @@ config:
 
     - name: zeContextDestroy
       latency: 0.0
+      special_handling:
+        rpc:
+          custom_handler: True
       ddi_category: Context
       returns:
         type: ze_result_t
@@ -2214,6 +2226,125 @@ config:
               type: void
               kind: scalar
             server_access: write
+        2:
+          name: srcptr
+          type: const void*
+          kind: pointer
+        3:
+          name: size
+          type: size_t
+          kind: scalar
+        4:
+          name: hSignalEvent
+          type: ze_event_handle_t
+          kind: scalar
+          kind_details:
+            can_be_null: True
+          translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+        5:
+          name: numWaitEvents
+          type: uint32_t
+          kind: scalar
+        6:
+          name: phWaitEvents
+          type: ze_event_handle_t*
+          kind: ptr_array
+          kind_details:
+            num_elements: numWaitEvents
+            can_be_null: True
+            element:
+              type: ze_event_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            server_access: read
+
+    - name: zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous
+      latency: 0.0
+      special_handling:
+        variant_of: "zeCommandListAppendMemoryCopy"
+        icd:
+          not_in_dispatch_table: True
+          dont_generate_stub: True
+        rpc:
+          custom_handler: True
+      ddi_category: CommandList
+      returns:
+        type: ze_result_t
+        kind: scalar
+        default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+      args:
+        0:
+          name: hCommandList
+          type: ze_command_list_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+        1:
+          name: dstptr
+          type: void*
+          kind: pointer
+        2:
+          name: srcptr
+          type: const void*
+          kind: ptr_array
+          kind_details:
+            num_elements: "size"
+            can_be_null: True
+            element:
+              type: void
+              kind: scalar
+            server_access: read
+        3:
+          name: size
+          type: size_t
+          kind: scalar
+        4:
+          name: hSignalEvent
+          type: ze_event_handle_t
+          kind: scalar
+          kind_details:
+            can_be_null: True
+          translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+        5:
+          name: numWaitEvents
+          type: uint32_t
+          kind: scalar
+        6:
+          name: phWaitEvents
+          type: ze_event_handle_t*
+          kind: ptr_array
+          kind_details:
+            num_elements: numWaitEvents
+            can_be_null: True
+            element:
+              type: ze_event_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            server_access: read
+
+    - name: zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous
+      latency: 0.0
+      special_handling:
+        variant_of: "zeCommandListAppendMemoryCopy"
+        icd:
+          not_in_dispatch_table: True
+          dont_generate_stub: True
+        rpc:
+          custom_handler: True
+      ddi_category: CommandList
+      returns:
+        type: ze_result_t
+        kind: scalar
+        default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+      args:
+        0:
+          name: hCommandList
+          type: ze_command_list_handle_t
+          kind: scalar
+          translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+        1:
+          name: dstptr
+          type: void*
+          kind: pointer
         2:
           name: srcptr
           type: const void*
@@ -4020,14 +4151,16 @@ config:
       latency: 2.0
       special_handling:
         icd:
-          handler_only_suffix: "RpcHelper"
           handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
           handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
+        rpc:
+          custom_handler: True
       ddi_category: Event
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hEvent
@@ -4045,11 +4178,14 @@ config:
         icd:
           handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
           handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
+        rpc:
+          custom_handler: True
       ddi_category: Event
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hEvent
@@ -4370,7 +4506,7 @@ config:
             element:
               type: ze_fence_handle_t
               kind: scalar
-              translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, hCommandQueue)"
+              translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
             server_access: write
           daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
@@ -4393,13 +4529,14 @@ config:
     - name: zeFenceHostSynchronize
       latency: 2.0
       special_handling:
-        icd:
-          handler_only_suffix: "RpcHelper"
+        rpc:
+          custom_handler: True
       ddi_category: Fence
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hFence
@@ -4413,11 +4550,15 @@ config:
 
     - name: zeFenceQueryStatus
       latency: 0.0
+      special_handling:
+        rpc:
+          custom_handler: True
       ddi_category: Fence
       returns:
         type: ze_result_t
         kind: scalar
         default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
       args:
         0:
           name: hFence
@@ -4438,7 +4579,6 @@ config:
           type: ze_fence_handle_t
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
-          translate_after: "{arg}->asLocalObject()->clearExecutedCommandListsPointers()"
 
     - name: zeKernelSetGlobalOffsetExp
       latency: 0.0

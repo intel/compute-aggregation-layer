@@ -13,6 +13,7 @@
 #include "shared/log.h"
 #include "shared/rpc_message.h"
 #include "shared/shmem.h"
+#include "shared/shmem_transfer_desc.h"
 #include "shared/usm.h"
 #include "shared/utils.h"
 
@@ -145,7 +146,7 @@ struct RingEntry {
 
 class CommandsChannel {
   public:
-    // | control block + ring | completion stamps | heap ...
+    // | control block + ring | completion stamps | hostptr copies to update | heap ...
     struct DefaultLayout {
         using OffsetT = Cal::Messages::OffsetWithinChannelT;
 
@@ -172,8 +173,15 @@ class CommandsChannel {
         static constexpr OffsetT completionStampsStart = ringEnd;
         static constexpr OffsetT completionStampsEnd = completionStampsStart + Cal::Utils::pageSize4KB;
 
-        static constexpr OffsetT heapStart = completionStampsEnd;
-        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(ringEnd));
+        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(completionStampsEnd));
+        static constexpr OffsetT hostptrCopiesRingHead = completionStampsEnd;
+        static constexpr OffsetT hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
+
+        static constexpr OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
+        static constexpr OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
+
+        static constexpr OffsetT heapStart = hostptrCopiesRingEnd;
+        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingEnd));
 
         static constexpr size_t minHeapSize = Cal::Utils::pageSize4KB;
         static constexpr size_t minShmemSize = DefaultLayout::heapStart + minHeapSize;
@@ -259,6 +267,12 @@ class CommandsChannel {
         this->layout.completionStampsStart = DefaultLayout::completionStampsStart;
         this->layout.completionStampsCapacity = (DefaultLayout::completionStampsEnd - DefaultLayout::completionStampsStart) / sizeof(CompletionStampT);
 
+        this->layout.hostptrCopiesRingHead = DefaultLayout::hostptrCopiesRingHead;
+        this->layout.hostptrCopiesRingTail = DefaultLayout::hostptrCopiesRingTail;
+
+        this->layout.hostptrCopiesRingStart = DefaultLayout::hostptrCopiesRingStart;
+        this->layout.hostptrCopiesRingCapacity = (DefaultLayout::hostptrCopiesRingEnd - DefaultLayout::hostptrCopiesRingStart) / sizeof(Cal::Rpc::MemChunk);
+
         this->layout.heapStart = DefaultLayout::heapStart;
         this->layout.heapEnd = shmemSize;
 
@@ -269,6 +283,11 @@ class CommandsChannel {
                            this->layout.ringCapacity,
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
+
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::MemChunk>(this->layout.hostptrCopiesRingStart),
+                                                     this->layout.hostptrCopiesRingCapacity,
+                                                     getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
+                                                     getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
 
         if (initializeControlBlock) {
             return this->initControlBlock();
@@ -296,6 +315,11 @@ class CommandsChannel {
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
 
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::MemChunk>(this->layout.hostptrCopiesRingStart),
+                                                     this->layout.hostptrCopiesRingCapacity,
+                                                     getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
+                                                     getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
+
         if (initializeControlBlock) {
             return this->initControlBlock();
         } else {
@@ -305,6 +329,7 @@ class CommandsChannel {
 
     bool initControlBlock() {
         ring.reset();
+        hostptrCopiesRing.reset();
 
         if (0 != Cal::Ipc::initializeSemaphore(semClient)) {
             log<Verbosity::critical>("Failed to initialize client semaphore in commands channel");
@@ -330,6 +355,9 @@ class CommandsChannel {
         auto semServer = Cal::Utils::AddressRange(el.semServer, el.semServer + sizeof(sem_t));
         auto ring = Cal::Utils::AddressRange(el.ringStart, el.ringStart + el.ringCapacity * sizeof(RingEntry));
         auto completionStamps = Cal::Utils::AddressRange(el.completionStampsStart, el.completionStampsStart + el.completionStampsCapacity * sizeof(CompletionStampT));
+        auto hostptrCopiesRingHead = Cal::Utils::AddressRange(el.hostptrCopiesRingHead, el.hostptrCopiesRingHead + sizeof(Cal::Messages::OffsetWithinChannelT));
+        auto hostptrCopiesRingTail = Cal::Utils::AddressRange(el.hostptrCopiesRingTail, el.hostptrCopiesRingTail + sizeof(Cal::Messages::OffsetWithinChannelT));
+        auto hostptrCopiesRing = Cal::Utils::AddressRange(el.hostptrCopiesRingStart, el.hostptrCopiesRingStart + el.hostptrCopiesRingCapacity * sizeof(Cal::Rpc::MemChunk));
         auto heap = Cal::Utils::AddressRange(static_cast<size_t>(el.heapStart), el.heapEnd);
 
         std::tuple<const char *, Cal::Utils::AddressRange, size_t> ranges[] = {
@@ -339,6 +367,9 @@ class CommandsChannel {
             {"semServer", semServer, sizeof(sem_t)},
             {"ring", ring, Cal::Utils::cachelineSize},
             {"completionStamps", completionStamps, Cal::Utils::cachelineSize},
+            {"hostptrCopiesRingHead", hostptrCopiesRingHead, sizeof(Cal::Messages::OffsetWithinChannelT)},
+            {"hostptrCopiesRingTail", hostptrCopiesRingTail, sizeof(Cal::Messages::OffsetWithinChannelT)},
+            {"hostptrCopiesRing", hostptrCopiesRing, Cal::Utils::cachelineSize},
             {"heap", heap, Cal::Utils::pageSize4KB},
         };
 
@@ -384,6 +415,9 @@ class CommandsChannel {
 
     using RingT = TypedRing<RingEntry, OffsetWithinChannelT>;
     RingT ring;
+
+    using HostptrCopiesRingT = TypedRing<Cal::Rpc::MemChunk, OffsetWithinChannelT>;
+    HostptrCopiesRingT hostptrCopiesRing;
 
     void *shmem = nullptr;
     size_t shmemSize = 0U;
@@ -604,6 +638,17 @@ class ChannelClient : public CommandsChannel {
         return usesSharedVaForRpcChannel;
     }
 
+    Cal::Rpc::MemChunk acquireHostptrCopiesUpdate() {
+        if (hostptrCopiesRing.peekEmpty()) {
+            return {nullptr, 0u};
+        }
+
+        Cal::Rpc::MemChunk locationToUpdate = *this->hostptrCopiesRing.peekHead();
+        this->hostptrCopiesRing.pop();
+
+        return locationToUpdate;
+    }
+
   protected:
     bool semaphoreWait(CompletionStampT *completionStamp) {
         log<Verbosity::bloat>("Waiting for packet to be processed - semaphores");
@@ -764,6 +809,15 @@ class ChannelServer : public CommandsChannel {
     template <typename T>
     T *decodeLocalPtrFromHeapOffset(T *heapOffset) {
         return reinterpret_cast<T *>(Cal::Utils::moveByBytes(shmem, reinterpret_cast<uintptr_t>(heapOffset)));
+    }
+
+    bool pushHostptrCopyToUpdate(Cal::Rpc::MemChunk memChunk) {
+        if (false == hostptrCopiesRing.push(memChunk)) {
+            log<Verbosity::critical>("Could not add memChunk copy update notification to ring");
+            return false;
+        }
+
+        return true;
     }
 
   protected:

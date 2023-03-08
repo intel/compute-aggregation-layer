@@ -10,8 +10,10 @@
 #include "cal.h"
 #include "level_zero/ze_api.h"
 #include "service/cochoreographer.h"
+#include "service/level_zero/artificial_events_manager.h"
 #include "service/level_zero/command_list_to_context_tracker.h"
 #include "service/level_zero/l0_shared_objects.h"
+#include "service/level_zero/ongoing_hostptr_copies_manager.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/log.h"
@@ -257,6 +259,14 @@ class ClientContext {
         return commandListToContextTracker;
     }
 
+    Cal::Service::LevelZero::ArtificialEventsManager &getArtificialEventsManager() {
+        return artificialEventsManager;
+    }
+
+    Cal::Service::LevelZero::OngoingHostptrCopiesManager &getOngoingHostptrCopiesManager() {
+        return hostptrCopiesManager;
+    }
+
     void setMallocShmemZeroCopyHandler(std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> handler) {
         mallocShmemZeroCopyHandler = std::move(handler);
     }
@@ -362,6 +372,8 @@ class ClientContext {
 
     Cal::Ipc::MemoryBlocksManager memoryBlocksManager{};
     Cal::Service::LevelZero::CommandListToContextTracker commandListToContextTracker{};
+    Cal::Service::LevelZero::ArtificialEventsManager artificialEventsManager{};
+    Cal::Service::LevelZero::OngoingHostptrCopiesManager hostptrCopiesManager{};
 };
 
 class Provider {

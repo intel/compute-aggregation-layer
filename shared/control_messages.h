@@ -167,11 +167,11 @@ inline bool operator==(const RespAllocateShmem &lhs, const RespAllocateShmem &rh
 using OffsetWithinChannelT = int64_t;
 constexpr OffsetWithinChannelT invalidOffsetWithinChannel = -1;
 
-//                                          ringStart                   ringStart+ringCapacity / completionStampsStart    heapStart                      heapEnd
-// |       HEADER                              |                 RING                  |         COMPLETION_STAMPS          |        HEAP                    |
-// | semClient , semServer, ringHead, ringTail |           MESSAGE_OFFSETs             |                                    |  MESSAGES  /  TEMP BUFFERS     |
-//                                                     |                        |
-//                                                 *ringHead               *ringTail
+//                                          ringStart                   ringStart+ringCapacity / completionStampsStart    hptrRingStart               heapStart                      heapEnd
+// |       HEADER                              |                 RING                  |         COMPLETION_STAMPS          |    HOSTPTR COPIES RING    |        HEAP                    |
+// | semClient , semServer, ringHead, ringTail |           MESSAGE_OFFSETs             |                                    |      MEM_CHUNKS           |  MESSAGES  /  TEMP BUFFERS     |
+//                                                     |                        |                                               |                |
+//                                                 *ringHead               *ringTail                                        *hptrRingHead   *hptrRingTail
 struct CommandsChannelLayout {
     // HEADER :
     OffsetWithinChannelT semClient = invalidOffsetWithinChannel;
@@ -184,6 +184,11 @@ struct CommandsChannelLayout {
     // COMPLETION_STAMPS
     OffsetWithinChannelT completionStampsStart = invalidOffsetWithinChannel;
     uint64_t completionStampsCapacity = 0U;
+    // HOSTPTR COPIES RING :
+    OffsetWithinChannelT hostptrCopiesRingHead = invalidOffsetWithinChannel;
+    OffsetWithinChannelT hostptrCopiesRingTail = invalidOffsetWithinChannel;
+    OffsetWithinChannelT hostptrCopiesRingStart = invalidOffsetWithinChannel;
+    uint64_t hostptrCopiesRingCapacity = 0U;
     // HEAP :
     OffsetWithinChannelT heapStart = invalidOffsetWithinChannel;
     OffsetWithinChannelT heapEnd = invalidOffsetWithinChannel;
@@ -200,6 +205,11 @@ struct CommandsChannelLayout {
 
         valid &= (completionStampsStart >= 0) ? 1 : 0;
         valid &= (completionStampsCapacity > 0U) ? 1 : 0;
+
+        valid &= (hostptrCopiesRingHead >= 0) ? 1 : 0;
+        valid &= (hostptrCopiesRingTail >= 0) ? 1 : 0;
+        valid &= (hostptrCopiesRingStart >= 0) ? 1 : 0;
+        valid &= (hostptrCopiesRingCapacity > 0U) ? 1 : 0;
 
         valid &= (heapStart >= 0) ? 1 : 0;
         valid &= (heapEnd >= 0) ? 1 : 0;
@@ -229,6 +239,11 @@ inline bool operator==(const CommandsChannelLayout &lhs, const CommandsChannelLa
 
     same &= (lhs.completionStampsStart == rhs.completionStampsStart) ? 1 : 0;
     same &= (lhs.completionStampsCapacity == rhs.completionStampsCapacity) ? 1 : 0;
+
+    same &= (lhs.hostptrCopiesRingHead == rhs.hostptrCopiesRingHead) ? 1 : 0;
+    same &= (lhs.hostptrCopiesRingTail == rhs.hostptrCopiesRingTail) ? 1 : 0;
+    same &= (lhs.hostptrCopiesRingStart == rhs.hostptrCopiesRingStart) ? 1 : 0;
+    same &= (lhs.hostptrCopiesRingCapacity == rhs.hostptrCopiesRingCapacity) ? 1 : 0;
 
     same &= (lhs.heapStart == rhs.heapStart) ? 1 : 0;
     same &= (lhs.heapEnd == rhs.heapEnd) ? 1 : 0;

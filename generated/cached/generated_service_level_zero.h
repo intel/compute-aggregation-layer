@@ -175,21 +175,7 @@ inline bool zeCommandListCreateImmediateHandler(Provider &service, Cal::Rpc::Cha
     }
     return true;
 }
-inline bool zeCommandListDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListDestroy");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListDestroy(
-                                                apiCommand->args.hCommandList
-                                                );
-    if(isSuccessful(apiCommand->captures.ret)) {
-        const auto& resource = apiCommand->args.hCommandList;
-        if (resource) {
-            ctx.removeResourceTracking(resource);
-            ctx.getCommandListToContextTracker().deregisterCommandListMapping(resource);
-        }
-    }
-    return true;
-}
+bool zeCommandListDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListCloseHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListClose");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCloseRpcM*>(command);
@@ -198,14 +184,7 @@ inline bool zeCommandListCloseHandler(Provider &service, Cal::Rpc::ChannelServer
                                                 );
     return true;
 }
-inline bool zeCommandListResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListReset");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListResetRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListReset(
-                                                apiCommand->args.hCommandList
-                                                );
-    return true;
-}
+bool zeCommandListResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandQueueCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueCreate");
     service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->captures.desc : nullptr, ctx);
@@ -238,27 +217,9 @@ inline bool zeCommandQueueDestroyHandler(Provider &service, Cal::Rpc::ChannelSer
     }
     return true;
 }
-inline bool zeCommandQueueExecuteCommandListsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueExecuteCommandLists");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandQueueExecuteCommandLists(
-                                                apiCommand->args.hCommandQueue, 
-                                                apiCommand->args.numCommandLists, 
-                                                apiCommand->args.phCommandLists ? apiCommand->captures.phCommandLists : nullptr, 
-                                                apiCommand->args.hFence
-                                                );
-    return true;
-}
+bool zeCommandQueueExecuteCommandListsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 bool zeCommandQueueExecuteCommandListsCopyMemoryRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool zeCommandQueueSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueSynchronize");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandQueueSynchronize(
-                                                apiCommand->args.hCommandQueue, 
-                                                apiCommand->args.timeout
-                                                );
-    return true;
-}
+bool zeCommandQueueSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeContextCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeContextCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextCreateRpcM*>(command);
@@ -295,20 +256,7 @@ inline bool zeContextCreateExHandler(Provider &service, Cal::Rpc::ChannelServer 
     }
     return true;
 }
-inline bool zeContextDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeContextDestroy");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextDestroyRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextDestroy(
-                                                apiCommand->args.hContext
-                                                );
-    if(isSuccessful(apiCommand->captures.ret)) {
-        const auto& resource = apiCommand->args.hContext;
-        if (resource) {
-            ctx.removeResourceTracking(resource);
-        }
-    }
-    return true;
-}
+bool zeContextDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeContextGetStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeContextGetStatus");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextGetStatusRpcM*>(command);
@@ -347,6 +295,8 @@ inline bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous
                                                 );
     return true;
 }
+bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronous");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousRpcM*>(command);
@@ -730,23 +680,8 @@ inline bool zeEventHostSignalHandler(Provider &service, Cal::Rpc::ChannelServer 
                                                 );
     return true;
 }
-inline bool zeEventHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeEventHostSynchronize");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(
-                                                apiCommand->args.hEvent, 
-                                                apiCommand->args.timeout
-                                                );
-    return true;
-}
-inline bool zeEventQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeEventQueryStatus");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventQueryStatus(
-                                                apiCommand->args.hEvent
-                                                );
-    return true;
-}
+bool zeEventHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool zeEventQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListAppendEventResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendEventReset");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM*>(command);
@@ -803,23 +738,8 @@ inline bool zeFenceDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     }
     return true;
 }
-inline bool zeFenceHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeFenceHostSynchronize");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFenceHostSynchronize(
-                                                apiCommand->args.hFence, 
-                                                apiCommand->args.timeout
-                                                );
-    return true;
-}
-inline bool zeFenceQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeFenceQueryStatus");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFenceQueryStatus(
-                                                apiCommand->args.hFence
-                                                );
-    return true;
-}
+bool zeFenceHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool zeFenceQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeFenceResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeFenceReset");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceResetRpcM*>(command);
@@ -1263,6 +1183,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler;
     outHandlers[ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::messageSubtype] = zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler;
@@ -1477,6 +1399,28 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHe
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.srcptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.srcptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.dstptr, 
@@ -2150,6 +2094,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM*>(command)); break;

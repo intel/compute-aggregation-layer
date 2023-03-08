@@ -14,6 +14,7 @@
 #include "icd/level_zero/api_type_wrapper/handles_definitions.h"
 #include "icd/level_zero/api_type_wrapper/kernel_wrapper.h"
 #include "icd/level_zero/api_type_wrapper/module_wrapper.h"
+#include "icd/level_zero/logic/hostptr_copies_reader.h"
 #include "icd/level_zero/logic/properties_cache.h"
 #include "icd/level_zero/logic/types_printer.h"
 #include "level_zero/ze_api.h"
@@ -101,24 +102,15 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     }
 
     void registerMemoryToWrite(const void *srcPtr, size_t srcSize);
-    void registerMemoryToRead(const void *dstPtr, size_t dstSize);
 
     static bool rangesOverlap(const void *srcPtr, const void *dstPtr, size_t size);
     static bool rangesOverlap(const void *srcPtr, size_t srcSize, const void *dstPtr, size_t dstSize);
 
-    ze_result_t readRequiredMemory();
     ze_result_t writeRequiredMemory();
 
     void clearRequiredMemoryTransfers() {
-        {
-            std::lock_guard lock{memoryToWriteMutex};
-            memoryToWrite.clear();
-        }
-
-        {
-            std::lock_guard lock{memoryToReadMutex};
-            memoryToRead.clear();
-        }
+        std::lock_guard lock{memoryToWriteMutex};
+        memoryToWrite.clear();
     }
 
     bool sharedIndirectAccessSet = false;
@@ -147,9 +139,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 
     CommandListType commandListType{CommandListType::Regular};
     std::mutex memoryToWriteMutex{};
-    std::mutex memoryToReadMutex{};
     std::vector<ChunkEntry> memoryToWrite{};
-    std::vector<ChunkEntry> memoryToRead{};
 
     std::vector<const void *> usedAllocations{};
 };
@@ -157,14 +147,6 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_queue_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
-
-    ze_result_t readMemoryRequiredByCurrentlyExecutedCommandLists();
-    void storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
-    void removeFromExecutedCommandLists(const std::vector<ze_command_list_handle_t> &commandListsToRemove);
-
-    void clearExecutedCommandListsPointers() {
-        currentlyExecutedCommandLists.clear();
-    }
 
     [[nodiscard]] std::unique_lock<std::mutex> lock() {
         return std::unique_lock<std::mutex>{queueMutex};
@@ -181,7 +163,6 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     }
 
     std::mutex queueMutex{};
-    std::vector<ze_command_list_handle_t> currentlyExecutedCommandLists{};
     ze_command_queue_mode_t mode{};
 };
 
@@ -238,25 +219,6 @@ struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, Logic:
 class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
-
-    std::vector<ze_command_list_handle_t> clearExecutedCommandListsPointers();
-    void storeExecutedCommandListsPointers(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
-
-    IcdL0CommandQueue *peekQueue() {
-        return icdL0Queue;
-    }
-
-  private:
-    void setCommandQueue(IcdL0CommandQueue *queue) {
-        icdL0Queue = queue;
-    }
-
-    friend IcdL0Platform;
-
-    IcdL0CommandQueue *icdL0Queue{};
-
-    std::mutex currentlyExecutedCommandListsMutex{};
-    std::vector<ze_command_list_handle_t> currentlyExecutedCommandLists{};
 };
 
 class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
@@ -371,16 +333,8 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         removeObjectFromMap(remoteHandle, localHandle, imagesMap, imagesMapMutex);
     }
 
-    ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle, ze_command_queue_handle_t queueHandle) {
-        auto fence = translateNewRemoteObjectToLocalObject<IcdL0Fence>(remoteHandle, static_cast<ze_fence_handle_t>(nullptr), fencesMap, fencesMapMutex);
-        if (!fence) {
-            return nullptr;
-        }
-
-        auto icdFence = static_cast<IcdL0Fence *>(fence);
-        icdFence->setCommandQueue(static_cast<IcdL0CommandQueue *>(queueHandle));
-
-        return fence;
+    ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle) {
+        return translateNewRemoteObjectToLocalObject<IcdL0Fence>(remoteHandle, static_cast<ze_fence_handle_t>(nullptr), fencesMap, fencesMapMutex);
     }
 
     void removeObjectFromMap(ze_fence_handle_t remoteHandle, IcdL0Fence *localHandle) {
@@ -406,6 +360,10 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
         std::abort();
 
         return nullptr;
+    }
+
+    Logic::HostptrCopiesReader &getHostptrCopiesReader() {
+        return hostptrCopiesReader;
     }
 
     Logic::PropertiesCache::VectorTuple<ze_driver_properties_t,
@@ -499,6 +457,8 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
     bool zeAffinityMaskPresent = false;
     std::vector<ze_device_handle_t> filteredDevices;
     std::once_flag parseZeAffinityMaskOnce;
+
+    Logic::HostptrCopiesReader hostptrCopiesReader;
 };
 
 } // namespace LevelZero

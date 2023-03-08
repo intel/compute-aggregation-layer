@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -110,19 +110,6 @@ bool ensureEventInState(ze_event_handle_t event, EventStatus eventStatus) {
         log<Verbosity::info>("Actual status matches the expected one!");
         return true;
     }
-}
-
-bool resetEvent(ze_event_handle_t event) {
-    log<Verbosity::info>("Resetting event = %p", static_cast<void *>(event));
-
-    const auto zeEventHostResult = zeEventHostReset(event);
-    if (zeEventHostResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventHostReset() call has failed! Error code: %d", static_cast<int>(zeEventHostResult));
-        return false;
-    }
-
-    log<Verbosity::info>("Reset of event has been successful!");
-    return true;
 }
 
 bool appendSignalEvent(ze_command_list_handle_t cmdList, ze_event_handle_t event) {

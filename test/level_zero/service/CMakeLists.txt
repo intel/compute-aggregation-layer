@@ -11,6 +11,7 @@ set(SERVICE_L0_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test_artificial_events_allocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_artificial_events_manager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_command_list_to_context_tracker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_ongoing_hostrptr_copies_manager.cpp
 
     ${cal_source_root_dir}/test/mocks/artificial_events_allocator_mock.cpp
     ${cal_source_root_dir}/test/mocks/sys_mock.cpp

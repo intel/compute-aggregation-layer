@@ -254,6 +254,22 @@ bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t 
     return true;
 }
 
+bool appendBarrier(ze_command_list_handle_t cmdList,
+                   ze_event_handle_t signalEvent,
+                   uint32_t waitEventsCount,
+                   ze_event_handle_t *waitEvents) {
+    log<Verbosity::info>("Appending barrier to command list!");
+
+    const auto zeCommandListAppendBarrierResult = zeCommandListAppendBarrier(cmdList, signalEvent, waitEventsCount, waitEvents);
+    if (zeCommandListAppendBarrierResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendBarrier() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendBarrierResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfuly appended barrier to command list!");
+    return true;
+}
+
 bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *source,
@@ -465,6 +481,48 @@ bool synchronizeViaEvent(ze_event_handle_t event) {
     return true;
 }
 
+bool synchronizeViaEventPooling(ze_event_handle_t event, std::chrono::milliseconds msTimeout) {
+    log<Verbosity::info>("Waiting for finish of execution via pulling event status using zeEventQueryStatus()!");
+
+    ze_result_t eventStatus{};
+    std::chrono::milliseconds msElapsedTime{};
+
+    auto startTimePoint = std::chrono::high_resolution_clock::now();
+    auto endTimePoint = std::chrono::high_resolution_clock::now();
+
+    do {
+        eventStatus = zeEventQueryStatus(event);
+        endTimePoint = std::chrono::high_resolution_clock::now();
+        msElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTimePoint - startTimePoint);
+    } while (eventStatus == ZE_RESULT_NOT_READY && msElapsedTime < msTimeout);
+
+    if (eventStatus == ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("Pulling of event status via zeEventQueryStatus() successfuly completed for event = %p!", static_cast<void *>(event));
+        return true;
+    }
+
+    if (eventStatus == ZE_RESULT_NOT_READY) {
+        log<Verbosity::error>("Pulling of event status via zeEventQueryStatus() failed due to timeout!");
+        return false;
+    }
+
+    log<Verbosity::info>("zeEventQueryStatus() call has failed for event = %p! Error code = %d", static_cast<void *>(event), static_cast<int>(eventStatus));
+    return false;
+}
+
+bool resetEvent(ze_event_handle_t event) {
+    log<Verbosity::info>("Resetting event = %p", static_cast<void *>(event));
+
+    const auto zeEventHostResult = zeEventHostReset(event);
+    if (zeEventHostResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventHostReset() call has failed! Error code: %d", static_cast<int>(zeEventHostResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Reset of event has been successful!");
+    return true;
+}
+
 bool destroyEventPool(ze_event_pool_handle_t &eventPool) {
     log<Verbosity::info>("Destroying event pool via zeEventPoolDestroy()!");
 
@@ -538,6 +596,35 @@ bool synchronizeViaFence(ze_fence_handle_t fence) {
 
     log<Verbosity::info>("Execution finished!");
     return true;
+}
+
+bool synchronizeViaFencePooling(ze_fence_handle_t fence, std::chrono::milliseconds msTimeout) {
+    log<Verbosity::info>("Waiting for finish of execution via pulling fence status using zeFenceQueryStatus()!");
+
+    ze_result_t fenceStatus{};
+    std::chrono::milliseconds msElapsedTime{};
+
+    auto startTimePoint = std::chrono::high_resolution_clock::now();
+    auto endTimePoint = std::chrono::high_resolution_clock::now();
+
+    do {
+        fenceStatus = zeFenceQueryStatus(fence);
+        endTimePoint = std::chrono::high_resolution_clock::now();
+        msElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTimePoint - startTimePoint);
+    } while (fenceStatus == ZE_RESULT_NOT_READY && msElapsedTime < msTimeout);
+
+    if (fenceStatus == ZE_RESULT_SUCCESS) {
+        log<Verbosity::info>("Pulling of fence status via zeFenceQueryStatus() successfuly completed for fence = %p!", static_cast<void *>(fence));
+        return true;
+    }
+
+    if (fenceStatus == ZE_RESULT_NOT_READY) {
+        log<Verbosity::error>("Pulling of fence status via zeFenceQueryStatus() failed due to timeout!");
+        return false;
+    }
+
+    log<Verbosity::info>("zeFenceQueryStatus() call has failed for fence = %p! Error code = %d", static_cast<void *>(fence), static_cast<int>(fenceStatus));
+    return false;
 }
 
 bool resetFence(ze_fence_handle_t fence) {

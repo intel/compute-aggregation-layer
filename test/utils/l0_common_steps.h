@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -10,6 +10,7 @@
 #include "level_zero/ze_api.h"
 #include "shared/log.h"
 
+#include <chrono>
 #include <type_traits>
 #include <vector>
 
@@ -32,6 +33,11 @@ bool destroyCommandQueue(ze_command_queue_handle_t &queue);
 
 bool createCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_list_handle_t &list);
 bool createImmediateCommandList(ze_context_handle_t context, ze_device_handle_t device, uint32_t ordinal, ze_command_queue_mode_t mode, ze_command_list_handle_t &list);
+bool appendBarrier(ze_command_list_handle_t cmdList,
+                   ze_event_handle_t signalEvent,
+                   uint32_t waitEventsCount = 0,
+                   ze_event_handle_t *waitEvents = nullptr);
+
 bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *source,
@@ -66,10 +72,13 @@ bool destroyEventPool(ze_event_pool_handle_t &eventPool);
 
 bool createEvent(ze_event_pool_handle_t eventPool, uint32_t index, ze_event_handle_t &event);
 bool synchronizeViaEvent(ze_event_handle_t event);
+bool synchronizeViaEventPooling(ze_event_handle_t event, std::chrono::milliseconds msTimeout);
+bool resetEvent(ze_event_handle_t event);
 bool destroyEvent(ze_event_handle_t &event);
 
 bool createFence(ze_command_queue_handle_t queue, ze_fence_handle_t &fence);
 bool synchronizeViaFence(ze_fence_handle_t fence);
+bool synchronizeViaFencePooling(ze_fence_handle_t fence, std::chrono::milliseconds msTimeout);
 bool resetFence(ze_fence_handle_t fence);
 bool destroyFence(ze_fence_handle_t &fence);
 
