@@ -710,20 +710,10 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
 struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 
-    ~IcdOclProgram() {
-        removeGlobalPointer();
-    }
-
     void storeSizesOfBinaries(void *paramValue, size_t paramValueSize);
     std::vector<size_t> getBinariesSizes();
 
-    void recordGlobalPointer(void *ptr);
-    void removeGlobalPointer();
-
   protected:
-    std::vector<void *> globalPointers{};
-    std::mutex globalPointersMutex{};
-
     std::vector<size_t> binariesSizes;
     std::mutex binariesSizesMutex;
 };

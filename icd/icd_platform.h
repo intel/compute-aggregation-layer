@@ -111,9 +111,12 @@ class IcdPlatform {
 
         // Check global pointer list
         auto globalPtrLock = globalPointers.lock();
-        if (std::find(globalPointers->begin(), globalPointers->end(), usmPtr) != globalPointers->end()) {
-            log<Verbosity::debug>("Found usmPtr %lx in global pointer list. Returning true", usmPtr);
-            return true;
+        for (auto &pointersEntry : *globalPointers) {
+            auto &pointers = pointersEntry.second;
+            if (std::find(pointers.begin(), pointers.end(), usmPtr) != pointers.end()) {
+                log<Verbosity::debug>("Found usmPtr %lx in global pointer list. Returning true", usmPtr);
+                return true;
+            }
         }
 
         return getUserModeAccessibleUsmDeviceRangeFromMap(usmPtr) != userModeAccessibleUsmDeviceAddresses.end();
@@ -213,23 +216,31 @@ class IcdPlatform {
         return globalState.isZeroCopyForMallocShmemEnabled();
     }
 
-    bool recordGlobalPointer(void *ptr) {
-        log<Verbosity::debug>("Adding global pointer:%lx to global pointer cache to list", ptr);
+    bool recordGlobalPointer(void *handle, void *ptr) {
+        if (!handle || !ptr) {
+            log<Verbosity::debug>("Could not record global pointer! Handle or pointer is nullptr!");
+            return false;
+        }
+
+        log<Verbosity::debug>("For handle (%p) adding global pointer (%p) to global pointer lookup!", handle, ptr);
+
         auto globalPtrLock = globalPointers.lock();
-        globalPointers->push_back(ptr);
+        auto &pointers = (*globalPointers)[handle];
+
+        const auto pointerAlreadyRegistered = std::find(pointers.begin(), pointers.end(), ptr) != pointers.end();
+        if (!pointerAlreadyRegistered) {
+            pointers.push_back(ptr);
+        }
+
         return true;
     }
 
-    bool removeGlobalPointer(void *ptr) {
-        log<Verbosity::debug>("Removing global pointer:%lx from global pointer cache", ptr);
-        auto globalPtrLock = globalPointers.lock();
-        auto it = std::find(globalPointers->begin(), globalPointers->end(), ptr);
-        if (it == globalPointers->end()) {
-            log<Verbosity::debug>("Pointer:%lx not found in global pointer cache ", ptr);
-            return true;
-        }
+    bool removeGlobalPointers(void *handle) {
+        log<Verbosity::debug>("Removing global pointers for handle (%p) from global pointer lookup!", handle);
 
-        globalPointers->erase(it);
+        auto globalPtrLock = globalPointers.lock();
+        globalPointers->erase(handle);
+
         return true;
     }
 
@@ -279,7 +290,7 @@ class IcdPlatform {
     Cal::Icd::IcdGlobalState &globalState;
     const Cal::ApiType apiType;
     std::map<const void *, const void *> userModeAccessibleUsmDeviceAddresses;
-    Cal::Utils::Lockable<std::vector<void *>> globalPointers;
+    Cal::Utils::Lockable<std::unordered_map<void *, std::vector<void *>>> globalPointers;
     Cal::Utils::Lockable<std::unordered_map<void *, UsmSharedHostAlloc>> usmAllocs;
 };
 

@@ -1112,7 +1112,10 @@ cl_int clReleaseProgram (cl_program program) {
         return command->returnValue();
     }
     {
-        program->asLocalObject()->dec();
+        const auto prevRefCount = program->asLocalObject()->dec();
+        if (prevRefCount == 1u) {
+            globalOclPlatform->removeGlobalPointers(program);
+        };
     }
     cl_int ret = command->captures.ret;
 
@@ -4068,7 +4071,7 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     if(globalVariablePointerRet)
     {
         if (command->captures.ret == CL_SUCCESS)
-            static_cast<IcdOclProgram*>(program)->recordGlobalPointer(*globalVariablePointerRet);
+            globalOclPlatform->recordGlobalPointer(program, *globalVariablePointerRet);
     }
     cl_int ret = command->captures.ret;
 

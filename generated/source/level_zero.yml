@@ -5353,7 +5353,7 @@ config:
           type: ze_module_handle_t
           kind: scalar
           translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
-          translate_after: "{arg}->asLocalObject()->dec()"
+          translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalL0Platform->removeGlobalPointers(hModule);\n        }}"
           daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
     - name: zeModuleDynamicLink
@@ -5530,7 +5530,7 @@ config:
               type: void*
               kind: scalar
             server_access: read_write
-          translate_after: "command->captures.ret = static_cast<IcdL0Module*>(hModule)->recordGlobalPointer(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
+          translate_after: "command->captures.ret = globalL0Platform->recordGlobalPointer(hModule, *{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
 
     - name: zeModuleGetKernelNames
       latency: 0.0

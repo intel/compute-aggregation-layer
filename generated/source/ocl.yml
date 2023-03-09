@@ -1894,7 +1894,7 @@ config:
           type: cl_program
           kind: scalar
           translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
-          translate_after: "{arg}->asLocalObject()->dec()"
+          translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalOclPlatform->removeGlobalPointers(program);\n        }}"
 
     - name: clReleaseMemObject
       latency: 0.0
@@ -7025,4 +7025,4 @@ config:
               type: void*
               kind: scalar
             server_access: write
-          translate_after: "if (command->captures.ret == CL_SUCCESS)\n            static_cast<IcdOclProgram*>(program)->recordGlobalPointer(*{arg})"
+          translate_after: "if (command->captures.ret == CL_SUCCESS)\n            globalOclPlatform->recordGlobalPointer(program, *{arg})"

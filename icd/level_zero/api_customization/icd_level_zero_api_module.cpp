@@ -6,8 +6,7 @@
  */
 
 #include "generated_icd_level_zero.h"
-#include "generated_rpc_messages_level_zero.h"
-#include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/api_type_wrapper/module_wrapper.h"
 #include "icd/level_zero/logic/properties_cache.h"
 
 namespace Cal::Icd::LevelZero {

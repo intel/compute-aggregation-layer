@@ -8,6 +8,7 @@
 #pragma once
 
 #include "icd/level_zero/logic/struct_traits.h"
+#include "level_zero/ze_api.h"
 
 #include <cstring>
 #include <tuple>

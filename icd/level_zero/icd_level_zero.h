@@ -11,6 +11,7 @@
 #include "icd/icd_platform.h"
 #include "icd/level_zero/api_customization/icd_level_zero_api.h"
 #include "icd/level_zero/api_type_wrapper/handles_definitions.h"
+#include "icd/level_zero/api_type_wrapper/module_wrapper.h"
 #include "icd/level_zero/logic/properties_cache.h"
 #include "icd/level_zero/logic/types_printer.h"
 #include "level_zero/ze_api.h"
@@ -259,41 +260,6 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     std::mutex queueMutex{};
     std::vector<ze_command_list_handle_t> currentlyExecutedCommandLists{};
     ze_command_queue_mode_t mode{};
-};
-
-class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t, Logic::IcdL0TypePrinter> {
-  public:
-    using RefCountedWithParent::RefCountedWithParent;
-
-    ~IcdL0Module() {
-        removeGlobalPointer();
-    }
-
-    ze_result_t getKernelNames(uint32_t *pCount, const char **pNames);
-    ze_result_t getKernelNamesCount(uint32_t *pCount);
-    bool recordGlobalPointer(void *ptr);
-    bool removeGlobalPointer();
-
-    Logic::PropertiesCache::VectorTuple<ze_module_properties_t> properties;
-
-    template <typename T>
-    constexpr uint32_t &getPropertiesCount() {
-        return Logic::PropertiesCache::defaultPropertiesCount;
-    }
-
-  private:
-    bool queryKernelNames();
-    void populateKernelNames(const std::vector<char> &buffer);
-
-    std::atomic_bool wasKernelNamesQueried{false};
-    std::vector<std::string> kernelNames{};
-    std::mutex kernelNamesMutex{};
-
-    struct {
-        std::unique_lock<std::mutex> lock() { return std::unique_lock<std::mutex>(criticalSection); }
-        std::mutex criticalSection;
-        std::vector<void *> ptrList{};
-    } globalPointers;
 };
 
 struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, Logic::IcdL0TypePrinter> {
