@@ -20,8 +20,6 @@ namespace Shared {
 
 template <typename BaseT, typename TypePrinterT>
 class RefCounted : public BaseT {
-    friend class SingleReference;
-
   public:
     using RemoteObjectT = BaseT *;
     using CleanupFuncT = void (*)(void *remoteObject, void *localObject);
@@ -29,12 +27,6 @@ class RefCounted : public BaseT {
     RefCounted(RemoteObjectT remoteObject, CleanupFuncT cleanupFunc) : remoteObject(remoteObject), cleanupFunc(cleanupFunc) {}
 
     uint32_t dec() {
-        if (externalRefCount >= refCount) {
-            log<Verbosity::error>("Attempt to decrease refCount while %d other objects are referencing this element.",
-                                  static_cast<uint32_t>(externalRefCount));
-            return refCount;
-        }
-
         auto prev = refCount--;
         const char *objectTypeName = TypePrinterT::template getObjectTypeAsStr<RemoteObjectT>();
         log<Verbosity::bloat>("Decreasing %s refcount for %p - previous refcount was %d", objectTypeName, this, prev);
@@ -63,20 +55,9 @@ class RefCounted : public BaseT {
         return refCount;
     }
 
-  protected:
-    uint32_t externalInc() {
-        externalRefCount++;
-        return inc();
-    }
-    uint32_t externalDec() {
-        externalRefCount--;
-        return dec();
-    }
-
     virtual ~RefCounted() = default;
 
     std::atomic_uint refCount = 1;
-    std::atomic_uint externalRefCount = 0;
     RemoteObjectT remoteObject = {};
     CleanupFuncT cleanupFunc = nullptr;
 };
@@ -86,8 +67,6 @@ class SingleReference {
       public:
         virtual uint32_t dec() = 0;
         virtual uint32_t inc() = 0;
-        virtual uint32_t externalInc() = 0;
-        virtual uint32_t externalDec() = 0;
 
         virtual std::unique_ptr<RefCountedOpaque> clone() const = 0;
         virtual ~RefCountedOpaque() = default;
@@ -112,18 +91,6 @@ class SingleReference {
             }
             return std::numeric_limits<uint32_t>::max();
         }
-        uint32_t externalInc() override {
-            if (refCounted) {
-                refCounted->externalInc();
-            }
-            return std::numeric_limits<uint32_t>::max();
-        }
-        uint32_t externalDec() override {
-            if (refCounted) {
-                return refCounted->externalDec(); // NOLINT(clang-analyzer-cplusplus.NewDelete)
-            }
-            return std::numeric_limits<uint32_t>::max();
-        }
 
         std::unique_ptr<RefCountedOpaque> clone() const override {
             return std::make_unique<ReferenceToRefCounted<RefCountedT>>(refCounted);
@@ -137,12 +104,12 @@ class SingleReference {
     template <typename ObjT>
     SingleReference(ObjT *obj) {
         wrappedObj = std::make_unique<ReferenceToRefCounted<ObjT>>(obj);
-        wrappedObj->externalInc();
+        wrappedObj->inc();
     }
 
     ~SingleReference() {
         if (wrappedObj) {
-            wrappedObj->externalDec(); // NOLINT(clang-analyzer-cplusplus.NewDelete)
+            wrappedObj->dec();
         }
     }
 
@@ -171,7 +138,7 @@ class SingleReference {
         SingleReference ret;
         if (this->wrappedObj) {
             ret.wrappedObj = this->wrappedObj->clone();
-            ret.wrappedObj->externalInc();
+            ret.wrappedObj->inc();
         }
         return ret;
     }

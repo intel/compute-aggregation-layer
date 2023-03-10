@@ -7,7 +7,6 @@
 
 #include "gtest/gtest.h"
 #include "shared/ref_counted.h"
-#include "test/mocks/log_mock.h"
 
 #include <atomic>
 #include <string>
@@ -53,7 +52,7 @@ std::function<void(TestReferenceT *)> createDeleter(bool &wasDestroyed) {
         if (wasDestroyed == false) {
             auto counter = p->peekRefCount();
             while (counter > 0) {
-                p->dec(); // NOLINT(clang-analyzer-cplusplus.NewDelete)
+                p->dec();
                 counter--;
             }
         }
@@ -143,11 +142,6 @@ TEST(SingleReference, GivenAnyTypeThenCreatesTypeErasedReference) {
         EXPECT_EQ(2U, localRef->peekRefCount());
         localRef->dec();
         EXPECT_EQ(1U, localRef->peekRefCount());
-
-        Cal::Mocks::LogCaptureContext logs;
-        localRef->dec();
-        EXPECT_EQ(1U, localRef->peekRefCount());
-        EXPECT_FALSE(logs.empty());
 
         ASSERT_FALSE(localWasDestroyed) << "shouldn't be destroyed due to reference in singleRef";
     }
