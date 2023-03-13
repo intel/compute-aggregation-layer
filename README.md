@@ -83,6 +83,14 @@ After that, run target application as you would normally do.
 ## Available enviroment flags
 Refer to [include/cal.h](include/cal.h) for available flags and their descriptions.
 
+## Setting Compute-Runtime environment variables when using Compute Aggregation Layer
+
+When setting Compute Runtime (NEO) environment variables, users need to ensure that they are in the scope of the parent CAL process; i.e. it needs to be set in the environment prior to `calrun <application_name> [application_args]` call in scoped mode or in the environment of the single service instance in the case of persistent mode. Any exceptions to this rule is noted below.
+
+### Exceptions to parent scope environment variable setting
+
+- ZE\_AFFINITY\_MASK: This environment variable can be used/set in scripts that are executed by child process, i.e. individual MPI ranks are free to set their own ZE\_AFFINITY\_MASK value. This is due to fact that Compute Aggregation Layer intercepts this call to provide the correctly filtered list of device(s)/sub-device(s) the client requests.
+
 ## See also
 - [Intel(R) Graphics Compute Runtime for oneAPI Level Zero and OpenCL(TM) Driver](https://github.com/intel/compute-runtime)
 - [oneAPI Level Zero specification](https://spec.oneapi.io/level-zero/latest/index.html)
