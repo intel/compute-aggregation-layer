@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "shared/control_messages.h"
 #include "shared/ipc.h"
 
 #include <atomic>

@@ -12,7 +12,9 @@
 #include "icd/icd_ocl.h"
 #include "icd/icd_page_fault_manager.h"
 #include "icd/level_zero/icd_level_zero.h"
+#include "shared/ipc.h"
 #include "shared/log.h"
+#include "shared/rpc.h"
 #include "shared/shmem.h"
 
 #include <unistd.h>
@@ -64,6 +66,11 @@ Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
         this->l0Platform.platform = std::make_unique<Icd::LevelZero::IcdL0Platform>(*this);
     });
     return l0Platform.platform.get();
+}
+
+std::unique_ptr<Cal::Ipc::ClientConnectionFactory> IcdGlobalState::createConnectionFactory() {
+    log<Verbosity::debug>("Creating connection listener based on local named socket");
+    return std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
 }
 
 bool IcdGlobalState::ensureServiceIsAvailable() {

@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include "shared/ipc.h"
+#include "shared/api_types.h"
 #include "shared/log.h"
-#include "shared/rpc.h"
 
 #include <algorithm>
 #include <functional>
@@ -22,12 +21,18 @@
 
 namespace Cal {
 namespace Ipc {
+class ClientConnectionFactory;
+class Connection;
 class ShmemImporter;
 class MallocShmemZeroCopyManager;
 } // namespace Ipc
 
 namespace Usm {
 class UsmShmemImporter;
+}
+
+namespace Rpc {
+class ChannelClient;
 }
 
 namespace Icd {
@@ -176,10 +181,7 @@ class IcdGlobalState final {
     void connect();
     const char *getSocketPath();
 
-    std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory() {
-        log<Verbosity::debug>("Creating connection listener based on local named socket");
-        return std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
-    }
+    std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory();
 
     struct {
         std::unique_ptr<Cal::Icd::Ocl::IcdOclPlatform> platform;
