@@ -34,17 +34,6 @@ namespace LevelZero {
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local);
 
-inline PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_mem_alloc_desc_t *deviceDesc, const ze_host_mem_alloc_desc_t *hostDesc) {
-    auto placement = PageFaultManager::Placement::HOST;
-    if (deviceDesc->flags & ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
-        placement = PageFaultManager::Placement::DEVICE;
-    }
-    if (hostDesc->flags & ZE_HOST_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
-        placement = PageFaultManager::Placement::HOST;
-    }
-    return placement;
-}
-
 class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;

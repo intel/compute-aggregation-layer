@@ -9,6 +9,7 @@
 
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
+#include "icd/icd_page_fault_manager.h"
 #include "include/cal.h"
 #include "shared/log.h"
 

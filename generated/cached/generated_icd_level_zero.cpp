@@ -12,6 +12,7 @@
 #include "shared/utils.h"
 
 #include "icd/level_zero/icd_level_zero.h"
+#include "icd/icd_page_fault_manager.h"
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 

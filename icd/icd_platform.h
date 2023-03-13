@@ -8,7 +8,6 @@
 #pragma once
 
 #include "icd/icd_global_state.h"
-#include "icd/icd_page_fault_manager.h"
 #include "shared/api_types.h"
 #include "shared/ipc.h"
 #include "shared/rpc.h"
@@ -30,6 +29,8 @@
 
 namespace Cal {
 namespace Icd {
+
+class PageFaultManager;
 
 struct UsmSharedHostAlloc {
     void *ctx = nullptr;

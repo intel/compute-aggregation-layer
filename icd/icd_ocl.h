@@ -8,6 +8,7 @@
 #pragma once
 
 #include "icd/icd_global_state.h"
+#include "icd/icd_page_fault_manager.h"
 #include "icd/icd_platform.h"
 #include "shared/ipc.h"
 #include "shared/ocl_fat_def.h"

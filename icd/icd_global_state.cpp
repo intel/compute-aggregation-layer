@@ -10,6 +10,7 @@
 #include "generated_icd_level_zero.h"
 #include "generated_icd_ocl.h"
 #include "icd/icd_ocl.h"
+#include "icd/icd_page_fault_manager.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "shared/log.h"
 #include "shared/shmem.h"

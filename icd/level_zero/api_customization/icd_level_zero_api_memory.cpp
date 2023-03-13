@@ -8,6 +8,7 @@
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 #include "icd/icd_global_state.h"
+#include "icd/icd_page_fault_manager.h"
 #include "icd/level_zero/icd_level_zero.h"
 #include "icd_level_zero_api.h"
 #include "icd_level_zero_ipc_helpers.h"
@@ -15,6 +16,17 @@
 #include "shared/usm.h"
 
 namespace Cal::Icd::LevelZero {
+
+inline static PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_mem_alloc_desc_t *deviceDesc, const ze_host_mem_alloc_desc_t *hostDesc) {
+    auto placement = PageFaultManager::Placement::HOST;
+    if (deviceDesc->flags & ZE_DEVICE_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
+        placement = PageFaultManager::Placement::DEVICE;
+    }
+    if (hostDesc->flags & ZE_HOST_MEM_ALLOC_FLAG_BIAS_INITIAL_PLACEMENT) {
+        placement = PageFaultManager::Placement::HOST;
+    }
+    return placement;
+}
 
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr) {
     Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs implicitArgs;
