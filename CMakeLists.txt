@@ -14,6 +14,7 @@ include(os_release_info.cmake)
 file(READ ".branch" BRANCH_TYPE)
 string(STRIP "${BRANCH_TYPE}" BRANCH_TYPE)
 set(BRANCH_DIR_SUFFIX "/${BRANCH_TYPE}")
+message("BRANCH_DIR_SUFFIX : ${BRANCH_DIR_SUFFIX}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")

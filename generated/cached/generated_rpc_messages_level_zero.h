@@ -15,10 +15,9 @@
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 
-#include "shared/utils.h"
-
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>

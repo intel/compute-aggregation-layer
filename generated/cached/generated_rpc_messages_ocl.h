@@ -17,10 +17,9 @@
 #   include "shared/ocl_fat_def.h"
 #endif
 
-#include "shared/utils.h"
-
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>

@@ -21,6 +21,15 @@ add_executable(ocl_test_use_host_ptr
 )
 target_link_libraries(ocl_test_use_host_ptr OpenCL ${common_library_dependencies})
 
+add_executable(ocl_parallel_copy
+               ${CMAKE_CURRENT_SOURCE_DIR}/ocl_parallel_copy.cpp
+               ${cal_source_root_dir}/shared/callstack.cpp
+               ${cal_source_root_dir}/shared/sys.cpp
+               ${cal_source_root_dir}/shared/utils.cpp
+)
+
+target_link_libraries(ocl_parallel_copy OpenCL ${common_library_dependencies})
+
 get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)
 
 add_executable(ocl_test_ult_icd

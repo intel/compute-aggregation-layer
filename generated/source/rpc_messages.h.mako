@@ -12,10 +12,9 @@
 ${header}
 % endfor
 
-#include "shared/utils.h"
-
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
