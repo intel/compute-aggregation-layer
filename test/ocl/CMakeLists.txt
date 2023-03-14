@@ -29,7 +29,6 @@ add_executable(ocl_test_ult_icd
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/sys.cpp
 
-               ${cal_source_root_dir}/icd/icd_platform.cpp
                ${cal_source_root_dir}/icd/icd_global_state.cpp
                ${cal_source_root_dir}/icd/icd_ocl.cpp
 

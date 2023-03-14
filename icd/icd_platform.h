@@ -10,7 +10,6 @@
 #include "icd/icd_global_state.h"
 #include "shared/api_types.h"
 #include "shared/ipc.h"
-#include "shared/rpc.h"
 #include "shared/shmem_transfer_desc.h"
 #include "shared/usm.h"
 
@@ -26,6 +25,10 @@
 #include <mutex>
 #include <sys/mman.h>
 #include <unordered_map>
+
+namespace Cal::Rpc {
+class ChannelClient;
+} // namespace Cal::Rpc
 
 namespace Cal {
 namespace Icd {
