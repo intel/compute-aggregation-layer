@@ -7,7 +7,7 @@
 
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
-#include "icd/level_zero/icd_level_zero.h"
+#include "icd/level_zero/api_type_wrapper/kernel_wrapper.h"
 #include "icd/level_zero/logic/properties_cache.h"
 #include "icd_level_zero_api.h"
 
