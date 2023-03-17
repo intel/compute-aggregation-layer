@@ -27,10 +27,32 @@ ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_
         auto numAvailableDevices = static_cast<uint32_t>(availableDevices.size());
         if (phDevices == nullptr) {
             *pCount = numAvailableDevices;
+            log<Verbosity::debug>("Returning pCount = %d", numAvailableDevices);
         } else {
-            auto numDevices = std::min(*pCount, numAvailableDevices);
-            memcpy(phDevices, availableDevices.data(), numDevices * sizeof(ze_device_handle_t));
+            auto numDevicesToReport = std::min(*pCount, numAvailableDevices);
+
+            for (auto i = 0u; i < numDevicesToReport; i++) {
+                auto icdDevice = static_cast<IcdL0Device *>(availableDevices[i]);
+                bool deviceAffinityPresent = icdDevice->isZeAffinityMaskPresent();
+                auto &filteredSubDevices = icdDevice->getFilteredDevices();
+                auto numFilteredSubDevices = static_cast<uint32_t>(filteredSubDevices.size());
+
+                // For sub-device filter provided by user
+                if (deviceAffinityPresent && (numFilteredSubDevices == 1)) {
+                    // Num filtered sub-devices = 1, only add sub-device
+                    log<Verbosity::debug>("Parsing affinity mask for dev handle:%p, filtered sub-devices count = 1. Adding sub-dev handle:%p",
+                                          availableDevices[i], filteredSubDevices[0]);
+                    phDevices[i] = filteredSubDevices[0];
+                } else {
+                    // If num filtered sub-devices is 1 or only root device specified in affinity mask,
+                    // add root device to output vector
+                    log<Verbosity::debug>("Adding root device handle: %p",
+                                          availableDevices[i]);
+                    phDevices[i] = availableDevices[i];
+                }
+            }
         }
+
         return ZE_RESULT_SUCCESS;
     }
     return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
