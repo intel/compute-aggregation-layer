@@ -28,7 +28,7 @@ namespace Standard {
 bool loadLevelZeroLibrary(std::optional<std::string> path);
 void unloadLevelZeroLibrary();
 bool isLevelZeroLibraryLoaded();
-    
+
 extern ze_result_t (*zeInit)(ze_init_flags_t flags);
 extern ze_result_t (*zeCommandListCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 extern ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);

@@ -26,82 +26,88 @@ namespace Standard {
 bool load${to_pascal_case(config.api_name)}Library(std::optional<std::string> path);
 void unload${to_pascal_case(config.api_name)}Library();
 bool is${to_pascal_case(config.api_name)}LibraryLoaded();
-    
-%  for f in standard_functions:
+
+% for group_name in standard_functions:
+%  for f in standard_functions[group_name]:
 extern ${f.returns.type.str} (*${f.name})(${f.get_args_list_str()});
-%  endfor
+%  endfor # standard_functions[group_name]
+% endfor # standard_functions
 } // Standard
 
 % if extensions:
 namespace Extensions {
-%  for ext in extensions:
+%  for group_name in extensions:
+%   for ext in extensions[group_name]:
 extern ${ext.returns.type.str} (*${ext.name})(${ext.get_args_list_str()});
-%  endfor
+%   endfor # extensions[group_name]
+%  endfor # extensions
 } // Extensions
-% endif
+% endif # extensions
 
 bool isSuccessful(${config.result_type} result);
 
-% for rpc_func in rpc_functions:
+% for group_name in rpc_functions:
+%  for rpc_func in rpc_functions[group_name]:
 \
-%  if get_rpc_handler_suffix(rpc_func) or use_rpc_custom_handler(rpc_func):
+%   if get_rpc_handler_suffix(rpc_func) or use_rpc_custom_handler(rpc_func):
 bool ${rpc_func.name}Handler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-%  endif
-%  if not use_rpc_custom_handler(rpc_func):
+%   endif
+%   if not use_rpc_custom_handler(rpc_func):
 inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for ${rpc_func.name}");
-%    for prologue_line in prologue(rpc_func):
+%     for prologue_line in prologue(rpc_func):
     ${prologue_line}
-%    endfor # prologue(rpc_func)
-%     if requires_malloc_shmem_zero_copy_handler(rpc_func):
+%     endfor # prologue(rpc_func)
+%      if requires_malloc_shmem_zero_copy_handler(rpc_func):
     if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
         log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
         return false;
     }
-%     endif
+%      endif
     auto apiCommand = reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command);
-%     if get_struct_members_layouts(rpc_func):
+%      if get_struct_members_layouts(rpc_func):
     apiCommand->captures.reassembleNestedStructs();
-%     endif
+%      endif
     apiCommand->captures.ret = ${get_rpc_func_fqfn(rpc_func)}(
-%    for arg in rpc_func.args:
-%     if arg.kind.is_pointer_zero_copy_malloc_shmem():
+%     for arg in rpc_func.args:
+%      if arg.kind.is_pointer_zero_copy_malloc_shmem():
 <%      arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
                                                 ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size})\
-%     else : # not arg.kind.is_pointer_zero_copy_malloc_shmem
-%      if arg.traits.uses_standalone_allocation:
+%      else : # not arg.kind.is_pointer_zero_copy_malloc_shmem
+%       if arg.traits.uses_standalone_allocation:
                                                 channel.decodeLocalPtrFromHeapOffset(${get_arg_from_api_command_struct(rpc_func, arg)})\
-%      else : # not arg.traits.uses_standalone_allocation       
+%       else : # not arg.traits.uses_standalone_allocation       
                                                 ${get_arg_from_api_command_struct(rpc_func, arg)}\
+%       endif
 %      endif
-%     endif
 ${", " if not loop.last else ""}
-%    endfor # rpc_func.args
+%     endfor # rpc_func.args
                                                 );
-%    for arg in rpc_func.args:
-%     if arg.daemon_action_on_success:
+%     for arg in rpc_func.args:
+%      if arg.daemon_action_on_success:
     if(isSuccessful(apiCommand->captures.ret)) {
         const auto& resource = ${get_arg_from_api_command_struct(rpc_func, arg)};
         if (resource) {
             ${arg.daemon_action_on_success.format("resource" if arg.kind.is_scalar() else "*resource")};
         }
     }
-%     endif # arg.daemon_action_on_success
-%     if arg.daemon_action_at_end:
+%      endif # arg.daemon_action_on_success
+%      if arg.daemon_action_at_end:
     {
         const auto& resource = ${get_arg_from_api_command_struct(rpc_func, arg)};
         if (resource) {
             ${arg.daemon_action_at_end.format("resource" if arg.kind.is_scalar() else "*resource")};
         }
     }
-%     endif # arg.daemon_action_at_end
-%    endfor # rpc_func.args
-%    for epilogue_line in epilogue(rpc_func):
+%      endif # arg.daemon_action_at_end
+%     endfor # rpc_func.args
+%     for epilogue_line in epilogue(rpc_func):
     ${epilogue_line}
-%    endfor # epilogue(rpc_func)
+%     endfor # epilogue(rpc_func)
     return true;
 }
-%  endif # not use_rpc_custom_handler
+%   endif # not use_rpc_custom_handler
+%  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 
 inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
@@ -109,29 +115,33 @@ inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}(Cal::Ser
 // No RPC handlers were generated (based on dont_generate_rpc_message)
 % else: # rpc_functions
     using namespace ${'::'.join(config.rpc_namespace)};
-    outHandlers.resize(${rpc_functions[-1].message_name}::messageSubtype + 1);
-%  for rpc_func in rpc_functions:
+    outHandlers.resize(${last_function_with_message.message_name}::messageSubtype + 1);
+%  for group_name in rpc_functions:
+%   for rpc_func in rpc_functions[group_name]:
     outHandlers[${rpc_func.message_name}::messageSubtype] = ${rpc_func.name}Handler;
+%   endfor # rpc_functions[group_name]
 %  endfor # rpc_functions
 % endif # rpc_functions
 }
 
-% for rpc_func in rpc_functions:
+% for group_name in rpc_functions:
+%  for rpc_func in rpc_functions[group_name]:
 \
-% if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
+%  if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
 inline void callDirectly(${'::'.join(config.rpc_namespace + [rpc_func.message_name])} &apiCommand) {
-%    if rpc_func.returns.type.is_void():
+%     if rpc_func.returns.type.is_void():
     ${get_rpc_func_fqfn(rpc_func)}(
-%    else : # not rpc_func.returns.type.is_void()
+%     else : # not rpc_func.returns.type.is_void()
     apiCommand.captures.ret = ${get_rpc_func_fqfn(rpc_func)}(
-%    endif
-%    for arg in rpc_func.args:
+%     endif
+%     for arg in rpc_func.args:
                                                 apiCommand.args.${arg.name}\
 ${", " if not loop.last else ""}
-%    endfor # rpc_func.args
+%     endfor # rpc_func.args
                                                 );
 }
-% endif
+%  endif
+%  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
@@ -147,10 +157,12 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         default:
             log<Verbosity::debug>("Tried to call directly unknown message subtype %d", command->subtype);
             return false;
-% for rpc_func in rpc_functions:
-%   if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
+% for group_name in rpc_functions:
+%  for rpc_func in rpc_functions[group_name]:
+%    if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
         case ${'::'.join(config.rpc_namespace + [rpc_func.message_name])}::messageSubtype : callDirectly(*reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command)); break;
-%  endif
+%   endif
+%  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
     }
     return true;

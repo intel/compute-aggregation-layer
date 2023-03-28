@@ -19,9 +19,11 @@ namespace ${namespace_part} {
 % endfor
 
 namespace Standard {
-% for f in standard_functions:
+% for group_name in standard_functions:
+%  for f in standard_functions[group_name]:
 ${f.returns.type.str} (*${f.name})(${f.get_args_list_str()}) = nullptr;
-% endfor
+%  endfor # standard_functions[group_name]
+% endfor # standard_functions
 
 void *libraryHandle = nullptr;
 
@@ -43,26 +45,30 @@ bool load${to_pascal_case(config.api_name)}Library(std::optional<std::string> pa
     if(nullptr == libraryHandle){
         return false;
     }
-    
-% for f in standard_functions:
+
+% for group_name in standard_functions:    
+%  for f in standard_functions[group_name]:
     ${f.name} = reinterpret_cast<decltype(${f.name})>(dlsym(libraryHandle, "${f.name}"));
     if(nullptr == ${f.name}){
-%  if f.special_handling and f.special_handling.optional:
+%   if f.special_handling and f.special_handling.optional:
         log<Verbosity::debug>("Missing symbol ${f.name} in %s", loadPath.c_str());
-%  else : # not (f.special_handling and f.special_handling.optional):
+%   else : # not (f.special_handling and f.special_handling.optional):
         log<Verbosity::error>("Missing symbol ${f.name} in %s", loadPath.c_str());
         unload${to_pascal_case(config.api_name)}Library();
         return false;
-%  endif
+%   endif
     }
-% endfor
+%  endfor # standard_functions[group_name]
+% endfor # standard_functions
     return true;
 }
 
 void unload${to_pascal_case(config.api_name)}Library() {
-% for f in standard_functions:
+% for group_name in standard_functions:
+%  for f in standard_functions[group_name]:
     ${f.name} = nullptr;
-% endfor
+%  endfor # standard_functions[group_name]
+% endfor # standard_functions
     if(libraryHandle){
         dlclose(libraryHandle);
     }
@@ -78,7 +84,8 @@ bool is${to_pascal_case(config.api_name)}LibraryLoaded() {
 % if extensions:
 namespace Extensions {
 namespace LazyLoad {
-%  for ext in extensions:
+%  for group_name in extensions:
+%   for ext in extensions[group_name]:
 ${ext.returns.type.str} ${ext.name}Load(${ext.get_args_list_str()}){
     using ExtFuncT = decltype(${ext.name}Load);
     static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(${ext_loader}("${ext.name}"));
@@ -90,11 +97,14 @@ ${ext.returns.type.str} ${ext.name}Load(${ext.get_args_list_str()}){
     ${daemon_namespace_str}::Extensions::${ext.name} = extAddr;
     return extAddr(${ext.get_call_params_list_str()});
 }
-%  endfor
+%   endfor # extensions[group_name]
+%  endfor # extensions
 } // namespace Lazy Load
-%  for ext in extensions:
+%  for group_name in extensions:
+%   for ext in extensions[group_name]:
 ${ext.returns.type.str} (*${ext.name})(${ext.get_args_list_str()}) = ${daemon_namespace_str}::Extensions::LazyLoad::${ext.name}Load;
-%  endfor
+%   endfor # extensions[group_name]
+%  endfor # extensions
 } // namespace Extensions
 % endif
 

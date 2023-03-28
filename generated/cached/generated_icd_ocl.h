@@ -476,7 +476,6 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clSetMemObjectDestructorCallback = reinterpret_cast<decltype(dt.clSetMemObjectDestructorCallback)>(Cal::Icd::Ocl::Unimplemented::clSetMemObjectDestructorCallbackUnimpl);
 }
 
-
 void *getOclExtensionFuncionAddressRpcHelper(const char *funcName);
 } // namespace Ocl
 } // namespace Icd

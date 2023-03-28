@@ -133,7 +133,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     if(nullptr == libraryHandle){
         return false;
     }
-    
+
     zeInit = reinterpret_cast<decltype(zeInit)>(dlsym(libraryHandle, "zeInit"));
     if(nullptr == zeInit){
         log<Verbosity::error>("Missing symbol zeInit in %s", loadPath.c_str());

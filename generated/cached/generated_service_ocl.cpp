@@ -146,7 +146,7 @@ bool loadOclLibrary(std::optional<std::string> path) {
     if(nullptr == libraryHandle){
         return false;
     }
-    
+
     clGetPlatformIDs = reinterpret_cast<decltype(clGetPlatformIDs)>(dlsym(libraryHandle, "clGetPlatformIDs"));
     if(nullptr == clGetPlatformIDs){
         log<Verbosity::error>("Missing symbol clGetPlatformIDs in %s", loadPath.c_str());

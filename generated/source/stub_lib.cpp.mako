@@ -9,7 +9,8 @@
 ${header}
 % endfor
 
-% for f in [f for f in functions if not f.traits.is_extension and not (f.special_handling and f.special_handling.icd and f.special_handling.icd.dont_generate_stub)] :
+% for group_name in functions_to_stub:
+%  for f in functions_to_stub[group_name]:
 <% func_base = f if not f.aliased_function else f.aliased_function%>\
 ${func_base.returns.type.str} ${f.name}(${get_func_handler_args_list_str(func_base)}){
 %  if not func_base.returns.type.is_void():
@@ -17,5 +18,6 @@ ${func_base.returns.type.str} ${f.name}(${get_func_handler_args_list_str(func_ba
 %  endif
 }
 
-% endfor # functions
+%  endfor # functions_to_stub[group_name]
+% endfor # functions_to_stub
 // #### Generated code -- end ####

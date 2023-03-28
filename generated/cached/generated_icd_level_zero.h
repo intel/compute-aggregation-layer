@@ -1057,8 +1057,8 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnSetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnSetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemSetAccessAttributeUnimpl);
     dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
-
 inline void initL0SysmanDdi(zes_dditable_t &dt){
+    // below are unimplemented, provided bindings are for easier debugging only
     dt.Device.pfnEnumRasErrorSets = reinterpret_cast<decltype(dt.Device.pfnEnumRasErrorSets)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceEnumRasErrorSetsUnimpl);
     dt.Ras.pfnGetProperties = reinterpret_cast<decltype(dt.Ras.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetPropertiesUnimpl);
     dt.Ras.pfnGetConfig = reinterpret_cast<decltype(dt.Ras.pfnGetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetConfigUnimpl);
@@ -1165,6 +1165,7 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Frequency.pfnOcSetTjMax = reinterpret_cast<decltype(dt.Frequency.pfnOcSetTjMax)>(Cal::Icd::LevelZero::Unimplemented::zesFrequencyOcSetTjMaxUnimpl);
 }
 inline void initL0ToolsDdi(zet_dditable_t &dt){
+    // below are unimplemented, provided bindings are for easier debugging only
     dt.Kernel.pfnGetProfileInfo = reinterpret_cast<decltype(dt.Kernel.pfnGetProfileInfo)>(Cal::Icd::LevelZero::Unimplemented::zetKernelGetProfileInfoUnimpl);
     dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp = reinterpret_cast<decltype(dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp)>(Cal::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMultipleMetricValuesExpUnimpl);
     dt.Device.pfnGetDebugProperties = reinterpret_cast<decltype(dt.Device.pfnGetDebugProperties)>(Cal::Icd::LevelZero::Unimplemented::zetDeviceGetDebugPropertiesUnimpl);

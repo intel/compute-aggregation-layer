@@ -16,10 +16,12 @@ ${header}
 namespace ${namespace_part} {
 % endfor # rpc_namespace
 
-% for f in functions:
-%  if f.implicit_args:
+% for group_name in functions:
+%  for f in functions[group_name]:
+%   if f.implicit_args:
 struct ${f.message_name}ImplicitArgs;
-%  endif # f.implicit_args
+%   endif # f.implicit_args
+% endfor # functions[group_name]
 % endfor # functions
 
 % for namespace_part in reversed(rpc_namespace):
@@ -29,9 +31,11 @@ struct ${f.message_name}ImplicitArgs;
 % for namespace_part in icd_namespace:
 namespace ${namespace_part} {
 % endfor # icd_namespace
-% for f in functions:
+% for group_name in functions:
+%  for f in functions[group_name]:
 <% func_base = f if not f.aliased_function else f.aliased_function%>\
 ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_args_list_str(func_base)});
+%  endfor # functions[group_name]
 % endfor # functions
 
 % if config.unimplemented:
@@ -47,31 +51,24 @@ inline void ${fname.rpartition(".")[2]}Unimpl() {
 } // Unimplemented
 % endif # config.unimplemented:
 
-inline void ${config.icd_init_dispatch_table_func_name_format.format("")}(${config.icd_dispatch_table_type["core"]} &dt){
-% for func in functions_in_dispatch_table:
+% for group_name in config.icd_dispatch_table_type:
+<% init_func_name_suffix = "" if group_name == "core" else group_name.capitalize()%>\
+inline void ${config.icd_init_dispatch_table_func_name_format.format(init_func_name_suffix)}(${config.icd_dispatch_table_type[group_name]} &dt){
+%  for func in functions_in_dispatch_table[group_name]:
     dt.${get_func_ddi_name(func)} = ${'::'.join(config.icd_namespace + [func.name])};
-% endfor # functions_in_dispatch_table
-% if config.unimplemented:
+%  endfor # functions_in_dispatch_table
+%  if config.unimplemented:
     // below are unimplemented, provided bindings are for easier debugging only
-%  for func_category in config.unimplemented:
-%   if func_category["name"] == "core":
-%    for fname in func_category["members"]:
+%   for func_category in config.unimplemented:
+%    if func_category["name"] == group_name:
+%     for fname in func_category["members"]:
     dt.${get_ddi_name(fname)} = reinterpret_cast<decltype(dt.${get_ddi_name(fname)})>(${'::'.join(config.icd_namespace + ['Unimplemented', fname.rpartition(".")[2]+'Unimpl'])});
-%    endfor # fname in func_category["members"]
-%   endif # func_category["name"] == "core"
-%  endfor # config.unimplemented
-% endif # config.unimplemented
+%     endfor # fname in func_category["members"]
+%    endif # func_category["name"] == group_name
+%   endfor # config.unimplemented
+%  endif # config.unimplemented
 }
-
-% for func_category in config.unimplemented:
-%  if func_category["name"] != "core":
-inline void ${config.icd_init_dispatch_table_func_name_format.format(func_category["name"].capitalize())}(${config.icd_dispatch_table_type[func_category["name"]]} &dt){
-%   for fname in func_category["members"]:
-    dt.${get_ddi_name(fname)} = reinterpret_cast<decltype(dt.${get_ddi_name(fname)})>(${'::'.join(config.icd_namespace + ['Unimplemented', fname.rpartition(".")[2]+'Unimpl'])});
-%   endfor # fname in func_category["members"]
-}
-%  endif # func_category["name"] != "core"
-% endfor # config.unimplemented
+% endfor # config.icd_dispatch_table_type
 
 % if config.icd_get_extenion_func_addr_func_name:
 void *${config.icd_get_extenion_func_addr_func_name}(const char *funcName);

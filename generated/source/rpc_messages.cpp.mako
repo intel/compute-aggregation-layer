@@ -16,13 +16,15 @@ namespace ${namespace_part} {
 
 using namespace Cal::Utils;
 
-% for func in config.functions:
-%  if not should_skip_message_generation(func):
-%   if func.capture_layout.emit_dynamic_traits:
+% for group_name in config.functions:
+%  for func in config.functions[group_name]:
+%   if not should_skip_message_generation(func):
+%    if func.capture_layout.emit_dynamic_traits:
 ${func.capture_layout.generate_cpp()}
-%   endif # func.capture_layout.emit_dynamic_traits
-%  endif # not should_skip_message_generation(func):
-% endfor # config.functions:
+%    endif # func.capture_layout.emit_dynamic_traits
+%   endif # not should_skip_message_generation(func)
+%  endfor # config.functions[group_name]
+% endfor # config.functions
 % for namespace_part in reversed(rpc_namespace):
 } // namespace ${namespace_part}
 %endfor

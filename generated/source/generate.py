@@ -1370,9 +1370,9 @@ class Config:
         for s in self.structures:
             s.set_all_structures_description(self.structures_by_name)
 
-        self.functions = [Function(self.structures_by_name, f) for f in src.get("functions", [])]
+        self.functions = {function_group["name"] : [Function(self.structures_by_name, f) for f in function_group["members"]] for function_group in src.get("functions", [])}
         self.unimplemented = src.get("unimplemented", [])
-        self.functions_by_name = {func.name: func for func in self.functions}
+        self.functions_by_name = {group_name : {func.name: func for func in self.functions[group_name]} for group_name in self.functions.keys()}
         self.icd_namespace = src.get("icd_namespace", "").split("::")
         self.icd_dispatch_table_type = src.get("icd_dispatch_table_type", "DispatchTableT")
         self.icd_init_dispatch_table_func_name_format = src.get("icd_init_dispatch_table_func_name_format", "initIcdDispatchTable")
@@ -1386,16 +1386,20 @@ class Config:
         self.ddi_format_regexp1_category = FormatRegexp(src.get("ddi_format_regexp1_category", None))
         self.result_type = src.get("result_type", "int")
         self.result_success = src.get("result_success", 0)
-        for f in self.functions:
-            if not (f.special_handling and f.special_handling.icd and f.special_handling.icd.alias_to):
-                continue
-            f.aliased_function = self.functions_by_name[f.special_handling.icd.alias_to]
+
+        for group_name in self.functions:
+            for f in self.functions[group_name]:
+                if not (f.special_handling and f.special_handling.icd and f.special_handling.icd.alias_to):
+                    continue
+                f.aliased_function = self.functions_by_name[group_name][f.special_handling.icd.alias_to]
 
         for func_category in self.unimplemented:
-            assert not any(f for f in self.functions if f.name in func_category["members"])
+            category_name = func_category["name"]
+            category_members = func_category["members"]
+            assert not any(f for f in self.functions[category_name] if f.name in category_members)
 
     def get_extensions(self, include_variants=False):
-        return [f for f in self.functions if f.traits.is_extension and not f.special_handling.is_variant()]
+        return {group_name : [f for f in self.functions[group_name] if f.traits.is_extension and not f.special_handling.is_variant()] for group_name in self.functions}
 
 
 def load(fname: str) -> Config:
@@ -1407,10 +1411,14 @@ def load(fname: str) -> Config:
 def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> str:
     def should_skip_message_generation(func):
         return func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message
-    functions_with_messages = [f for f in config.functions if not should_skip_message_generation(f)]
+
+    functions_with_messages = {group_name : [f for f in config.functions[group_name] if not should_skip_message_generation(f)] for group_name in config.functions}
+    flat_functions_with_messages = []
+    for group_name in functions_with_messages:
+        flat_functions_with_messages = flat_functions_with_messages + functions_with_messages[group_name]
 
     def get_message_subtype(func):
-        return functions_with_messages.index(func)
+        return flat_functions_with_messages.index(func)
 
     def get_fq_message_name(func):
         return '::'.join(config.rpc_namespace + [func.message_name])
@@ -1432,9 +1440,9 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
         unimplemented=config.unimplemented,
         daemon_namespace=config.daemon_namespace,
         rpc_namespace=config.rpc_namespace,
-        rpc_functions=[
-            f for f in config.functions if not (
-                f.special_handling and f.special_handling.rpc and f.special_handling.rpc.dont_generate_rpc_message)],
+        rpc_functions={
+            group_name : [f for f in config.functions[group_name] if not (
+                f.special_handling and f.special_handling.rpc and f.special_handling.rpc.dont_generate_rpc_message)] for group_name in config.functions},
         file_headers=config.file_headers.common +
         config.file_headers.rpc_messages_h +
         additional_file_headers,
@@ -1472,10 +1480,12 @@ def generate_stub_lib_cpp(config: Config) -> str:
     with open("stub_lib.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
 
+    functions_to_stub = {group_name : [f for f in config.functions[group_name] if not f.traits.is_extension and not (f.special_handling and f.special_handling.icd and f.special_handling.icd.dont_generate_stub)] for group_name in config.functions}
+
     def get_func_handler_args_list_str(f):
         return ", ".join([f"{sarg}" for sarg in [arg.to_str() for arg in f.args]])
 
-    return Template(template).render(config=config, functions=config.functions,
+    return Template(template).render(config=config, functions_to_stub=functions_to_stub,
                                      file_headers=config.file_headers.api,
                                      get_func_handler_args_list_str=get_func_handler_args_list_str)
 
@@ -1528,8 +1538,8 @@ def generate_icd_h(config: Config, additional_file_headers: list) -> str:
 
     def get_func_handler_args_list_str(f):
         return ", ".join([f"{sarg}" for sarg in [arg.to_str() for arg in f.args] + get_implicit_arg(f)])
-    functions_in_dispatch_table = [f for f in config.functions if not (
-        f.special_handling and f.special_handling.icd and f.special_handling.icd.not_in_dispatch_table)]
+    functions_in_dispatch_table = {group_name : [f for f in config.functions[group_name] if not (
+        f.special_handling and f.special_handling.icd and f.special_handling.icd.not_in_dispatch_table)] for group_name in config.functions}
 
     def get_func_ddi_name_bind(f):
         return get_func_ddi_name(config, f)
@@ -1590,9 +1600,11 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
 
     def dont_generate_handler(f):
         return f.special_handling and f.special_handling.icd and f.special_handling.icd.dont_generate_handler
-    functions_in_dispatch_table = [f for f in config.functions if not (
-        f.special_handling and f.special_handling.icd and f.special_handling.icd.not_in_dispatch_table)]
-    non_variant_functions = [f for f in config.functions if not (f.special_handling and f.special_handling.is_variant())]
+
+    functions_in_dispatch_table = {group_name : [f for f in config.functions[group_name] if not (
+        f.special_handling and f.special_handling.icd and f.special_handling.icd.not_in_dispatch_table)] for group_name in config.functions}
+
+    non_variant_functions = {group_name : [f for f in config.functions[group_name] if not (f.special_handling and f.special_handling.is_variant())] for group_name in config.functions}
 
     def itentionally_ignore(f):
         return f.special_handling and f.special_handling.icd and f.special_handling.icd.intentionally_ignore
@@ -1615,10 +1627,12 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
 
     def is_unsupported(f):
         return f.special_handling and f.special_handling.icd and f.special_handling.icd.unsupported
-    icd_extensions = [f for f in config.functions if f.special_handling and f.special_handling.icd and f.special_handling and f.special_handling.icd.in_get_extension_function_address and not f.special_handling.is_variant()]
+
+    icd_extensions = {group_name : [f for f in config.functions[group_name] if f.special_handling and f.special_handling.icd and f.special_handling and f.special_handling.icd.in_get_extension_function_address and not f.special_handling.is_variant()] for group_name in config.functions}
 
     def can_be_null(arg):
         return arg.kind_details and arg.kind_details.can_be_null
+
     with open("icd.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
 
@@ -1654,17 +1668,27 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
 def generate_service_h(config: Config, additional_file_headers: list) -> str:
     with open("service.h.mako", "r", encoding="utf-8") as f:
         template = f.read()
-    rpc_extensions = [
-        ext for ext in config.get_extensions() if not (
+
+    def should_skip_message_generation(func):
+        return func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message
+
+    functions_with_messages = {group_name : [f for f in config.functions[group_name] if not should_skip_message_generation(f)] for group_name in config.functions}
+    last_function_with_message_group = list(functions_with_messages.keys())[-1]
+    last_function_with_message = functions_with_messages[last_function_with_message_group][-1]
+
+    all_extensions = config.get_extensions()
+    rpc_extensions = {group_name : [
+        ext for ext in all_extensions[group_name] if not (
             ext.aliased_function or (
                 ext.special_handling and ext.special_handling.rpc and (
-                    ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))]
-    rpc_functions = [
-        f for f in config.functions if not (
+                    ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in all_extensions}
+
+    rpc_functions = {group_name : [
+        f for f in config.functions[group_name] if not (
             f.aliased_function or (
                 f.special_handling and f.special_handling.rpc and (
-                    f.special_handling.rpc.dont_generate_rpc_message or f.special_handling.rpc.dont_generate_rpc_handler)))]
-    standard_functions = [f for f in config.functions if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)]
+                    f.special_handling.rpc.dont_generate_rpc_message or f.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in config.functions}
+    standard_functions = {group_name : [f for f in config.functions[group_name] if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)] for group_name in config.functions}
 
     def get_rpc_handler_suffix(rpc_func):
         return "" if not (
@@ -1725,18 +1749,22 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         prologue=lambda f: f.special_handling.rpc.handler_prologue if (
             f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_prologue) else "",
         epilogue=lambda f: f.special_handling.rpc.handler_epilogue if (
-            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "")
+            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "",
+        last_function_with_message=last_function_with_message)
 
 
 def generate_service_cpp(config: Config, additional_file_headers: list) -> str:
     with open("service.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
-    rpc_extensions = [
-        ext for ext in config.get_extensions() if not (
+
+    all_extensions = config.get_extensions()
+    rpc_extensions = {group_name : [
+        ext for ext in all_extensions[group_name] if not (
             ext.aliased_function or (
                 ext.special_handling and ext.special_handling.rpc and (
-                    ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))]
-    standard_functions = [f for f in config.functions if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)]
+                    ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in all_extensions}
+
+    standard_functions = {group_name : [f for f in config.functions[group_name] if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)] for group_name in config.functions}
     return Template(template).render(config=config, extensions=rpc_extensions, standard_functions=standard_functions,
                                      file_headers=config.file_headers.common + config.file_headers.daemon_cpp + additional_file_headers,
                                      daemon_namespace=config.daemon_namespace, daemon_namespace_str='::'.join(config.daemon_namespace),
