@@ -18,11 +18,14 @@
 namespace Cal::Icd {
 
 struct KernelArgCache {
+    inline constexpr static uint32_t maxStaticArgSize = 8u;
+
     struct KernelArgEntry {
         uint64_t arg_index = {};
         size_t arg_size = {};
         const void *arg_value = {};
-        char argValues[8] = {};
+        uint8_t argValues[maxStaticArgSize] = {};
+        std::unique_ptr<uint8_t[]> argValueDynamic = {};
     };
 
     std::shared_mutex mtx;
@@ -34,7 +37,11 @@ struct KernelArgCache {
             if (arg_index == cacheElement.arg_index &&
                 arg_size == cacheElement.arg_size) {
                 if (cacheElement.arg_size != 0u && arg_value) {
-                    if (memcmp(arg_value, cacheElement.argValues, arg_size) == 0) {
+                    auto valuePtr = cacheElement.argValues;
+                    if (cacheElement.arg_size > maxStaticArgSize) {
+                        valuePtr = cacheElement.argValueDynamic.get();
+                    }
+                    if (memcmp(arg_value, valuePtr, arg_size) == 0) {
                         return true;
                     }
                 } else {
@@ -48,9 +55,6 @@ struct KernelArgCache {
     }
 
     inline void cacheKernelArg(uint64_t arg_index, size_t arg_size, const void *arg_value) {
-        if (arg_size > 8)
-            return;
-
         std::lock_guard<std::shared_mutex> lock(this->mtx);
         auto foundIt = std::find_if(this->cache.begin(), this->cache.end(), [&](const KernelArgEntry &cacheElement) {
             return arg_index == cacheElement.arg_index;
@@ -58,11 +62,18 @@ struct KernelArgCache {
 
         auto &cacheEntry = foundIt != this->cache.end() ? *foundIt : this->cache.emplace_back();
         cacheEntry.arg_index = arg_index;
-        cacheEntry.arg_size = arg_size;
         cacheEntry.arg_value = arg_value;
         if (arg_value) {
-            memcpy(cacheEntry.argValues, arg_value, arg_size);
+            auto valuePtr = cacheEntry.argValues;
+            if (arg_size > maxStaticArgSize) {
+                if (arg_size > cacheEntry.arg_size) {
+                    cacheEntry.argValueDynamic.reset(new uint8_t[arg_size]);
+                }
+                valuePtr = cacheEntry.argValueDynamic.get();
+            }
+            memcpy(valuePtr, arg_value, arg_size);
         }
+        cacheEntry.arg_size = arg_size;
     }
 
     void invalidateCache() {
