@@ -2501,7 +2501,7 @@ cl_int clEnqueueReadBufferRpcHelperMallocHost (cl_command_queue command_queue, c
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
-    Cal::Icd::Ocl::warnIfNonBlockingRead(blocking_read);
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -2672,7 +2672,7 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.image = static_cast<IcdOclMem*>(image)->asRemoteObject();
-    Cal::Icd::Ocl::warnIfNonBlockingRead(blocking_read);
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -3542,7 +3542,7 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Malloc (cl_command_queue command_queue, cl
     command->copyFromCaller(dynMemTraits);
     command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
-    Cal::Icd::Ocl::warnIfNonBlockingRead(blocking);
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -3814,7 +3814,7 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Malloc (cl_command_queue command_queue, 
     command->copyFromCaller(dynMemTraits);
     command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
-    Cal::Icd::Ocl::warnIfNonBlockingRead(blocking);
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;

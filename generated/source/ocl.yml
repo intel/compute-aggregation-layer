@@ -4162,7 +4162,7 @@ config:
               name: blocking_read
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({arg})"
+              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: offset
               type: size_t
@@ -4477,7 +4477,7 @@ config:
               name: blocking_read
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({arg})"
+              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: src_origin
               type: "const size_t*"
@@ -5950,7 +5950,7 @@ config:
               name: blocking
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({arg})"
+              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
             2:
               name: dst_ptr
               type: void*
@@ -6396,7 +6396,7 @@ config:
               name: blocking
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({arg})"
+              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
             2:
               name: dstPtr
               type: void*

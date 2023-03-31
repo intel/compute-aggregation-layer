@@ -1103,9 +1103,10 @@ inline cl_mem_flags translateUseHostPtr(cl_mem_flags memFlags) {
     return memFlags;
 }
 
-inline void warnIfNonBlockingRead(cl_bool blocking_read) {
-    if (false == blocking_read) {
-        log<Verbosity::critical>("Non-blocking clEnqueueReadBufferIsNotSupported - results will be invalid");
+inline void warnIfNonBlockingRead(cl_bool &blockingRead) {
+    if (false == blockingRead) {
+        log<Verbosity::debug>("Overriding async read with serialized one to ensure memory coherency");
+        blockingRead = true;
     }
 }
 
