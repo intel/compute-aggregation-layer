@@ -48,6 +48,9 @@ struct KernelArgCache {
     }
 
     inline void cacheKernelArg(uint64_t arg_index, size_t arg_size, const void *arg_value) {
+        if (arg_size > 8)
+            return;
+
         std::lock_guard<std::shared_mutex> lock(this->mtx);
         auto foundIt = std::find_if(this->cache.begin(), this->cache.end(), [&](const KernelArgEntry &cacheElement) {
             return arg_index == cacheElement.arg_index;
