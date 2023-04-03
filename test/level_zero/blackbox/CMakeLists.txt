@@ -35,5 +35,6 @@ add_l0_blackbox(l0_blackbox_module_and_kernel ${CMAKE_CURRENT_SOURCE_DIR}/l0_bla
 add_l0_blackbox(l0_blackbox_module_create_via_extension ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_module_create_via_extension.cpp)
 add_l0_blackbox(l0_blackbox_image ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_image.cpp)
 add_l0_blackbox(l0_blackbox_dynamic_link ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_dynamic_link.cpp)
+add_l0_blackbox(l0_blackbox_sysman ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_sysman.cpp)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_runner_configs.yml ${cal_binary_root_dir} COPYONLY)

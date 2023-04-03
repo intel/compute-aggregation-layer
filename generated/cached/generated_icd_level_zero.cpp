@@ -39,6 +39,27 @@ auto mutable_element_cast(const T **el) {
     return reinterpret_cast<NonVoidT>(nonConst);
 };
 
+ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceGetProperties");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, pProperties);
+    command->copyFromCaller();
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeInit");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3056,6 +3077,9 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
 
 
 extern "C" {
+ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
+    return Cal::Icd::LevelZero::zesDeviceGetProperties(hDevice, pProperties);
+}
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Icd::LevelZero::zeInit(flags);
 }

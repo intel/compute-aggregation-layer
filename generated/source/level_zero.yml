@@ -31,6 +31,10 @@ config:
       - '#include "shared/l0_opaque_list_serialization.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
+      - '#include "level_zero/zes_api.h"'
+      - '#include "level_zero/zes_ddi.h"'
+      - '#include "level_zero/zet_api.h"'
+      - '#include "level_zero/zet_ddi.h"'
     icd_h:
       - '#include "shared/log.h"'
       - '#include "shared/shmem_transfer_desc.h"'
@@ -46,6 +50,8 @@ config:
       - '#include "icd/icd_page_fault_manager.h"'
     api:
       - '#include "level_zero/ze_api.h"'
+      - '#include "level_zero/zes_api.h"'
+      - '#include "level_zero/zet_ddi.h"'
 
   structures:
     - name: ze_module_constants_t
@@ -1132,6 +1138,48 @@ config:
                   kind: struct
                 server_access: read
             server_access: read
+    - name: zes_device_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: core
+          type: ze_device_properties_t
+          kind: scalar
+        3:
+          name: numSubdevices
+          type: uint32_t
+          kind: scalar
+        4:
+          name: serialNumber
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar
+        5:
+          name: boardNumber
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar
+        6:
+          name: brandName
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar
+        7:
+          name: modelName
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar
+        8:
+          name: vendorName
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar
+        9:
+          name: driverVersion
+          type: char[ZES_STRING_PROPERTY_SIZE]
+          kind: scalar  
 
   unimplemented:
     - name: "core"
@@ -1193,7 +1241,6 @@ config:
           Ras.zesRasGetConfig,
           Ras.zesRasSetConfig,
           Ras.zesRasGetState,
-          Device.zesDeviceGetProperties,
           Device.zesDeviceGetState,
           Device.zesDeviceReset,
           Device.zesDeviceProcessesGetState,
@@ -1343,7 +1390,30 @@ config:
       members: []
 
     - name: "sysman"
-      members: []
+      members:
+          - name: zesDeviceGetProperties
+            latency: 1.0
+            ddi_category: Device
+            returns:
+              type: ze_result_t
+              kind: scalar
+              default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+            args:
+              0:
+                name: hDevice
+                type: zes_device_handle_t
+                kind: scalar
+              1:
+                name: pProperties
+                type: zes_device_properties_t*
+                kind: ptr_array
+                kind_details:
+                  num_elements: 1
+                  can_be_null: True
+                  element:
+                    type: zes_device_properties_t
+                    kind: struct
+                  server_access: read_write
 
     - name: "core"
       members:

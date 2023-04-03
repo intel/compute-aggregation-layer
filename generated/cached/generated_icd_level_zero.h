@@ -35,6 +35,7 @@ struct ZeMemAllocHostRpcMImplicitArgs;
 namespace Cal {
 namespace Icd {
 namespace LevelZero {
+ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
@@ -354,10 +355,6 @@ inline void zesRasSetConfigUnimpl() {
 }
 inline void zesRasGetStateUnimpl() {
     log<Verbosity::critical>("Function Ras.zesRasGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceGetStateUnimpl() {
@@ -1058,13 +1055,13 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
+    dt.Device.pfnGetProperties = Cal::Icd::LevelZero::zesDeviceGetProperties;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Device.pfnEnumRasErrorSets = reinterpret_cast<decltype(dt.Device.pfnEnumRasErrorSets)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceEnumRasErrorSetsUnimpl);
     dt.Ras.pfnGetProperties = reinterpret_cast<decltype(dt.Ras.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetPropertiesUnimpl);
     dt.Ras.pfnGetConfig = reinterpret_cast<decltype(dt.Ras.pfnGetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetConfigUnimpl);
     dt.Ras.pfnSetConfig = reinterpret_cast<decltype(dt.Ras.pfnSetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesRasSetConfigUnimpl);
     dt.Ras.pfnGetState = reinterpret_cast<decltype(dt.Ras.pfnGetState)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetStateUnimpl);
-    dt.Device.pfnGetProperties = reinterpret_cast<decltype(dt.Device.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceGetPropertiesUnimpl);
     dt.Device.pfnGetState = reinterpret_cast<decltype(dt.Device.pfnGetState)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceGetStateUnimpl);
     dt.Device.pfnReset = reinterpret_cast<decltype(dt.Device.pfnReset)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceResetUnimpl);
     dt.Device.pfnProcessesGetState = reinterpret_cast<decltype(dt.Device.pfnProcessesGetState)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceProcessesGetStateUnimpl);

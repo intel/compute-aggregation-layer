@@ -29,6 +29,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path);
 void unloadLevelZeroLibrary();
 bool isLevelZeroLibraryLoaded();
 
+extern ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 extern ze_result_t (*zeInit)(ze_init_flags_t flags);
 extern ze_result_t (*zeCommandListCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 extern ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
@@ -136,6 +137,15 @@ extern ze_result_t (*zexMemOpenIpcHandles)(ze_context_handle_t hContext, ze_devi
 
 bool isSuccessful(ze_result_t result);
 
+inline bool zesDeviceGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceGetProperties(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
 bool zeInitHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeCommandListCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListCreate");
@@ -1164,6 +1174,7 @@ inline bool zeDevicePciGetPropertiesExtHandler(Provider &service, Cal::Rpc::Chan
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
     outHandlers.resize(ZeDevicePciGetPropertiesExtRpcM::messageSubtype + 1);
+    outHandlers[ZesDeviceGetPropertiesRpcM::messageSubtype] = zesDeviceGetPropertiesHandler;
     outHandlers[ZeInitRpcM::messageSubtype] = zeInitHandler;
     outHandlers[ZeCommandListCreateRpcM::messageSubtype] = zeCommandListCreateHandler;
     outHandlers[ZeCommandListCreateImmediateRpcM::messageSubtype] = zeCommandListCreateImmediateHandler;
@@ -1276,6 +1287,12 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDevicePciGetPropertiesExtRpcM::messageSubtype] = zeDevicePciGetPropertiesExtHandler;
 }
 
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceGetProperties(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pProperties
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeInitRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeInit(
                                                 apiCommand.args.flags
@@ -2076,6 +2093,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         default:
             log<Verbosity::debug>("Tried to call directly unknown message subtype %d", command->subtype);
             return false;
+        case Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeInitRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeInitRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)); break;

@@ -69,7 +69,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Ras.zesRasGetConfig");
     ret.push_back("Ras.zesRasSetConfig");
     ret.push_back("Ras.zesRasGetState");
-    ret.push_back("Device.zesDeviceGetProperties");
     ret.push_back("Device.zesDeviceGetState");
     ret.push_back("Device.zesDeviceReset");
     ret.push_back("Device.zesDeviceProcessesGetState");

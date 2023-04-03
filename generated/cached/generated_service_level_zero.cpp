@@ -20,6 +20,7 @@ namespace Apis {
 namespace LevelZero {
 
 namespace Standard {
+ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
 ze_result_t (*zeCommandListCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) = nullptr;
 ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) = nullptr;
@@ -134,6 +135,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false;
     }
 
+    zesDeviceGetProperties = reinterpret_cast<decltype(zesDeviceGetProperties)>(dlsym(libraryHandle, "zesDeviceGetProperties"));
+    if(nullptr == zesDeviceGetProperties){
+        log<Verbosity::error>("Missing symbol zesDeviceGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeInit = reinterpret_cast<decltype(zeInit)>(dlsym(libraryHandle, "zeInit"));
     if(nullptr == zeInit){
         log<Verbosity::error>("Missing symbol zeInit in %s", loadPath.c_str());
@@ -726,6 +733,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 }
 
 void unloadLevelZeroLibrary() {
+    zesDeviceGetProperties = nullptr;
     zeInit = nullptr;
     zeCommandListCreate = nullptr;
     zeCommandListCreateImmediate = nullptr;

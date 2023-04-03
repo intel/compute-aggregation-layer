@@ -8,6 +8,12 @@
 // #### Generated code -- begin ####
 
 #include "level_zero/ze_api.h"
+#include "level_zero/zes_api.h"
+#include "level_zero/zet_ddi.h"
+
+ze_result_t zesDeviceGetProperties(zes_device_handle_t hDevice, zes_device_properties_t* pProperties){
+   return {};
+}
 
 ze_result_t zeInit(ze_init_flags_t flags){
    return {};
