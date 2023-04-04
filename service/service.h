@@ -719,7 +719,7 @@ class Provider {
         if (!this->commandQueueGroups.initialized) {
             return;
         }
-        if (desc->ordinal == this->commandQueueGroups.copyGroupIndex || desc->ordinal == this->commandQueueGroups.linkedCopyGroupIndex) {
+        if ((desc->ordinal == this->commandQueueGroups.copyGroupIndex || desc->ordinal == this->commandQueueGroups.linkedCopyGroupIndex) && this->commandQueueGroups.copyRoundRobinEnabled) {
             auto index = ctx.getCopyCommandQueueGroupIndex();
             if (index == std::numeric_limits<uint32_t>::max()) {
                 auto lock = ctx.obtainCommandQueueGroupsLock();
@@ -736,7 +736,7 @@ class Provider {
                 desc->index = index - 1;
             }
             log<Verbosity::debug>("Overriding Copy Queue index: %d", index);
-        } else if (desc->ordinal == this->commandQueueGroups.computeGroupindex) {
+        } else if (desc->ordinal == this->commandQueueGroups.computeGroupindex && this->commandQueueGroups.computeRoundRobinEnabled) {
             auto index = ctx.getComputeCommandQueueGroupIndex();
             if (index == std::numeric_limits<uint32_t>::max()) {
                 auto lock = ctx.obtainCommandQueueGroupsLock();
@@ -758,6 +758,9 @@ class Provider {
             return;
         }
         if (desc->commandQueueGroupOrdinal != this->commandQueueGroups.copyGroupIndex && desc->commandQueueGroupOrdinal != this->commandQueueGroups.linkedCopyGroupIndex) {
+            return;
+        }
+        if (!this->commandQueueGroups.copyRoundRobinEnabled) {
             return;
         }
         auto index = ctx.getCopyCommandQueueGroupIndex();
@@ -826,12 +829,14 @@ class Provider {
     } spectacles;
 
     struct CommandQueueGroups {
+        bool copyRoundRobinEnabled = true;
         std::atomic_uint32_t selector{0u};
 
         uint32_t copyGroupIndex = std::numeric_limits<uint32_t>::max();
         uint32_t linkedCopyGroupIndex = std::numeric_limits<uint32_t>::max();
         uint32_t numLinkedCopyEngines = std::numeric_limits<uint32_t>::max();
 
+        bool computeRoundRobinEnabled = true;
         std::atomic_uint32_t computeSelector{0u};
 
         uint32_t computeGroupindex = std::numeric_limits<uint32_t>::max();

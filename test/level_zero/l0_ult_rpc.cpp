@@ -830,6 +830,8 @@ TEST(CopyGroupAssign, givenParsedCommandQueueGroupsWhenOverrideClientsDescsThenA
     EXPECT_EQ(service.commandQueueGroups.numLinkedCopyEngines, 56u);
     EXPECT_EQ(service.commandQueueGroups.selector.load(), 0u);
 
+    service.commandQueueGroups.computeRoundRobinEnabled = service.commandQueueGroups.copyRoundRobinEnabled = true;
+
     std::string path("path");
     Cal::Ipc::GlobalShmemAllocators allocator(path);
     Cal::Service::ClientContext ctx(allocator, false);

@@ -1402,6 +1402,8 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
     this->directCallCallbacks[Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero] = Cal::Service::Apis::LevelZero::callDirectly;
 
     this->yieldThreads = Cal::Utils::getCalEnvFlag(calYieldThreadsEnvName);
+    this->commandQueueGroups.copyRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseCopyRoundRobin, this->commandQueueGroups.copyRoundRobinEnabled);
+    this->commandQueueGroups.computeRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseComputeRoundRobin, this->commandQueueGroups.computeRoundRobinEnabled);
 }
 
 std::unique_ptr<Cal::Ipc::ConnectionListener> Provider::createConnectionListener() {

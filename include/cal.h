@@ -24,6 +24,10 @@ constexpr std::string_view calEnableL0InCalrunEnvName = "CAL_ENABLE_L0_IN_CALRUN
 // Controls whether OpenCL API calls should go through CAL
 constexpr std::string_view calEnableOclInCalrunEnvName = "CAL_ENABLE_OCL_IN_CALRUN";
 
+// Controls whether CAL should override chosen command queue gruop indices
+constexpr std::string_view calUseComputeRoundRobin = "CAL_USE_COMPUTE_ROUND_ROBIN";
+constexpr std::string_view calUseCopyRoundRobin = "CAL_USE_COPY_ROUND_ROBIN";
+
 // Controls whether some API calls should cache their results for faster access
 constexpr std::string_view calIcdEnableCacheEnvName = "CAL_ICD_ENABLE_CACHE";
 constexpr std::string_view calEnableAilEnvName = "CAL_USE_AIL";
