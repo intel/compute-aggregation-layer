@@ -11,6 +11,7 @@
 #include "shared/log.h"
 #include "shared/shmem_transfer_desc.h"
 #include "icd/level_zero/api_customization/icd_level_zero_api.h"
+#include "icd/level_zero/api_customization/icd_level_zero_api_sysman.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"
@@ -35,7 +36,7 @@ struct ZeMemAllocHostRpcMImplicitArgs;
 namespace Cal {
 namespace Icd {
 namespace LevelZero {
-ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
+ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);

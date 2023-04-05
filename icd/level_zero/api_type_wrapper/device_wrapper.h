@@ -8,6 +8,7 @@
 #include "icd/level_zero/api_type_wrapper/wrapper_base.h"
 #include "icd/level_zero/logic/properties_cache.h"
 #include "icd/level_zero/logic/types_printer.h"
+#include "level_zero/zes_api.h"
 #include "shared/ref_counted.h"
 
 #include <cstdint>
@@ -34,7 +35,8 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
                                         ze_device_external_memory_properties_t,
                                         ze_command_queue_group_properties_t,
                                         ze_device_cache_properties_t,
-                                        ze_device_memory_properties_t>
+                                        ze_device_memory_properties_t,
+                                        zes_device_properties_t>
         properties;
 
     struct PropertiesCount {

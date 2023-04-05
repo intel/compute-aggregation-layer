@@ -39,6 +39,7 @@ config:
       - '#include "shared/log.h"'
       - '#include "shared/shmem_transfer_desc.h"'
       - '#include "icd/level_zero/api_customization/icd_level_zero_api.h"'
+      - '#include "icd/level_zero/api_customization/icd_level_zero_api_sysman.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
       - '#include "level_zero/zes_api.h"'
@@ -296,8 +297,8 @@ config:
           type: const void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: flags
           type: ze_context_flags_t
@@ -330,8 +331,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: type
           type: ze_device_type_t
@@ -472,8 +473,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: spirvVersionSupported
           type: uint32_t
@@ -542,8 +543,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: flags
           type: ze_device_memory_property_flags_t
@@ -608,8 +609,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
 
         2:
           name: flags
@@ -797,13 +798,12 @@ config:
         1:
           name: pNext
           type: const void*
-          kind: scalar
           kind: opaque_list
           kind_details:
             iterator_type: ze_base_desc_t
             opaque_traits_name: NestedPNextTraits
             requires_opaque_elements_translation_before: True
-          translate_before: 'translateRequiredPNextExtensions({dst_captures})'
+          translate_before: "translateRequiredPNextExtensions({dst_captures})"
         2:
           name: flags
           type: ze_device_mem_alloc_flags_t
@@ -884,8 +884,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: numKernelArgs
           type: uint32_t
@@ -946,8 +946,8 @@ config:
           type: void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
         2:
           name: flags
           type: ze_device_p2p_property_flags_t
@@ -964,10 +964,10 @@ config:
           type: const void*
           kind: opaque_list
           kind_details:
-            iterator_type : ze_base_desc_t
-            opaque_traits_name : NestedPNextTraits
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
             requires_opaque_elements_translation_before: True
-          translate_before: 'translateRequiredPNextExtensions({dst_captures})'
+          translate_before: "translateRequiredPNextExtensions({dst_captures})"
         2:
           name: flags
           type: ze_image_flags_t
@@ -1179,7 +1179,7 @@ config:
         9:
           name: driverVersion
           type: char[ZES_STRING_PROPERTY_SIZE]
-          kind: scalar  
+          kind: scalar
 
   unimplemented:
     - name: "core"
@@ -1391,29 +1391,32 @@ config:
 
     - name: "sysman"
       members:
-          - name: zesDeviceGetProperties
-            latency: 1.0
-            ddi_category: Device
-            returns:
-              type: ze_result_t
+        - name: zesDeviceGetProperties
+          latency: 1.0
+          special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
               kind: scalar
-              default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            args:
-              0:
-                name: hDevice
-                type: zes_device_handle_t
-                kind: scalar
-              1:
-                name: pProperties
-                type: zes_device_properties_t*
-                kind: ptr_array
-                kind_details:
-                  num_elements: 1
-                  can_be_null: True
-                  element:
-                    type: zes_device_properties_t
-                    kind: struct
-                  server_access: read_write
+            1:
+              name: pProperties
+              type: zes_device_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_device_properties_t
+                  kind: struct
+                server_access: read_write
 
     - name: "core"
       members:
@@ -3201,8 +3204,8 @@ config:
           ddi_category: CommandList
           returns:
             type: ze_result_t
-            kind : scalar
-            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
           args:
             0:
               name: hCommandList
@@ -4893,7 +4896,7 @@ config:
         #
         - name: zeKernelSchedulingHintExp
           latency: 0.0
-          ddi_category:  KernelExp
+          ddi_category: KernelExp
           returns:
             type: ze_result_t
             kind: scalar
@@ -5337,7 +5340,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_only_suffix : "RpcHelper"
+              handler_only_suffix: "RpcHelper"
           returns:
             type: ze_result_t
             kind: scalar
@@ -5382,7 +5385,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_only_suffix : "RpcHelper"
+              handler_only_suffix: "RpcHelper"
           returns:
             type: ze_result_t
             kind: scalar
@@ -6220,7 +6223,7 @@ config:
                   kind: scalar
                   translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
                 server_access: read
- 
+
         #        - name : zeCommandListAppendLaunchCooperativeKernel
         #          ddi_category :  CommandList
         #          returns :

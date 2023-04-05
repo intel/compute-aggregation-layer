@@ -19,6 +19,8 @@
 #include "icd/level_zero/logic/types_printer.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
+#include "level_zero/zes_api.h"
+#include "level_zero/zes_ddi.h"
 #include "shared/ref_counted.h"
 #include "shared/shmem_transfer_desc.h"
 
@@ -368,7 +370,8 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 
     Logic::PropertiesCache::VectorTuple<ze_driver_properties_t,
                                         ze_driver_ipc_properties_t,
-                                        ze_driver_extension_properties_t>
+                                        ze_driver_extension_properties_t,
+                                        zes_device_properties_t>
         properties;
 
     struct PropertiesCount {

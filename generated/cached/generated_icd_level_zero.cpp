@@ -39,7 +39,7 @@ auto mutable_element_cast(const T **el) {
     return reinterpret_cast<NonVoidT>(nonConst);
 };
 
-ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
+ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceGetProperties");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
