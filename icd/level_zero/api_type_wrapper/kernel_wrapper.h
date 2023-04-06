@@ -39,6 +39,33 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logi
 
     bool sharedIndirectAccessSet{false};
     std::vector<const void *> allocationsToMigrate{};
+
+    struct GroupSize {
+        uint32_t x = 0;
+        uint32_t y = 0;
+        uint32_t z = 0;
+    } groupSize;
+    struct SuggestedGroupSizeEntry {
+        GroupSize globalSize;
+        GroupSize suggestedSize;
+    };
+    std::vector<SuggestedGroupSizeEntry> suggestedGroupSizes;
+    bool obtainSuggestedGroupSizes(uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t *groupSizeX, uint32_t *groupSizeY, uint32_t *groupSizeZ) {
+        for (const auto &suggestedGroupSize : suggestedGroupSizes) {
+            if (suggestedGroupSize.globalSize.x == globalSizeX &&
+                suggestedGroupSize.globalSize.y == globalSizeY &&
+                suggestedGroupSize.globalSize.z == globalSizeZ) {
+                *groupSizeX = suggestedGroupSize.suggestedSize.x;
+                *groupSizeY = suggestedGroupSize.suggestedSize.y;
+                *groupSizeZ = suggestedGroupSize.suggestedSize.z;
+                return true;
+            }
+        }
+        return false;
+    }
+    void storeSuggestedGroupSizes(uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
+        suggestedGroupSizes.push_back(SuggestedGroupSizeEntry{GroupSize{globalSizeX, globalSizeY, globalSizeX}, GroupSize{groupSizeX, groupSizeY, groupSizeZ}});
+    }
 };
 
 } // namespace Cal::Icd::LevelZero

@@ -2756,7 +2756,7 @@ ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* 
 
     return ret;
 }
-ze_result_t zeKernelSetGroupSize (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
+ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetGroupSize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
@@ -2776,7 +2776,7 @@ ze_result_t zeKernelSetGroupSize (ze_kernel_handle_t hKernel, uint32_t groupSize
 
     return ret;
 }
-ze_result_t zeKernelSuggestGroupSize (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ) {
+ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSuggestGroupSize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalL0Platform->getRpcChannel();
