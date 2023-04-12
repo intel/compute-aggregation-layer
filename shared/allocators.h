@@ -199,7 +199,7 @@ class RangeAllocatorBase {
     }
 
   protected:
-    const Cal::Utils::PartitionedAddressRange<void> getVma() const {
+    const Cal::Utils::PartitionedAddressRange<void> &getVma() const {
         return vma;
     }
 
