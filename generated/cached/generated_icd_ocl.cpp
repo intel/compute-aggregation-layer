@@ -48,9 +48,11 @@ cl_int clGetPlatformIDsRpcHelper (cl_uint num_entries, cl_platform_id* platforms
     auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, num_entries, platforms, num_platforms);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -74,9 +76,11 @@ cl_int clGetPlatformInfoRpcHelper (cl_platform_id platform, cl_platform_info par
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, platform, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.platform = static_cast<IcdOclPlatform*>(platform)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -101,9 +105,11 @@ cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_u
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, platform, device_type, num_entries, devices, num_devices);
     command->args.platform = static_cast<IcdOclPlatform*>(platform)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -136,9 +142,11 @@ cl_int clGetDeviceInfo (cl_device_id device, cl_device_info param_name, size_t p
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, device, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -184,9 +192,11 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -220,9 +230,11 @@ cl_context clCreateContextFromType (const cl_context_properties* properties, cl_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -246,9 +258,11 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -283,9 +297,11 @@ cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_pro
     command->copyFromCaller(dynMemTraits);
     command->args.in_device = static_cast<IcdOclDevice*>(in_device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -316,9 +332,11 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device, 
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.properties = globalOclPlatform->translateQueueFlags(properties);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -340,9 +358,11 @@ cl_int clSetDefaultDeviceCommandQueue (cl_context context, cl_device_id device, 
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -367,9 +387,11 @@ cl_command_queue clCreateCommandQueueWithProperties (cl_context context, cl_devi
         globalOclPlatform->translateQueueFlags(mutable_element_cast(command->captures.properties));
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -391,9 +413,11 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -415,9 +439,11 @@ cl_program clCreateProgramWithIL (cl_context context, const void* il, size_t len
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -449,9 +475,11 @@ cl_program clCreateProgramWithBinary (cl_context context, cl_uint num_devices, c
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -483,9 +511,11 @@ cl_program clCreateProgramWithBuiltInKernels (cl_context context, cl_uint num_de
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -525,9 +555,11 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -567,9 +599,11 @@ cl_int clCompileProgram (cl_program program, cl_uint num_devices, const cl_devic
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -609,9 +643,11 @@ cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_devi
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -633,9 +669,11 @@ cl_int clGetProgramBuildInfo (cl_program program, cl_device_id device, cl_progra
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -656,9 +694,11 @@ cl_kernel clCreateKernelRpcHelper (cl_program program, const char* kernel_name, 
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -678,9 +718,11 @@ cl_kernel clCloneKernel (cl_kernel source_kernel, cl_int* errcode_ret) {
     auto command = new(commandSpace.get()) CommandT(source_kernel, errcode_ret);
     command->args.source_kernel = static_cast<IcdOclKernel*>(source_kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -701,9 +743,11 @@ cl_int clCreateKernelsInProgramRpcHelper (cl_program program, cl_uint num_kernel
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, num_kernels, kernels, num_kernels_ret);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -733,9 +777,11 @@ cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_i
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -760,9 +806,11 @@ cl_int clGetProgramInfoRpcHelper (cl_program program, cl_program_info param_name
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -796,9 +844,11 @@ cl_int clGetProgramInfoGetBinariesRpcHelper (cl_program program, size_t total_bi
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -818,9 +868,11 @@ cl_int clGetMemObjectInfo (cl_mem memobj, cl_mem_info param_name, size_t param_v
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, memobj, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.memobj = memobj->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -844,9 +896,11 @@ cl_int clGetImageInfo (cl_mem image, cl_image_info param_name, size_t param_valu
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, image, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.image = image->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -870,9 +924,11 @@ cl_int clGetSamplerInfo (cl_sampler sampler, cl_sampler_info param_name, size_t 
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, sampler, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -896,9 +952,11 @@ cl_int clGetKernelInfo (cl_kernel kernel, cl_kernel_info param_name, size_t para
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -923,9 +981,11 @@ cl_int clGetKernelWorkGroupInfo (cl_kernel kernel, cl_device_id device, cl_kerne
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -945,9 +1005,11 @@ cl_int clGetKernelArgInfo (cl_kernel kernel, cl_uint arg_indx, cl_kernel_arg_inf
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -969,9 +1031,11 @@ cl_int clGetKernelSubGroupInfo (cl_kernel kernel, cl_device_id device, cl_kernel
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -990,9 +1054,11 @@ cl_int clReleaseCommandQueue (cl_command_queue command_queue) {
     auto command = new(commandSpace.get()) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1014,9 +1080,11 @@ cl_int clReleaseContext (cl_context context) {
     auto command = new(commandSpace.get()) CommandT(context);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1037,9 +1105,11 @@ cl_int clReleaseDevice (cl_device_id device) {
     auto command = new(commandSpace.get()) CommandT(device);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1060,9 +1130,11 @@ cl_int clReleaseKernel (cl_kernel kernel) {
     auto command = new(commandSpace.get()) CommandT(kernel);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1083,9 +1155,11 @@ cl_int clReleaseSampler (cl_sampler sampler) {
     auto command = new(commandSpace.get()) CommandT(sampler);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1106,9 +1180,11 @@ cl_int clReleaseProgram (cl_program program) {
     auto command = new(commandSpace.get()) CommandT(program);
     command->args.program = program->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1134,9 +1210,11 @@ cl_int clReleaseMemObject (cl_mem memobj) {
     auto command = new(commandSpace.get()) CommandT(memobj);
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1157,9 +1235,11 @@ cl_int clReleaseEvent (cl_event event) {
     auto command = new(commandSpace.get()) CommandT(event);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1180,9 +1260,11 @@ cl_int clRetainCommandQueue (cl_command_queue command_queue) {
     auto command = new(commandSpace.get()) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1203,9 +1285,11 @@ cl_int clRetainContext (cl_context context) {
     auto command = new(commandSpace.get()) CommandT(context);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1226,9 +1310,11 @@ cl_int clRetainDevice (cl_device_id device) {
     auto command = new(commandSpace.get()) CommandT(device);
     command->args.device = device->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1249,9 +1335,11 @@ cl_int clRetainProgram (cl_program program) {
     auto command = new(commandSpace.get()) CommandT(program);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1272,9 +1360,11 @@ cl_int clRetainMemObject (cl_mem memobj) {
     auto command = new(commandSpace.get()) CommandT(memobj);
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1295,9 +1385,11 @@ cl_int clRetainSampler (cl_sampler sampler) {
     auto command = new(commandSpace.get()) CommandT(sampler);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1318,9 +1410,11 @@ cl_int clRetainKernel (cl_kernel kernel) {
     auto command = new(commandSpace.get()) CommandT(kernel);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1341,9 +1435,11 @@ cl_int clRetainEvent (cl_event event) {
     auto command = new(commandSpace.get()) CommandT(event);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1364,9 +1460,11 @@ cl_int clFlush (cl_command_queue command_queue) {
     auto command = new(commandSpace.get()) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1386,9 +1484,11 @@ cl_int clFinish (cl_command_queue command_queue) {
     auto command = new(commandSpace.get()) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1424,9 +1524,11 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1465,9 +1567,11 @@ cl_int clEnqueueTask (cl_command_queue command_queue, cl_kernel kernel, cl_uint 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1505,9 +1609,11 @@ cl_int clEnqueueMarkerWithWaitList (cl_command_queue command_queue, cl_uint num_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1533,9 +1639,11 @@ cl_int clEnqueueMarker (cl_command_queue command_queue, cl_event* event) {
     auto command = new(commandSpace.get()) CommandT(command_queue, event);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1573,9 +1681,11 @@ cl_int clEnqueueBarrierWithWaitList (cl_command_queue command_queue, cl_uint num
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1601,9 +1711,11 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue) {
     auto command = new(commandSpace.get()) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1636,9 +1748,11 @@ cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_event
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1681,9 +1795,11 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1713,9 +1829,11 @@ cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t s
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1735,9 +1853,11 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context,
     auto command = new(commandSpace.get()) CommandT(context, flags, size, host_ptr, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1760,9 +1880,11 @@ cl_mem clCreateSubBuffer (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_ty
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1785,9 +1907,11 @@ cl_mem clCreatePipe (cl_context context, cl_mem_flags flags, cl_uint pipe_packet
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1808,9 +1932,11 @@ cl_int clGetPipeInfo (cl_mem pipe, cl_pipe_info param_name, size_t param_value_s
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, pipe, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.pipe = static_cast<IcdOclMem*>(pipe)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1836,9 +1962,11 @@ cl_mem clCreateImage (cl_context context, cl_mem_flags flags, const cl_image_for
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1861,9 +1989,11 @@ cl_mem clCreateImage2D (cl_context context, cl_mem_flags flags, const cl_image_f
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1886,9 +2016,11 @@ cl_mem clCreateImage3D (cl_context context, cl_mem_flags flags, const cl_image_f
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1908,9 +2040,11 @@ cl_sampler clCreateSampler (cl_context context, cl_bool normalized_coords, cl_ad
     auto command = new(commandSpace.get()) CommandT(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
     command->args.context = context->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1932,9 +2066,11 @@ cl_sampler clCreateSamplerWithProperties (cl_context context, const cl_sampler_p
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1957,9 +2093,11 @@ cl_mem clCreateImageWithProperties (cl_context context, const cl_mem_properties*
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1982,9 +2120,11 @@ cl_mem clCreateBufferWithProperties (cl_context context, const cl_mem_properties
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2006,9 +2146,11 @@ cl_int clGetSupportedImageFormats (cl_context context, cl_mem_flags flags, cl_me
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2033,9 +2175,11 @@ cl_int clSetKernelArgRpcHelper (cl_kernel kernel, cl_uint arg_index, size_t arg_
         static_cast<IcdOclKernel*>(kernel)->convertClMemArgIfNeeded(arg_index, arg_size, command->captures.arg_value);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2055,9 +2199,11 @@ cl_int clSetProgramSpecializationConstant (cl_program program, cl_uint spec_id, 
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2088,9 +2234,11 @@ cl_int clEnqueueWriteBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2132,9 +2280,11 @@ cl_int clEnqueueWriteBufferRpcHelperMallocHost (cl_command_queue command_queue, 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2174,9 +2324,11 @@ cl_int clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem (cl_command_queue comman
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2215,9 +2367,11 @@ cl_int clEnqueueWriteBufferRectRpcHelperUsmHost (cl_command_queue command_queue,
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2259,9 +2413,11 @@ cl_int clEnqueueWriteBufferRectRpcHelperMallocHost (cl_command_queue command_que
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2301,9 +2457,11 @@ cl_int clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem (cl_command_queue co
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2342,9 +2500,11 @@ cl_int clEnqueueReadBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_m
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2383,9 +2543,11 @@ cl_int clEnqueueReadBufferRectRpcHelperUsmHost (cl_command_queue command_queue, 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2426,9 +2588,11 @@ cl_int clEnqueueReadBufferRectRpcHelperMallocHost (cl_command_queue command_queu
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2469,9 +2633,11 @@ cl_int clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem (cl_command_queue com
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2513,9 +2679,11 @@ cl_int clEnqueueReadBufferRpcHelperMallocHost (cl_command_queue command_queue, c
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2556,9 +2724,11 @@ cl_int clEnqueueReadBufferRpcHelperZeroCopyMallocShmem (cl_command_queue command
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2598,9 +2768,11 @@ cl_int clEnqueueCopyBuffer (cl_command_queue command_queue, cl_mem src_buffer, c
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2640,9 +2812,11 @@ cl_int clEnqueueCopyBufferRect (cl_command_queue command_queue, cl_mem src_buffe
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2684,9 +2858,11 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2730,9 +2906,11 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2773,9 +2951,11 @@ cl_int clEnqueueCopyImage (cl_command_queue command_queue, cl_mem src_image, cl_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2815,9 +2995,11 @@ cl_int clEnqueueCopyImageToBuffer (cl_command_queue command_queue, cl_mem src_im
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2857,9 +3039,11 @@ cl_int clEnqueueCopyBufferToImage (cl_command_queue command_queue, cl_mem src_bu
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2898,9 +3082,11 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2940,9 +3126,11 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2981,9 +3169,11 @@ cl_int clEnqueueFillBuffer (cl_command_queue command_queue, cl_mem memobj, const
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3022,9 +3212,11 @@ cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const v
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3061,9 +3253,11 @@ cl_int clWaitForEvents (cl_uint num_events, const cl_event* event_list) {
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3082,9 +3276,11 @@ cl_int clGetEventInfo (cl_event event, cl_event_info param_name, size_t param_va
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3109,9 +3305,11 @@ cl_int clGetEventProfilingInfo (cl_event event, cl_profiling_info param_name, si
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3134,9 +3332,11 @@ cl_event clCreateUserEvent (cl_context context, cl_int* errcode_ret) {
     auto command = new(commandSpace.get()) CommandT(context, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3156,9 +3356,11 @@ cl_int clSetUserEventStatus (cl_event event, cl_int execution_status) {
     auto command = new(commandSpace.get()) CommandT(event, execution_status);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3187,9 +3389,11 @@ cl_int clGetDeviceAndHostTimer (cl_device_id device, cl_ulong* device_timestamp,
     auto command = new(commandSpace.get()) CommandT(device, device_timestamp, host_timestamp);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3208,9 +3412,11 @@ cl_int clGetHostTimerRpcHelper (cl_device_id device, cl_ulong* host_timestamp) {
     auto command = new(commandSpace.get()) CommandT(device, host_timestamp);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3229,9 +3435,11 @@ void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t si
     auto command = new(commandSpace.get()) CommandT(context, flags, size, alignment);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3252,9 +3460,11 @@ void clSVMFree (cl_context context, void* ptr) {
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalOclPlatform->destroyUsmDescriptor(ptr);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return;
     }
@@ -3281,9 +3491,11 @@ cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3321,9 +3533,11 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3352,9 +3566,11 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     command->copyFromCaller(dynMemTraits);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3387,9 +3603,11 @@ cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3427,9 +3645,11 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3467,9 +3687,11 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Usm (cl_command_queue command_queue, cl_bo
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3510,9 +3732,11 @@ cl_int clEnqueueSVMMemcpyRpcHelperMalloc2Usm (cl_command_queue command_queue, cl
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3554,9 +3778,11 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Malloc (cl_command_queue command_queue, cl
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3586,9 +3812,11 @@ cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_
     command->copyFromCaller(dynMemTraits);
     command->args.in_device = static_cast<IcdOclDevice*>(in_device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3617,9 +3845,11 @@ cl_int clReleaseDeviceEXT (cl_device_id device) {
     auto command = new(commandSpace.get()) CommandT(device);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3640,9 +3870,11 @@ cl_int clRetainDeviceEXT (cl_device_id device) {
     auto command = new(commandSpace.get()) CommandT(device);
     command->args.device = device->asLocalObject()->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3666,9 +3898,11 @@ cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_ker
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3699,9 +3933,11 @@ cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, cons
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3739,9 +3975,11 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Usm (cl_command_queue command_queue, cl_
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3782,9 +4020,11 @@ cl_int clEnqueueMemcpyINTELRpcHelperMalloc2Usm (cl_command_queue command_queue, 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3826,9 +4066,11 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Malloc (cl_command_queue command_queue, 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3856,9 +4098,11 @@ cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argInde
     auto command = new(commandSpace.get()) CommandT(kernel, argIndex, argValue);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3877,9 +4121,11 @@ cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3905,9 +4151,11 @@ void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_m
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3929,9 +4177,11 @@ void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_
     command->copyFromCaller(dynMemTraits, implArgsForClHostMemAllocINTELRpcM);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3953,9 +4203,11 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3977,9 +4229,11 @@ cl_int clMemFreeINTEL (cl_context context, void* ptr) {
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalOclPlatform->destroyUsmDescriptor(ptr);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3999,9 +4253,11 @@ cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr) {
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalOclPlatform->destroyUsmDescriptor(ptr);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -4031,9 +4287,11 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -4062,9 +4320,11 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }

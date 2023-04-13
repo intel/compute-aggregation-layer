@@ -37,6 +37,8 @@ constexpr std::string_view calSharedAllocations = "CAL_SHARED_ALLOCATIONS";
 constexpr std::string_view calYieldThreadsEnvName = "CAL_YIELD_THREADS";
 // Controls whether CAL should reuse buffers
 constexpr std::string_view calIcdBufferRecycleEnvName = "CAL_ICD_BUFFER_RECYCLE";
+// Contoles whether CAL should use asynchronous calls
+constexpr std::string_view calAsynchronousCalls = "CAL_ASYNC_CALLS";
 // Set default RPC channel size (in MB)
 constexpr std::string_view calDefaultRpcChannelSizeEnvName = "CAL_DEFAULT_RPC_CHANNEL_SIZE_MB";
 // Set default shared VA window size per client (in GB)

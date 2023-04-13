@@ -522,6 +522,10 @@ class ChannelClient : public CommandsChannel {
 
         this->completionStamps = CompletionStampBufferT(getAsLocalAddress<CompletionStampT>(this->layout.completionStampsStart), this->layout.completionStampsCapacity);
         this->heap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), this->layout.heapEnd - this->layout.heapStart));
+        this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, this->useAsyncCalls);
+
+        this->asyncCommandsSpaceStorage.reserve(ring.getCapacity());
+        this->asyncTagsStorage.reserve(ring.getCapacity());
 
         return true;
     }
@@ -566,19 +570,32 @@ class ChannelClient : public CommandsChannel {
         return reinterpret_cast<T *>(static_cast<uintptr_t>(Cal::Utils::byteDistanceAbs(shmem, localAddress)));
     }
 
-    CompletionStampT *submitCommand(void *command) {
+    CompletionStampT *submitCommand(void *command, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
         CompletionStampT *completionStamp = completionStamps.allocate();
         if (nullptr == completionStamp) {
-            log<Verbosity::critical>("Could allocate completion stamp");
-            return nullptr;
+            if (false == waitForLastTag(messageFlags)) {
+                return nullptr;
+            }
+
+            completionStamp = completionStamps.allocate();
+            if (nullptr == completionStamp) {
+                log<Verbosity::critical>("Could allocate completion stamp");
+                return nullptr;
+            }
         }
         *completionStamp = CompletionStampNotReady;
         auto commandOffsetWithinRingBuffer = getAsShmemOffset(command);
         auto stampOffsetWithinRingBuffer = getAsShmemOffset(completionStamp);
         if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer})) {
-            completionStamps.free(completionStamp);
-            log<Verbosity::critical>("Could add command to ring");
-            return nullptr;
+            if (false == waitForLastTag(messageFlags)) {
+                return nullptr;
+            }
+
+            if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer})) {
+                completionStamps.free(completionStamp);
+                log<Verbosity::critical>("Could add command to ring");
+                return nullptr;
+            }
         }
         return completionStamp;
     }
@@ -587,8 +604,30 @@ class ChannelClient : public CommandsChannel {
         heap.free(ptr);
     }
 
+    bool callAsynchronous(Cal::Rpc::RpcMessageHeader *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
+        if (!useAsyncCalls) {
+            auto ret = callSynchronous(command);
+            return ret;
+        }
+        auto completionStamp = this->submitCommand(command, command->flags);
+        if (nullptr == completionStamp) {
+            log<Verbosity::critical>("Synchronous call failed");
+            return false;
+        }
+        if (Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores == serviceSynchronizationMethod) {
+            if (false == this->signalServiceSemaphore()) {
+                log<Verbosity::critical>("Failed to signal service with new RPC call");
+                return false;
+            }
+        }
+        asyncTagsStorage.push_back(completionStamp);
+        asyncCommandsSpaceStorage.push_back(std::move(commandSpace));
+        log<Verbosity::bloat>("Successful asynchronous call");
+        return true;
+    }
+
     bool callSynchronous(Cal::Rpc::RpcMessageHeader *command) {
-        auto completionStamp = this->submitCommand(command);
+        auto completionStamp = this->submitCommand(command, command->flags);
         if (nullptr == completionStamp) {
             log<Verbosity::critical>("Synchronous call failed");
             return false;
@@ -605,6 +644,7 @@ class ChannelClient : public CommandsChannel {
             return false;
         }
         completionStamps.free(completionStamp);
+        releaseAsyncStorage();
         log<Verbosity::bloat>("Successful synchronous call");
         return true;
     }
@@ -612,6 +652,11 @@ class ChannelClient : public CommandsChannel {
     template <typename MessageT>
     bool callSynchronous(MessageT *command) {
         return callSynchronous(&command->header);
+    }
+
+    template <typename MessageT>
+    bool callAsynchronous(MessageT *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
+        return callAsynchronous(&command->header, commandSpace);
     }
 
     int32_t getId() const {
@@ -647,6 +692,10 @@ class ChannelClient : public CommandsChannel {
         this->hostptrCopiesRing.pop();
 
         return locationToUpdate;
+    }
+
+    bool isCallAsyncEnabled() {
+        return this->useAsyncCalls;
     }
 
   protected:
@@ -733,6 +782,24 @@ class ChannelClient : public CommandsChannel {
         return true;
     }
 
+    bool waitForLastTag(Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags) {
+        auto lastStamp = asyncTagsStorage.back();
+        if (false == wait(lastStamp, messageFlags)) {
+            log<Verbosity::critical>("Failed to get response from previous RPC async calls");
+            return false;
+        }
+        releaseAsyncStorage();
+        return true;
+    }
+
+    void releaseAsyncStorage() {
+        for (auto &asyncTag : asyncTagsStorage) {
+            completionStamps.free(asyncTag);
+        }
+        asyncTagsStorage.clear();
+        asyncCommandsSpaceStorage.clear();
+    }
+
     Cal::Ipc::Connection &connection;
     Cal::Ipc::ShmemImporter &globalShmemImporter;
     Cal::Usm::UsmShmemImporter &sharedVaShmemImporter;
@@ -740,8 +807,12 @@ class ChannelClient : public CommandsChannel {
     Cal::Ipc::ShmemImporter::AllocationT underlyingShmem;
     std::atomic_bool stopped = false;
 
+    bool useAsyncCalls = false;
     CompletionStampBufferT completionStamps;
     Cal::Allocators::AddressRangeAllocator heap;
+
+    std::vector<std::unique_ptr<void, ChannelSpaceDeleter>> asyncCommandsSpaceStorage;
+    std::vector<CompletionStampT *> asyncTagsStorage;
 
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
     ClientSynchronizationMethod clientSynchronizationMethod = unknown;

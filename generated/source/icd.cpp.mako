@@ -150,12 +150,20 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
     return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
 %      else : # not is_unsupported(f)
 
+%      if f.callAsync:
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
+    }
+%      else:
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
     }
+%      endif
 %       if func_base.traits.emit_copy_to_caller:
     command->copyToCaller(${get_copy_to_caller_call_params_list_str(func_base)});
 %       endif # func_base.traits.emit_copy_to_caller

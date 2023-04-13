@@ -216,6 +216,7 @@ constexpr size_t MB = KB * 1024U;
 constexpr size_t GB = MB * 1024U;
 constexpr size_t pageSize4KB = KB * 4U;
 constexpr size_t pageSize64KB = KB * 64U;
+constexpr size_t pageSize2MB = MB * 2U;
 
 struct CpuInfo {
     static std::optional<CpuInfo> read();

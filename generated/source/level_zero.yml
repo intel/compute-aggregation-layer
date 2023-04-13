@@ -4097,6 +4097,7 @@ config:
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeCommandListAppendBarrier
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "if(hSignalEvent){static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);\n    }"
@@ -4136,6 +4137,7 @@ config:
                 server_access: read
         - name: zeCommandListAppendSignalEvent
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);"
@@ -4159,6 +4161,7 @@ config:
               translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
         - name: zeCommandListAppendWaitOnEvents
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        static_cast<IcdL0Event*>(phEvents[i])->setAllowIcdState(hCommandList);\n    }"
@@ -4267,6 +4270,7 @@ config:
               translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
         - name: zeEventHostReset
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    static_cast<IcdL0Event*>(hEvent)->clear();"
@@ -5883,6 +5887,7 @@ config:
                 server_access: write
         - name: zeKernelSetGroupSize
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
@@ -5996,6 +6001,7 @@ config:
                 server_access: write
         - name: zeKernelSetArgumentValue
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
@@ -6031,6 +6037,7 @@ config:
                 server_access: read
         - name: zeKernelSetIndirectAccess
           latency: 0.0
+          call_async: true
           ddi_category: Kernel
           special_handling:
             icd:
@@ -6175,6 +6182,7 @@ config:
                 server_access: write
         - name: zeCommandListAppendLaunchKernel
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"

@@ -49,9 +49,11 @@ ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_de
     auto command = new(commandSpace.get()) CommandT(hDevice, pProperties);
     command->copyFromCaller();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -69,9 +71,11 @@ ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     auto commandSpace = channel.getSpace<CommandT>(0);
     auto command = new(commandSpace.get()) CommandT(flags);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -95,9 +99,11 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
         ensureNull("zeCommandListCreate: desc->pNext", desc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -126,9 +132,11 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
         ensureNull("zeCommandListCreateImmediate: altdesc->pNext", altdesc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -151,9 +159,11 @@ ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
     auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -174,9 +184,11 @@ ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
     auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -194,9 +206,11 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     auto command = new(commandSpace.get()) CommandT(hCommandList);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -226,9 +240,11 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
         ensureNull("zeCommandQueueCreate: desc->pNext", desc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -251,9 +267,11 @@ ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
     auto command = new(commandSpace.get()) CommandT(hCommandQueue);
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -290,9 +308,11 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
         command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -314,9 +334,11 @@ ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunk
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, chunksCount, chunks, transferDescsCount, transferDescs);
     command->copyFromCaller(dynMemTraits);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -335,9 +357,11 @@ ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, 
     auto command = new(commandSpace.get()) CommandT(hCommandQueue, timeout);
     command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -360,9 +384,11 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -397,9 +423,11 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -422,9 +450,11 @@ ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     auto command = new(commandSpace.get()) CommandT(hContext);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -445,9 +475,11 @@ ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
     auto command = new(commandSpace.get()) CommandT(hContext);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -482,9 +514,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -518,9 +552,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm (ze_command_list_ha
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -554,9 +590,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_comman
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -590,9 +628,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -627,9 +667,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchro
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -663,9 +705,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronou
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -699,9 +743,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchron
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -736,9 +782,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc (ze_command_list_ha
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -772,9 +820,11 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc (ze_command_list
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -809,9 +859,11 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -845,9 +897,11 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_ha
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -881,9 +935,11 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -917,9 +973,11 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -937,9 +995,11 @@ ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommand
     auto command = new(commandSpace.get()) CommandT(hCommandList, ptr, size);
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -960,9 +1020,11 @@ ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, 
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -993,9 +1055,11 @@ ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1026,9 +1090,11 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1056,9 +1122,11 @@ ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, z
         ensureNull("zeDeviceGetComputeProperties: pComputeProperties->pNext", pComputeProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1079,9 +1147,11 @@ ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1112,9 +1182,11 @@ ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t 
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1135,9 +1207,11 @@ ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ui
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1161,9 +1235,11 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
         ensureNull("zeDeviceGetMemoryAccessProperties: pMemAccessProperties->pNext", pMemAccessProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1184,9 +1260,11 @@ ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uin
     command->copyFromCaller(dynMemTraits);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1210,9 +1288,11 @@ ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_
         ensureNull("zeDeviceGetImageProperties: pImageProperties->pNext", pImageProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1236,9 +1316,11 @@ ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDe
         ensureNull("zeDeviceGetExternalMemoryProperties: pExternalMemoryProperties->pNext", pExternalMemoryProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1260,9 +1342,11 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1282,9 +1366,11 @@ ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1303,9 +1389,11 @@ ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
     auto command = new(commandSpace.get()) CommandT(hDevice);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1323,9 +1411,11 @@ ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* h
     auto command = new(commandSpace.get()) CommandT(hDevice, hostTimestamp, deviceTimestamp);
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1345,9 +1435,11 @@ ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDriver
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, pCount, phDrivers);
     command->copyFromCaller(dynMemTraits);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1366,9 +1458,11 @@ ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t*
     auto command = new(commandSpace.get()) CommandT(hDriver, version);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1392,9 +1486,11 @@ ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_drive
         ensureNull("zeDriverGetProperties: pDriverProperties->pNext", pDriverProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1418,9 +1514,11 @@ ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_dr
         ensureNull("zeDriverGetIpcProperties: pIpcProperties->pNext", pIpcProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1441,9 +1539,11 @@ ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver,
     command->copyFromCaller(dynMemTraits);
     command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1479,9 +1579,11 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1504,9 +1606,11 @@ ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
     auto command = new(commandSpace.get()) CommandT(hEventPool);
     command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1532,9 +1636,11 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
         ensureNull("zeEventCreate: desc->pNext", desc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1557,9 +1663,11 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1580,9 +1688,11 @@ ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool,
     auto command = new(commandSpace.get()) CommandT(hEventPool, phIpc);
     command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1601,9 +1711,11 @@ ze_result_t zeEventPoolOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_
     auto command = new(commandSpace.get()) CommandT(hContext, hIpc, phEventPool);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1626,9 +1738,11 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     auto command = new(commandSpace.get()) CommandT(hEventPool);
     command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1669,11 +1783,8 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
         }
     }
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1694,11 +1805,8 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
         command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
     }
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1729,11 +1837,8 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
         }
     }
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1749,9 +1854,11 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
     auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1772,9 +1879,11 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
     auto command = new(commandSpace.get()) CommandT(hEvent, timeout);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1803,9 +1912,11 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1838,9 +1949,11 @@ ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1862,11 +1975,8 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     auto command = new(commandSpace.get()) CommandT(hEvent);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1886,9 +1996,11 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     auto command = new(commandSpace.get()) CommandT(hEvent, dstptr);
     command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1917,9 +2029,11 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
         ensureNull("zeFenceCreate: desc->pNext", desc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1942,9 +2056,11 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
     auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1965,9 +2081,11 @@ ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) 
     auto command = new(commandSpace.get()) CommandT(hFence, timeout);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -1988,9 +2106,11 @@ ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2011,9 +2131,11 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
     auto command = new(commandSpace.get()) CommandT(hFence);
     command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2031,9 +2153,11 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
     auto command = new(commandSpace.get()) CommandT(hKernel, offsetX, offsetY, offsetZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2062,9 +2186,11 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
         ensureNull("zeImageGetProperties: pImageProperties->pNext", pImageProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2091,9 +2217,11 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
         translateRequiredPNextExtensions(command->captures.desc.pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2116,9 +2244,11 @@ ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
     auto command = new(commandSpace.get()) CommandT(hImage);
     command->args.hImage = static_cast<IcdL0Image*>(hImage)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2144,9 +2274,11 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
         ensureNull("zeKernelSchedulingHintExp: pHint->pNext", pHint->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2175,9 +2307,11 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
         command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2204,9 +2338,11 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     }
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2231,9 +2367,11 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     command->copyFromCaller(dynMemTraits, implArgsForZeMemAllocHostRpcM);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2256,9 +2394,11 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     globalL0Platform->destroyUsmDescriptor(ptr);
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2278,9 +2418,11 @@ ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, cons
     command->copyFromCaller(dynMemTraits);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2303,9 +2445,11 @@ ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr,
     auto command = new(commandSpace.get()) CommandT(hContext, ptr, pBase, pSize);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2328,9 +2472,11 @@ ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void
     auto command = new(commandSpace.get()) CommandT(hContext, ptr, pIpcHandle);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2350,9 +2496,11 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2375,9 +2523,11 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
     auto command = new(commandSpace.get()) CommandT(hContext, ptr);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2400,9 +2550,11 @@ ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const vo
     command->copyFromCaller(dynMemTraits);
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2424,9 +2576,11 @@ ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_devi
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2452,9 +2606,11 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
     command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
     command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2481,9 +2637,11 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     auto command = new(commandSpace.get()) CommandT(hModule);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2518,9 +2676,11 @@ ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModu
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2543,9 +2703,11 @@ ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLo
     auto command = new(commandSpace.get()) CommandT(hModuleBuildLog);
     command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2568,9 +2730,11 @@ ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuild
     command->copyFromCaller(dynMemTraits);
     command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2591,9 +2755,11 @@ ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, 
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2614,9 +2780,11 @@ ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pG
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2642,9 +2810,11 @@ ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2668,9 +2838,11 @@ ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_modul
         ensureNull("zeModuleGetProperties: pModuleProperties->pNext", pModuleProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2695,9 +2867,11 @@ ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* 
         ensureNull("zeKernelCreate: desc->pNext", desc->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2720,9 +2894,11 @@ ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
     auto command = new(commandSpace.get()) CommandT(hKernel);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2745,9 +2921,11 @@ ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* 
     command->copyFromCaller(dynMemTraits);
     command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2766,11 +2944,8 @@ ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t 
     auto command = new(commandSpace.get()) CommandT(hKernel, groupSizeX, groupSizeY, groupSizeZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -2786,9 +2961,11 @@ ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint3
     auto command = new(commandSpace.get()) CommandT(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2807,9 +2984,11 @@ ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel,
     auto command = new(commandSpace.get()) CommandT(hKernel, totalGroupCount);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2830,11 +3009,8 @@ ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint3
     command->copyFromCaller(dynMemTraits);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -2850,11 +3026,8 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     auto command = new(commandSpace.get()) CommandT(hKernel, flags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -2873,9 +3046,11 @@ ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     auto command = new(commandSpace.get()) CommandT(hKernel, pFlags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2894,9 +3069,11 @@ ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_
     auto command = new(commandSpace.get()) CommandT(hKernel, flags);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2916,9 +3093,11 @@ ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kerne
     command->copyFromCaller(dynMemTraits);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2939,9 +3118,11 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     command->copyFromCaller(dynMemTraits);
     command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -2979,11 +3160,8 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
         }
     }
 
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
+    if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
+        return ZE_RESULT_SUCCESS;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -3021,9 +3199,11 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
         }
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
@@ -3049,9 +3229,11 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
         ensureNull("zeDevicePciGetPropertiesExt: pPciProperties->pNext", pPciProperties->pNext);
     }
 
+
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
     }
+
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
