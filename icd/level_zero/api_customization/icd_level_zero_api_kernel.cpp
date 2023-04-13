@@ -7,7 +7,9 @@
 
 #include "generated_icd_level_zero.h"
 #include "icd/icd_global_state.h"
+#include "icd/icd_page_fault_manager.h"
 #include "icd/level_zero/api_type_wrapper/kernel_wrapper.h"
+#include "icd/level_zero/icd_level_zero.h"
 #include "icd/level_zero/logic/properties_cache.h"
 #include "icd_level_zero_api.h"
 
@@ -15,7 +17,11 @@ namespace Cal::Icd::LevelZero {
 
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue) {
     auto l0Kernel = static_cast<IcdL0Kernel *>(hKernel);
-    l0Kernel->storeKernelArg(pArgValue, argIndex);
+
+    if (argSize == sizeof(void *) && pArgValue &&
+        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().isAllocShared(*reinterpret_cast<const void *const *>(pArgValue))) {
+        l0Kernel->storeKernelArg(*reinterpret_cast<const void *const *>(pArgValue), argIndex);
+    }
 
     auto cacheEnabled = Cal::Icd::icdGlobalState.isCacheEnabled();
     if (!cacheEnabled) {

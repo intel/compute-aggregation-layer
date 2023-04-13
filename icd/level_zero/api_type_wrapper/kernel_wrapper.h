@@ -32,7 +32,7 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logi
 
     void storeKernelArg(const void *argValue, uint32_t argNum) {
         if (allocationsToMigrate.size() < argNum + 1) {
-            allocationsToMigrate.resize(argNum + 1);
+            allocationsToMigrate.resize(argNum + 1, nullptr);
         }
         allocationsToMigrate[argNum] = argValue;
     }

@@ -63,7 +63,7 @@ class PageFaultManager {
         }
         log<Verbosity::debug>("New shared alloc %p", hostPtr);
         std::lock_guard<std::mutex> lock(this->mtx);
-        this->sharedAllocMap.emplace(std::piecewise_construct, std::forward_as_tuple(hostPtr), std::forward_as_tuple(size, placement));
+        this->sharedAllocVec.emplace_back(hostPtr, size, placement);
         if (placement == Placement::DEVICE) {
             Cal::Sys::mprotect(hostPtr, size, PROT_NONE);
         }
@@ -76,11 +76,11 @@ class PageFaultManager {
         log<Verbosity::debug>("Removing shared alloc %p", hostPtr);
         std::lock_guard<std::mutex> lock(this->mtx);
         auto sharedAllocDesc = this->findSharedAlloc(hostPtr);
-        if (sharedAllocDesc == this->sharedAllocMap.end()) {
+        if (sharedAllocDesc == this->sharedAllocVec.end()) {
             return;
         }
-        Cal::Sys::mprotect(sharedAllocDesc->first, sharedAllocDesc->second.size, PROT_READ | PROT_WRITE);
-        this->sharedAllocMap.erase(sharedAllocDesc->first);
+        Cal::Sys::mprotect(sharedAllocDesc->ptr, sharedAllocDesc->size, PROT_READ | PROT_WRITE);
+        this->sharedAllocVec.erase(sharedAllocDesc);
     }
 
     template <typename... Args>
@@ -97,9 +97,14 @@ class PageFaultManager {
             return;
         }
         std::lock_guard<std::mutex> lock(this->mtx);
-        for (auto it = this->sharedAllocMap.begin(); it != this->sharedAllocMap.end(); ++it) {
+        for (auto it = this->sharedAllocVec.begin(); it != this->sharedAllocVec.end(); ++it) {
             this->moveAllocationToGpuImplIt(it);
         }
+    }
+
+    bool isAllocShared(const void *ptr) {
+        auto it = this->findSharedAlloc(ptr);
+        return it != this->sharedAllocVec.end();
     }
 
     static void pageFaultHandlerWrapper(int signal, siginfo_t *info, void *context) {
@@ -108,10 +113,11 @@ class PageFaultManager {
 
   protected:
     struct SharedAllocDesc {
+        void *ptr = nullptr;
         uint64_t size = 0;
         Placement placement = Placement::HOST;
 
-        SharedAllocDesc(uint64_t size, Placement placement) : size(size), placement(placement) {}
+        SharedAllocDesc(void *ptr, uint64_t size, Placement placement) : ptr(ptr), size(size), placement(placement) {}
     };
 
     void moveAllocationToGpuImpl(const void *hostPtr) {
@@ -122,14 +128,14 @@ class PageFaultManager {
         moveAllocationToGpuImplIt(sharedAllocDesc);
     }
 
-    void moveAllocationToGpuImplIt(std::unordered_map<void *, SharedAllocDesc>::iterator &it) {
-        if (it == this->sharedAllocMap.end() ||
-            it->second.placement == Placement::DEVICE) {
+    void moveAllocationToGpuImplIt(std::vector<SharedAllocDesc>::iterator &it) {
+        if (it == this->sharedAllocVec.end() ||
+            it->placement == Placement::DEVICE) {
             return;
         }
-        log<Verbosity::debug>("Moving to GPU placement alloc %p", it->first);
-        Cal::Sys::mprotect(it->first, it->second.size, PROT_NONE);
-        it->second.placement = Placement::DEVICE;
+        log<Verbosity::debug>("Moving to GPU placement alloc %p", it->ptr);
+        Cal::Sys::mprotect(it->ptr, it->size, PROT_NONE);
+        it->placement = Placement::DEVICE;
     }
 
     void pageFaultHandlerImpl(int signal, siginfo_t *info, void *context) {
@@ -158,12 +164,12 @@ class PageFaultManager {
         log<Verbosity::debug>("Verifying page fault on address %p", ptr);
 
         auto sharedAllocDesc = this->findSharedAlloc(ptr);
-        if (sharedAllocDesc == this->sharedAllocMap.end()) {
+        if (sharedAllocDesc == this->sharedAllocVec.end()) {
             log<Verbosity::error>("Page fault on non shared memory address: %p", ptr);
             return false;
         }
 
-        if (sharedAllocDesc->second.placement == Placement::HOST) {
+        if (sharedAllocDesc->placement == Placement::HOST) {
             log<Verbosity::debug>("Memory already accessible by host");
             return true;
         }
@@ -184,8 +190,8 @@ class PageFaultManager {
             }
         }
 
-        sharedAllocDesc->second.placement = Placement::HOST;
-        Cal::Sys::mprotect(sharedAllocDesc->first, sharedAllocDesc->second.size, PROT_READ | PROT_WRITE);
+        sharedAllocDesc->placement = Placement::HOST;
+        Cal::Sys::mprotect(sharedAllocDesc->ptr, sharedAllocDesc->size, PROT_READ | PROT_WRITE);
         log<Verbosity::debug>("Page fault verified successfully on address %p", ptr);
         return true;
     }
@@ -194,12 +200,12 @@ class PageFaultManager {
     struct sigaction previousPageFaultHandler = {};
     inline static std::function<void(int signal, siginfo_t *info, void *context)> pageFaultHandler;
 
-    std::unordered_map<void *, SharedAllocDesc> sharedAllocMap;
+    std::vector<SharedAllocDesc> sharedAllocVec;
     std::mutex mtx;
 
-    std::unordered_map<void *, SharedAllocDesc>::iterator findSharedAlloc(const void *hostPtr) {
-        return std::find_if(this->sharedAllocMap.begin(), this->sharedAllocMap.end(), [&hostPtr](auto &other) {
-            return hostPtr >= other.first && hostPtr < reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(other.first) + other.second.size);
+    std::vector<SharedAllocDesc>::iterator findSharedAlloc(const void *hostPtr) {
+        return std::find_if(this->sharedAllocVec.begin(), this->sharedAllocVec.end(), [&hostPtr](SharedAllocDesc &other) {
+            return hostPtr >= other.ptr && hostPtr < reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(other.ptr) + other.size);
         });
     }
 
