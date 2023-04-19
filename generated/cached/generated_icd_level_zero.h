@@ -37,6 +37,7 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
+ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
@@ -532,10 +533,6 @@ inline void zesSchedulerSetExclusiveModeUnimpl() {
 }
 inline void zesSchedulerSetComputeUnitDebugModeUnimpl() {
     log<Verbosity::critical>("Function Scheduler.zesSchedulerSetComputeUnitDebugMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumMemoryModulesUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumMemoryModules is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesMemoryGetPropertiesUnimpl() {
@@ -1057,6 +1054,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnGetProperties = Cal::Icd::LevelZero::zesDeviceGetProperties;
+    dt.Device.pfnEnumMemoryModules = Cal::Icd::LevelZero::zesDeviceEnumMemoryModules;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Device.pfnEnumRasErrorSets = reinterpret_cast<decltype(dt.Device.pfnEnumRasErrorSets)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceEnumRasErrorSetsUnimpl);
     dt.Ras.pfnGetProperties = reinterpret_cast<decltype(dt.Ras.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetPropertiesUnimpl);
@@ -1107,7 +1105,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Scheduler.pfnSetTimesliceMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetTimesliceMode)>(Cal::Icd::LevelZero::Unimplemented::zesSchedulerSetTimesliceModeUnimpl);
     dt.Scheduler.pfnSetExclusiveMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetExclusiveMode)>(Cal::Icd::LevelZero::Unimplemented::zesSchedulerSetExclusiveModeUnimpl);
     dt.Scheduler.pfnSetComputeUnitDebugMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetComputeUnitDebugMode)>(Cal::Icd::LevelZero::Unimplemented::zesSchedulerSetComputeUnitDebugModeUnimpl);
-    dt.Device.pfnEnumMemoryModules = reinterpret_cast<decltype(dt.Device.pfnEnumMemoryModules)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceEnumMemoryModulesUnimpl);
     dt.Memory.pfnGetProperties = reinterpret_cast<decltype(dt.Memory.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesMemoryGetPropertiesUnimpl);
     dt.Memory.pfnGetState = reinterpret_cast<decltype(dt.Memory.pfnGetState)>(Cal::Icd::LevelZero::Unimplemented::zesMemoryGetStateUnimpl);
     dt.Memory.pfnGetBandwidth = reinterpret_cast<decltype(dt.Memory.pfnGetBandwidth)>(Cal::Icd::LevelZero::Unimplemented::zesMemoryGetBandwidthUnimpl);

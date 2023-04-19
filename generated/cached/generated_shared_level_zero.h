@@ -113,7 +113,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Scheduler.zesSchedulerSetTimesliceMode");
     ret.push_back("Scheduler.zesSchedulerSetExclusiveMode");
     ret.push_back("Scheduler.zesSchedulerSetComputeUnitDebugMode");
-    ret.push_back("Device.zesDeviceEnumMemoryModules");
     ret.push_back("Memory.zesMemoryGetProperties");
     ret.push_back("Memory.zesMemoryGetState");
     ret.push_back("Memory.zesMemoryGetBandwidth");

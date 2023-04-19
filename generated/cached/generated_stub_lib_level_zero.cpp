@@ -15,6 +15,10 @@ ze_result_t zesDeviceGetProperties(zes_device_handle_t hDevice, zes_device_prope
    return {};
 }
 
+ze_result_t zesDeviceEnumMemoryModules(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory){
+   return {};
+}
+
 ze_result_t zeInit(ze_init_flags_t flags){
    return {};
 }

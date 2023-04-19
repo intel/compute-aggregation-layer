@@ -16,6 +16,26 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
+ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
+    DynamicTraits ret = {};
+    ret.phMemory.count = (pCount ? *pCount : 0);
+    ret.phMemory.size = ret.phMemory.count * sizeof(zes_mem_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phMemory.offset + ret.phMemory.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phMemory) + Cal::Utils::alignUpPow2<8>(this->countPhMemory * sizeof(zes_mem_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhMemory * sizeof(zes_mem_handle_t));
+     return size;
+}
+
 ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits::calculate(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
     DynamicTraits ret = {};
     ret.phCommandLists.count = numCommandLists;

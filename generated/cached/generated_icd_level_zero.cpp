@@ -62,6 +62,30 @@ ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_de
 
     return ret;
 }
+ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumMemoryModules");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phMemory);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDevice, pCount, phMemory);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeInit");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3261,6 +3285,9 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
 extern "C" {
 ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
     return Cal::Icd::LevelZero::zesDeviceGetProperties(hDevice, pProperties);
+}
+ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
+    return Cal::Icd::LevelZero::zesDeviceEnumMemoryModules(hDevice, pCount, phMemory);
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Icd::LevelZero::zeInit(flags);

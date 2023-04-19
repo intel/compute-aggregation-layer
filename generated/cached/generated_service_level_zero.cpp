@@ -21,6 +21,7 @@ namespace LevelZero {
 
 namespace Standard {
 ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
+ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
 ze_result_t (*zeCommandListCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) = nullptr;
 ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) = nullptr;
@@ -138,6 +139,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesDeviceGetProperties = reinterpret_cast<decltype(zesDeviceGetProperties)>(dlsym(libraryHandle, "zesDeviceGetProperties"));
     if(nullptr == zesDeviceGetProperties){
         log<Verbosity::error>("Missing symbol zesDeviceGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumMemoryModules = reinterpret_cast<decltype(zesDeviceEnumMemoryModules)>(dlsym(libraryHandle, "zesDeviceEnumMemoryModules"));
+    if(nullptr == zesDeviceEnumMemoryModules){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumMemoryModules in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -734,6 +741,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 
 void unloadLevelZeroLibrary() {
     zesDeviceGetProperties = nullptr;
+    zesDeviceEnumMemoryModules = nullptr;
     zeInit = nullptr;
     zeCommandListCreate = nullptr;
     zeCommandListCreateImmediate = nullptr;
