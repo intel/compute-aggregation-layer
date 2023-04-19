@@ -226,11 +226,8 @@ TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNullptrTh
     EXPECT_FALSE(logs.empty());
 }
 
-TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNotImportedPointerThenResultInvalidArgumentIsReturned) {
-    Cal::Mocks::LogCaptureContext logs;
-    EXPECT_EQ(ZE_RESULT_ERROR_INVALID_ARGUMENT, pointersManager.releaseImportedPointer(rangeBegin));
-
-    EXPECT_FALSE(logs.empty());
+TEST_F(ImportedHostPointersManagerTest, GivenManagerWhenTryingToReleaseNotImportedPointerThenResultSuccessIsReturned) {
+    EXPECT_EQ(ZE_RESULT_SUCCESS, pointersManager.releaseImportedPointer(rangeBegin));
 }
 
 TEST_F(ImportedHostPointersManagerTest, GivenEmptyManagerWhenPointerIsImportedAndReleasedThenItsBaseAddressCanNotBeQueried) {

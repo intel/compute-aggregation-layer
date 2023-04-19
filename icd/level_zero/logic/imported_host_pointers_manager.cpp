@@ -43,8 +43,8 @@ ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
 
     const auto ranges = importedPointers.getIntersectedSubRanges(rangeToSearch);
     if (ranges.empty()) {
-        log<Verbosity::error>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
-        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
+        log<Verbosity::debug>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
+        return ZE_RESULT_SUCCESS;
     }
 
     if (ranges.size() > 1) {
