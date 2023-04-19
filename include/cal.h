@@ -41,6 +41,8 @@ constexpr std::string_view calIcdBufferRecycleEnvName = "CAL_ICD_BUFFER_RECYCLE"
 constexpr std::string_view calAsynchronousCalls = "CAL_ASYNC_CALLS";
 // Set default RPC channel size (in MB)
 constexpr std::string_view calDefaultRpcChannelSizeEnvName = "CAL_DEFAULT_RPC_CHANNEL_SIZE_MB";
+// Set RPC ring size in pages (default is <= 1)
+constexpr std::string_view calRpcRingPagesEnvName = "CAL_RPC_RING_SIZE_PAGES";
 // Set default shared VA window size per client (in GB)
 constexpr std::string_view calDefaultSharedVaSizeEnvName = "CAL_DEFAULT_SHARED_VA_SIZE_GB";
 // Allocate RPC channel within shared VA window

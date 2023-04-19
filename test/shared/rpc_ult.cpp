@@ -350,7 +350,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, givenUnalignedShmemPointerThenF
 
     std::vector<char> shmem;
     shmem.resize(Cal::Utils::pageSize4KB * 16);
-    EXPECT_FALSE(commandsChannel.partition(shmem.data() + 1, Cal::Utils::pageSize4KB * 15, false));
+    EXPECT_FALSE(commandsChannel.partition(shmem.data() + 1, Cal::Utils::pageSize4KB * 15, false, false));
 
     EXPECT_FALSE(logs.empty());
 }
@@ -361,7 +361,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, givenUnalignedShmemSizeThenFail
 
     std::vector<char> shmem;
     shmem.resize(Cal::Utils::pageSize4KB * 16);
-    EXPECT_FALSE(commandsChannel.partition(Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data()), Cal::Utils::pageSize4KB * 15 - 1, false));
+    EXPECT_FALSE(commandsChannel.partition(Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data()), Cal::Utils::pageSize4KB * 15 - 1, false, false));
 
     EXPECT_FALSE(logs.empty());
 }
@@ -373,7 +373,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, givenTooSmallShmemSizeThenFails
     std::vector<char> shmem;
     shmem.resize(Cal::Utils::pageSize4KB * 16);
     EXPECT_FALSE(commandsChannel.partition(Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data()),
-                                           Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize - Cal::Utils::pageSize4KB, false));
+                                           Cal::Rpc::CommandsChannel::Layout().minShmemSize - Cal::Utils::pageSize4KB, false, false));
 
     EXPECT_FALSE(logs.empty());
 }
@@ -381,51 +381,51 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, givenTooSmallShmemSizeThenFails
 TEST(CommandsChannelPartitioUsingDefaultLayoutn, givenCorrectShmemSizeThenPartitionsItUsingDefaultLayout) {
     CommandsChannelWhiteBox commandsChannel;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
-    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
 
-    EXPECT_EQ(LayoutT::ringHead, commandsChannel.layout.ringHead);
-    EXPECT_EQ(LayoutT::semClient, commandsChannel.layout.semClient);
+    EXPECT_EQ(layout.ringHead, commandsChannel.layout.ringHead);
+    EXPECT_EQ(layout.semClient, commandsChannel.layout.semClient);
 
-    EXPECT_EQ(LayoutT::ringTail, commandsChannel.layout.ringTail);
-    EXPECT_EQ(LayoutT::semServer, commandsChannel.layout.semServer);
+    EXPECT_EQ(layout.ringTail, commandsChannel.layout.ringTail);
+    EXPECT_EQ(layout.semServer, commandsChannel.layout.semServer);
 
-    EXPECT_EQ(LayoutT::ringStart, commandsChannel.layout.ringStart);
-    EXPECT_EQ((LayoutT::ringEnd - LayoutT::ringStart) / sizeof(Cal::Rpc::RingEntry), commandsChannel.layout.ringCapacity);
+    EXPECT_EQ(layout.ringStart, commandsChannel.layout.ringStart);
+    EXPECT_EQ((layout.ringEnd - layout.ringStart) / sizeof(Cal::Rpc::RingEntry), commandsChannel.layout.ringCapacity);
 
-    EXPECT_EQ(LayoutT::completionStampsStart, commandsChannel.layout.completionStampsStart);
-    EXPECT_EQ((LayoutT::completionStampsEnd - LayoutT::completionStampsStart) / sizeof(Cal::Rpc::CompletionStampT), commandsChannel.layout.completionStampsCapacity);
+    EXPECT_EQ(layout.completionStampsStart, commandsChannel.layout.completionStampsStart);
+    EXPECT_EQ((layout.completionStampsEnd - layout.completionStampsStart) / sizeof(Cal::Rpc::CompletionStampT), commandsChannel.layout.completionStampsCapacity);
 
-    EXPECT_EQ(LayoutT::heapStart, commandsChannel.layout.heapStart);
+    EXPECT_EQ(layout.heapStart, commandsChannel.layout.heapStart);
     EXPECT_EQ(static_cast<int64_t>(alignedShmemSize), commandsChannel.layout.heapEnd);
 
-    EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(LayoutT::semClient), commandsChannel.semClient);
-    EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(LayoutT::semServer), commandsChannel.semServer);
+    EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(layout.semClient), commandsChannel.semClient);
+    EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(layout.semServer), commandsChannel.semServer);
 
-    EXPECT_EQ(LayoutT::ringStart, commandsChannel.getAsShmemOffset(commandsChannel.ring.peekHead()));
-    EXPECT_EQ((LayoutT::ringEnd - LayoutT::ringStart) / sizeof(Cal::Rpc::RingEntry), commandsChannel.ring.getCapacity());
+    EXPECT_EQ(layout.ringStart, commandsChannel.getAsShmemOffset(commandsChannel.ring.peekHead()));
+    EXPECT_EQ((layout.ringEnd - layout.ringStart) / sizeof(Cal::Rpc::RingEntry), commandsChannel.ring.getCapacity());
 }
 
 TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBlockIsNotRequestedThenDoesNotResetRingAndDoesNotInitializeSemaphores) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     CommandsChannelWhiteBox commandsChannel;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
-    auto ringHead = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, LayoutT::ringHead));
-    auto ringTail = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, LayoutT::ringTail));
+    auto ringHead = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, layout.ringHead));
+    auto ringTail = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, layout.ringTail));
 
     *ringHead = 3;
     *ringTail = 5;
 
-    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
     EXPECT_FALSE(commandsChannel.ownsSemaphores);
     EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
@@ -437,18 +437,18 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     CommandsChannelWhiteBox commandsChannel;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
-    auto ringHead = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, LayoutT::ringHead));
-    auto ringTail = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, LayoutT::ringTail));
+    auto ringHead = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, layout.ringHead));
+    auto ringTail = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, layout.ringTail));
 
     *ringHead = 3;
     *ringTail = 5;
 
-    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
+    EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
     EXPECT_TRUE(commandsChannel.ownsSemaphores);
     EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
@@ -460,15 +460,15 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
     Cal::Mocks::LogCaptureContext logs;
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
     {
         CommandsChannelWhiteBox commandsChannel;
         tempSysCallsCtx.apiConfig.sem_init.returnValue = -1;
-        EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
+        EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
         EXPECT_FALSE(logs.empty());
@@ -487,7 +487,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
             return tempSysCallsCtx.sem_initBaseImpl(sem, pshared, value);
         };
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
-        EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
+        EXPECT_FALSE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
         EXPECT_FALSE(logs.empty());
@@ -497,14 +497,14 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
 TEST(CommandsChannelPartition, whenInitializedSempahoresThenDestroysThemDuringOwnDestructor) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
     {
         CommandsChannelWhiteBox commandsChannel;
-        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
+        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
         EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
     }
@@ -516,14 +516,14 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemTh
     Cal::Mocks::LogCaptureContext logs;
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
     {
         CommandsChannelWhiteBox commandsChannel;
-        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true));
+        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
         EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         tempSysCallsCtx.apiConfig.sem_destroy.returnValue = -1;
@@ -536,14 +536,14 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemTh
 TEST(CommandsChannelPartition, whenDidNotInitializeSempahoresThenDoesNotDestroyThemDuringOwnDestructor) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     std::vector<char> shmem;
-    using LayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(LayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout layout;
+    shmem.resize(layout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = LayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = layout.minShmemSize + Cal::Utils::pageSize4KB;
 
     {
         CommandsChannelWhiteBox commandsChannel;
-        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+        EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
         EXPECT_FALSE(commandsChannel.ownsSemaphores);
         EXPECT_EQ(0u, tempSysCallsCtx.apiConfig.sem_init.callCount);
     }
@@ -553,12 +553,12 @@ TEST(CommandsChannelPartition, whenDidNotInitializeSempahoresThenDoesNotDestroyT
 
 TEST(CommandsChannelPartitionUsingGivenLayout, givenInvalidLayoutThenFailsAndEmitsWarning) {
     std::vector<char> shmem;
-    using ValidLayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(ValidLayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout validDefaultLayout;
+    shmem.resize(validDefaultLayout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = ValidLayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = validDefaultLayout.minShmemSize + Cal::Utils::pageSize4KB;
     CommandsChannelWhiteBox validCommandsChannel;
-    ASSERT_TRUE(validCommandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    ASSERT_TRUE(validCommandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
 
     auto validLayout = validCommandsChannel.layout;
     ASSERT_TRUE(validLayout.isValid());
@@ -627,12 +627,12 @@ TEST(CommandsChannelPartitionUsingGivenLayout, givenInvalidLayoutThenFailsAndEmi
 
 TEST(CommandsChannelPartitionUsingGivenLayout, givenValidLayoutThenUsesIt) {
     std::vector<char> shmem;
-    using ValidLayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(ValidLayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout validDefaultLayout;
+    shmem.resize(validDefaultLayout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = ValidLayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = validDefaultLayout.minShmemSize + Cal::Utils::pageSize4KB;
     CommandsChannelWhiteBox commandsChannel;
-    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
 
     CommandsChannelWhiteBox commandsChannel2;
     EXPECT_TRUE(commandsChannel2.partition(alignedShmem, alignedShmemSize, commandsChannel.layout, false));
@@ -663,12 +663,12 @@ TEST(CommandsChannelPartitionUsingGivenLayout, whenInitializationOfControlBlockI
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     std::vector<char> shmem;
-    using ValidLayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(ValidLayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout validDefaultLayout;
+    shmem.resize(validDefaultLayout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = ValidLayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = validDefaultLayout.minShmemSize + Cal::Utils::pageSize4KB;
     CommandsChannelWhiteBox commandsChannel;
-    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
 
     CommandsChannelWhiteBox commandsChannel2;
     auto ringHead = reinterpret_cast<Cal::Rpc::OffsetWithinChannelT *>(Cal::Utils::moveByBytes(alignedShmem, commandsChannel.layout.ringHead));
@@ -689,12 +689,12 @@ TEST(CommandsChannelPartitionUsingGivenLayout, whenInitializationOfControlBlockI
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     std::vector<char> shmem;
-    using ValidLayoutT = Cal::Rpc::CommandsChannel::DefaultLayout;
-    shmem.resize(ValidLayoutT::minShmemSize + 3 * Cal::Utils::pageSize4KB);
+    Cal::Rpc::CommandsChannel::Layout validDefaultLayout;
+    shmem.resize(validDefaultLayout.minShmemSize + 3 * Cal::Utils::pageSize4KB);
     char *alignedShmem = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(shmem.data());
-    size_t alignedShmemSize = ValidLayoutT::minShmemSize + Cal::Utils::pageSize4KB;
+    size_t alignedShmemSize = validDefaultLayout.minShmemSize + Cal::Utils::pageSize4KB;
     CommandsChannelWhiteBox commandsChannel;
-    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false));
+    ASSERT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, false, false));
 
     CommandsChannelWhiteBox commandsChannel2;
 
@@ -779,7 +779,7 @@ TEST(ChannelClientInit, whenFailedToMapAllocatedShmemForCommandsChannelThenFails
     std::get<0>(connection.outMessages).size = 0;
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
     std::get<0>(connection.inMessages).id = 1;
-    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
+    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::Layout().minShmemSize;
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
@@ -794,7 +794,7 @@ TEST(ChannelClientInit, whenFailedToMapAllocatedShmemForCommandsChannelThenFails
 class ChannelClientMockFailPartition : public ChannelClientWhiteBox {
   public:
     using ChannelClientWhiteBox::ChannelClientWhiteBox;
-    bool partition(void *shmem, size_t shmemSize, bool initializeControlBlock) override {
+    bool partition(void *shmem, size_t shmemSize, bool initializeControlBlock, bool useAsyncCalls) override {
         ++failedPartitionCallsCounter;
         return false;
     }
@@ -816,10 +816,10 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
     Cal::Mocks::ConnectionExpectedProtocol<InMessages, OutMessages> connection;
     std::get<0>(connection.outMessages).size = 0;
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
-    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
+    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::Layout().minShmemSize;
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
-    auto shmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto shmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
     ChannelClientMockFailPartition channelClient{connection, shmemManager, usmShmemImporter};
     std::get<0>(connection.inMessages).id = shmem.getShmemId();
     EXPECT_EQ(0U, shmemManager.remoteShmemsLog.size());
@@ -835,7 +835,7 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
 
 auto createChannelClientInitProtocolMockConnection(int shmemId, void *shmem, size_t shmemSize) {
     CommandsChannelWhiteBox tempChannel;
-    if (false == tempChannel.partition(shmem, shmemSize, false)) {
+    if (false == tempChannel.partition(shmem, shmemSize, false, false)) {
         throw std::runtime_error("Failed to partition channel for mock");
     }
 
@@ -845,7 +845,7 @@ auto createChannelClientInitProtocolMockConnection(int shmemId, void *shmem, siz
     Cal::Mocks::ConnectionExpectedProtocol<InMessages, OutMessages> connection;
     std::get<0>(connection.outMessages).size = 0;
     std::get<0>(connection.outMessages).purpose = ReqAllocateShmem::rpcMessageChannel;
-    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize;
+    std::get<0>(connection.inMessages).size = Cal::Rpc::CommandsChannel::Layout().minShmemSize;
     std::get<0>(connection.inMessages).id = shmemId;
 
     std::get<1>(connection.outMessages).ringbufferShmemId = shmemId;
@@ -861,7 +861,7 @@ TEST(ChannelClientInit, whenFailedToLaunchTheCommandsChannelThenFailsAndEmitsErr
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
 
     using namespace Cal::Messages;
     auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
@@ -881,7 +881,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsSemaphoreWaitThres
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
     auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     {
@@ -919,7 +919,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenSetsServiceWaitMethodB
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
 
     using namespace Cal::Messages;
     auto connectionTemplate = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
@@ -953,7 +953,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     shmemManager.allocateRealBackingMemory = true;
-    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+    auto commandsChannelShmem = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
     auto connection = createChannelClientInitProtocolMockConnection(commandsChannelShmem.getShmemId(), commandsChannelShmem.getMmappedPtr(), commandsChannelShmem.getMmappedSize());
 
     ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
@@ -978,7 +978,7 @@ TEST(ChannelClient, WhenBeingDestroyedThenReleasesUnderlyingShmem) {
     Cal::Mocks::MockShmemManager shmemManager;
     Cal::Usm::UsmShmemImporter usmShmemImporter{shmemManager};
     {
-        auto alloc = shmemManager.allocate(Cal::Rpc::CommandsChannel::DefaultLayout::minShmemSize, false);
+        auto alloc = shmemManager.allocate(Cal::Rpc::CommandsChannel::Layout().minShmemSize, false);
         ChannelClientWhiteBox channelClient{connection, shmemManager, usmShmemImporter};
         channelClient.underlyingShmem = Cal::Mocks::MmappedShmemSubAllocationWhiteBox{alloc, 0};
         EXPECT_FALSE(shmemManager.allocatedShmems.empty());

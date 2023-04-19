@@ -147,44 +147,72 @@ struct RingEntry {
 class CommandsChannel {
   public:
     // | control block + ring | completion stamps | hostptr copies to update | heap ...
-    struct DefaultLayout {
+    struct Layout {
         using OffsetT = Cal::Messages::OffsetWithinChannelT;
 
         using RingHeadT = Cal::Messages::OffsetWithinChannelT;
-        static constexpr OffsetT ringHead = 0;
+        OffsetT ringHead = 0;
 
         using SemClientT = ::sem_t;
-        static constexpr OffsetT semClient = Cal::Utils::alignUpPow2<sizeof(SemClientT)>(ringHead + sizeof(RingHeadT));
+        OffsetT semClient = Cal::Utils::alignUpPow2<sizeof(SemClientT)>(ringHead + sizeof(RingHeadT));
 
         using RingTailT = RingHeadT;
-        static constexpr OffsetT ringTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClient);
+        OffsetT ringTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClient);
 
         using SemServerT = SemClientT;
-        static constexpr OffsetT semServer = Cal::Utils::alignUpPow2<sizeof(SemServerT)>(ringTail + sizeof(RingTailT));
+        OffsetT semServer = Cal::Utils::alignUpPow2<sizeof(SemServerT)>(ringTail + sizeof(RingTailT));
 
         using RingEntryT = Cal::Rpc::RingEntry;
-        static constexpr OffsetT ringStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semServer);
-        static constexpr OffsetT ringEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(semServer);
-        static_assert(ringEnd == Cal::Utils::pageSize4KB, "Should fit within single page");
-        static_assert((ringEnd - ringStart) / sizeof(RingEntryT) >= 2, "Should contain at least 2 entries");
+        OffsetT ringStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semServer);
+        OffsetT ringEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(semServer);
 
         using CompletionStampT = Cal::Rpc::CompletionStampT;
-        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(ringEnd));
-        static constexpr OffsetT completionStampsStart = ringEnd;
-        static constexpr OffsetT completionStampsEnd = completionStampsStart + Cal::Utils::pageSize4KB;
+        OffsetT completionStampsStart = ringEnd;
+        OffsetT completionStampsEnd = completionStampsStart + Cal::Utils::pageSize4KB;
 
-        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(completionStampsEnd));
-        static constexpr OffsetT hostptrCopiesRingHead = completionStampsEnd;
-        static constexpr OffsetT hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
+        OffsetT hostptrCopiesRingHead = completionStampsEnd;
+        OffsetT hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
 
-        static constexpr OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
-        static constexpr OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
+        using MemChunkT = Cal::Rpc::MemChunk;
+        OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
+        OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
 
-        static constexpr OffsetT heapStart = hostptrCopiesRingEnd;
-        static_assert(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingEnd));
+        OffsetT heapStart = hostptrCopiesRingEnd;
 
-        static constexpr size_t minHeapSize = Cal::Utils::pageSize4KB;
-        static constexpr size_t minShmemSize = DefaultLayout::heapStart + minHeapSize;
+        size_t minHeapSize = Cal::Utils::pageSize4KB;
+        size_t minShmemSize = heapStart + minHeapSize;
+
+        bool valid() {
+            return check((ringEnd - ringStart) / sizeof(RingEntryT) >= 2, "Should contain at least 2 entries") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(ringEnd), "Unaligned ring end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(completionStampsEnd), "Unaligned completion stamps end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingEnd), "Unaligned host ptr copies end");
+        }
+
+        void resizeCommandsRing(size_t numberOfPages) {
+            OffsetT newRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(ringStart) + numberOfPages * Cal::Utils::pageSize4KB;
+            if (ringEnd == newRingEnd) {
+                return;
+            }
+
+            ringEnd = newRingEnd;
+            size_t numRingEntries = (ringEnd - ringStart) / sizeof(RingEntryT);
+            auto comletionStampsCount = numRingEntries * 4; // 4 times as much in case service consumes ring faster than timestamps are being released (e.g. async calls)
+            completionStampsStart = ringEnd;
+            completionStampsEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(completionStampsStart + comletionStampsCount * sizeof(CompletionStampT));
+
+            hostptrCopiesRingHead = completionStampsEnd;
+            hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
+            hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
+            hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
+
+            heapStart = hostptrCopiesRingEnd;
+        }
+
+      protected:
+        bool check(bool v, const char *errorMessage) {
+            if (false == v) {
+                log<Verbosity::critical>(errorMessage);
+            }
+            return v;
+        }
     };
 
     virtual ~CommandsChannel() {
@@ -235,7 +263,7 @@ class CommandsChannel {
     }
 
   protected:
-    mockable bool partition(void *shmem, size_t shmemSize, bool initializeControlBlock) {
+    mockable bool partition(void *shmem, size_t shmemSize, bool initializeControlBlock, bool useAsyncCalls) {
         using namespace Cal::Utils;
         if (false == isAlignedPow2<Cal::Utils::pageSize4KB>(shmem)) {
             log<Verbosity::critical>("Tried to use page-unaligned shmem as commands chnnel : %p (rest : %zu)",
@@ -246,34 +274,51 @@ class CommandsChannel {
             log<Verbosity::critical>("Tried to use page-unaligned shmem size as commands chnnel");
             return false;
         }
-        if (shmemSize < DefaultLayout::minShmemSize) {
+
+        CommandsChannel::Layout layout;
+
+        auto requestedRpcRingPages = Cal::Utils::getCalEnvI64(calDefaultSharedVaSizeEnvName, -1);
+        if (requestedRpcRingPages != -1) {
+            log<Verbosity::info>("Changing default RPC ring size from <= 1 page %d page(s)", requestedRpcRingPages);
+            layout.resizeCommandsRing(requestedRpcRingPages);
+        } else if (useAsyncCalls) {
+            static constexpr size_t minPagesForAsyncRpcRing = 4;
+            layout.resizeCommandsRing(minPagesForAsyncRpcRing);
+        }
+
+        if (false == layout.valid()) {
+            log<Verbosity::critical>("Tried to use invalid layout for RPC channel");
+            return false;
+        }
+
+        if (shmemSize < layout.minShmemSize) {
             log<Verbosity::critical>("Tried to use shmem that is too small (size : %zu = %zu pages < %zu)",
-                                     shmemSize, shmemSize / Cal::Utils::pageSize4KB, DefaultLayout::minShmemSize / Cal::Utils::pageSize4KB);
+                                     shmemSize, shmemSize / Cal::Utils::pageSize4KB, layout.minShmemSize / Cal::Utils::pageSize4KB);
             return false;
         }
 
         this->shmem = shmem;
         this->shmemSize = shmemSize;
 
-        this->layout.ringHead = DefaultLayout::ringHead;
-        this->layout.semClient = DefaultLayout::semClient;
+        this->layout.ringHead = layout.ringHead;
+        this->layout.semClient = layout.semClient;
 
-        this->layout.ringTail = DefaultLayout::ringTail;
-        this->layout.semServer = DefaultLayout::semServer;
+        this->layout.ringTail = layout.ringTail;
+        this->layout.semServer = layout.semServer;
 
-        this->layout.ringStart = DefaultLayout::ringStart;
-        this->layout.ringCapacity = (DefaultLayout::ringEnd - DefaultLayout::ringStart) / sizeof(RingEntry);
+        this->layout.ringStart = layout.ringStart;
+        this->layout.ringCapacity = (layout.ringEnd - layout.ringStart) / sizeof(RingEntry);
 
-        this->layout.completionStampsStart = DefaultLayout::completionStampsStart;
-        this->layout.completionStampsCapacity = (DefaultLayout::completionStampsEnd - DefaultLayout::completionStampsStart) / sizeof(CompletionStampT);
+        this->layout.completionStampsStart = layout.completionStampsStart;
+        this->layout.completionStampsCapacity = (layout.completionStampsEnd - layout.completionStampsStart) / sizeof(Layout::CompletionStampT);
 
-        this->layout.hostptrCopiesRingHead = DefaultLayout::hostptrCopiesRingHead;
-        this->layout.hostptrCopiesRingTail = DefaultLayout::hostptrCopiesRingTail;
+        this->layout.hostptrCopiesRingHead = layout.hostptrCopiesRingHead;
+        this->layout.hostptrCopiesRingTail = layout.hostptrCopiesRingTail;
 
-        this->layout.hostptrCopiesRingStart = DefaultLayout::hostptrCopiesRingStart;
-        this->layout.hostptrCopiesRingCapacity = (DefaultLayout::hostptrCopiesRingEnd - DefaultLayout::hostptrCopiesRingStart) / sizeof(Cal::Rpc::MemChunk);
+        this->layout.hostptrCopiesRingStart = layout.hostptrCopiesRingStart;
+        this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::MemChunkT);
 
-        this->layout.heapStart = DefaultLayout::heapStart;
+        this->layout.heapStart = layout.heapStart;
         this->layout.heapEnd = shmemSize;
 
         this->semClient = getAsLocalAddress<sem_t>(this->layout.semClient);
@@ -524,8 +569,10 @@ class ChannelClient : public CommandsChannel {
         this->heap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), this->layout.heapEnd - this->layout.heapStart));
         this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, this->useAsyncCalls);
 
-        this->asyncCommandsSpaceStorage.reserve(ring.getCapacity());
-        this->asyncTagsStorage.reserve(ring.getCapacity());
+        if (this->useAsyncCalls) {
+            this->asyncCommandsSpaceStorage.reserve(ring.getCapacity());
+            this->asyncTagsStorage.reserve(ring.getCapacity());
+        }
 
         return true;
     }
@@ -751,7 +798,7 @@ class ChannelClient : public CommandsChannel {
         }
         log<Verbosity::debug>("Succesfully allocated RPC ring buffer shmem : %p, size : %zu", underlyingShmem.getMmappedPtr(), underlyingShmem.getMmappedSize());
 
-        if (false == this->partition(underlyingShmem.getMmappedPtr(), underlyingShmem.getMmappedSize(), true)) {
+        if (false == this->partition(underlyingShmem.getMmappedPtr(), underlyingShmem.getMmappedSize(), true, this->useAsyncCalls)) {
             log<Verbosity::error>("Failed to partition the RPC ring buffer");
             return false;
         }
