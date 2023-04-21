@@ -1,13 +1,13 @@
 components:
   cal-clang-format:
     dest_dir: tools/clang-format
-    revision: 15.0.6
     type: git
     branch: clang-format
+    revision: 15.0.6
   infra:
     branch: master
     dest_dir: infra
-    revision: v4723
+    revision: v4820
     fetch_tags: true
     type: git
 version: '1'
