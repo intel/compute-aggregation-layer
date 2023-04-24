@@ -159,10 +159,13 @@ class ClientContext {
         rpcChannels.clear();
 
         log<Verbosity::debug>("Performing USM shared/host allocations cleanup (num allocations leaked by client : %zu)", usmSharedHostMap.size());
-        std::vector<UsmSharedHostAlloc> usmShmemToRelease;
         for (const auto &alloc : usmSharedHostMap) {
             if (alloc.second.gpuDestructor) {
-                alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
+                if (l0ContextsTracking.count(static_cast<ze_context_handle_t>(alloc.second.ctx)) > 0) {
+                    alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
+                } else {
+                    log<Verbosity::error>("USM allocation leaked for context that is already released");
+                }
             }
             for (auto &heap : usmHeaps) {
                 if (heap.getUnderlyingAllocator().getMmapRange().contains(alloc.second.shmem.getSubAllocationPtr())) {
@@ -197,7 +200,6 @@ class ClientContext {
             }
         }
         globalShmemsMap.clear();
-        usmShmemToRelease.clear();
 
         l0SpecificCleanup();
     }
