@@ -36,8 +36,7 @@ class OngoingHostptrCopiesManager {
     void registerCopyOperation(ze_command_list_handle_t commandList, ze_event_handle_t associatedEvent, void *destination, size_t destinationSize, bool canBeResubmitted);
     void freeOperationsOfCommandList(ze_command_list_handle_t commandList, ArtificialEventsManager &eventsManager);
     void resubmitOperationsOfCommandList(ze_command_list_handle_t commandList);
-    size_t updateAwaitedEvents();
-    std::vector<OngoingHostptrCopy> acquireFinishedCopies(ArtificialEventsManager &eventsManager);
+    void acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<OngoingHostptrCopy> &copies);
 
   protected:
     mockable ze_result_t queryEventStatus(ze_event_handle_t event);

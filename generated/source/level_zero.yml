@@ -2443,6 +2443,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandList

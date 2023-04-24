@@ -22,11 +22,12 @@ class ArtificialEventsManager {
     struct ArtificialEvent {
         bool isFree{true};
         ze_event_handle_t eventHandle{};
+        ArtificialEvent(bool isFree, ze_event_handle_t handle) : isFree(isFree), eventHandle(handle){};
     };
 
   public:
     mockable ~ArtificialEventsManager();
-    ArtificialEventsManager() = default;
+    ArtificialEventsManager();
     ArtificialEventsManager(const ArtificialEventsManager &other) = delete;
     ArtificialEventsManager(ArtificialEventsManager &&other) = delete;
     ArtificialEventsManager &operator=(const ArtificialEventsManager &other) = delete;
@@ -37,17 +38,27 @@ class ArtificialEventsManager {
     mockable void resetObtainedEvent(ze_event_handle_t artificialEvent);
     void clearDataForContext(ze_context_handle_t context);
 
+    inline static constexpr uint32_t eventsCountPerPool = 64u;
+
   protected:
-    void destroyEventPool(ze_event_pool_handle_t eventPool);
-
-    ze_event_pool_handle_t getEventPoolWithFreeEntries(ze_context_handle_t context);
-    ze_event_handle_t getFreeEvent(ze_event_pool_handle_t eventPool);
-    int getIndexOfFirstFreeEvent(ze_event_pool_handle_t eventPool);
-
-    uint32_t eventsCountPerPool{64u};
     std::unique_ptr<ArtificialEventsAllocator> eventsAllocator{new ArtificialEventsAllocator{}};
-    std::unordered_map<ze_context_handle_t, std::vector<ze_event_pool_handle_t>> eventPools{};
-    std::unordered_map<ze_event_pool_handle_t, std::vector<ArtificialEvent>> events{};
+    struct EventPool {
+        ze_context_handle_t context = nullptr;
+        uint32_t eventsFromCurrentPool = 0u;
+        std::vector<ze_event_pool_handle_t> pools;
+        std::vector<ArtificialEvent> events;
+
+        ArtificialEventsAllocator *allocator = nullptr;
+        EventPool(ArtificialEventsAllocator *allocator, ze_context_handle_t context) : context(context), allocator(allocator) {
+            pools.reserve(1);
+            events.reserve(64);
+        };
+        EventPool(const EventPool &) = delete;
+        EventPool(EventPool &&) = default;
+        EventPool &operator=(const EventPool &) = default;
+        ~EventPool();
+    };
+    std::vector<EventPool> eventPools;
 };
 
 } // namespace Cal::Service::LevelZero

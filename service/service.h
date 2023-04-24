@@ -780,6 +780,10 @@ class Provider {
         }
     }
 
+    bool useSyncMallocCopy() const {
+        return this->syncMallocCopy;
+    }
+
   protected:
     ServiceConfig serviceConfig;
     struct {
@@ -794,6 +798,7 @@ class Provider {
     std::atomic_bool isRunning = false;
     std::atomic_bool isStopping = false;
     std::atomic_int activeClients = 0;
+    bool syncMallocCopy = false;
     struct {
         Cal::Service::Apis::Ocl::OclSharedObjects ocl;
         Cal::Service::Apis::LevelZero::L0SharedObjects l0;

@@ -536,14 +536,12 @@ namespace LevelZero {
 
 bool updateHostptrCopies(Cal::Rpc::ChannelServer &channel, ClientContext &ctx) {
     auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-    const auto finishedCopiesCount = copiesManager.updateAwaitedEvents();
-    if (finishedCopiesCount > 0u) {
-        const auto finishedCopies = copiesManager.acquireFinishedCopies(ctx.getArtificialEventsManager());
-        for (const auto &copyDescription : finishedCopies) {
-            if (false == channel.pushHostptrCopyToUpdate({copyDescription.destination, copyDescription.destinationSize})) {
-                log<Verbosity::error>("Could not notify client about update of hostptr copies!");
-                return false;
-            }
+    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedCopies;
+    copiesManager.acquireFinishedCopies(ctx.getArtificialEventsManager(), finishedCopies);
+    for (const auto &copyDescription : finishedCopies) {
+        if (false == channel.pushHostptrCopyToUpdate({copyDescription.destination, copyDescription.destinationSize})) {
+            log<Verbosity::error>("Could not notify client about update of hostptr copies!");
+            return false;
         }
     }
 
@@ -901,10 +899,16 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
     }
 
     auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
-    if (!copyToHostptrEvent) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        return true;
+
+    ze_event_handle_t copyToHostptrEvent;
+    if (service.useSyncMallocCopy() && apiCommand->args.hSignalEvent) {
+        copyToHostptrEvent = apiCommand->args.hSignalEvent;
+    } else {
+        copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+        if (!copyToHostptrEvent) {
+            apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+            return true;
+        }
     }
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
@@ -915,7 +919,14 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && service.useSyncMallocCopy()) {
+        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(copyToHostptrEvent, -1);
+        if (false == channel.pushHostptrCopyToUpdate({apiCommand->args.dstptr, apiCommand->args.size})) {
+            log<Verbosity::error>("Could not notify client about update of hostptr copies!");
+            return false;
+        }
+        return true;
+    } else if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
         apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
                                                                                                        apiCommand->args.hSignalEvent,
                                                                                                        1u,
@@ -1404,6 +1415,7 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
     this->yieldThreads = Cal::Utils::getCalEnvFlag(calYieldThreadsEnvName, this->yieldThreads);
     this->commandQueueGroups.copyRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseCopyRoundRobin, this->commandQueueGroups.copyRoundRobinEnabled);
     this->commandQueueGroups.computeRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseComputeRoundRobin, this->commandQueueGroups.computeRoundRobinEnabled);
+    this->syncMallocCopy = Cal::Utils::getCalEnvFlag(calSyncMallocCopy, this->syncMallocCopy);
 }
 
 std::unique_ptr<Cal::Ipc::ConnectionListener> Provider::createConnectionListener() {

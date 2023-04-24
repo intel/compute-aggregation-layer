@@ -28,6 +28,9 @@ constexpr std::string_view calEnableOclInCalrunEnvName = "CAL_ENABLE_OCL_IN_CALR
 constexpr std::string_view calUseComputeRoundRobin = "CAL_USE_COMPUTE_ROUND_ROBIN";
 constexpr std::string_view calUseCopyRoundRobin = "CAL_USE_COPY_ROUND_ROBIN";
 
+// Controls whether CAL should make pageable memory copies blocking instead of using event manager
+constexpr std::string_view calSyncMallocCopy = "CAL_SYNC_MALLOC_COPY";
+
 // Controls whether some API calls should cache their results for faster access
 constexpr std::string_view calIcdEnableCacheEnvName = "CAL_ICD_ENABLE_CACHE";
 constexpr std::string_view calEnableAilEnvName = "CAL_USE_AIL";

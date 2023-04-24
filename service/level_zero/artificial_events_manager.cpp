@@ -15,125 +15,49 @@
 
 namespace Cal::Service::LevelZero {
 
-ArtificialEventsManager::~ArtificialEventsManager() {
-    for (auto &entry : eventPools) {
-        for (auto &eventPool : entry.second) {
-            destroyEventPool(eventPool);
-        }
-    }
+ArtificialEventsManager::~ArtificialEventsManager() = default;
 
-    events.clear();
-    eventPools.clear();
-    eventsAllocator.reset();
-}
-
-void ArtificialEventsManager::destroyEventPool(ze_event_pool_handle_t eventPool) {
-    if (events.count(eventPool) != 0u) {
-        for (auto &artificialEvent : events[eventPool]) {
-            if (!artificialEvent.eventHandle) {
-                break;
-            }
-
-            eventsAllocator->destroyEvent(artificialEvent.eventHandle);
-        }
-    }
-
-    eventsAllocator->destroyEventPool(eventPool);
+ArtificialEventsManager::ArtificialEventsManager() {
+    eventPools.reserve(2);
 }
 
 void ArtificialEventsManager::clearDataForContext(ze_context_handle_t context) {
-    if (eventPools.count(context) == 0u) {
+    auto pos = std::remove_if(eventPools.begin(), eventPools.end(), [&context](const auto &other) { return other.context == context; });
+    if (pos == eventPools.end()) {
         return;
     }
-
-    for (auto &eventPool : eventPools[context]) {
-        destroyEventPool(eventPool);
-        events.erase(eventPool);
-    }
-
-    eventPools.erase(context);
+    eventPools.erase(pos);
 }
 
 ze_event_handle_t ArtificialEventsManager::obtainEventReplacement(ze_context_handle_t context) {
-    auto eventPool = getEventPoolWithFreeEntries(context);
-    if (!eventPool) {
-        log<Verbosity::error>("ArtificialEventsManager: could not get event pool for context (%p)!", static_cast<void *>(context));
-        return nullptr;
+    auto pool = std::find_if(eventPools.begin(), eventPools.end(), [&context](const auto &other) { return other.context == context; });
+    if (pool == eventPools.end()) {
+        eventPools.emplace_back(eventsAllocator.get(), context);
+        pool = std::prev(eventPools.end());
     }
 
-    auto event = getFreeEvent(eventPool);
-    if (!event) {
-        log<Verbosity::error>("ArtificialEventsManager: could not get free event from event pool (%p)!", static_cast<void *>(eventPool));
-        return nullptr;
+    for (auto &event : pool->events) {
+        if (event.isFree) {
+            event.isFree = false;
+            return event.eventHandle;
+        }
     }
+
+    if (pool->pools.empty() || pool->eventsFromCurrentPool >= ArtificialEventsManager::eventsCountPerPool) {
+        pool->pools.push_back(eventsAllocator->createEventPool(context, ArtificialEventsManager::eventsCountPerPool));
+        pool->eventsFromCurrentPool = 0u;
+    }
+
+    auto eventPool = pool->pools.back();
+    auto event = eventsAllocator->createEvent(eventPool, pool->eventsFromCurrentPool++);
+    pool->events.emplace_back(false, event);
 
     return event;
 }
 
-ze_event_pool_handle_t ArtificialEventsManager::getEventPoolWithFreeEntries(ze_context_handle_t context) {
-    if (eventPools.count(context) != 0u) {
-        for (auto &eventPool : eventPools[context]) {
-            if (getIndexOfFirstFreeEvent(eventPool) != -1) {
-                return eventPool;
-            }
-        }
-    }
-
-    auto eventPool = eventsAllocator->createEventPool(context, eventsCountPerPool);
-    if (!eventPool) {
-        log<Verbosity::error>("ArtificialEventsManager: Could not create event pool for context (%p)!", static_cast<void *>(context));
-        return nullptr;
-    }
-
-    eventPools[context].push_back(eventPool);
-    events[eventPool].resize(eventsCountPerPool);
-
-    return eventPool;
-}
-
-int ArtificialEventsManager::getIndexOfFirstFreeEvent(ze_event_pool_handle_t eventPool) {
-    if (events.count(eventPool) == 0u) {
-        return -1;
-    }
-
-    auto &eventsContainer = events[eventPool];
-    for (auto i = 0u; i < eventsContainer.size(); ++i) {
-        if (eventsContainer[i].isFree) {
-            return static_cast<int>(i);
-        }
-    }
-
-    return -1;
-}
-
-ze_event_handle_t ArtificialEventsManager::getFreeEvent(ze_event_pool_handle_t eventPool) {
-    auto freeEventIndex = getIndexOfFirstFreeEvent(eventPool);
-    if (freeEventIndex == -1) {
-        log<Verbosity::error>("ArtificialEventsManager: Tried to get event from full event pool! This should not happen!");
-        return nullptr;
-    }
-
-    auto index = static_cast<uint32_t>(freeEventIndex);
-    auto &freeEvent = events[eventPool][index];
-
-    if (!freeEvent.eventHandle) {
-        freeEvent.eventHandle = eventsAllocator->createEvent(eventPool, index);
-    }
-
-    if (!freeEvent.eventHandle) {
-        log<Verbosity::error>("ArtificialEventsManager: Could not create new event!");
-        return nullptr;
-    }
-
-    freeEvent.isFree = false;
-    return freeEvent.eventHandle;
-}
-
 void ArtificialEventsManager::returnObtainedEvent(ze_event_handle_t artificialEvent) {
-    for (auto &entry : events) {
-        auto &eventsContainer = entry.second;
-
-        for (auto &event : eventsContainer) {
+    for (auto &eventPool : eventPools) {
+        for (auto &event : eventPool.events) {
             if (event.eventHandle == artificialEvent) {
                 event.isFree = true;
                 eventsAllocator->resetEvent(event.eventHandle);
@@ -147,6 +71,17 @@ void ArtificialEventsManager::returnObtainedEvent(ze_event_handle_t artificialEv
 
 void ArtificialEventsManager::resetObtainedEvent(ze_event_handle_t artificialEvent) {
     eventsAllocator->resetEvent(artificialEvent);
+}
+
+ArtificialEventsManager::EventPool::~EventPool() {
+    for (auto &event : events) {
+        allocator->destroyEvent(event.eventHandle);
+    }
+    events.clear();
+    for (auto &pool : pools) {
+        allocator->destroyEventPool(pool);
+    }
+    pools.clear();
 }
 
 } // namespace Cal::Service::LevelZero

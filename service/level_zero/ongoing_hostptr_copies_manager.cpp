@@ -30,24 +30,6 @@ void OngoingHostptrCopiesManager::registerCopyOperation(ze_command_list_handle_t
     newOperation.canBeResubmitted = canBeResubmitted;
 }
 
-size_t OngoingHostptrCopiesManager::updateAwaitedEvents() {
-    size_t updatedCount{0u};
-
-    for (auto &operation : ongoingOperations) {
-        if (operation.isFinished) {
-            continue;
-        }
-
-        auto status = queryEventStatus(operation.associatedEvent);
-        if (status == ZE_RESULT_SUCCESS) {
-            operation.isFinished = true;
-            ++updatedCount;
-        }
-    }
-
-    return updatedCount;
-}
-
 ze_result_t OngoingHostptrCopiesManager::queryEventStatus(ze_event_handle_t event) {
     return Cal::Service::Apis::LevelZero::Standard::zeEventQueryStatus(event);
 }
@@ -91,20 +73,15 @@ void OngoingHostptrCopiesManager::freeOperationsOfCommandList(ze_command_list_ha
     }
 }
 
-auto OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager &eventsManager) -> std::vector<OngoingHostptrCopy> {
-    const auto isFinished = [](auto &operation) { return operation.isFinished; };
-    const auto count = std::count_if(ongoingOperations.begin(), ongoingOperations.end(), isFinished);
-
-    if (count == 0u) {
-        return {};
-    }
-
-    std::vector<OngoingHostptrCopy> result{};
-    result.reserve(count);
-
-    for (const auto &operation : ongoingOperations) {
+void OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<OngoingHostptrCopy> &copies) {
+    for (auto &operation : ongoingOperations) {
         if (!operation.isFinished) {
-            continue;
+            auto status = queryEventStatus(operation.associatedEvent);
+            if (status == ZE_RESULT_SUCCESS) {
+                operation.isFinished = true;
+            } else {
+                continue;
+            }
         }
 
         if (operation.canBeResubmitted) {
@@ -114,15 +91,15 @@ auto OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager 
             eventsManager.returnObtainedEvent(operation.associatedEvent);
         }
 
-        auto &emplaced = result.emplace_back();
+        auto &emplaced = copies.emplace_back();
         emplaced.destination = operation.destination;
         emplaced.destinationSize = operation.destinationSize;
     }
 
-    const auto firstToEraseIt = std::remove_if(ongoingOperations.begin(), ongoingOperations.end(), isFinished);
+    const auto firstToEraseIt = std::remove_if(ongoingOperations.begin(), ongoingOperations.end(), [](const auto &other) { return other.isFinished; });
     ongoingOperations.erase(firstToEraseIt, ongoingOperations.end());
 
-    return result;
+    return;
 }
 
 } // namespace Cal::Service::LevelZero

@@ -739,6 +739,9 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronou
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {

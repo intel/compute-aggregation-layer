@@ -11,6 +11,7 @@
 #include "test/mocks/artificial_events_manager_mock.h"
 #include "test/mocks/log_mock.h"
 
+#include <array>
 #include <memory>
 #include <utility>
 
@@ -30,188 +31,191 @@ class ArtificialEventsManagerTest : public ::testing::Test {
 };
 
 TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolsForContextsWhenTryingToGetEventPoolsThenTheyAreReturnedAndNoErrorIsReported) {
-    auto firstEventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
+    EXPECT_EQ(eventsManager.eventPools.size(), 0u);
+
     auto firstContext = reinterpret_cast<ze_context_handle_t>(0x3456);
-    eventsManager.eventPools[firstContext].push_back(firstEventPool);
-    eventsManager.events[firstEventPool].resize(64u);
-
-    auto secondEventPool = reinterpret_cast<ze_event_pool_handle_t>(0x4345);
     auto secondContext = reinterpret_cast<ze_context_handle_t>(0x5456);
-    eventsManager.eventPools[secondContext].push_back(secondEventPool);
-    eventsManager.events[secondEventPool].resize(64u);
+    auto thirdContext = reinterpret_cast<ze_context_handle_t>(0x7899);
 
-    Cal::Mocks::LogCaptureContext logs;
-    auto firstRetrievedEventPool = eventsManager.getEventPoolWithFreeEntries(firstContext);
-    auto secondRetrievedEventPool = eventsManager.getEventPoolWithFreeEntries(secondContext);
-
-    EXPECT_EQ(firstEventPool, firstRetrievedEventPool);
-    EXPECT_EQ(secondEventPool, secondRetrievedEventPool);
-
-    EXPECT_TRUE(logs.empty());
-
-    eventsManager.events.erase(firstEventPool);
-    eventsManager.eventPools.erase(firstContext);
-
-    eventsManager.events.erase(secondEventPool);
-    eventsManager.eventPools.erase(secondContext);
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenNotCreatedEventPoolForContextWhenTryingToGetEventPoolAndCreationSucceedsThenReturnNewlyCreatedEventPoolAndUpdateContainer) {
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-
-    EXPECT_EQ(eventPool, retrievedEventPool);
-
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    EXPECT_EQ(1u, eventsManager.eventPools[context].size());
-    ASSERT_EQ(1u, eventsManager.events.count(eventPool));
-    EXPECT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest,
-       GivenCreatedEventPoolForContextButWithoutFreeEventsWhenTryingToGetEventPoolForThatContextAndCreationSucceedsThenReturnNewlyCreatedEventPoolAndUpdateContainer) {
-    // 0. Given.
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto anotherEventPool = reinterpret_cast<ze_event_pool_handle_t>(0x7745);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-
-    EXPECT_EQ(eventPool, retrievedEventPool);
-
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    EXPECT_EQ(1u, eventsManager.eventPools[context].size());
-    ASSERT_EQ(1u, eventsManager.events.count(eventPool));
-    EXPECT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    for (auto &artificialEvent : eventsManager.events[eventPool]) {
-        artificialEvent.isFree = false;
+    allocator->eventPoolsToCreate[firstContext].resize(2);
+    allocator->eventPoolsToCreate[secondContext].resize(2);
+    allocator->eventPoolsToCreate[thirdContext].resize(2);
+    for (auto &context : {firstContext, secondContext, thirdContext}) {
+        for (size_t i = 0; i < 2; ++i) {
+            allocator->eventPoolsToCreate[context].push_back(reinterpret_cast<ze_event_pool_handle_t>(i));
+        }
+    }
+    for (auto &context : allocator->eventPoolsToCreate) {
+        for (auto &pool : context.second) {
+            for (size_t i = 0u; i < 128; ++i) {
+                allocator->eventsToCreate[pool].push_back(reinterpret_cast<ze_event_handle_t>(i));
+            }
+        }
     }
 
-    allocator->eventPoolsToCreate[context].push_back(anotherEventPool);
+    auto event1FromContext1 = eventsManager.obtainEventReplacement(firstContext);
 
-    // 1. When.
-    auto anotherRetrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
+    EXPECT_EQ(eventsManager.eventPools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
 
-    // 2. Then.
-    EXPECT_EQ(anotherEventPool, anotherRetrievedEventPool);
+    auto event1FromContext2 = eventsManager.obtainEventReplacement(secondContext);
+    EXPECT_EQ(eventsManager.eventPools.size(), 2u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, secondContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
 
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    EXPECT_EQ(2u, eventsManager.eventPools[context].size());
-    ASSERT_EQ(1u, eventsManager.events.count(anotherEventPool));
-    EXPECT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[anotherEventPool].size());
+    auto event1FromContext3 = eventsManager.obtainEventReplacement(thirdContext);
+    EXPECT_EQ(eventsManager.eventPools.size(), 3u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, secondContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[2].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[2].context, thirdContext);
+    EXPECT_EQ(eventsManager.eventPools[2].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].events[0].eventHandle, event1FromContext3);
+    EXPECT_FALSE(eventsManager.eventPools[2].events[0].isFree);
 
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenNotCreatedEventPoolForContextWhenTryingToGetEventPoolAndCreationFailsThenReturnNullptrAndPrintError) {
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-
-    EXPECT_EQ(nullptr, retrievedEventPool);
-    EXPECT_FALSE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenNotCreatedEventPoolWhenTryingToGetFreeEventFromItThenNullptrIsReturnedAndErrorIsPrinted) {
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
-
-    EXPECT_EQ(nullptr, retrievedEvent);
-    EXPECT_FALSE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolWithNoFreeEntriesWhenTryingToGetFreeEventFromItThenNullptrIsReturnedAndErrorIsPrinted) {
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    // 0. Given.
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    for (auto &artificialEvent : eventsManager.events[eventPool]) {
-        artificialEvent.isFree = false;
+    std::array<ze_event_handle_t, Cal::Service::LevelZero::ArtificialEventsManager::eventsCountPerPool - 1> eventsFromContext2;
+    for (size_t i = 0; i < eventsFromContext2.size(); ++i) {
+        eventsFromContext2[i] = eventsManager.obtainEventReplacement(secondContext);
     }
+    EXPECT_EQ(eventsManager.eventPools.size(), 3u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, secondContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), Cal::Service::LevelZero::ArtificialEventsManager::eventsCountPerPool);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, Cal::Service::LevelZero::ArtificialEventsManager::eventsCountPerPool);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
+    for (size_t i = 1; i < eventsManager.eventPools[1].events.size(); ++i) {
+        EXPECT_EQ(eventsManager.eventPools[1].events[i].eventHandle, eventsFromContext2[i - 1]);
+        EXPECT_FALSE(eventsManager.eventPools[1].events[i].isFree);
+    }
+    EXPECT_EQ(eventsManager.eventPools[2].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[2].context, thirdContext);
+    EXPECT_EQ(eventsManager.eventPools[2].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].events[0].eventHandle, event1FromContext3);
+    EXPECT_FALSE(eventsManager.eventPools[2].events[0].isFree);
 
-    // 1. When.
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
+    auto event2FromContext2 = eventsManager.obtainEventReplacement(secondContext);
+    EXPECT_EQ(eventsManager.eventPools.size(), 3u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, secondContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), Cal::Service::LevelZero::ArtificialEventsManager::eventsCountPerPool + 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 2u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
+    for (size_t i = 1; i < eventsManager.eventPools[1].events.size() - 1; ++i) {
+        EXPECT_EQ(eventsManager.eventPools[1].events[i].eventHandle, eventsFromContext2[i - 1]);
+        EXPECT_FALSE(eventsManager.eventPools[1].events[i].isFree);
+    }
+    EXPECT_EQ(eventsManager.eventPools[1].events[eventsManager.eventPools[1].events.size() - 1].eventHandle, event2FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[eventsManager.eventPools[1].events.size() - 1].isFree);
+    EXPECT_EQ(eventsManager.eventPools[2].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[2].context, thirdContext);
+    EXPECT_EQ(eventsManager.eventPools[2].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].events[0].eventHandle, event1FromContext3);
+    EXPECT_FALSE(eventsManager.eventPools[2].events[0].isFree);
 
-    // 2. Then.
-    EXPECT_EQ(nullptr, retrievedEvent);
-    EXPECT_FALSE(logs.empty());
-}
+    eventsManager.returnObtainedEvent(eventsFromContext2[47]);
+    EXPECT_TRUE(eventsManager.eventPools[1].events[48].isFree);
 
-TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolWithFreeEntriesWhenTryingToGetFreeEventFromItThenEventIsMarkedAsUsedAndReturnedAndNoLogsArePrinted) {
-    auto event = reinterpret_cast<ze_event_handle_t>(0x1234);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
+    auto firstFreeEventFromContext2 = eventsManager.obtainEventReplacement(secondContext);
+    EXPECT_EQ(firstFreeEventFromContext2, eventsFromContext2[47]);
+    EXPECT_EQ(eventsManager.eventPools.size(), 3u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, secondContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), Cal::Service::LevelZero::ArtificialEventsManager::eventsCountPerPool + 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 2u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
+    for (size_t i = 1; i < eventsManager.eventPools[1].events.size() - 1; ++i) {
+        EXPECT_EQ(eventsManager.eventPools[1].events[i].eventHandle, eventsFromContext2[i - 1]);
+        EXPECT_FALSE(eventsManager.eventPools[1].events[i].isFree);
+    }
+    EXPECT_EQ(eventsManager.eventPools[1].events[eventsManager.eventPools[1].events.size() - 1].eventHandle, event2FromContext2);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[eventsManager.eventPools[1].events.size() - 1].isFree);
+    EXPECT_EQ(eventsManager.eventPools[2].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[2].context, thirdContext);
+    EXPECT_EQ(eventsManager.eventPools[2].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[2].events[0].eventHandle, event1FromContext3);
+    EXPECT_FALSE(eventsManager.eventPools[2].events[0].isFree);
 
-    // 0. Given.
-    allocator->eventsToCreate[eventPool].resize(eventsManager.eventsCountPerPool);
-    allocator->eventsToCreate[eventPool][0] = event;
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    // 1. When.
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
-
-    // 2. Then.
-    EXPECT_EQ(event, retrievedEvent);
-    EXPECT_EQ(event, eventsManager.events[eventPool][0].eventHandle);
-    EXPECT_FALSE(eventsManager.events[eventPool][0].isFree);
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolWithFreeEntriesWhenTryingToGetFreeEventFromItAndFreeEventWasCreatedThenEventIsMarkedAsUsedAndReturnedAndNoLogsArePrinted) {
-    auto event = reinterpret_cast<ze_event_handle_t>(0x1234);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    // 0. Given.
-    allocator->eventsToCreate[eventPool].resize(eventsManager.eventsCountPerPool);
-    allocator->eventsToCreate[eventPool][0] = event;
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
-
-    EXPECT_EQ(event, retrievedEvent);
-    EXPECT_EQ(event, eventsManager.events[eventPool][0].eventHandle);
-    EXPECT_FALSE(eventsManager.events[eventPool][0].isFree);
-
-    eventsManager.events[eventPool][0].isFree = true;
-
-    // 1. When.
-    auto retrievedEvent2 = eventsManager.getFreeEvent(eventPool);
-
-    // 2. Then.
-    EXPECT_EQ(event, retrievedEvent2);
-    EXPECT_TRUE(logs.empty());
+    eventsManager.clearDataForContext(secondContext);
+    EXPECT_EQ(eventsManager.eventPools.size(), 2u);
+    EXPECT_EQ(eventsManager.eventPools[0].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[0].context, firstContext);
+    EXPECT_EQ(eventsManager.eventPools[0].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[0].events[0].eventHandle, event1FromContext1);
+    EXPECT_FALSE(eventsManager.eventPools[0].events[0].isFree);
+    EXPECT_EQ(eventsManager.eventPools[1].allocator, eventsManager.eventsAllocator.get());
+    EXPECT_EQ(eventsManager.eventPools[1].context, thirdContext);
+    EXPECT_EQ(eventsManager.eventPools[1].events.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].eventsFromCurrentPool, 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].pools.size(), 1u);
+    EXPECT_EQ(eventsManager.eventPools[1].events[0].eventHandle, event1FromContext3);
+    EXPECT_FALSE(eventsManager.eventPools[1].events[0].isFree);
 }
 
 TEST_F(ArtificialEventsManagerTest, GivenErrorOnEventPoolCreationWhenTryingToObtainEventReplacementThenNullptrIsReturnedAndErrorIsPrinted) {
@@ -237,155 +241,12 @@ TEST_F(ArtificialEventsManagerTest, GivenErrorOnEventCreationWhenTryingToObtainE
     EXPECT_FALSE(logs.empty());
 }
 
-TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolAndEventWhenTryingToReturnItThenIsMarkedAsUnusedAndNoLogsArePrinted) {
-    auto event = reinterpret_cast<ze_event_handle_t>(0x1234);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    // 0. Given.
-    allocator->eventsToCreate[eventPool].resize(eventsManager.eventsCountPerPool);
-    allocator->eventsToCreate[eventPool][0] = event;
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
-
-    EXPECT_EQ(event, retrievedEvent);
-    EXPECT_EQ(event, eventsManager.events[eventPool][0].eventHandle);
-    EXPECT_FALSE(eventsManager.events[eventPool][0].isFree);
-
-    // 1. When.
-    eventsManager.returnObtainedEvent(event);
-
-    // 2. Then.
-    EXPECT_TRUE(eventsManager.events[eventPool][0].isFree);
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolAndEventWhenTryingToReturnUnknownEventThenNothingHappensAndErrorIsPrinted) {
-    auto event = reinterpret_cast<ze_event_handle_t>(0x1234);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-
-    // 0. Given.
-    allocator->eventsToCreate[eventPool].resize(eventsManager.eventsCountPerPool);
-    allocator->eventsToCreate[eventPool][0] = event;
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(eventsManager.eventsCountPerPool, eventsManager.events[eventPool].size());
-
-    Cal::Mocks::LogCaptureContext logs;
-    auto retrievedEvent = eventsManager.getFreeEvent(eventPool);
-
-    EXPECT_EQ(event, retrievedEvent);
-    EXPECT_EQ(event, eventsManager.events[eventPool][0].eventHandle);
-    EXPECT_FALSE(eventsManager.events[eventPool][0].isFree);
-
-    // 1. When.
-    auto unknownEvent = reinterpret_cast<ze_event_handle_t>(0x7777);
-    eventsManager.returnObtainedEvent(unknownEvent);
-
-    // 2. Then.
-    EXPECT_FALSE(logs.empty());
-}
-
 TEST_F(ArtificialEventsManagerTest, GivenNonRegisteredContextWhenTryingToClearItsDataThenNothingHappensAndErrorIsNotPrinted) {
     auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
 
     Cal::Mocks::LogCaptureContext logs;
     eventsManager.clearDataForContext(context);
 
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenRegisteredContextWhenTryingToClearItsDataThenItIsClearedAndErrorIsNotPrinted) {
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-
-    // 0. Given.
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-    Cal::Mocks::LogCaptureContext logs;
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    ASSERT_EQ(1u, eventsManager.events.count(eventPool));
-
-    // 1. When.
-    eventsManager.clearDataForContext(context);
-
-    // 2. Then.
-    EXPECT_EQ(0u, eventsManager.eventPools.count(context));
-    ASSERT_EQ(0u, eventsManager.events.count(eventPool));
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenNonRegisteredEventPoolWhenTryingToGetFreeEventIndexThenReturnInvalidIndex) {
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-    auto index = eventsManager.getIndexOfFirstFreeEvent(eventPool);
-
-    constexpr auto invalidIndex = -1;
-    EXPECT_EQ(invalidIndex, index);
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenRegisteredEventPoolWithoutFreeEntriesWhenTryingToGetFreeEventIndexThenReturnInvalidIndex) {
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-
-    // 0. Given.
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-    Cal::Mocks::LogCaptureContext logs;
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    ASSERT_EQ(1u, eventsManager.events.count(eventPool));
-
-    for (auto &artificialEvent : eventsManager.events[eventPool]) {
-        artificialEvent.isFree = false;
-    }
-
-    // 1. When.
-    auto index = eventsManager.getIndexOfFirstFreeEvent(eventPool);
-
-    // 2. Then.
-    constexpr auto invalidIndex = -1;
-    EXPECT_EQ(invalidIndex, index);
-
-    EXPECT_TRUE(logs.empty());
-}
-
-TEST_F(ArtificialEventsManagerTest, GivenRegisteredEventPoolWithLastFreeEntryWhenTryingToGetFreeEventIndexThenReturnLastFreeEntryIndex) {
-    auto context = reinterpret_cast<ze_context_handle_t>(0x3456);
-    auto eventPool = reinterpret_cast<ze_event_pool_handle_t>(0x2345);
-
-    // 0. Given.
-    allocator->eventPoolsToCreate[context].push_back(eventPool);
-    Cal::Mocks::LogCaptureContext logs;
-
-    auto retrievedEventPool = eventsManager.getEventPoolWithFreeEntries(context);
-    ASSERT_EQ(eventPool, retrievedEventPool);
-    ASSERT_EQ(1u, eventsManager.eventPools.count(context));
-    ASSERT_EQ(1u, eventsManager.events.count(eventPool));
-
-    for (auto &artificialEvent : eventsManager.events[eventPool]) {
-        artificialEvent.isFree = false;
-    }
-
-    constexpr auto freeEntryIndex = 7;
-    eventsManager.events[eventPool][freeEntryIndex].isFree = true;
-
-    // 1. When.
-    auto index = eventsManager.getIndexOfFirstFreeEvent(eventPool);
-
-    // 2. Then.
-    EXPECT_EQ(freeEntryIndex, index);
     EXPECT_TRUE(logs.empty());
 }
 

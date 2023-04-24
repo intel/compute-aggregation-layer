@@ -54,62 +54,6 @@ TEST(OngoingHostptrCopiesManagerTest, GivenEmptyManagerWhenRegisteringOngoingCop
     EXPECT_FALSE(copiesManager.ongoingOperations[1].canBeResubmitted);
 }
 
-TEST(OngoingHostptrCopiesManagerTest, GivenEmptyManagerWhenUpdatingAwaitedEventsThenNothingHappensAndZeroIsReturned) {
-    // 0. Given.
-    MockOngoingHostptrCopiesManager copiesManager{};
-    ASSERT_TRUE(copiesManager.ongoingOperations.empty());
-
-    // 1. When.
-    const size_t justFinishedEventsCount = copiesManager.updateAwaitedEvents();
-
-    // 2. Then.
-    EXPECT_EQ(0u, justFinishedEventsCount);
-    EXPECT_EQ(0u, copiesManager.queryEventStatusCallsCount);
-}
-
-TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesAndForOneOfThemEventIsFinishedWhenUpdatingAwaitedEventsThenIsFinishedFieldIsUpdatedAndOneIsReturned) {
-    const auto firstCommandList = reinterpret_cast<ze_command_list_handle_t>(0x7788);
-    const auto firstAssociatedEvent = reinterpret_cast<ze_event_handle_t>(0x1234);
-    const auto firstDestination = reinterpret_cast<void *>(0x5678);
-    const size_t firstDestinationSize{256u};
-
-    const auto secondCommandList = reinterpret_cast<ze_command_list_handle_t>(0x8800);
-    const auto secondAssociatedEvent = reinterpret_cast<ze_event_handle_t>(0x2345);
-    const auto secondDestination = reinterpret_cast<void *>(0x6789);
-    const size_t secondDestinationSize{512u};
-
-    // 0. Given.
-    MockOngoingHostptrCopiesManager copiesManager{};
-    copiesManager.queryEventStatusToReturn[firstAssociatedEvent] = ZE_RESULT_SUCCESS;
-    copiesManager.queryEventStatusToReturn[secondAssociatedEvent] = ZE_RESULT_NOT_READY;
-
-    auto &firstRegisteredEntry = copiesManager.ongoingOperations.emplace_back();
-    firstRegisteredEntry.commandList = firstCommandList;
-    firstRegisteredEntry.associatedEvent = firstAssociatedEvent;
-    firstRegisteredEntry.destination = firstDestination;
-    firstRegisteredEntry.destinationSize = firstDestinationSize;
-    firstRegisteredEntry.canBeResubmitted = true;
-    firstRegisteredEntry.isFinished = false;
-
-    auto &secondRegisteredEntry = copiesManager.ongoingOperations.emplace_back();
-    secondRegisteredEntry.commandList = secondCommandList;
-    secondRegisteredEntry.associatedEvent = secondAssociatedEvent;
-    secondRegisteredEntry.destination = secondDestination;
-    secondRegisteredEntry.destinationSize = secondDestinationSize;
-    secondRegisteredEntry.canBeResubmitted = true;
-    secondRegisteredEntry.isFinished = false;
-
-    // 1. When.
-    const size_t justFinishedEventsCount = copiesManager.updateAwaitedEvents();
-
-    // 2. Then.
-    EXPECT_EQ(1u, justFinishedEventsCount);
-    EXPECT_EQ(2u, copiesManager.queryEventStatusCallsCount);
-
-    EXPECT_TRUE(copiesManager.ongoingOperations[0].isFinished);
-    EXPECT_FALSE(copiesManager.ongoingOperations[1].isFinished);
-}
-
 TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesThatCanBeResubmittedAndForOneOfThemEventIsFinishedWhenAcquiringFinishedCopiesThenTheyArePreservedAndReturned) {
     const auto firstCommandList = reinterpret_cast<ze_command_list_handle_t>(0x7788);
     const auto firstAssociatedEvent = reinterpret_cast<ze_event_handle_t>(0x1234);
@@ -147,7 +91,8 @@ TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesThatCanBeR
     eventsManagerMock.callBaseResetObtainedEvent = false;
     eventsManagerMock.callBaseReturnObtainedEvent = false;
 
-    const auto finishedEvents = copiesManager.acquireFinishedCopies(eventsManagerMock);
+    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedEvents;
+    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedEvents);
 
     // 2. Then.
     EXPECT_EQ(1u, eventsManagerMock.resetObtainedEventCallsCount);
@@ -210,7 +155,8 @@ TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesThatCannot
     eventsManagerMock.callBaseResetObtainedEvent = false;
     eventsManagerMock.callBaseReturnObtainedEvent = false;
 
-    const auto finishedEvents = copiesManager.acquireFinishedCopies(eventsManagerMock);
+    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedEvents;
+    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedEvents);
 
     // 2. Then.
     EXPECT_EQ(0u, eventsManagerMock.resetObtainedEventCallsCount);
