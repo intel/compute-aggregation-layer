@@ -161,10 +161,10 @@ class ClientContext {
         log<Verbosity::debug>("Performing USM shared/host allocations cleanup (num allocations leaked by client : %zu)", usmSharedHostMap.size());
         for (const auto &alloc : usmSharedHostMap) {
             if (alloc.second.gpuDestructor) {
-                if (l0ContextsTracking.count(static_cast<ze_context_handle_t>(alloc.second.ctx)) > 0) {
-                    alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
-                } else {
+                if (apiType == ApiType::LevelZero && l0ContextsTracking.count(static_cast<ze_context_handle_t>(alloc.second.ctx)) == 0) {
                     log<Verbosity::error>("USM allocation leaked for context that is already released");
+                } else {
+                    alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
                 }
             }
             for (auto &heap : usmHeaps) {
@@ -297,6 +297,10 @@ class ClientContext {
         }
     }
 
+    void setApiType(ApiType apiType) {
+        this->apiType = apiType;
+    }
+
   protected:
     template <typename HandleT>
     std::unordered_set<HandleT> &getTracking() {
@@ -348,6 +352,7 @@ class ClientContext {
 
     Cal::Ipc::GlobalShmemAllocators &globalShmemAllocators;
     bool automaticCleanupOfApiHandles = false;
+    ApiType apiType;
     uint32_t copyCommandQueueGroupIndex = std::numeric_limits<uint32_t>::max();
     uint32_t computeCommandQueueGroupIndex = std::numeric_limits<uint32_t>::max();
     std::mutex commandQueueGroupsMtx;
@@ -1210,6 +1215,8 @@ class Provider {
             available = systemInfo.availableApis.l0;
             break;
         }
+
+        ctx.setApiType(request.api);
 
         log<Verbosity::debug>("Client : %d is checking availability of %s API which is %savailable", clientConnection.getId(), Cal::asStr(request.api), available ? " " : "NOT ");
         Cal::Messages::RespCheckApiAvailability response = {};
