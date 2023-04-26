@@ -33,6 +33,8 @@ using namespace std::experimental::filesystem::v1;
 #include <type_traits>
 #include <vector>
 
+#define predict_true(x) __builtin_expect((x), 1)
+
 namespace Cal {
 
 namespace Utils {
@@ -319,6 +321,7 @@ class CountingSemaphore { // switch to counting_semaphore in C++20
 
 std::string getProcessName();
 std::filesystem::path getProcessPath();
+std::string getLibraryPath(void *libHandle);
 
 class Smatch {
   public:

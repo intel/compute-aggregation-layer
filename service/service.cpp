@@ -1428,12 +1428,16 @@ void checkForRequiredFiles() {
     auto calDir = Cal::Utils::getProcessPath().parent_path();
     bool enableOcl = Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true);
     bool enableL0 = Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true);
+    bool overrideMalloc = Cal::Utils::getCalEnvFlag(calOverrideMallocEnvName, false);
     std::filesystem::path libCalPath;
+    std::string fullCalLibPath;
 
     if (auto handle = dlopen("libcal.so", RTLD_LAZY); handle) {
+        fullCalLibPath = Cal::Utils::getLibraryPath(handle);
         dlclose(handle);
         libCalPath = "libcal.so";
     } else if (handle = dlopen((calDir / "libcal.so").c_str(), RTLD_LAZY); handle) {
+        fullCalLibPath = Cal::Utils::getLibraryPath(handle);
         dlclose(handle);
         libCalPath = calDir / "libcal.so";
 
@@ -1452,6 +1456,7 @@ void checkForRequiredFiles() {
         log<Verbosity::critical>("libcal.so not available");
         exit(EXIT_FAILURE);
     }
+    log<Verbosity::info>("CAL library: %s", fullCalLibPath.c_str());
 
     if (enableOcl) {
         std::filesystem::path calIcdPath = "/opt/compute-aggregation-layer";
@@ -1475,6 +1480,11 @@ void checkForRequiredFiles() {
 
     if (enableL0) {
         Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", libCalPath.c_str(), 1);
+    }
+
+    if (overrideMalloc) {
+        log<Verbosity::info>("CAL Malloc override enabled, using malloc implementation from : %s", fullCalLibPath.c_str());
+        Cal::Sys::setenv("LD_PRELOAD", fullCalLibPath.c_str(), 1);
     }
 }
 

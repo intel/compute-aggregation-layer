@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <link.h>
 #include <numeric>
 #include <optional>
 #include <pwd.h>
@@ -61,6 +62,21 @@ std::string getProcessName() {
 std::filesystem::path getProcessPath() {
     auto execProcPath = std::filesystem::path("/proc") / std::to_string(getpid()) / "exe";
     return std::filesystem::read_symlink(execProcPath);
+}
+
+std::string getLibraryPath(void *libHandle) {
+    link_map *linkMap = nullptr;
+    auto err = dlinfo(libHandle, RTLD_DI_LINKMAP, &linkMap);
+    if ((0 != err) || (nullptr == linkMap)) {
+        log<Verbosity::critical>("Failed to get library path for %p", libHandle);
+        return "";
+    }
+    std::string ret = linkMap->l_name;
+    if (ret.empty()) {
+        log<Verbosity::critical>("Failed to get library path for %p", libHandle);
+        return "";
+    }
+    return ret;
 }
 
 Regex::Regex(const char *regexStr) {
