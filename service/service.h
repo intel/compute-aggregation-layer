@@ -229,7 +229,7 @@ class ClientContext {
     void reapUsmSharedHostAlloc(void *ptr, bool callGpuDestructor = true) {
         auto it = usmSharedHostMap.find(ptr);
         if (usmSharedHostMap.end() == it) {
-            log<Verbosity::error>("Asked to reap an unknown pointer %p given as USM shared/host allocation", ptr);
+            log<Verbosity::debug>("Asked to reap an unknown pointer %p given as USM shared/host allocation", ptr);
             return;
         }
         auto &alloc = it->second;
