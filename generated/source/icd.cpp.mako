@@ -151,6 +151,11 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %      else : # not is_unsupported(f)
 
 %      if f.callAsync:
+
+    if(!channel.isCallAsyncEnabled() && channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
     if(channel.callAsynchronous(command, commandSpace) && channel.isCallAsyncEnabled()){
         return ZE_RESULT_SUCCESS;
     }
