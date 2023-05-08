@@ -420,7 +420,7 @@ inline bool clGetCommandQueueInfoHandler(Provider &service, Cal::Rpc::ChannelSer
                                                 apiCommand->args.param_name, 
                                                 apiCommand->args.param_value_size, 
                                                 apiCommand->args.param_value ? apiCommand->captures.param_value : nullptr, 
-                                                apiCommand->args.param_value_size_ret ? &apiCommand->captures.param_value_size_ret : nullptr
+                                                &apiCommand->captures.param_value_size_ret
                                                 );
     return true;
 }
@@ -481,7 +481,7 @@ inline bool clGetKernelInfoHandler(Provider &service, Cal::Rpc::ChannelServer &c
                                                 apiCommand->args.param_name, 
                                                 apiCommand->args.param_value_size, 
                                                 apiCommand->args.param_value ? apiCommand->captures.param_value : nullptr, 
-                                                apiCommand->args.param_value_size_ret ? &apiCommand->captures.param_value_size_ret : nullptr
+                                                &apiCommand->captures.param_value_size_ret
                                                 );
     return true;
 }

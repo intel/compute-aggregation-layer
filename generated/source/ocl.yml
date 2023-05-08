@@ -1233,6 +1233,10 @@ config:
                 server_access: write
         - name: clGetCommandQueueInfo
           latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "if (static_cast<IcdOclCommandQueue*>(command_queue)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
           returns:
             type: cl_int
             kind: scalar
@@ -1270,6 +1274,7 @@ config:
               kind_details:
                 num_elements: "1"
                 can_be_null: True
+                always_queried: True
                 element:
                   type: size_t
                   kind: scalar
@@ -1579,6 +1584,10 @@ config:
                 server_access: write
         - name: clGetKernelInfo
           latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "if (static_cast<IcdOclKernel*>(kernel)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
           returns:
             type: cl_int
             kind: scalar
@@ -1616,6 +1625,7 @@ config:
               kind_details:
                 num_elements: "1"
                 can_be_null: True
+                always_queried: True
                 element:
                   type: size_t
                   kind: scalar

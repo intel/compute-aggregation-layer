@@ -707,6 +707,8 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         std::mutex mutex;
         std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> allocations;
     } temporaryAllocations;
+
+    InfoCache cache;
 };
 
 struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclTypePrinter> {
@@ -757,6 +759,7 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
     }
     bool sharedIndirectAccessSet = false;
     std::vector<const void *> allocationsToMigrate;
+    InfoCache cache;
 
   protected:
     std::vector<ArgTraits> argsTraits;

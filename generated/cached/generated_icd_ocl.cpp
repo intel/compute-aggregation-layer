@@ -767,6 +767,9 @@ cl_int clCreateKernelsInProgramRpcHelper (cl_program program, cl_uint num_kernel
     return ret;
 }
 cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    if (static_cast<IcdOclCommandQueue*>(command_queue)->cache.find(param_name,param_value,param_value_size_ret)) {
+        return CL_SUCCESS;
+    }
     log<Verbosity::bloat>("Establishing RPC for clGetCommandQueueInfo");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -792,6 +795,9 @@ cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_i
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
+    channelLock.unlock();
+    static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value,command->captures.param_value_size_ret);
     return ret;
 }
  // clGetProgramInfo ignored in generator - based on dont_generate_handler flag
@@ -942,6 +948,9 @@ cl_int clGetSamplerInfo (cl_sampler sampler, cl_sampler_info param_name, size_t 
     return ret;
 }
 cl_int clGetKernelInfo (cl_kernel kernel, cl_kernel_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+    if (static_cast<IcdOclKernel*>(kernel)->cache.find(param_name,param_value,param_value_size_ret)) {
+        return CL_SUCCESS;
+    }
     log<Verbosity::bloat>("Establishing RPC for clGetKernelInfo");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
@@ -967,6 +976,9 @@ cl_int clGetKernelInfo (cl_kernel kernel, cl_kernel_info param_name, size_t para
     }
     cl_int ret = command->captures.ret;
 
+    commandSpace.reset();
+    channelLock.unlock();
+    static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value,command->captures.param_value_size_ret);
     return ret;
 }
 cl_int clGetKernelWorkGroupInfo (cl_kernel kernel, cl_device_id device, cl_kernel_work_group_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
