@@ -277,7 +277,7 @@ class CommandsChannel {
 
         CommandsChannel::Layout layout;
 
-        auto requestedRpcRingPages = Cal::Utils::getCalEnvI64(calDefaultSharedVaSizeEnvName, -1);
+        auto requestedRpcRingPages = Cal::Utils::getCalEnvI64(calRpcRingPagesEnvName, -1);
         if (requestedRpcRingPages != -1) {
             log<Verbosity::info>("Changing default RPC ring size from <= 1 page %d page(s)", requestedRpcRingPages);
             layout.resizeCommandsRing(requestedRpcRingPages);
