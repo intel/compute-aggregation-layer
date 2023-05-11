@@ -32,6 +32,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <sys/file.h>
 #include <thread>
 #include <unordered_map>
@@ -787,6 +788,10 @@ class Provider {
         return this->syncMallocCopy;
     }
 
+    bool useBatched() const {
+        return this->batchedService;
+    }
+
   protected:
     ServiceConfig serviceConfig;
     struct {
@@ -802,6 +807,7 @@ class Provider {
     std::atomic_bool isStopping = false;
     std::atomic_int activeClients = 0;
     bool syncMallocCopy = false;
+    bool batchedService = false;
     struct {
         Cal::Service::Apis::Ocl::OclSharedObjects ocl;
         Cal::Service::Apis::LevelZero::L0SharedObjects l0;
@@ -1228,6 +1234,9 @@ class Provider {
 
     static void serviceSingleRpcChannel(Cal::Rpc::ChannelServer *channel, ClientContext &ctx, Provider &service) {
         log<Verbosity::debug>("Starting to service RPC channel : %d", channel->getId());
+        static std::shared_mutex batchedMtx;
+        static std::thread::id mtxOwner{};
+        bool sharedLock = false;
         while (false == ctx.isClientStopping()) {
             auto newCommand = channel->wait(service.getYieldThreads());
             if (nullptr == newCommand.command) {
@@ -1238,9 +1247,31 @@ class Provider {
             auto *header = reinterpret_cast<Cal::Rpc::RpcMessageHeader *>(newCommand.command);
             log<Verbosity::debug>("Received new RPC command request on channel : %d (type : %u, subtype %u)", channel->getId(), header->type, header->subtype);
 
+            if (service.useBatched()) {
+                if (header->flags & Cal::Rpc::RpcMessageHeader::batched) {
+                    if (mtxOwner != std::this_thread::get_id()) {
+                        batchedMtx.lock();
+                        mtxOwner = std::this_thread::get_id();
+                    }
+                } else {
+                    if (mtxOwner == std::this_thread::get_id()) {
+                        mtxOwner = std::thread::id{};
+                        batchedMtx.unlock();
+                    } else {
+                        batchedMtx.lock_shared();
+                        sharedLock = true;
+                    }
+                }
+            }
+
             service.serviceSingleRpcCommand(*channel, ctx, header, newCommand.commandMaxSize);
 
             channel->signalCompletion(newCommand.completionStamp, header->flags);
+
+            if (sharedLock) {
+                sharedLock = false;
+                batchedMtx.unlock_shared();
+            }
 
             if (service.getYieldThreads()) {
                 std::this_thread::yield();

@@ -1416,6 +1416,7 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
     this->commandQueueGroups.copyRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseCopyRoundRobin, this->commandQueueGroups.copyRoundRobinEnabled);
     this->commandQueueGroups.computeRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseComputeRoundRobin, this->commandQueueGroups.computeRoundRobinEnabled);
     this->syncMallocCopy = Cal::Utils::getCalEnvFlag(calSyncMallocCopy, this->syncMallocCopy);
+    this->batchedService = Cal::Utils::getCalEnvFlag(calBatchedService, this->batchedService);
 }
 
 std::unique_ptr<Cal::Ipc::ConnectionListener> Provider::createConnectionListener() {

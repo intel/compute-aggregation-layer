@@ -107,6 +107,8 @@ struct ${func.message_name} {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = ${get_message_subtype(func)};
     static constexpr float latency = ${func.latency};
+    static constexpr CallCategory category = CallCategory::${func.category};
+
 
     using ReturnValueT = ${func.returns.type.str};
 

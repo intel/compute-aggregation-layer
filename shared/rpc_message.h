@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -17,7 +17,8 @@ namespace Rpc {
 struct RpcMessageHeader {
     using MessageFlagsT = uint8_t;
     enum FlagsBits : MessageFlagsT {
-        signalSemaphoreOnCompletion = 1 << 0
+        signalSemaphoreOnCompletion = 1 << 0,
+        batched = 1 << 1
     };
 
     using MessageTypeT = uint8_t;
@@ -53,6 +54,12 @@ struct RpcCallId {
 static_assert(std::is_standard_layout_v<RpcCallId>);
 
 using DirectCallCallbackT = bool (*)(Cal::Rpc::RpcMessageHeader *command);
+
+enum class CallCategory {
+    Other = 0,
+    Compute,
+    Copy
+};
 
 } // namespace Rpc
 

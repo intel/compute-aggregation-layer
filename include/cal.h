@@ -42,6 +42,10 @@ constexpr std::string_view calYieldThreadsEnvName = "CAL_YIELD_THREADS";
 constexpr std::string_view calIcdBufferRecycleEnvName = "CAL_ICD_BUFFER_RECYCLE";
 // Contoles whether CAL should use asynchronous calls
 constexpr std::string_view calAsynchronousCalls = "CAL_ASYNC_CALLS";
+// Contoles whether CAL should batch API calls
+constexpr std::string_view calBatchedCalls = "CAL_BATCHED_CALLS";
+// Contoles whether CAL should execute batched calls under lock
+constexpr std::string_view calBatchedService = "CAL_BATCHED_SERVICE";
 // Set default RPC channel size (in MB)
 constexpr std::string_view calDefaultRpcChannelSizeEnvName = "CAL_DEFAULT_RPC_CHANNEL_SIZE_MB";
 // Set RPC ring size in pages (default is <= 1)

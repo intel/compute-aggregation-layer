@@ -73,17 +73,37 @@ TEST(TypedRingPush, whenTailNotAtEndThenPushMovesTailByOne) {
     int tail = 0;
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
-    EXPECT_TRUE(ring.push(17));
+    EXPECT_TRUE(ring.push(17, false));
     EXPECT_EQ(0U, ring.peekIteration());
     EXPECT_EQ(1, tail);
     EXPECT_EQ(0, head);
     EXPECT_EQ(17, data[0]);
     EXPECT_EQ(17, *ring.peekHead());
 
-    EXPECT_TRUE(ring.push(19));
+    EXPECT_TRUE(ring.push(19, false));
     EXPECT_EQ(0U, ring.peekIteration());
     EXPECT_EQ(2, tail);
     EXPECT_EQ(0, head);
+    EXPECT_EQ(19, data[1]);
+}
+
+TEST(TypedRingPush, whenBatchedPushThenDoNotUpdateHead) {
+    std::vector<int> data = {2, 3, 5};
+    int head = 0;
+    int tail = 0;
+
+    Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
+    EXPECT_TRUE(ring.push(17, true));
+    EXPECT_EQ(0U, ring.peekIteration());
+    EXPECT_EQ(0, tail);
+    EXPECT_EQ(0, head);
+    EXPECT_EQ(17, data[0]);
+
+    EXPECT_TRUE(ring.push(19, false));
+    EXPECT_EQ(0U, ring.peekIteration());
+    EXPECT_EQ(2, tail);
+    EXPECT_EQ(0, head);
+    EXPECT_EQ(17, data[0]);
     EXPECT_EQ(19, data[1]);
 }
 
@@ -94,10 +114,10 @@ TEST(TypedRingPush, whenTailAtEndAndHeadOn0ThenPushFailsDueToRingBeingFull) {
     int tail = 0;
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
-    EXPECT_TRUE(ring.push(17));
-    EXPECT_TRUE(ring.push(19));
+    EXPECT_TRUE(ring.push(17, false));
+    EXPECT_TRUE(ring.push(19, false));
 
-    EXPECT_FALSE(ring.push(23));
+    EXPECT_FALSE(ring.push(23, false));
     EXPECT_EQ(0U, ring.peekIteration());
     EXPECT_EQ(2, tail);
     EXPECT_EQ(0, head);
@@ -116,7 +136,7 @@ TEST(TypedRingPush, whenTailAtEndAndHeadNotOn0ThenPushSucceedsAndWraps) {
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
     EXPECT_EQ(0U, ring.peekIteration());
-    EXPECT_TRUE(ring.push(23));
+    EXPECT_TRUE(ring.push(23, false));
     EXPECT_EQ(1U, ring.peekIteration());
     EXPECT_EQ(0, tail);
     EXPECT_EQ(1, head);
@@ -133,7 +153,7 @@ TEST(TypedRingPush, whenWrappedAndRingNotFullThenPushMovesTailByOne) {
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
     EXPECT_EQ(0U, ring.peekIteration());
-    EXPECT_TRUE(ring.push(23));
+    EXPECT_TRUE(ring.push(23, false));
     EXPECT_EQ(0U, ring.peekIteration());
     EXPECT_EQ(1, tail);
     EXPECT_EQ(2, head);
@@ -151,7 +171,7 @@ TEST(TypedRingPush, whenWrappedAndRingFullThenFailsAndEmitsLog) {
 
     Cal::Rpc::TypedRing<int, int> ring{data.data(), data.size(), &head, &tail};
     EXPECT_EQ(0U, ring.peekIteration());
-    EXPECT_FALSE(ring.push(23));
+    EXPECT_FALSE(ring.push(23, false));
     EXPECT_EQ(0U, ring.peekIteration());
     EXPECT_EQ(0, tail);
     EXPECT_EQ(1, head);

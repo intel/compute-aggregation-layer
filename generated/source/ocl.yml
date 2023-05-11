@@ -3192,6 +3192,7 @@ config:
                   kind: scalar
                 server_access: read
         - name: clEnqueueWriteBuffer
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -3260,6 +3261,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperMallocHost
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -3337,6 +3339,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -3411,6 +3414,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRect
+          category: Copy
           latency: 0.0
           special_handling:
             icd:
@@ -3519,6 +3523,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRectRpcHelperMallocHost
+          category: Copy
           latency: 0.0
           special_handling:
             variant_of: "clEnqueueWriteBufferRect"
@@ -3636,6 +3641,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem
+          category: Copy
           latency: 0.0
           special_handling:
             variant_of: "clEnqueueWriteBufferRect"
@@ -5817,6 +5823,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMMemcpy
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -5882,6 +5889,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMMemcpyRpcHelperMalloc2Usm
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -5956,6 +5964,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMMemcpyRpcHelperUsm2Malloc
+          category: Copy
           latency: 0.0
           special_handling:
             variant_of: "clEnqueueSVMMemcpy"
@@ -6258,6 +6267,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMemcpyINTEL
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -6326,6 +6336,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMemcpyINTELRpcHelperMalloc2Usm
+          category: Copy
           latency: 0.0
           call_async: true
           special_handling:
@@ -6402,6 +6413,7 @@ config:
                   translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMemcpyINTELRpcHelperUsm2Malloc
+          category: Copy
           latency: 0.0
           special_handling:
             variant_of: "clEnqueueMemcpyINTEL"

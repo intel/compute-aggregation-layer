@@ -72,6 +72,8 @@ struct ClGetPlatformIDsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 0;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -154,6 +156,8 @@ struct ClGetPlatformInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 1;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -244,6 +248,8 @@ struct ClGetDeviceIDsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 2;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -333,6 +339,8 @@ struct ClGetDeviceInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 3;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -447,6 +455,8 @@ struct ClCreateContextRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 4;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_context;
 
@@ -559,6 +569,8 @@ struct ClCreateContextFromTypeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 5;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_context;
 
@@ -651,6 +663,8 @@ struct ClGetContextInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 6;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -765,6 +779,8 @@ struct ClCreateSubDevicesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 7;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -875,6 +891,8 @@ struct ClCreateCommandQueueRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 8;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_command_queue;
 
@@ -944,6 +962,8 @@ struct ClSetDefaultDeviceCommandQueueRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 9;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -1002,6 +1022,8 @@ struct ClCreateCommandQueueWithPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 10;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_command_queue;
 
@@ -1090,6 +1112,8 @@ struct ClCreateProgramWithSourceRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 11;
     static constexpr float latency = 0.5;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_program;
 
@@ -1222,6 +1246,8 @@ struct ClCreateProgramWithILRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 12;
     static constexpr float latency = 0.5;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_program;
 
@@ -1310,6 +1336,8 @@ struct ClCreateProgramWithBinaryRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 13;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_program;
 
@@ -1476,6 +1504,8 @@ struct ClCreateProgramWithBuiltInKernelsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 14;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_program;
 
@@ -1588,6 +1618,8 @@ struct ClBuildProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 15;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -1695,6 +1727,8 @@ struct ClCompileProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 16;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -1862,6 +1896,8 @@ struct ClLinkProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 17;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_program;
 
@@ -2001,6 +2037,8 @@ struct ClGetProgramBuildInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 18;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2094,6 +2132,8 @@ struct ClCreateKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 19;
     static constexpr float latency = 0.5;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_kernel;
 
@@ -2178,6 +2218,8 @@ struct ClCloneKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 20;
     static constexpr float latency = 0.5;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_kernel;
 
@@ -2239,6 +2281,8 @@ struct ClCreateKernelsInProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 21;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2324,6 +2368,8 @@ struct ClGetCommandQueueInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 22;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2414,6 +2460,8 @@ struct ClGetProgramInfoRpcHelperRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 23;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2503,6 +2551,8 @@ struct ClGetProgramInfoGetBinariesRpcHelperRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 24;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2617,6 +2667,8 @@ struct ClGetMemObjectInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 25;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2706,6 +2758,8 @@ struct ClGetImageInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 26;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2795,6 +2849,8 @@ struct ClGetSamplerInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 27;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2884,6 +2940,8 @@ struct ClGetKernelInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 28;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -2973,6 +3031,8 @@ struct ClGetKernelWorkGroupInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 29;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3066,6 +3126,8 @@ struct ClGetKernelArgInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 30;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3159,6 +3221,8 @@ struct ClGetKernelSubGroupInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 31;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3281,6 +3345,8 @@ struct ClReleaseCommandQueueRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 32;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3331,6 +3397,8 @@ struct ClReleaseContextRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 33;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3381,6 +3449,8 @@ struct ClReleaseDeviceRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 34;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3431,6 +3501,8 @@ struct ClReleaseKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 35;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3481,6 +3553,8 @@ struct ClReleaseSamplerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 36;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3531,6 +3605,8 @@ struct ClReleaseProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 37;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3581,6 +3657,8 @@ struct ClReleaseMemObjectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 38;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3631,6 +3709,8 @@ struct ClReleaseEventRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 39;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3681,6 +3761,8 @@ struct ClRetainCommandQueueRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 40;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3731,6 +3813,8 @@ struct ClRetainContextRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 41;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3781,6 +3865,8 @@ struct ClRetainDeviceRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 42;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3831,6 +3917,8 @@ struct ClRetainProgramRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 43;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3881,6 +3969,8 @@ struct ClRetainMemObjectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 44;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3931,6 +4021,8 @@ struct ClRetainSamplerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 45;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -3981,6 +4073,8 @@ struct ClRetainKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 46;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4031,6 +4125,8 @@ struct ClRetainEventRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 47;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4081,6 +4177,8 @@ struct ClFlushRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 48;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4131,6 +4229,8 @@ struct ClFinishRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 49;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4181,6 +4281,8 @@ struct ClEnqueueNDRangeKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 50;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4333,6 +4435,8 @@ struct ClEnqueueTaskRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 51;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4425,6 +4529,8 @@ struct ClEnqueueMarkerWithWaitListRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 52;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4513,6 +4619,8 @@ struct ClEnqueueMarkerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 53;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4574,6 +4682,8 @@ struct ClEnqueueBarrierWithWaitListRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 54;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4662,6 +4772,8 @@ struct ClEnqueueBarrierRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 55;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4712,6 +4824,8 @@ struct ClEnqueueWaitForEventsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 56;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4789,6 +4903,8 @@ struct ClEnqueueMigrateMemObjectsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 57;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -4915,6 +5031,8 @@ struct ClCreateBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 58;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5012,6 +5130,8 @@ struct ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 59;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5085,6 +5205,8 @@ struct ClCreateSubBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 60;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5177,6 +5299,8 @@ struct ClCreatePipeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 61;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5273,6 +5397,8 @@ struct ClGetPipeInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 62;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -5362,6 +5488,8 @@ struct ClCreateImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 63;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5466,6 +5594,8 @@ struct ClCreateImage2DRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 64;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5574,6 +5704,8 @@ struct ClCreateImage3DRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 65;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5690,6 +5822,8 @@ struct ClCreateSamplerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 66;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_sampler;
 
@@ -5763,6 +5897,8 @@ struct ClCreateSamplerWithPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 67;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_sampler;
 
@@ -5847,6 +5983,8 @@ struct ClCreateImageWithPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 68;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -5973,6 +6111,8 @@ struct ClCreateBufferWithPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 69;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_mem;
 
@@ -6087,6 +6227,8 @@ struct ClGetSupportedImageFormatsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 70;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -6180,6 +6322,8 @@ struct ClSetKernelArgRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 71;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -6261,6 +6405,8 @@ struct ClSetProgramSpecializationConstantRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 72;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -6342,6 +6488,8 @@ struct ClEnqueueWriteBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 73;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -6450,6 +6598,8 @@ struct ClEnqueueWriteBufferRpcHelperMallocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 74;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -6558,6 +6708,8 @@ struct ClEnqueueWriteBufferRpcHelperZeroCopyMallocShmemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 75;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -6666,6 +6818,8 @@ struct ClEnqueueWriteBufferRectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 76;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -6806,6 +6960,8 @@ struct ClEnqueueWriteBufferRectRpcHelperMallocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 77;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -6946,6 +7102,8 @@ struct ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 78;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -7086,6 +7244,8 @@ struct ClEnqueueReadBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 79;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7194,6 +7354,8 @@ struct ClEnqueueReadBufferRectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 80;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7334,6 +7496,8 @@ struct ClEnqueueReadBufferRectRpcHelperMallocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 81;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7474,6 +7638,8 @@ struct ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 82;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7614,6 +7780,8 @@ struct ClEnqueueReadBufferRpcHelperMallocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 83;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7722,6 +7890,8 @@ struct ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 84;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7830,6 +8000,8 @@ struct ClEnqueueCopyBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 85;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -7938,6 +8110,8 @@ struct ClEnqueueCopyBufferRectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 86;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8074,6 +8248,8 @@ struct ClEnqueueReadImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 87;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8198,6 +8374,8 @@ struct ClEnqueueWriteImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 88;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8322,6 +8500,8 @@ struct ClEnqueueCopyImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 89;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8442,6 +8622,8 @@ struct ClEnqueueCopyImageToBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 90;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8558,6 +8740,8 @@ struct ClEnqueueCopyBufferToImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 91;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8674,6 +8858,8 @@ struct ClEnqueueMapBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 92;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void*;
 
@@ -8790,6 +8976,8 @@ struct ClEnqueueUnmapMemObjectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 93;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -8886,6 +9074,8 @@ struct ClEnqueueFillBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 94;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9012,6 +9202,8 @@ struct ClEnqueueFillImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 95;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9128,6 +9320,8 @@ struct ClWaitForEventsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 96;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9201,6 +9395,8 @@ struct ClGetEventInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 97;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9290,6 +9486,8 @@ struct ClGetEventProfilingInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 98;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9379,6 +9577,8 @@ struct ClCreateUserEventRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 99;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_event;
 
@@ -9440,6 +9640,8 @@ struct ClSetUserEventStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 100;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9494,6 +9696,8 @@ struct ClSetEventCallbackRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 101;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9556,6 +9760,8 @@ struct ClGetDeviceAndHostTimerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 102;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9625,6 +9831,8 @@ struct ClGetHostTimerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 103;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9692,6 +9900,8 @@ struct ClSVMAllocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 104;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void*;
 
@@ -9761,6 +9971,8 @@ struct ClSVMFreeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 105;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void;
 
@@ -9811,6 +10023,8 @@ struct ClEnqueueSVMMapRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 106;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -9915,6 +10129,8 @@ struct ClEnqueueSVMUnmapRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 107;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10007,6 +10223,8 @@ struct ClSetKernelArgSVMPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 108;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10065,6 +10283,8 @@ struct ClSetKernelExecInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 109;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10146,6 +10366,8 @@ struct ClEnqueueSVMMemFillRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 110;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10268,6 +10490,8 @@ struct ClEnqueueSVMMigrateMemRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 111;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10403,6 +10627,8 @@ struct ClEnqueueSVMMemcpyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 112;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -10507,6 +10733,8 @@ struct ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 113;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -10611,6 +10839,8 @@ struct ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 114;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -10715,6 +10945,8 @@ struct ClCreateSubDevicesEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 115;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10825,6 +11057,8 @@ struct ClReleaseDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 116;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10875,6 +11109,8 @@ struct ClRetainDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 117;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -10925,6 +11161,8 @@ struct ClGetKernelSubGroupInfoKHRRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 118;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -11047,6 +11285,8 @@ struct ClEnqueueMemFillINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 119;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -11169,6 +11409,8 @@ struct ClEnqueueMemcpyINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 120;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -11273,6 +11515,8 @@ struct ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 121;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -11377,6 +11621,8 @@ struct ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 122;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
 
     using ReturnValueT = cl_int;
 
@@ -11481,6 +11727,8 @@ struct ClSetKernelArgMemPointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 123;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -11539,6 +11787,8 @@ struct ClGetMemAllocInfoINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 124;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -11632,6 +11882,8 @@ struct ClDeviceMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 125;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void*;
 
@@ -11734,6 +11986,8 @@ struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 126;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void*;
 
@@ -11836,6 +12090,8 @@ struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 127;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = void*;
 
@@ -11936,6 +12192,8 @@ struct ClMemFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 128;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -11990,6 +12248,8 @@ struct ClMemBlockingFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 129;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -12044,6 +12304,8 @@ struct ClEnqueueMigrateMemINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 130;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 
@@ -12144,6 +12406,8 @@ struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 131;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = cl_int;
 

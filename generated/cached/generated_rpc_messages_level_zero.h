@@ -197,6 +197,8 @@ struct ZesDeviceResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 0;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -251,6 +253,8 @@ struct ZesDeviceGetStateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 1;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -305,6 +309,8 @@ struct ZesDeviceProcessesGetStateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 2;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -388,6 +394,8 @@ struct ZesDevicePciGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 3;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -442,6 +450,8 @@ struct ZesDevicePciGetStateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 4;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -496,6 +506,8 @@ struct ZesDevicePciGetBarsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 5;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -554,6 +566,8 @@ struct ZesDevicePciGetStatsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 6;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -608,6 +622,8 @@ struct ZesDeviceGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 7;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -675,6 +691,8 @@ struct ZesDeviceEnumMemoryModulesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 8;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -758,6 +776,8 @@ struct ZeInitRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 9;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -808,6 +828,8 @@ struct ZeCommandListCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 10;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -884,6 +906,8 @@ struct ZeCommandListCreateImmediateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 11;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -960,6 +984,8 @@ struct ZeCommandListDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 12;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1010,6 +1036,8 @@ struct ZeCommandListCloseRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 13;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1060,6 +1088,8 @@ struct ZeCommandListResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 14;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1110,6 +1140,8 @@ struct ZeCommandQueueCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 15;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1186,6 +1218,8 @@ struct ZeCommandQueueDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 16;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1236,6 +1270,8 @@ struct ZeCommandQueueExecuteCommandListsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 17;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1317,6 +1353,8 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 18;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1426,6 +1464,8 @@ struct ZeCommandQueueSynchronizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 19;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1480,6 +1520,8 @@ struct ZeContextCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 20;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1661,6 +1703,8 @@ struct ZeContextCreateExRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 21;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1861,6 +1905,8 @@ struct ZeContextDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 22;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1911,6 +1957,8 @@ struct ZeContextGetStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 23;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -1962,6 +2010,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 24;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2055,6 +2105,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 25;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2148,6 +2200,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 26;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2259,6 +2313,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM 
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 27;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2373,6 +2429,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousR
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 28;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2484,6 +2542,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 29;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2577,6 +2637,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateSynchronousRp
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 30;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2704,6 +2766,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 31;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2797,6 +2861,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 32;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2891,6 +2957,8 @@ struct ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 33;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -2988,6 +3056,8 @@ struct ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 34;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3085,6 +3155,8 @@ struct ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 35;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3200,6 +3272,8 @@ struct ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 36;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3315,6 +3389,8 @@ struct ZeCommandListAppendMemoryPrefetchRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 37;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3374,6 +3450,8 @@ struct ZeDeviceGetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 38;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3461,6 +3539,8 @@ struct ZeDeviceGetSubDevicesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 39;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3548,6 +3628,8 @@ struct ZeDeviceGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 40;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3765,6 +3847,8 @@ struct ZeDeviceGetComputePropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 41;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -3832,6 +3916,8 @@ struct ZeDeviceGetModulePropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 42;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4049,6 +4135,8 @@ struct ZeDeviceGetCommandQueueGroupPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 43;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4139,6 +4227,8 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 44;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4374,6 +4464,8 @@ struct ZeDeviceGetMemoryAccessPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 45;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4441,6 +4533,8 @@ struct ZeDeviceGetCachePropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 46;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4676,6 +4770,8 @@ struct ZeDeviceGetImagePropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 47;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4743,6 +4839,8 @@ struct ZeDeviceGetExternalMemoryPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 48;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -4810,6 +4908,8 @@ struct ZeDeviceGetP2PPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 49;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5031,6 +5131,8 @@ struct ZeDeviceCanAccessPeerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 50;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5096,6 +5198,8 @@ struct ZeDeviceGetStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 51;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5146,6 +5250,8 @@ struct ZeDeviceGetGlobalTimestampsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 52;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5215,6 +5321,8 @@ struct ZeDriverGetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 53;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5298,6 +5406,8 @@ struct ZeDriverGetApiVersionRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 54;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5359,6 +5469,8 @@ struct ZeDriverGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 55;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5426,6 +5538,8 @@ struct ZeDriverGetIpcPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 56;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5493,6 +5607,8 @@ struct ZeDriverGetExtensionPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 57;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5584,6 +5700,8 @@ struct ZeEventPoolCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 58;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5680,6 +5798,8 @@ struct ZeEventPoolDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 59;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5730,6 +5850,8 @@ struct ZeEventCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 60;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5802,6 +5924,8 @@ struct ZeEventDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 61;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5852,6 +5976,8 @@ struct ZeEventPoolGetIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 62;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5913,6 +6039,8 @@ struct ZeEventPoolOpenIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 63;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -5978,6 +6106,8 @@ struct ZeEventPoolCloseIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 64;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6028,6 +6158,8 @@ struct ZeCommandListAppendBarrierRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 65;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6109,6 +6241,8 @@ struct ZeCommandListAppendSignalEventRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 66;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6163,6 +6297,8 @@ struct ZeCommandListAppendWaitOnEventsRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 67;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6240,6 +6376,8 @@ struct ZeEventHostSignalRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 68;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6290,6 +6428,8 @@ struct ZeEventHostSynchronizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 69;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6344,6 +6484,8 @@ struct ZeEventQueryStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 70;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6394,6 +6536,8 @@ struct ZeCommandListAppendEventResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 71;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6448,6 +6592,8 @@ struct ZeEventHostResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 72;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6498,6 +6644,8 @@ struct ZeEventQueryKernelTimestampRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 73;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6559,6 +6707,8 @@ struct ZeFenceCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 74;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6631,6 +6781,8 @@ struct ZeFenceDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 75;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6681,6 +6833,8 @@ struct ZeFenceHostSynchronizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 76;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6735,6 +6889,8 @@ struct ZeFenceQueryStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 77;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6785,6 +6941,8 @@ struct ZeFenceResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 78;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6835,6 +6993,8 @@ struct ZeKernelSetGlobalOffsetExpRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 79;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -6897,6 +7057,8 @@ struct ZeImageGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 80;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7081,6 +7243,8 @@ struct ZeImageCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 81;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7269,6 +7433,8 @@ struct ZeImageDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 82;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7319,6 +7485,8 @@ struct ZeKernelSchedulingHintExpRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 83;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7386,6 +7554,8 @@ struct ZeMemAllocSharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 84;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7675,6 +7845,8 @@ struct ZeMemAllocDeviceRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 85;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -7874,6 +8046,8 @@ struct ZeMemAllocHostRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 86;
     static constexpr float latency = 1.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8067,6 +8241,8 @@ struct ZeMemFreeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 87;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8121,6 +8297,8 @@ struct ZeMemGetAllocPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 88;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8350,6 +8528,8 @@ struct ZeMemGetAddressRangeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 89;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8423,6 +8603,8 @@ struct ZeMemGetIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 90;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8488,6 +8670,8 @@ struct ZeMemOpenIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 91;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8561,6 +8745,8 @@ struct ZeMemCloseIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 92;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8615,6 +8801,8 @@ struct ZexMemGetIpcHandlesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 93;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8706,6 +8894,8 @@ struct ZexMemOpenIpcHandlesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 94;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -8802,6 +8992,8 @@ struct ZeModuleCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 95;
     static constexpr float latency = 2.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9580,6 +9772,8 @@ struct ZeModuleDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 96;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9630,6 +9824,8 @@ struct ZeModuleDynamicLinkRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 97;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9717,6 +9913,8 @@ struct ZeModuleBuildLogDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 98;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9767,6 +9965,8 @@ struct ZeModuleBuildLogGetStringRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 99;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9854,6 +10054,8 @@ struct ZeModuleGetNativeBinaryRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 100;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -9941,6 +10143,8 @@ struct ZeModuleGetGlobalPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 101;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10040,6 +10244,8 @@ struct ZeModuleGetKernelNamesRpcHelperRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 102;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10127,6 +10333,8 @@ struct ZeModuleGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 103;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10194,6 +10402,8 @@ struct ZeKernelCreateRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 104;
     static constexpr float latency = 0.5;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10367,6 +10577,8 @@ struct ZeKernelDestroyRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 105;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10417,6 +10629,8 @@ struct ZeModuleGetFunctionPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 106;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10501,6 +10715,8 @@ struct ZeKernelSetGroupSizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 107;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10563,6 +10779,8 @@ struct ZeKernelSuggestGroupSizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 108;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10652,6 +10870,8 @@ struct ZeKernelSuggestMaxCooperativeGroupCountRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 109;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10713,6 +10933,8 @@ struct ZeKernelSetArgumentValueRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 110;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10794,6 +11016,8 @@ struct ZeKernelSetIndirectAccessRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 111;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10848,6 +11072,8 @@ struct ZeKernelGetIndirectAccessRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 112;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10909,6 +11135,8 @@ struct ZeKernelSetCacheConfigRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 113;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -10963,6 +11191,8 @@ struct ZeKernelGetPropertiesRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 114;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11180,6 +11410,8 @@ struct ZeKernelGetNameRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 115;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11267,6 +11499,8 @@ struct ZeCommandListAppendLaunchKernelRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 116;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11360,6 +11594,8 @@ struct ZeCommandListAppendLaunchKernelIndirectRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 117;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11449,6 +11685,8 @@ struct ZeDevicePciGetPropertiesExtRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 118;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11516,6 +11754,8 @@ struct ZeContextMakeMemoryResidentRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 119;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
@@ -11578,6 +11818,8 @@ struct ZeContextEvictMemoryRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 120;
     static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
 
     using ReturnValueT = ze_result_t;
 
