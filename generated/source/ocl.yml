@@ -1787,6 +1787,7 @@ config:
                 server_access: write
         - name: clReleaseCommandQueue
           latency: 0.0
+          call_async: true
           returns:
             type: cl_int
             kind: scalar
@@ -1800,6 +1801,7 @@ config:
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseContext
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "context->asLocalObject()->beforeReleaseCallback();"
@@ -1890,6 +1892,7 @@ config:
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseEvent
           latency: 0.0
+          call_async: true
           returns:
             type: cl_int
             kind: scalar
@@ -2035,6 +2038,7 @@ config:
               translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
         - name: clEnqueueNDRangeKernel
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "static_cast<IcdOclKernel*>(kernel)->moveArgsToGpu();\n"
@@ -3119,6 +3123,7 @@ config:
                 server_access: write
         - name: clSetKernelArg
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper" # Dedicated handling because of temporary cache implementation
@@ -3187,6 +3192,7 @@ config:
                 server_access: read
         - name: clEnqueueWriteBuffer
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelperUsmHost" # Dedicated handling due to differnt variants (hostptr from malloc and hostpr from USM)
@@ -3254,6 +3260,7 @@ config:
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperMallocHost
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueWriteBuffer"
             icd:
@@ -3330,6 +3337,7 @@ config:
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueWriteBuffer"
             icd:
@@ -5602,6 +5610,7 @@ config:
                 server_access: write
         - name: clSetKernelArgSVMPointer
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               dont_generate_handler: True
@@ -5627,6 +5636,7 @@ config:
                 server_access: read_write
         - name: clSetKernelExecInfo
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_epilogue: "static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
@@ -6461,6 +6471,7 @@ config:
                 server_access: write
         - name: clSetKernelArgMemPointerINTEL
           latency: 0.0
+          call_async: true
           special_handling:
             extension_name: "USM"
             icd:

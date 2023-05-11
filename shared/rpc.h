@@ -651,26 +651,19 @@ class ChannelClient : public CommandsChannel {
         heap.free(ptr);
     }
 
-    bool callAsynchronous(Cal::Rpc::RpcMessageHeader *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
-        if (!useAsyncCalls) {
-            auto ret = callSynchronous(command);
-            return ret;
-        }
+    void callAsynchronous(Cal::Rpc::RpcMessageHeader *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
         auto completionStamp = this->submitCommand(command, command->flags);
         if (nullptr == completionStamp) {
             log<Verbosity::critical>("Synchronous call failed");
-            return false;
         }
         if (Cal::Messages::RespLaunchRpcShmemRingBuffer::semaphores == serviceSynchronizationMethod) {
             if (false == this->signalServiceSemaphore()) {
                 log<Verbosity::critical>("Failed to signal service with new RPC call");
-                return false;
             }
         }
         asyncTagsStorage.push_back(completionStamp);
         asyncCommandsSpaceStorage.push_back(std::move(commandSpace));
         log<Verbosity::bloat>("Successful asynchronous call");
-        return true;
     }
 
     bool callSynchronous(Cal::Rpc::RpcMessageHeader *command) {
@@ -702,7 +695,7 @@ class ChannelClient : public CommandsChannel {
     }
 
     template <typename MessageT>
-    bool callAsynchronous(MessageT *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
+    void callAsynchronous(MessageT *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
         return callAsynchronous(&command->header, commandSpace);
     }
 
