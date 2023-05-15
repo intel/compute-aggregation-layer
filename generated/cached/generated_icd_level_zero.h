@@ -153,6 +153,8 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
+ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
@@ -277,14 +279,6 @@ inline void zeCommandListAppendLaunchCooperativeKernelUnimpl() {
 }
 inline void zeCommandListAppendLaunchMultipleKernelsIndirectUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeContextMakeMemoryResidentUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextMakeMemoryResident is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeContextEvictMemoryUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextEvictMemory is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeContextMakeImageResidentUnimpl() {
@@ -1004,6 +998,8 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendLaunchKernel = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel;
     dt.CommandList.pfnAppendLaunchKernelIndirect = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect;
     dt.Device.pfnPciGetPropertiesExt = Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt;
+    dt.Context.pfnMakeMemoryResident = Cal::Icd::LevelZero::zeContextMakeMemoryResident;
+    dt.Context.pfnEvictMemory = Cal::Icd::LevelZero::zeContextEvictMemory;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
@@ -1036,8 +1032,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
     dt.CommandList.pfnAppendLaunchCooperativeKernel = reinterpret_cast<decltype(dt.CommandList.pfnAppendLaunchCooperativeKernel)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendLaunchCooperativeKernelUnimpl);
     dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = reinterpret_cast<decltype(dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendLaunchMultipleKernelsIndirectUnimpl);
-    dt.Context.pfnMakeMemoryResident = reinterpret_cast<decltype(dt.Context.pfnMakeMemoryResident)>(Cal::Icd::LevelZero::Unimplemented::zeContextMakeMemoryResidentUnimpl);
-    dt.Context.pfnEvictMemory = reinterpret_cast<decltype(dt.Context.pfnEvictMemory)>(Cal::Icd::LevelZero::Unimplemented::zeContextEvictMemoryUnimpl);
     dt.Context.pfnMakeImageResident = reinterpret_cast<decltype(dt.Context.pfnMakeImageResident)>(Cal::Icd::LevelZero::Unimplemented::zeContextMakeImageResidentUnimpl);
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);
     dt.Sampler.pfnCreate = reinterpret_cast<decltype(dt.Sampler.pfnCreate)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerCreateUnimpl);

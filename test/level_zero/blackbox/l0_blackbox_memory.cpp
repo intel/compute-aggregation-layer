@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -137,6 +137,26 @@ bool parseSkipIpcHandlesTests(int argc, const char **argv) {
     return false;
 }
 
+bool contextMakeMemoryResident(ze_context_handle_t context, ze_device_handle_t device, void *ptr, size_t size) {
+    const auto zeContextMakeMemoryResidentResult = zeContextMakeMemoryResident(context, device, ptr, size);
+    if (zeContextMakeMemoryResidentResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeContextMakeMemoryResident() failed! Error code: %d", static_cast<int>(zeContextMakeMemoryResidentResult));
+        return false;
+    }
+
+    return true;
+}
+
+bool contextEvictMemory(ze_context_handle_t context, ze_device_handle_t device, void *ptr, size_t size) {
+    const auto zeContextEvictMemoryResult = zeContextEvictMemory(context, device, ptr, size);
+    if (zeContextEvictMemoryResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeContextEvictMemory() failed! Error code: %d", static_cast<int>(zeContextEvictMemoryResult));
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using namespace Cal::Testing::Utils::LevelZero;
 
@@ -193,6 +213,9 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getAllocationProperties(context, usmDeviceBuffer, usmDeviceBufferAllocProps, usmDeviceBufferDeviceHandle));
     RUN_REQUIRED_STEP(ensureMemoryType(ZE_MEMORY_TYPE_DEVICE, usmDeviceBufferAllocProps.type));
     RUN_REQUIRED_STEP(ensurePointersEqual(devices[0], usmDeviceBufferDeviceHandle));
+
+    RUN_REQUIRED_STEP(contextMakeMemoryResident(context, devices[0], usmDeviceBuffer, bufferSize));
+    RUN_REQUIRED_STEP(contextEvictMemory(context, devices[0], usmDeviceBuffer, bufferSize));
 
     void *basePtrToQuery{nullptr};
     size_t sizeOfUsmDeviceBuffer{};

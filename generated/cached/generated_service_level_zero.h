@@ -129,6 +129,8 @@ extern ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize,
 extern ze_result_t (*zeCommandListAppendLaunchKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeCommandListAppendLaunchKernelIndirect)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
+extern ze_result_t (*zeContextMakeMemoryResident)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+extern ze_result_t (*zeContextEvictMemory)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 } // Standard
 
 namespace Extensions {
@@ -1181,10 +1183,32 @@ inline bool zeDevicePciGetPropertiesExtHandler(Provider &service, Cal::Rpc::Chan
                                                 );
     return true;
 }
+inline bool zeContextMakeMemoryResidentHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeContextMakeMemoryResident");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextMakeMemoryResident(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size
+                                                );
+    return true;
+}
+inline bool zeContextEvictMemoryHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeContextEvictMemory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextEvictMemory(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size
+                                                );
+    return true;
+}
 
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
-    outHandlers.resize(ZeDevicePciGetPropertiesExtRpcM::messageSubtype + 1);
+    outHandlers.resize(ZeContextEvictMemoryRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceGetPropertiesRpcM::messageSubtype] = zesDeviceGetPropertiesHandler;
     outHandlers[ZesDeviceEnumMemoryModulesRpcM::messageSubtype] = zesDeviceEnumMemoryModulesHandler;
     outHandlers[ZeInitRpcM::messageSubtype] = zeInitHandler;
@@ -1297,6 +1321,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendLaunchKernelRpcM::messageSubtype] = zeCommandListAppendLaunchKernelHandler;
     outHandlers[ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype] = zeCommandListAppendLaunchKernelIndirectHandler;
     outHandlers[ZeDevicePciGetPropertiesExtRpcM::messageSubtype] = zeDevicePciGetPropertiesExtHandler;
+    outHandlers[ZeContextMakeMemoryResidentRpcM::messageSubtype] = zeContextMakeMemoryResidentHandler;
+    outHandlers[ZeContextEvictMemoryRpcM::messageSubtype] = zeContextEvictMemoryHandler;
 }
 
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM &apiCommand) {
@@ -2098,6 +2124,22 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM &a
                                                 apiCommand.args.pPciProperties
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextMakeMemoryResident(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeContextEvictMemory(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size
+                                                );
+}
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
@@ -2222,6 +2264,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM*>(command)); break;
     }
     return true;
 }

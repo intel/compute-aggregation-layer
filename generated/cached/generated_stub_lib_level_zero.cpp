@@ -411,4 +411,12 @@ ze_result_t zeDevicePciGetPropertiesExt(ze_device_handle_t hDevice, ze_pci_ext_p
    return {};
 }
 
+ze_result_t zeContextMakeMemoryResident(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size){
+   return {};
+}
+
+ze_result_t zeContextEvictMemory(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size){
+   return {};
+}
+
 // #### Generated code -- end ####

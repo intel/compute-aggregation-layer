@@ -11101,6 +11101,130 @@ struct ZeDevicePciGetPropertiesExtRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeDevicePciGetPropertiesExtRpcM>);
+struct ZeContextMakeMemoryResidentRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 112;
+    static constexpr float latency = 0.0;
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_context_handle_t hContext = {};
+        ze_device_handle_t hDevice = {};
+        void* ptr = {};
+        size_t size = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hContext == rhs.hContext;
+            equal &= this->hDevice == rhs.hDevice;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->size == rhs.size;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeContextMakeMemoryResidentRpcM() = default;
+
+    ZeContextMakeMemoryResidentRpcM(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hContext = hContext;
+        args.hDevice = hDevice;
+        args.ptr = ptr;
+        args.size = size;
+    }
+    
+    static void fillWithoutCapture(ZeContextMakeMemoryResidentRpcM &message, ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hContext = hContext;
+        message.args.hDevice = hDevice;
+        message.args.ptr = ptr;
+        message.args.size = size;
+    }
+    
+};
+static_assert(std::is_standard_layout_v<ZeContextMakeMemoryResidentRpcM>);
+struct ZeContextEvictMemoryRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 113;
+    static constexpr float latency = 0.0;
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_context_handle_t hContext = {};
+        ze_device_handle_t hDevice = {};
+        void* ptr = {};
+        size_t size = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hContext == rhs.hContext;
+            equal &= this->hDevice == rhs.hDevice;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->size == rhs.size;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeContextEvictMemoryRpcM() = default;
+
+    ZeContextEvictMemoryRpcM(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hContext = hContext;
+        args.hDevice = hDevice;
+        args.ptr = ptr;
+        args.size = size;
+    }
+    
+    static void fillWithoutCapture(ZeContextEvictMemoryRpcM &message, ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hContext = hContext;
+        message.args.hDevice = hDevice;
+        message.args.ptr = ptr;
+        message.args.size = size;
+    }
+    
+};
+static_assert(std::is_standard_layout_v<ZeContextEvictMemoryRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -11216,6 +11340,8 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype).id, "zeCommandListAppendLaunchKernel"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype).id, "zeCommandListAppendLaunchKernelIndirect"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype).id, "zeDevicePciGetPropertiesExt"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype).id, "zeContextMakeMemoryResident"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype).id, "zeContextEvictMemory"),
     };
 
     auto it = options.find(callId.id);
@@ -11340,6 +11466,8 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeCommandListAppendLaunchKernel", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendLaunchKernelIndirect", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeDevicePciGetPropertiesExt", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeContextMakeMemoryResident", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeContextEvictMemory", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -11462,6 +11590,8 @@ static constexpr RpcCallId zeKernelGetName = {Cal::Rpc::RpcMessageHeader::messag
 static constexpr RpcCallId zeCommandListAppendLaunchKernel = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendLaunchKernelIndirect = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype};
 static constexpr RpcCallId zeDevicePciGetPropertiesExt = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype};
+static constexpr RpcCallId zeContextMakeMemoryResident = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype};
+static constexpr RpcCallId zeContextEvictMemory = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -11577,6 +11707,8 @@ using zeKernelGetName = ZeKernelGetNameRpcM;
 using zeCommandListAppendLaunchKernel = ZeCommandListAppendLaunchKernelRpcM;
 using zeCommandListAppendLaunchKernelIndirect = ZeCommandListAppendLaunchKernelIndirectRpcM;
 using zeDevicePciGetPropertiesExt = ZeDevicePciGetPropertiesExtRpcM;
+using zeContextMakeMemoryResident = ZeContextMakeMemoryResidentRpcM;
+using zeContextEvictMemory = ZeContextEvictMemoryRpcM;
 }
 
 } // namespace LevelZero

@@ -3349,6 +3349,52 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
 
     return ret;
 }
+ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zeContextMakeMemoryResident");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, ptr, size);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zeContextEvictMemory");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, ptr, size);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 
 void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("zexMemGetIpcHandles", funcName)) {
@@ -3671,6 +3717,12 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
     return Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt(hDevice, pPciProperties);
+}
+ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zeContextMakeMemoryResident(hContext, hDevice, ptr, size);
+}
+ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zeContextEvictMemory(hContext, hDevice, ptr, size);
 }
 } // extern "C"
 
