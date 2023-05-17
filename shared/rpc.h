@@ -696,7 +696,7 @@ class ChannelClient : public CommandsChannel {
 
     template <typename MessageT>
     void callAsynchronous(MessageT *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace) {
-        return callAsynchronous(&command->header, commandSpace);
+        callAsynchronous(&command->header, commandSpace);
     }
 
     int32_t getId() const {
