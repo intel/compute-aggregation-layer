@@ -214,7 +214,7 @@ inline bool clHostMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServe
         if (apiCommand->captures.ret == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU",
                                   apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, ApiType::OpenCL, gpuDestructorUsm);
             apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
@@ -279,7 +279,7 @@ inline bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelSer
         }
         if (apiCommand->captures.ret == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, ApiType::OpenCL, gpuDestructorUsm);
             apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
@@ -336,7 +336,7 @@ inline bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channe
         }
         if (apiCommand->captures.ret == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, gpuDestructorUsm);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.context, shmem, ApiType::OpenCL, gpuDestructorUsm);
             apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
@@ -465,7 +465,7 @@ inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         }
         if (apiCommand->captures.ret != nullptr) {
             log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, shmem, gpuDestructorClMem);
+            ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, shmem, ApiType::OpenCL, gpuDestructorClMem);
             apiCommand->implicitArgs.hostptr = cpuAddress;
             apiCommand->implicitArgs.hostptr_shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.hostptr_offset_within_resource = shmem.getSubAllocationOffset();
@@ -641,7 +641,7 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.pptr);
 
-            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, gpuDestructorUsm);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, ApiType::LevelZero, gpuDestructorUsm);
             apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
@@ -719,7 +719,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
         if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->captures.pptr == cpuAddress) {
             log<Verbosity::debug>("Succesfully mapped %zu bytes of USM shared/host memory from heap : %zx-%zx as %p on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.pptr);
 
-            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, gpuDestructorUsm);
+            ctx.addUsmSharedHostAlloc(apiCommand->args.hContext, shmem, ApiType::LevelZero, gpuDestructorUsm);
             apiCommand->implicitArgs.shmem_resource = shmem.getSourceAllocation()->getShmemId();
             apiCommand->implicitArgs.offset_within_resource = shmem.getSubAllocationOffset();
             apiCommand->implicitArgs.aligned_size = alignedSize;
