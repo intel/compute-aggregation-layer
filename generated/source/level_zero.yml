@@ -1180,6 +1180,172 @@ config:
           name: driverVersion
           type: char[ZES_STRING_PROPERTY_SIZE]
           kind: scalar
+    - name: zes_process_state_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: processId
+          type: uint32_t
+          kind: scalar
+        3:
+          name: memSize
+          type: uint64_t
+          kind: scalar
+        4:
+          name: sharedSize
+          type: uint64_t
+          kind: scalar
+        5:
+          name: engines
+          type: zes_engine_type_flags_t
+          kind: scalar
+    - name: zes_pci_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: address
+          type: zes_pci_address_t
+          kind: scalar
+        3:
+          name: maxSpeed
+          type: zes_pci_speed_t
+          kind: scalar
+        4:
+          name: haveBandwidthCounters
+          type: ze_bool_t
+          kind: scalar
+        5:
+          name: havePacketCounters
+          type: ze_bool_t
+          kind: scalar
+        6:
+          name: haveReplayCounters
+          type: ze_bool_t
+          kind: scalar
+    - name: zes_pci_address_t
+      members:
+        0:
+          name: domain
+          type: uint32_t
+          kind: scalar
+        1:
+          name: bus
+          type: uint32_t
+          kind: scalar
+        2:
+          name: device
+          type: uint32_t
+          kind: scalar
+        3:
+          name: function
+          type: uint32_t
+          kind: scalar
+    - name: zes_pci_speed_t
+      members:
+        0:
+          name: gen
+          type: int32_t
+          kind: scalar
+        1:
+          name: width
+          type: int32_t
+          kind: scalar
+        2:
+          name: maxBandwidth
+          type: int32_t
+          kind: scalar
+    - name: zes_pci_state_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: status
+          type: zes_pci_link_status_t
+          kind: scalar
+        3:
+          name: qualityIssues
+          type: zes_pci_link_qual_issue_flags_t
+          kind: scalar
+        4:
+          name: stabilityIssues
+          type: zes_pci_link_stab_issue_flags_t
+          kind: scalar
+        5:
+          name: speed
+          type: zes_pci_speed_t
+          kind: scalar
+    - name: zes_pci_bar_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: type
+          type: zes_pci_bar_type_t
+          kind: scalar
+        3:
+          name: index
+          type: uint32_t
+          kind: scalar
+        4:
+          name: base
+          type: uint64_t
+          kind: scalar
+        5:
+          name: size
+          type: uint64_t
+          kind: scalar
+    - name: zes_pci_stats_t
+      members:
+        0:
+          name: timestamp
+          type: uint64_t
+          kind: scalar
+        1:
+          name: replayCounter
+          type: uint64_t
+          kind: scalar
+        2:
+          name: packetCounter
+          type: uint64_t
+          kind: scalar
+        3:
+          name: rxCounter
+          type: uint64_t
+          kind: scalar
+        4:
+          name: txCounter
+          type: uint64_t
+          kind: scalar
+        5:
+          name: speed
+          type: zes_pci_speed_t
+          kind: scalar
 
   unimplemented:
     - name: "core"
@@ -1239,13 +1405,6 @@ config:
           Ras.zesRasGetConfig,
           Ras.zesRasSetConfig,
           Ras.zesRasGetState,
-          Device.zesDeviceGetState,
-          Device.zesDeviceReset,
-          Device.zesDeviceProcessesGetState,
-          Device.zesDevicePciGetProperties,
-          Device.zesDevicePciGetState,
-          Device.zesDevicePciGetBars,
-          Device.zesDevicePciGetStats,
           Device.zesDeviceEnumFans,
           Fan.zesFanGetProperties,
           Fan.zesFanGetConfig,
@@ -1388,6 +1547,170 @@ config:
 
     - name: "sysman"
       members:
+        - name: zesDeviceGet
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: zes_driver_handle_t
+              kind: scalar
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: pointer
+            2:
+              name: phDevices
+              type: zes_device_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_device_handle_t
+                  kind: scalar
+                server_access: read_write
+
+        - name: zesDeviceReset
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: force
+              type: ze_bool_t
+              kind: scalar
+
+        - name: zesDeviceGetState
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pState
+              type: zes_device_state_t*
+              kind: pointer
+
+        - name: zesDeviceProcessesGetState
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: pointer
+            2:
+              name: pProcesses
+              type: zes_process_state_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_process_state_t
+                  kind: scalar
+                server_access: read_write
+
+        - name: zesDevicePciGetProperties
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_pci_properties_t*
+              kind: pointer
+
+        - name: zesDevicePciGetState
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pState
+              type: zes_pci_state_t*
+              kind: pointer
+
+        - name: zesDevicePciGetBars
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: pointer
+            2:
+              name: pProperties
+              type: zes_pci_bar_properties_t*
+              kind: pointer
+
+        - name: zesDevicePciGetStats
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pStats
+              type: zes_pci_stats_t*
+              kind: pointer
+
         - name: zesDeviceGetProperties
           latency: 1.0
           special_handling:

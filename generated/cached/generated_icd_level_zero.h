@@ -36,6 +36,14 @@ struct ZeMemAllocHostRpcMImplicitArgs;
 namespace Cal {
 namespace Icd {
 namespace LevelZero {
+ze_result_t zesDeviceGet (zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices);
+ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
+ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
+ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
+ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
+ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* pState);
+ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties);
+ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* pStats);
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
@@ -351,34 +359,6 @@ inline void zesRasSetConfigUnimpl() {
 }
 inline void zesRasGetStateUnimpl() {
     log<Verbosity::critical>("Function Ras.zesRasGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceGetStateUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceResetUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceReset is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceProcessesGetStateUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceProcessesGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDevicePciGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDevicePciGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDevicePciGetStateUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDevicePciGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDevicePciGetBarsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDevicePciGetBars is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDevicePciGetStatsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDevicePciGetStats is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumFansUnimpl() {
@@ -1047,6 +1027,14 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
+    dt.Device.pfnGet = Cal::Icd::LevelZero::zesDeviceGet;
+    dt.Device.pfnReset = Cal::Icd::LevelZero::zesDeviceReset;
+    dt.Device.pfnGetState = Cal::Icd::LevelZero::zesDeviceGetState;
+    dt.Device.pfnProcessesGetState = Cal::Icd::LevelZero::zesDeviceProcessesGetState;
+    dt.Device.pfnPciGetProperties = Cal::Icd::LevelZero::zesDevicePciGetProperties;
+    dt.Device.pfnPciGetState = Cal::Icd::LevelZero::zesDevicePciGetState;
+    dt.Device.pfnPciGetBars = Cal::Icd::LevelZero::zesDevicePciGetBars;
+    dt.Device.pfnPciGetStats = Cal::Icd::LevelZero::zesDevicePciGetStats;
     dt.Device.pfnGetProperties = Cal::Icd::LevelZero::zesDeviceGetProperties;
     dt.Device.pfnEnumMemoryModules = Cal::Icd::LevelZero::zesDeviceEnumMemoryModules;
     // below are unimplemented, provided bindings are for easier debugging only
@@ -1055,13 +1043,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Ras.pfnGetConfig = reinterpret_cast<decltype(dt.Ras.pfnGetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetConfigUnimpl);
     dt.Ras.pfnSetConfig = reinterpret_cast<decltype(dt.Ras.pfnSetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesRasSetConfigUnimpl);
     dt.Ras.pfnGetState = reinterpret_cast<decltype(dt.Ras.pfnGetState)>(Cal::Icd::LevelZero::Unimplemented::zesRasGetStateUnimpl);
-    dt.Device.pfnGetState = reinterpret_cast<decltype(dt.Device.pfnGetState)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceGetStateUnimpl);
-    dt.Device.pfnReset = reinterpret_cast<decltype(dt.Device.pfnReset)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceResetUnimpl);
-    dt.Device.pfnProcessesGetState = reinterpret_cast<decltype(dt.Device.pfnProcessesGetState)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceProcessesGetStateUnimpl);
-    dt.Device.pfnPciGetProperties = reinterpret_cast<decltype(dt.Device.pfnPciGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesDevicePciGetPropertiesUnimpl);
-    dt.Device.pfnPciGetState = reinterpret_cast<decltype(dt.Device.pfnPciGetState)>(Cal::Icd::LevelZero::Unimplemented::zesDevicePciGetStateUnimpl);
-    dt.Device.pfnPciGetBars = reinterpret_cast<decltype(dt.Device.pfnPciGetBars)>(Cal::Icd::LevelZero::Unimplemented::zesDevicePciGetBarsUnimpl);
-    dt.Device.pfnPciGetStats = reinterpret_cast<decltype(dt.Device.pfnPciGetStats)>(Cal::Icd::LevelZero::Unimplemented::zesDevicePciGetStatsUnimpl);
     dt.Device.pfnEnumFans = reinterpret_cast<decltype(dt.Device.pfnEnumFans)>(Cal::Icd::LevelZero::Unimplemented::zesDeviceEnumFansUnimpl);
     dt.Fan.pfnGetProperties = reinterpret_cast<decltype(dt.Fan.pfnGetProperties)>(Cal::Icd::LevelZero::Unimplemented::zesFanGetPropertiesUnimpl);
     dt.Fan.pfnGetConfig = reinterpret_cast<decltype(dt.Fan.pfnGetConfig)>(Cal::Icd::LevelZero::Unimplemented::zesFanGetConfigUnimpl);

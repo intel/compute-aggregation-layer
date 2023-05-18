@@ -11,6 +11,38 @@
 #include "level_zero/zes_api.h"
 #include "level_zero/zet_ddi.h"
 
+ze_result_t zesDeviceGet(zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices){
+   return {};
+}
+
+ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
+   return {};
+}
+
+ze_result_t zesDeviceGetState(zes_device_handle_t hDevice, zes_device_state_t* pState){
+   return {};
+}
+
+ze_result_t zesDeviceProcessesGetState(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses){
+   return {};
+}
+
+ze_result_t zesDevicePciGetProperties(zes_device_handle_t hDevice, zes_pci_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesDevicePciGetState(zes_device_handle_t hDevice, zes_pci_state_t* pState){
+   return {};
+}
+
+ze_result_t zesDevicePciGetBars(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesDevicePciGetStats(zes_device_handle_t hDevice, zes_pci_stats_t* pStats){
+   return {};
+}
+
 ze_result_t zesDeviceGetProperties(zes_device_handle_t hDevice, zes_device_properties_t* pProperties){
    return {};
 }

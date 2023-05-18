@@ -20,6 +20,14 @@ namespace Apis {
 namespace LevelZero {
 
 namespace Standard {
+ze_result_t (*zesDeviceGet)(zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices) = nullptr;
+ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force) = nullptr;
+ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState) = nullptr;
+ze_result_t (*zesDeviceProcessesGetState)(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) = nullptr;
+ze_result_t (*zesDevicePciGetProperties)(zes_device_handle_t hDevice, zes_pci_properties_t* pProperties) = nullptr;
+ze_result_t (*zesDevicePciGetState)(zes_device_handle_t hDevice, zes_pci_state_t* pState) = nullptr;
+ze_result_t (*zesDevicePciGetBars)(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) = nullptr;
+ze_result_t (*zesDevicePciGetStats)(zes_device_handle_t hDevice, zes_pci_stats_t* pStats) = nullptr;
 ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
@@ -138,6 +146,54 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false;
     }
 
+    zesDeviceGet = reinterpret_cast<decltype(zesDeviceGet)>(dlsym(libraryHandle, "zesDeviceGet"));
+    if(nullptr == zesDeviceGet){
+        log<Verbosity::error>("Missing symbol zesDeviceGet in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceReset = reinterpret_cast<decltype(zesDeviceReset)>(dlsym(libraryHandle, "zesDeviceReset"));
+    if(nullptr == zesDeviceReset){
+        log<Verbosity::error>("Missing symbol zesDeviceReset in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceGetState = reinterpret_cast<decltype(zesDeviceGetState)>(dlsym(libraryHandle, "zesDeviceGetState"));
+    if(nullptr == zesDeviceGetState){
+        log<Verbosity::error>("Missing symbol zesDeviceGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceProcessesGetState = reinterpret_cast<decltype(zesDeviceProcessesGetState)>(dlsym(libraryHandle, "zesDeviceProcessesGetState"));
+    if(nullptr == zesDeviceProcessesGetState){
+        log<Verbosity::error>("Missing symbol zesDeviceProcessesGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDevicePciGetProperties = reinterpret_cast<decltype(zesDevicePciGetProperties)>(dlsym(libraryHandle, "zesDevicePciGetProperties"));
+    if(nullptr == zesDevicePciGetProperties){
+        log<Verbosity::error>("Missing symbol zesDevicePciGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDevicePciGetState = reinterpret_cast<decltype(zesDevicePciGetState)>(dlsym(libraryHandle, "zesDevicePciGetState"));
+    if(nullptr == zesDevicePciGetState){
+        log<Verbosity::error>("Missing symbol zesDevicePciGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDevicePciGetBars = reinterpret_cast<decltype(zesDevicePciGetBars)>(dlsym(libraryHandle, "zesDevicePciGetBars"));
+    if(nullptr == zesDevicePciGetBars){
+        log<Verbosity::error>("Missing symbol zesDevicePciGetBars in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDevicePciGetStats = reinterpret_cast<decltype(zesDevicePciGetStats)>(dlsym(libraryHandle, "zesDevicePciGetStats"));
+    if(nullptr == zesDevicePciGetStats){
+        log<Verbosity::error>("Missing symbol zesDevicePciGetStats in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zesDeviceGetProperties = reinterpret_cast<decltype(zesDeviceGetProperties)>(dlsym(libraryHandle, "zesDeviceGetProperties"));
     if(nullptr == zesDeviceGetProperties){
         log<Verbosity::error>("Missing symbol zesDeviceGetProperties in %s", loadPath.c_str());
@@ -754,6 +810,14 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 }
 
 void unloadLevelZeroLibrary() {
+    zesDeviceGet = nullptr;
+    zesDeviceReset = nullptr;
+    zesDeviceGetState = nullptr;
+    zesDeviceProcessesGetState = nullptr;
+    zesDevicePciGetProperties = nullptr;
+    zesDevicePciGetState = nullptr;
+    zesDevicePciGetBars = nullptr;
+    zesDevicePciGetStats = nullptr;
     zesDeviceGetProperties = nullptr;
     zesDeviceEnumMemoryModules = nullptr;
     zeInit = nullptr;
