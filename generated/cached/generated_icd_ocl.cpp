@@ -2273,6 +2273,7 @@ cl_int clEnqueueWriteBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_
     }
 
     if(
+       !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
@@ -2325,6 +2326,7 @@ cl_int clEnqueueWriteBufferRpcHelperMallocHost (cl_command_queue command_queue, 
     }
 
     if(
+       !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
@@ -2375,6 +2377,7 @@ cl_int clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem (cl_command_queue comman
     }
 
     if(
+       !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
@@ -3748,13 +3751,21 @@ cl_int clEnqueueSVMMemcpyRpcHelperUsm2Usm (cl_command_queue command_queue, cl_bo
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking &&
+       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(dst_ptr) &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -3793,13 +3804,21 @@ cl_int clEnqueueSVMMemcpyRpcHelperMalloc2Usm (cl_command_queue command_queue, cl
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking &&
+       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(dst_ptr) &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4036,13 +4055,21 @@ cl_int clEnqueueMemcpyINTELRpcHelperUsm2Usm (cl_command_queue command_queue, cl_
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking &&
+       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(dstPtr) &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4081,13 +4108,21 @@ cl_int clEnqueueMemcpyINTELRpcHelperMalloc2Usm (cl_command_queue command_queue, 
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking &&
+       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(dstPtr) &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)

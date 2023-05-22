@@ -712,13 +712,19 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(dstptr) &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     ze_result_t ret = command->captures.ret;
 
@@ -788,13 +794,19 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_comman
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(dstptr) &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command, commandSpace);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     ze_result_t ret = command->captures.ret;
 

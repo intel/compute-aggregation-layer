@@ -153,7 +153,13 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %      if f.callAsync:
     if(
 %      for arg in func_base.args:
-%       if arg.kind_details and arg.kind_details.server_access.write_only():
+%       if "block" in arg.name:
+       !${arg.name} &&
+%       elif "dst" in arg.name and "queue" in func_base.name:
+       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(${arg.name}) &&
+%       elif "dst" in arg.name:
+       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(${arg.name}) &&
+%       elif arg.kind_details and arg.kind_details.server_access.write_only():
        !${arg.name} &&
 %       endif
 %      endfor

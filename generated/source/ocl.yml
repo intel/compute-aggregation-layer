@@ -5814,6 +5814,7 @@ config:
                 server_access: write
         - name: clEnqueueSVMMemcpy
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelperUsm2Usm" # Dedicated handling due to differnt variants (USM->host host->USM USM->USM)
@@ -5878,6 +5879,7 @@ config:
                 server_access: write
         - name: clEnqueueSVMMemcpyRpcHelperMalloc2Usm
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueSVMMemcpy"
             icd:
@@ -6253,6 +6255,7 @@ config:
                 server_access: write
         - name: clEnqueueMemcpyINTEL
           latency: 0.0
+          call_async: true
           special_handling:
             extension_name: "USM"
             icd:
@@ -6320,6 +6323,7 @@ config:
                 server_access: write
         - name: clEnqueueMemcpyINTELRpcHelperMalloc2Usm
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueMemcpyINTEL"
             extension_name: "USM"
