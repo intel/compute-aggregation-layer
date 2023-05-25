@@ -2010,6 +2010,7 @@ config:
               translate_after: "static_cast<IcdOclEvent*>({arg})->inc()"
         - name: clFlush
           latency: 0.0
+          call_async: true
           returns:
             type: cl_int
             kind: scalar
@@ -3750,6 +3751,7 @@ config:
                 server_access: write
         - name: clEnqueueReadBuffer
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelperUsmHost" # Dedicated handling due to differnt variants (hostptr from malloc and hostpr from USM)
@@ -4156,6 +4158,7 @@ config:
                 server_access: write
         - name: clEnqueueReadBufferRpcHelperMallocHost
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueReadBuffer"
             icd:
@@ -4233,6 +4236,7 @@ config:
                 server_access: write
         - name: clEnqueueReadBufferRpcHelperZeroCopyMallocShmem
           latency: 0.0
+          call_async: true
           special_handling:
             variant_of: "clEnqueueReadBuffer"
             icd:

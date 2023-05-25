@@ -153,18 +153,15 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %      if f.callAsync:
     if(
 %      for arg in func_base.args:
-%       if "block" in arg.name:
-       !${arg.name} &&
-%       elif "dst" in arg.name and "queue" in func_base.name:
-       Cal::Icd::icdGlobalState.getOclPlatform()->isDeviceUsm(${arg.name}) &&
-%       elif "dst" in arg.name:
-       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(${arg.name}) &&
-%       elif arg.kind_details and arg.kind_details.server_access.write_only():
+%       if ("block" in arg.name) or (arg.kind_details and arg.kind_details.element and arg.kind_details.element.translate_after):
        !${arg.name} &&
 %       endif
 %      endfor
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
+%       if "queue" in func_base.name:
+         command_queue->asLocalObject()->enqueue();
+%       endif
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

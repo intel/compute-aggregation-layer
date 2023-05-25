@@ -713,7 +713,6 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2Usm (ze_command_list_handl
     }
 
     if(
-       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(dstptr) &&
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
          return static_cast<CommandT::ReturnValueT>(0);
@@ -795,7 +794,6 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate (ze_comman
     }
 
     if(
-       Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(dstptr) &&
        channel.isCallAsyncEnabled()){
          channel.callAsynchronous(command, commandSpace);
          return static_cast<CommandT::ReturnValueT>(0);
