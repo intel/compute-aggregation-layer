@@ -20,7 +20,6 @@ namespace Apis {
 namespace LevelZero {
 
 namespace Standard {
-ze_result_t (*zesDeviceGet)(zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices) = nullptr;
 ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force) = nullptr;
 ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState) = nullptr;
 ze_result_t (*zesDeviceProcessesGetState)(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) = nullptr;
@@ -146,12 +145,6 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false;
     }
 
-    zesDeviceGet = reinterpret_cast<decltype(zesDeviceGet)>(dlsym(libraryHandle, "zesDeviceGet"));
-    if(nullptr == zesDeviceGet){
-        log<Verbosity::error>("Missing symbol zesDeviceGet in %s", loadPath.c_str());
-        unloadLevelZeroLibrary();
-        return false;
-    }
     zesDeviceReset = reinterpret_cast<decltype(zesDeviceReset)>(dlsym(libraryHandle, "zesDeviceReset"));
     if(nullptr == zesDeviceReset){
         log<Verbosity::error>("Missing symbol zesDeviceReset in %s", loadPath.c_str());
@@ -810,7 +803,6 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 }
 
 void unloadLevelZeroLibrary() {
-    zesDeviceGet = nullptr;
     zesDeviceReset = nullptr;
     zesDeviceGetState = nullptr;
     zesDeviceProcessesGetState = nullptr;

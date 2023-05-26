@@ -36,7 +36,6 @@ struct ZeMemAllocHostRpcMImplicitArgs;
 namespace Cal {
 namespace Icd {
 namespace LevelZero {
-ze_result_t zesDeviceGet (zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices);
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
 ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
@@ -1027,7 +1026,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
-    dt.Device.pfnGet = Cal::Icd::LevelZero::zesDeviceGet;
     dt.Device.pfnReset = Cal::Icd::LevelZero::zesDeviceReset;
     dt.Device.pfnGetState = Cal::Icd::LevelZero::zesDeviceGetState;
     dt.Device.pfnProcessesGetState = Cal::Icd::LevelZero::zesDeviceProcessesGetState;

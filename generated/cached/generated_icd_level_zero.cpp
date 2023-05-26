@@ -39,30 +39,6 @@ auto mutable_element_cast(const T **el) {
     return reinterpret_cast<NonVoidT>(nonConst);
 };
 
-ze_result_t zesDeviceGet (zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices) {
-    log<Verbosity::bloat>("Establishing RPC for zesDeviceGet");
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto &channel = globalL0Platform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZesDeviceGetRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, pCount, phDevices);
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hDriver, pCount, phDevices);
-    command->copyFromCaller(dynMemTraits);
-
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    command->copyToCaller(dynMemTraits);
-    ze_result_t ret = command->captures.ret;
-
-    return ret;
-}
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceReset");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3596,9 +3572,6 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
 
 
 extern "C" {
-ze_result_t zesDeviceGet (zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices) {
-    return Cal::Icd::LevelZero::zesDeviceGet(hDriver, pCount, phDevices);
-}
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     return Cal::Icd::LevelZero::zesDeviceReset(hDevice, force);
 }

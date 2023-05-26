@@ -16,26 +16,6 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
-ZesDeviceGetRpcM::Captures::DynamicTraits ZesDeviceGetRpcM::Captures::DynamicTraits::calculate(zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices) {
-    DynamicTraits ret = {};
-    ret.phDevices.count = (pCount ? *pCount : 0);
-    ret.phDevices.size = ret.phDevices.count * sizeof(zes_device_handle_t);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
-
-
-    return ret;
-}
-
-size_t ZesDeviceGetRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, phDevices) + Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(zes_device_handle_t));
-     return size;
-}
-
-size_t ZesDeviceGetRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(zes_device_handle_t));
-     return size;
-}
-
 ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     DynamicTraits ret = {};
     ret.pProcesses.count = (pCount ? *pCount : 0);

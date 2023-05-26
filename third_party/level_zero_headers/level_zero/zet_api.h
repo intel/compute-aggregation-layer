@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: MIT
  *
  * @file zet_api.h
- * @version v1.6-r1.6.3
+ * @version v1.4-r1.4.0
  *
  */
 #ifndef _ZET_API_H
@@ -89,7 +89,6 @@ typedef enum _zet_structure_type_t
     ZET_STRUCTURE_TYPE_DEVICE_DEBUG_PROPERTIES = 0x6,   ///< ::zet_device_debug_properties_t
     ZET_STRUCTURE_TYPE_DEBUG_MEMORY_SPACE_DESC = 0x7,   ///< ::zet_debug_memory_space_desc_t
     ZET_STRUCTURE_TYPE_DEBUG_REGSET_PROPERTIES = 0x8,   ///< ::zet_debug_regset_properties_t
-    ZET_STRUCTURE_TYPE_GLOBAL_METRICS_TIMESTAMPS_EXP_PROPERTIES = 0x9,  ///< ::zet_metric_global_timestamps_resolution_exp_t
     ZET_STRUCTURE_TYPE_TRACER_EXP_DESC = 0x00010001,///< ::zet_tracer_exp_desc_t
     ZET_STRUCTURE_TYPE_FORCE_UINT32 = 0x7fffffff
 
@@ -146,16 +145,6 @@ typedef struct _zet_typed_value_t
     zet_value_t value;                              ///< [out] value
 
 } zet_typed_value_t;
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Enables driver instrumentation and dependencies for device metrics
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Enables driver instrumentation and dependencies for program
-///        instrumentation
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Enables driver instrumentation and dependencies for program debugging
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Forward-declare zet_base_properties_t
@@ -237,10 +226,6 @@ typedef struct _zet_profile_register_sequence_t zet_profile_register_sequence_t;
 /// @brief Forward-declare zet_tracer_exp_desc_t
 typedef struct _zet_tracer_exp_desc_t zet_tracer_exp_desc_t;
 
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Forward-declare zet_metric_global_timestamps_resolution_exp_t
-typedef struct _zet_metric_global_timestamps_resolution_exp_t zet_metric_global_timestamps_resolution_exp_t;
-
 
 #if !defined(__GNUC__)
 #pragma endregion
@@ -294,8 +279,6 @@ typedef enum _zet_module_debug_info_format_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hModule`
 ///     - ::ZE_RESULT_ERROR_INVALID_ENUMERATION
@@ -345,8 +328,6 @@ typedef struct _zet_device_debug_properties_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDevice`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -376,8 +357,6 @@ typedef struct _zet_debug_config_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDevice`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -403,8 +382,6 @@ zetDebugAttach(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ZE_APIEXPORT ze_result_t ZE_APICALL
@@ -530,8 +507,6 @@ typedef struct _zet_debug_event_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -558,8 +533,6 @@ zetDebugReadEvent(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -577,8 +550,6 @@ zetDebugAcknowledgeEvent(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_NOT_AVAILABLE
@@ -596,8 +567,6 @@ zetDebugInterrupt(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_NOT_AVAILABLE
@@ -640,8 +609,6 @@ typedef struct _zet_debug_memory_space_desc_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -672,8 +639,6 @@ zetDebugReadMemory(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -728,8 +693,6 @@ typedef struct _zet_debug_regset_properties_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDevice`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -750,47 +713,12 @@ zetDebugGetRegisterSetProperties(
     );
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @brief Retrieves debug register set properties for a given thread.
-/// 
-/// @returns
-///     - ::ZE_RESULT_SUCCESS
-///     - ::ZE_RESULT_ERROR_UNINITIALIZED
-///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
-///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
-///         + `nullptr == hDebug`
-///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
-///         + `nullptr == pCount`
-///     - ::ZE_RESULT_ERROR_NOT_AVAILABLE
-///         + the thread is running or unavailable
-///     - ::ZE_RESULT_ERROR_INVALID_ARGUMENT
-///         + the thread argument specifies more than one or a non-existant thread
-ZE_APIEXPORT ze_result_t ZE_APICALL
-zetDebugGetThreadRegisterSetProperties(
-    zet_debug_session_handle_t hDebug,              ///< [in] debug session handle
-    ze_device_thread_t thread,                      ///< [in] the thread identifier specifying a single stopped thread
-    uint32_t* pCount,                               ///< [in,out] pointer to the number of register set properties.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of register set properties available.
-                                                    ///< if count is greater than the number of register set properties
-                                                    ///< available, then the driver shall update the value with the correct
-                                                    ///< number of registry set properties available.
-    zet_debug_regset_properties_t* pRegisterSetProperties   ///< [in,out][optional][range(0, *pCount)] array of query results for
-                                                    ///< register set properties.
-                                                    ///< if count is less than the number of register set properties available,
-                                                    ///< then driver shall only retrieve that number of register set properties.
-    );
-
-///////////////////////////////////////////////////////////////////////////////
 /// @brief Read register state.
 /// 
 /// @returns
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_NOT_AVAILABLE
@@ -814,8 +742,6 @@ zetDebugReadRegisters(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDebug`
 ///     - ::ZE_RESULT_ERROR_NOT_AVAILABLE
@@ -849,8 +775,6 @@ zetDebugWriteRegisters(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDevice`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -918,8 +842,6 @@ typedef struct _zet_metric_group_properties_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricGroup`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -967,8 +889,6 @@ typedef enum _zet_metric_group_calculation_type_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricGroup`
 ///     - ::ZE_RESULT_ERROR_INVALID_ENUMERATION
@@ -1003,8 +923,6 @@ zetMetricGroupCalculateMetricValues(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricGroup`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1072,8 +990,6 @@ typedef struct _zet_metric_properties_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetric`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1103,8 +1019,6 @@ zetMetricGetProperties(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hContext`
 ///         + `nullptr == hDevice`
@@ -1153,8 +1067,6 @@ typedef struct _zet_metric_streamer_desc_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hContext`
 ///         + `nullptr == hDevice`
@@ -1190,8 +1102,6 @@ zetMetricStreamerOpen(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hCommandList`
 ///         + `nullptr == hMetricStreamer`
@@ -1213,8 +1123,6 @@ zetCommandListAppendMetricStreamerMarker(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricStreamer`
 ZE_APIEXPORT ze_result_t ZE_APICALL
@@ -1232,8 +1140,6 @@ zetMetricStreamerClose(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricStreamer`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1287,8 +1193,6 @@ typedef struct _zet_metric_query_pool_desc_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hContext`
 ///         + `nullptr == hDevice`
@@ -1323,8 +1227,6 @@ zetMetricQueryPoolCreate(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricQueryPool`
 ///     - ::ZE_RESULT_ERROR_HANDLE_OBJECT_IN_USE
@@ -1344,8 +1246,6 @@ zetMetricQueryPoolDestroy(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricQueryPool`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1371,8 +1271,6 @@ zetMetricQueryCreate(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricQuery`
 ///     - ::ZE_RESULT_ERROR_HANDLE_OBJECT_IN_USE
@@ -1394,8 +1292,6 @@ zetMetricQueryDestroy(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricQuery`
 ZE_APIEXPORT ze_result_t ZE_APICALL
@@ -1420,8 +1316,6 @@ zetMetricQueryReset(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hCommandList`
 ///         + `nullptr == hMetricQuery`
@@ -1456,11 +1350,11 @@ zetCommandListAppendMetricQueryBegin(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hCommandList`
 ///         + `nullptr == hMetricQuery`
+///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == phWaitEvents`
 ///     - ::ZE_RESULT_ERROR_INVALID_SYNCHRONIZATION_OBJECT
 ///     - ::ZE_RESULT_ERROR_INVALID_SIZE
 ///         + `(nullptr == phWaitEvents) && (0 < numWaitEvents)`
@@ -1484,8 +1378,6 @@ zetCommandListAppendMetricQueryEnd(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hCommandList`
 ZE_APIEXPORT ze_result_t ZE_APICALL
@@ -1503,8 +1395,6 @@ zetCommandListAppendMetricMemoryBarrier(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricQuery`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1601,8 +1491,6 @@ typedef struct _zet_profile_register_sequence_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hKernel`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1664,14 +1552,13 @@ typedef struct _zet_tracer_exp_desc_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hContext`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
 ///         + `nullptr == desc`
 ///         + `nullptr == desc->pUserData`
 ///         + `nullptr == phTracer`
+///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
 ZE_APIEXPORT ze_result_t ZE_APICALL
 zetTracerExpCreate(
     zet_context_handle_t hContext,                  ///< [in] handle of the context object
@@ -1694,8 +1581,6 @@ zetTracerExpCreate(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hTracer`
 ///     - ::ZE_RESULT_ERROR_HANDLE_OBJECT_IN_USE
@@ -1720,8 +1605,6 @@ zetTracerExpDestroy(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hTracer`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1748,8 +1631,6 @@ zetTracerExpSetPrologues(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hTracer`
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
@@ -1771,8 +1652,6 @@ zetTracerExpSetEpilogues(
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hTracer`
 ZE_APIEXPORT ze_result_t ZE_APICALL
@@ -1822,8 +1701,6 @@ typedef enum _ze_calculate_multiple_metrics_exp_version_t
 ///     - ::ZE_RESULT_SUCCESS
 ///     - ::ZE_RESULT_ERROR_UNINITIALIZED
 ///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
 ///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hMetricGroup`
 ///     - ::ZE_RESULT_ERROR_INVALID_ENUMERATION
@@ -1857,75 +1734,6 @@ zetMetricGroupCalculateMultipleMetricValuesExp(
                                                     ///< calculated metrics.
                                                     ///< if count is less than the number available in the raw data buffer,
                                                     ///< then driver shall only calculate that number of metric values.
-    );
-
-#if !defined(__GNUC__)
-#pragma endregion
-#endif
-// Intel 'oneAPI' Level-Zero Tool Experimental Extension for Global Metric Timestamps
-#if !defined(__GNUC__)
-#pragma region GlobalTimestamps
-#endif
-///////////////////////////////////////////////////////////////////////////////
-#ifndef ZET_GLOBAL_METRICS_TIMESTAMPS_EXP_NAME
-/// @brief Global Metric Timestamps Experimental Extension Name
-#define ZET_GLOBAL_METRICS_TIMESTAMPS_EXP_NAME  "ZET_experimental_global_metric_timestamps"
-#endif // ZET_GLOBAL_METRICS_TIMESTAMPS_EXP_NAME
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Global Metric Timestamps Experimental Extension Version(s)
-typedef enum _ze_metric_global_timestamps_exp_version_t
-{
-    ZE_METRIC_GLOBAL_TIMESTAMPS_EXP_VERSION_1_0 = ZE_MAKE_VERSION( 1, 0 ),  ///< version 1.0
-    ZE_METRIC_GLOBAL_TIMESTAMPS_EXP_VERSION_CURRENT = ZE_MAKE_VERSION( 1, 0 ),  ///< latest known version
-    ZE_METRIC_GLOBAL_TIMESTAMPS_EXP_VERSION_FORCE_UINT32 = 0x7fffffff
-
-} ze_metric_global_timestamps_exp_version_t;
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Metric timestamps resolution
-/// 
-/// @details
-///     - This structure may be returned from ::zetMetricGroupGetProperties via
-///       `pNext` member of ::zet_metric_group_properties_t
-///     - Used for mapping metric timestamps to other timers.
-typedef struct _zet_metric_global_timestamps_resolution_exp_t
-{
-    ze_structure_type_t stype;                      ///< [in] type of this structure
-    const void* pNext;                              ///< [in][optional] must be null or a pointer to an extension-specific
-                                                    ///< structure (i.e. contains sType and pNext).
-    uint64_t timerResolution;                       ///< [out] Returns the resolution of device timer in nanoseconds used for
-                                                    ///< timestamps.
-    uint64_t timestampValidBits;                    ///< [out] Returns the number of valid bits in the timestamp value.
-
-} zet_metric_global_timestamps_resolution_exp_t;
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Returns metric timestamps synchronized with global device timestamps,
-///        optionally synchronized with host
-/// 
-/// @details
-///     - The application may call this function from simultaneous threads.
-///     - By default, the global and metrics timestamps are synchronized to the
-///       device.
-/// 
-/// @returns
-///     - ::ZE_RESULT_SUCCESS
-///     - ::ZE_RESULT_ERROR_UNINITIALIZED
-///     - ::ZE_RESULT_ERROR_DEVICE_LOST
-///     - ::ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
-///     - ::ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
-///     - ::ZE_RESULT_ERROR_INVALID_NULL_HANDLE
-///         + `nullptr == hMetricGroup`
-///     - ::ZE_RESULT_ERROR_INVALID_NULL_POINTER
-///         + `nullptr == globalTimestamp`
-///         + `nullptr == metricTimestamp`
-ZE_APIEXPORT ze_result_t ZE_APICALL
-zetMetricGroupGetGlobalTimestampsExp(
-    zet_metric_group_handle_t hMetricGroup,         ///< [in] handle of the metric group
-    ze_bool_t synchronizedWithHost,                 ///< [in] Returns the timestamps synchronized to the host or the device.
-    uint64_t* globalTimestamp,                      ///< [out] Device timestamp.
-    uint64_t* metricTimestamp                       ///< [out] Metric timestamp.
     );
 
 #if !defined(__GNUC__)

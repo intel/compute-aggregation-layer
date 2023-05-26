@@ -1547,35 +1547,6 @@ config:
 
     - name: "sysman"
       members:
-        - name: zesDeviceGet
-          latency: 1.0
-          ddi_category: Device
-          returns:
-            type: ze_result_t
-            kind: scalar
-            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args:
-            0:
-              name: hDriver
-              type: zes_driver_handle_t
-              kind: scalar
-            1:
-              name: pCount
-              type: uint32_t*
-              kind: pointer
-            2:
-              name: phDevices
-              type: zes_device_handle_t*
-              kind: ptr_array
-              kind_details:
-                num_elements: "pCount"
-                is_num_elements_ptr_to_capturable_arg: True
-                can_be_null: True
-                element:
-                  type: zes_device_handle_t
-                  kind: scalar
-                server_access: read_write
-
         - name: zesDeviceReset
           latency: 1.0
           ddi_category: Device

@@ -11,10 +11,6 @@
 #include "level_zero/zes_api.h"
 #include "level_zero/zet_ddi.h"
 
-ze_result_t zesDeviceGet(zes_driver_handle_t hDriver, uint32_t* pCount, zes_device_handle_t* phDevices){
-   return {};
-}
-
 ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
    return {};
 }
