@@ -845,7 +845,7 @@ class Provider {
     } spectacles;
 
     struct CommandQueueGroups {
-        bool copyRoundRobinEnabled = true;
+        bool copyRoundRobinEnabled = false;
         std::atomic_uint32_t selector{0u};
 
         uint32_t copyGroupIndex = std::numeric_limits<uint32_t>::max();
