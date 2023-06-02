@@ -13,6 +13,7 @@
 #include "include/cal.h"
 #include "shared/log.h"
 #include "shared/usm.h"
+#include "shared/utils.h"
 
 #include <CL/cl_ext.h>
 #include <memory>
@@ -84,7 +85,7 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
         }
         return CL_SUCCESS;
     };
-    if (param_name == CL_PLATFORM_NAME) {
+    if (param_name == CL_PLATFORM_NAME && Utils::getCalEnvFlag(calUseCustomOCLPlatformName, false)) {
         return getParamString(calPlatformName.data());
     }
 

@@ -142,6 +142,7 @@ int main(int argc, const char *argv[]) {
         }
         log<Verbosity::info>("Found OCL platform with ordinal %d", platformOrd);
     } else {
+        setenv(calUseCustomOCLPlatformName.data(), "1", true);
         platform = Cal::Utils::OclApiWrapper::getPlatformByName(calPlatformName.data(), false);
         if (Cal::Utils::OclApiWrapper::invalidPlatform == platform) {
             log<Verbosity::critical>("Could not find Compute Aggregation Layer OCL platform");

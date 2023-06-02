@@ -57,6 +57,7 @@ constexpr std::string_view calUseSharedVaForRpcChannel = "CAL_USE_SHARED_VA_FOR_
 // Set shared VA arena size in MB
 constexpr std::string_view calSharedVaArenaSizeEnvName = "CAL_SHARED_VA_ARENA_SIZE_MB";
 
+constexpr std::string_view calUseCustomOCLPlatformName = "CAL_USE_CUSTOM_OCL_PLATFORM_NAME";
 constexpr std::string_view calPlatformName = "Compute Aggregation Layer for oneAPI Level Zero and OpenCL(TM) Applications";
 constexpr std::string_view calServiceProcessName = NAME_TO_STR(CAL_NAME);
 
