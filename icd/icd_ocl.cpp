@@ -456,6 +456,21 @@ cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *
     return Cal::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, argIndex, argValue);
 }
 
+cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    switch (param_name) {
+    case CL_MEM_FLAGS:
+        *static_cast<cl_mem_flags *>(param_value) = memobj->asLocalObject()->flags;
+        return CL_SUCCESS;
+    case CL_MEM_SIZE:
+        *static_cast<size_t *>(param_value) = memobj->asLocalObject()->size;
+        return CL_SUCCESS;
+    default:
+        break;
+    }
+
+    return Cal::Icd::Ocl::clGetMemObjectInfoRpcHelper(memobj, param_name, param_value_size, param_value, param_value_size_ret);
+}
+
 IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReference &&parent,
                              Cal::Shared::RefCounted<_cl_context, IcdOclTypePrinter>::CleanupFuncT cleanupFunc)
     : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter>(remoteObject, std::move(parent), cleanupFunc) {

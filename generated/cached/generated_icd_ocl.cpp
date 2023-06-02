@@ -863,7 +863,7 @@ cl_int clGetProgramInfoGetBinariesRpcHelper (cl_program program, size_t total_bi
 
     return ret;
 }
-cl_int clGetMemObjectInfo (cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+cl_int clGetMemObjectInfoRpcHelper (cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     log<Verbosity::bloat>("Establishing RPC for clGetMemObjectInfo");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
