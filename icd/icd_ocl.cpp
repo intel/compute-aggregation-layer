@@ -582,7 +582,7 @@ bool IcdOclKernel::initTraits() {
             }
         }
 
-        if (strstr(argType.data(), "*")) {
+        if (strstr(argType.data(), "*") || strstr(argType.data(), "__opaque_ptr")) {
             argTraits.isPointer = true;
         }
         log<Verbosity::bloat>("Kernel arg type %s %s of buffer type", argType.data(), argTraits.isPointer ? "IS" : "is NOT");
