@@ -36,6 +36,8 @@ constexpr std::string_view calIcdEnableCacheEnvName = "CAL_ICD_ENABLE_CACHE";
 constexpr std::string_view calEnableAilEnvName = "CAL_USE_AIL";
 // Controls whether CAL should use shared allocations
 constexpr std::string_view calSharedAllocations = "CAL_SHARED_ALLOCATIONS";
+// Controls whether CAL should attempt to print call stack when unhandled page fault occurs (requires CAL_SHARED_ALLOCATIONS to be enabled)
+constexpr std::string_view calDumpStackOnUnhandledPagefault = "CAL_DUMP_STACK_ON_UNHANDLED_PAGE_FAULT";
 // Controls whether threads should yield control while waiting for connection
 constexpr std::string_view calYieldThreadsEnvName = "CAL_YIELD_THREADS";
 // Controls whether CAL should reuse buffers
