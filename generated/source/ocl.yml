@@ -266,7 +266,8 @@ config:
           special_handling:
             icd:
               handler_prologue: "if (static_cast<IcdOclDevice*>(device)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "static_cast<IcdOclDevice*>(device)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
+              handler_epilogue: "static_cast<IcdOclDevice*>(device)->cache.store(param_name, param_value, captured_size);"
+              handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
             rpc:
               emit_copy_assignment: True
           returns:
@@ -424,7 +425,8 @@ config:
           special_handling:
             icd:
               handler_prologue: "if (static_cast<IcdOclContext*>(context)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "static_cast<IcdOclContext*>(context)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
+              handler_epilogue: "static_cast<IcdOclContext*>(context)->cache.store(param_name, param_value, captured_size);"
+              handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
             rpc:
               emit_copy_assignment: True
           returns:
@@ -1236,7 +1238,8 @@ config:
           special_handling:
             icd:
               handler_prologue: "if (static_cast<IcdOclCommandQueue*>(command_queue)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
+              handler_epilogue: "static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value, captured_size);"
+              handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
           returns:
             type: cl_int
             kind: scalar
@@ -1590,7 +1593,8 @@ config:
           special_handling:
             icd:
               handler_prologue: "if (static_cast<IcdOclKernel*>(kernel)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value,command->captures.param_value_size_ret);"
+              handler_epilogue: "static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value, captured_size);"
+              handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
           returns:
             type: cl_int
             kind: scalar

@@ -228,6 +228,11 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
     ${arg.capture_details.reclaim_method.format(f"standaloneSpaceFor{arg.name}")};
 %        endif # not arg.capture_details.reclaim_method.is_immediate_mode()
 %       endfor # arg in func_base.traits.get_standalone_args():
+%       if epilogue_data(f):
+%           for epilogue_data_line in epilogue_data(f):
+    ${epilogue_data_line}
+%           endfor # epilogue_data(f)
+%       endif #epilogue_data(f)
 %       if epilogue(f):
     commandSpace.reset();
     channelLock.unlock();

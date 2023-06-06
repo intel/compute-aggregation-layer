@@ -394,10 +394,13 @@ class SpecialHandling:
             self.intentionally_ignore = src.get("intentionally_ignore", False)
             self.handler_prologue = src.get("handler_prologue", None)
             self.handler_epilogue = src.get("handler_epilogue", None)
+            self.handler_epilogue_data = src.get("handler_epilogue_data", None)
             if self.handler_prologue and not isinstance(self.handler_prologue, list):
                 self.handler_prologue = [self.handler_prologue]
             if self.handler_epilogue and not isinstance(self.handler_epilogue, list):
                 self.handler_epilogue = [self.handler_epilogue]
+            if self.handler_epilogue_data and not isinstance(self.handler_epilogue_data, list):
+                self.handler_epilogue_data = [self.handler_epilogue_data]
 
     class Rpc:
         def __init__(self, src: dict):
@@ -1664,7 +1667,9 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
         prologue=lambda f: f.special_handling.icd.handler_prologue if (
             f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_prologue) else "",
         epilogue=lambda f: f.special_handling.icd.handler_epilogue if (
-            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue) else "")
+            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue) else "",
+        epilogue_data=lambda f: f.special_handling.icd.handler_epilogue_data if (
+            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue_data) else "")
 
 
 def generate_service_h(config: Config, additional_file_headers: list) -> str:
