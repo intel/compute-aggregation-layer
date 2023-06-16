@@ -435,6 +435,10 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect(ze_command_list_handle_t hCo
    return {};
 }
 
+ze_result_t zeCommandListHostSynchronize(ze_command_list_handle_t hCommandList, uint64_t timeout){
+   return {};
+}
+
 ze_result_t zeDevicePciGetPropertiesExt(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties){
    return {};
 }

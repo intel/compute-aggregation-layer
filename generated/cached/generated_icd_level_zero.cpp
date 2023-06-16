@@ -3481,6 +3481,28 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;
 }
+ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListHostSynchronize");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hCommandList, timeout);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDevicePciGetPropertiesExt");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3895,6 +3917,9 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect(hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
+}
+ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
+    return Cal::Icd::LevelZero::zeCommandListHostSynchronize(hCommandList, timeout);
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
     return Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt(hDevice, pPciProperties);

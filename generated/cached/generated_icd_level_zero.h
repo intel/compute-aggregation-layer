@@ -159,6 +159,7 @@ ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kerne
 ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout);
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
@@ -976,6 +977,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Kernel.pfnGetName = Cal::Icd::LevelZero::zeKernelGetName;
     dt.CommandList.pfnAppendLaunchKernel = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel;
     dt.CommandList.pfnAppendLaunchKernelIndirect = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect;
+    dt.CommandList.pfnHostSynchronize = Cal::Icd::LevelZero::zeCommandListHostSynchronize;
     dt.Device.pfnPciGetPropertiesExt = Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt;
     dt.Context.pfnMakeMemoryResident = Cal::Icd::LevelZero::zeContextMakeMemoryResident;
     dt.Context.pfnEvictMemory = Cal::Icd::LevelZero::zeContextEvictMemory;
