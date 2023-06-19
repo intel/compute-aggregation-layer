@@ -130,6 +130,9 @@ ze_result_t (*zeCommandListHostSynchronize)(ze_command_list_handle_t hCommandLis
 ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) = nullptr;
 ze_result_t (*zeContextMakeMemoryResident)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) = nullptr;
 ze_result_t (*zeContextEvictMemory)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) = nullptr;
+ze_result_t (*zeVirtualMemQueryPageSize)(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) = nullptr;
+ze_result_t (*zePhysicalMemCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) = nullptr;
+ze_result_t (*zePhysicalMemDestroy)(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) = nullptr;
 
 void *libraryHandle = nullptr;
 
@@ -806,6 +809,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeVirtualMemQueryPageSize = reinterpret_cast<decltype(zeVirtualMemQueryPageSize)>(dlsym(libraryHandle, "zeVirtualMemQueryPageSize"));
+    if(nullptr == zeVirtualMemQueryPageSize){
+        log<Verbosity::error>("Missing symbol zeVirtualMemQueryPageSize in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zePhysicalMemCreate = reinterpret_cast<decltype(zePhysicalMemCreate)>(dlsym(libraryHandle, "zePhysicalMemCreate"));
+    if(nullptr == zePhysicalMemCreate){
+        log<Verbosity::error>("Missing symbol zePhysicalMemCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zePhysicalMemDestroy = reinterpret_cast<decltype(zePhysicalMemDestroy)>(dlsym(libraryHandle, "zePhysicalMemDestroy"));
+    if(nullptr == zePhysicalMemDestroy){
+        log<Verbosity::error>("Missing symbol zePhysicalMemDestroy in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     return true;
 }
 
@@ -920,6 +941,9 @@ void unloadLevelZeroLibrary() {
     zeDevicePciGetPropertiesExt = nullptr;
     zeContextMakeMemoryResident = nullptr;
     zeContextEvictMemory = nullptr;
+    zeVirtualMemQueryPageSize = nullptr;
+    zePhysicalMemCreate = nullptr;
+    zePhysicalMemDestroy = nullptr;
     if(libraryHandle){
         dlclose(libraryHandle);
     }

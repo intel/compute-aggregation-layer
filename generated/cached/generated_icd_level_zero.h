@@ -163,6 +163,9 @@ ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList,
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
+ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
+ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
@@ -311,18 +314,6 @@ inline void zeVirtualMemReserveUnimpl() {
 }
 inline void zeVirtualMemFreeUnimpl() {
     log<Verbosity::critical>("Function VirtualMem.zeVirtualMemFree is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemQueryPageSizeUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemQueryPageSize is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zePhysicalMemCreateUnimpl() {
-    log<Verbosity::critical>("Function PhysicalMem.zePhysicalMemCreate is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zePhysicalMemDestroyUnimpl() {
-    log<Verbosity::critical>("Function PhysicalMem.zePhysicalMemDestroy is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeVirtualMemMapUnimpl() {
@@ -981,6 +972,9 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Device.pfnPciGetPropertiesExt = Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt;
     dt.Context.pfnMakeMemoryResident = Cal::Icd::LevelZero::zeContextMakeMemoryResident;
     dt.Context.pfnEvictMemory = Cal::Icd::LevelZero::zeContextEvictMemory;
+    dt.VirtualMem.pfnQueryPageSize = Cal::Icd::LevelZero::zeVirtualMemQueryPageSize;
+    dt.PhysicalMem.pfnCreate = Cal::Icd::LevelZero::zePhysicalMemCreate;
+    dt.PhysicalMem.pfnDestroy = Cal::Icd::LevelZero::zePhysicalMemDestroy;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
@@ -1019,9 +1013,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Sampler.pfnDestroy = reinterpret_cast<decltype(dt.Sampler.pfnDestroy)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerDestroyUnimpl);
     dt.VirtualMem.pfnReserve = reinterpret_cast<decltype(dt.VirtualMem.pfnReserve)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemReserveUnimpl);
     dt.VirtualMem.pfnFree = reinterpret_cast<decltype(dt.VirtualMem.pfnFree)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemFreeUnimpl);
-    dt.VirtualMem.pfnQueryPageSize = reinterpret_cast<decltype(dt.VirtualMem.pfnQueryPageSize)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemQueryPageSizeUnimpl);
-    dt.PhysicalMem.pfnCreate = reinterpret_cast<decltype(dt.PhysicalMem.pfnCreate)>(Cal::Icd::LevelZero::Unimplemented::zePhysicalMemCreateUnimpl);
-    dt.PhysicalMem.pfnDestroy = reinterpret_cast<decltype(dt.PhysicalMem.pfnDestroy)>(Cal::Icd::LevelZero::Unimplemented::zePhysicalMemDestroyUnimpl);
     dt.VirtualMem.pfnMap = reinterpret_cast<decltype(dt.VirtualMem.pfnMap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemMapUnimpl);
     dt.VirtualMem.pfnUnmap = reinterpret_cast<decltype(dt.VirtualMem.pfnUnmap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemUnmapUnimpl);
     dt.VirtualMem.pfnSetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnSetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemSetAccessAttributeUnimpl);

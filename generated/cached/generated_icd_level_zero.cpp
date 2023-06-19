@@ -3577,6 +3577,78 @@ ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle
 
     return ret;
 }
+ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemQueryPageSize");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, size, pagesize);
+    command->copyFromCaller();
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
+    log<Verbosity::bloat>("Establishing RPC for zePhysicalMemCreate");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hDevice, desc, phPhysicalMemory);
+    command->copyFromCaller();
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
+    log<Verbosity::bloat>("Establishing RPC for zePhysicalMemDestroy");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, hPhysicalMemory);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 
 void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("zexMemGetIpcHandles", funcName)) {
@@ -3929,6 +4001,15 @@ ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device
 }
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
     return Cal::Icd::LevelZero::zeContextEvictMemory(hContext, hDevice, ptr, size);
+}
+ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
+    return Cal::Icd::LevelZero::zeVirtualMemQueryPageSize(hContext, hDevice, size, pagesize);
+}
+ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
+    return Cal::Icd::LevelZero::zePhysicalMemCreate(hContext, hDevice, desc, phPhysicalMemory);
+}
+ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
+    return Cal::Icd::LevelZero::zePhysicalMemDestroy(hContext, hPhysicalMemory);
 }
 } // extern "C"
 

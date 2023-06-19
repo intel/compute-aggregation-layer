@@ -11934,6 +11934,220 @@ struct ZeContextEvictMemoryRpcM {
     
 };
 static_assert(std::is_standard_layout_v<ZeContextEvictMemoryRpcM>);
+struct ZeVirtualMemQueryPageSizeRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 122;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_context_handle_t hContext = {};
+        ze_device_handle_t hDevice = {};
+        size_t size = {};
+        size_t* pagesize = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hContext == rhs.hContext;
+            equal &= this->hDevice == rhs.hDevice;
+            equal &= this->size == rhs.size;
+            equal &= this->pagesize == rhs.pagesize;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        size_t pagesize;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeVirtualMemQueryPageSizeRpcM() = default;
+
+    ZeVirtualMemQueryPageSizeRpcM(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hContext = hContext;
+        args.hDevice = hDevice;
+        args.size = size;
+        args.pagesize = pagesize;
+    }
+    
+    static void fillWithoutCapture(ZeVirtualMemQueryPageSizeRpcM &message, ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hContext = hContext;
+        message.args.hDevice = hDevice;
+        message.args.size = size;
+        message.args.pagesize = pagesize;
+    }
+    
+
+    void copyFromCaller(){
+        if(args.pagesize){
+            captures.pagesize = *args.pagesize;
+        }
+    }
+
+    void copyToCaller(){
+        if(args.pagesize){
+            *args.pagesize = captures.pagesize;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeVirtualMemQueryPageSizeRpcM>);
+struct ZePhysicalMemCreateRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 123;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_context_handle_t hContext = {};
+        ze_device_handle_t hDevice = {};
+        ze_physical_mem_desc_t* desc = {};
+        ze_physical_mem_handle_t* phPhysicalMemory = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hContext == rhs.hContext;
+            equal &= this->hDevice == rhs.hDevice;
+            equal &= this->desc == rhs.desc;
+            equal &= this->phPhysicalMemory == rhs.phPhysicalMemory;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        ze_physical_mem_desc_t desc;
+        ze_physical_mem_handle_t phPhysicalMemory;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZePhysicalMemCreateRpcM() = default;
+
+    ZePhysicalMemCreateRpcM(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hContext = hContext;
+        args.hDevice = hDevice;
+        args.desc = desc;
+        args.phPhysicalMemory = phPhysicalMemory;
+    }
+    
+    static void fillWithoutCapture(ZePhysicalMemCreateRpcM &message, ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hContext = hContext;
+        message.args.hDevice = hDevice;
+        message.args.desc = desc;
+        message.args.phPhysicalMemory = phPhysicalMemory;
+    }
+    
+
+    void copyFromCaller(){
+        if(args.desc){
+            captures.desc = *args.desc;
+        }
+        if(args.phPhysicalMemory){
+            captures.phPhysicalMemory = *args.phPhysicalMemory;
+        }
+    }
+
+    void copyToCaller(){
+        if(args.phPhysicalMemory){
+            *args.phPhysicalMemory = captures.phPhysicalMemory;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZePhysicalMemCreateRpcM>);
+struct ZePhysicalMemDestroyRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 124;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_context_handle_t hContext = {};
+        ze_physical_mem_handle_t hPhysicalMemory = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hContext == rhs.hContext;
+            equal &= this->hPhysicalMemory == rhs.hPhysicalMemory;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZePhysicalMemDestroyRpcM() = default;
+
+    ZePhysicalMemDestroyRpcM(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hContext = hContext;
+        args.hPhysicalMemory = hPhysicalMemory;
+    }
+    
+    static void fillWithoutCapture(ZePhysicalMemDestroyRpcM &message, ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hContext = hContext;
+        message.args.hPhysicalMemory = hPhysicalMemory;
+    }
+    
+};
+static_assert(std::is_standard_layout_v<ZePhysicalMemDestroyRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -12059,6 +12273,9 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype).id, "zeDevicePciGetPropertiesExt"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype).id, "zeContextMakeMemoryResident"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype).id, "zeContextEvictMemory"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemQueryPageSizeRpcM::messageSubtype).id, "zeVirtualMemQueryPageSize"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemCreateRpcM::messageSubtype).id, "zePhysicalMemCreate"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemDestroyRpcM::messageSubtype).id, "zePhysicalMemDestroy"),
     };
 
     auto it = options.find(callId.id);
@@ -12193,6 +12410,9 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeDevicePciGetPropertiesExt", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeContextMakeMemoryResident", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeContextEvictMemory", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeVirtualMemQueryPageSize", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemQueryPageSizeRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zePhysicalMemCreate", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemCreateRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zePhysicalMemDestroy", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemDestroyRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -12325,6 +12545,9 @@ static constexpr RpcCallId zeCommandListHostSynchronize = {Cal::Rpc::RpcMessageH
 static constexpr RpcCallId zeDevicePciGetPropertiesExt = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeDevicePciGetPropertiesExtRpcM::messageSubtype};
 static constexpr RpcCallId zeContextMakeMemoryResident = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextMakeMemoryResidentRpcM::messageSubtype};
 static constexpr RpcCallId zeContextEvictMemory = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeContextEvictMemoryRpcM::messageSubtype};
+static constexpr RpcCallId zeVirtualMemQueryPageSize = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemQueryPageSizeRpcM::messageSubtype};
+static constexpr RpcCallId zePhysicalMemCreate = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemCreateRpcM::messageSubtype};
+static constexpr RpcCallId zePhysicalMemDestroy = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZePhysicalMemDestroyRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -12450,6 +12673,9 @@ using zeCommandListHostSynchronize = ZeCommandListHostSynchronizeRpcM;
 using zeDevicePciGetPropertiesExt = ZeDevicePciGetPropertiesExtRpcM;
 using zeContextMakeMemoryResident = ZeContextMakeMemoryResidentRpcM;
 using zeContextEvictMemory = ZeContextEvictMemoryRpcM;
+using zeVirtualMemQueryPageSize = ZeVirtualMemQueryPageSizeRpcM;
+using zePhysicalMemCreate = ZePhysicalMemCreateRpcM;
+using zePhysicalMemDestroy = ZePhysicalMemDestroyRpcM;
 }
 
 } // namespace LevelZero

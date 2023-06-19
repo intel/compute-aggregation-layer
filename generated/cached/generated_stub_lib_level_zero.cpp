@@ -451,4 +451,16 @@ ze_result_t zeContextEvictMemory(ze_context_handle_t hContext, ze_device_handle_
    return {};
 }
 
+ze_result_t zeVirtualMemQueryPageSize(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize){
+   return {};
+}
+
+ze_result_t zePhysicalMemCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory){
+   return {};
+}
+
+ze_result_t zePhysicalMemDestroy(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory){
+   return {};
+}
+
 // #### Generated code -- end ####

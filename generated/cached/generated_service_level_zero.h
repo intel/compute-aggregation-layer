@@ -139,6 +139,9 @@ extern ze_result_t (*zeCommandListHostSynchronize)(ze_command_list_handle_t hCom
 extern ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 extern ze_result_t (*zeContextMakeMemoryResident)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 extern ze_result_t (*zeContextEvictMemory)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+extern ze_result_t (*zeVirtualMemQueryPageSize)(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
+extern ze_result_t (*zePhysicalMemCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
+extern ze_result_t (*zePhysicalMemDestroy)(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
 } // Standard
 
 namespace Extensions {
@@ -1287,10 +1290,41 @@ inline bool zeContextEvictMemoryHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 );
     return true;
 }
+inline bool zeVirtualMemQueryPageSizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeVirtualMemQueryPageSize");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemQueryPageSize(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.pagesize ? &apiCommand->captures.pagesize : nullptr
+                                                );
+    return true;
+}
+inline bool zePhysicalMemCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zePhysicalMemCreate");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zePhysicalMemCreate(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.desc ? &apiCommand->captures.desc : nullptr, 
+                                                apiCommand->args.phPhysicalMemory ? &apiCommand->captures.phPhysicalMemory : nullptr
+                                                );
+    return true;
+}
+inline bool zePhysicalMemDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zePhysicalMemDestroy");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zePhysicalMemDestroy(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.hPhysicalMemory
+                                                );
+    return true;
+}
 
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
-    outHandlers.resize(ZeContextEvictMemoryRpcM::messageSubtype + 1);
+    outHandlers.resize(ZePhysicalMemDestroyRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
     outHandlers[ZesDeviceGetStateRpcM::messageSubtype] = zesDeviceGetStateHandler;
     outHandlers[ZesDeviceProcessesGetStateRpcM::messageSubtype] = zesDeviceProcessesGetStateHandler;
@@ -1413,6 +1447,9 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDevicePciGetPropertiesExtRpcM::messageSubtype] = zeDevicePciGetPropertiesExtHandler;
     outHandlers[ZeContextMakeMemoryResidentRpcM::messageSubtype] = zeContextMakeMemoryResidentHandler;
     outHandlers[ZeContextEvictMemoryRpcM::messageSubtype] = zeContextEvictMemoryHandler;
+    outHandlers[ZeVirtualMemQueryPageSizeRpcM::messageSubtype] = zeVirtualMemQueryPageSizeHandler;
+    outHandlers[ZePhysicalMemCreateRpcM::messageSubtype] = zePhysicalMemCreateHandler;
+    outHandlers[ZePhysicalMemDestroyRpcM::messageSubtype] = zePhysicalMemDestroyHandler;
 }
 
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetRpcM &apiCommand) {
@@ -2280,6 +2317,28 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM &apiComma
                                                 apiCommand.args.size
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemQueryPageSize(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.pagesize
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zePhysicalMemCreate(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.desc, 
+                                                apiCommand.args.phPhysicalMemory
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zePhysicalMemDestroy(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.hPhysicalMemory
+                                                );
+}
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
@@ -2414,6 +2473,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM*>(command)); break;
     }
     return true;
 }

@@ -1346,6 +1346,24 @@ config:
           name: speed
           type: zes_pci_speed_t
           kind: scalar
+    - name: ze_physical_mem_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: ze_physical_mem_flags_t
+          type: flags
+          kind: scalar
+        3:
+          name: size
+          type: size_t
+          kind: scalar
 
   unimplemented:
     - name: "core"
@@ -1388,9 +1406,6 @@ config:
           Sampler.zeSamplerDestroy,
           VirtualMem.zeVirtualMemReserve,
           VirtualMem.zeVirtualMemFree,
-          VirtualMem.zeVirtualMemQueryPageSize,
-          PhysicalMem.zePhysicalMemCreate,
-          PhysicalMem.zePhysicalMemDestroy,
           VirtualMem.zeVirtualMemMap,
           VirtualMem.zeVirtualMemUnmap,
           VirtualMem.zeVirtualMemSetAccessAttribute,
@@ -6777,191 +6792,216 @@ config:
               name: size
               type: size_t
               kind: scalar
-    #
-    #        - name : zeContextMakeImageResident
-    #          ddi_category :  Context
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : hImage
-    #                    type : ze_image_handle_t
-    #                    kind : scalar
-    #
-    #        - name : zeContextEvictImage
-    #          ddi_category :  Context
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : hImage
-    #                    type : ze_image_handle_t
-    #                    kind : scalar
-    #
-    #        - name : zeSamplerCreate
-    #          ddi_category :  Sampler
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : desc
-    #                    type : const ze_sampler_desc_t*
-    #                    kind : pointer
-    #                 3 :
-    #                    name : phSampler
-    #                    type : ze_sampler_handle_t*
-    #                    kind : pointer
-    #
-    #        - name : zeSamplerDestroy
-    #          ddi_category :  Sampler
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hSampler
-    #                    type : ze_sampler_handle_t
-    #                    kind : scalar
-    #
-    #        - name : zeVirtualMemReserve
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : pStart
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 3 :
-    #                    name : pptr
-    #                    type : void**
-    #                    kind : pointer
-    #
-    #        - name : zeVirtualMemFree
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #
-    #        - name : zeVirtualMemQueryPageSize
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 3 :
-    #                    name : pagesize
-    #                    type : size_t*
-    #                    kind : pointer
-    #
-    #        - name : zePhysicalMemCreate
-    #          ddi_category :  PhysicalMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hDevice
-    #                    type : ze_device_handle_t
-    #                    kind : scalar
-    #                 2 :
-    #                    name : desc
-    #                    type : ze_physical_mem_desc_t*
-    #                    kind : pointer
-    #                 3 :
-    #                    name : phPhysicalMemory
-    #                    type : ze_physical_mem_handle_t*
-    #                    kind : pointer
-    #
-    #        - name : zePhysicalMemDestroy
-    #          ddi_category :  PhysicalMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : hPhysicalMemory
-    #                    type : ze_physical_mem_handle_t
-    #                    kind : scalar
-    #
+        #
+        #        - name : zeContextMakeImageResident
+        #          ddi_category :  Context
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hContext
+        #                    type : ze_context_handle_t
+        #                    kind : scalar
+        #                 1 :
+        #                    name : hDevice
+        #                    type : ze_device_handle_t
+        #                    kind : scalar
+        #                 2 :
+        #                    name : hImage
+        #                    type : ze_image_handle_t
+        #                    kind : scalar
+        #
+        #        - name : zeContextEvictImage
+        #          ddi_category :  Context
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hContext
+        #                    type : ze_context_handle_t
+        #                    kind : scalar
+        #                 1 :
+        #                    name : hDevice
+        #                    type : ze_device_handle_t
+        #                    kind : scalar
+        #                 2 :
+        #                    name : hImage
+        #                    type : ze_image_handle_t
+        #                    kind : scalar
+        #
+        #        - name : zeSamplerCreate
+        #          ddi_category :  Sampler
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hContext
+        #                    type : ze_context_handle_t
+        #                    kind : scalar
+        #                 1 :
+        #                    name : hDevice
+        #                    type : ze_device_handle_t
+        #                    kind : scalar
+        #                 2 :
+        #                    name : desc
+        #                    type : const ze_sampler_desc_t*
+        #                    kind : pointer
+        #                 3 :
+        #                    name : phSampler
+        #                    type : ze_sampler_handle_t*
+        #                    kind : pointer
+        #
+        #        - name : zeSamplerDestroy
+        #          ddi_category :  Sampler
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hSampler
+        #                    type : ze_sampler_handle_t
+        #                    kind : scalar
+        #
+        #        - name : zeVirtualMemReserve
+        #          ddi_category :  VirtualMem
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hContext
+        #                    type : ze_context_handle_t
+        #                    kind : scalar
+        #                 1 :
+        #                    name : pStart
+        #                    type : const void*
+        #                    kind : pointer
+        #                 2 :
+        #                    name : size
+        #                    type : size_t
+        #                    kind : scalar
+        #                 3 :
+        #                    name : pptr
+        #                    type : void**
+        #                    kind : pointer
+        #
+        #        - name : zeVirtualMemFree
+        #          ddi_category :  VirtualMem
+        #          returns :
+        #                    type : ze_result_t
+        #                    kind : scalar
+        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+        #          args :
+        #                 0 :
+        #                    name : hContext
+        #                    type : ze_context_handle_t
+        #                    kind : scalar
+        #                 1 :
+        #                    name : ptr
+        #                    type : const void*
+        #                    kind : pointer
+        #                 2 :
+        #                    name : size
+        #                    type : size_t
+        #                    kind : scalar
+        #
+        - name: zeVirtualMemQueryPageSize
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: pagesize
+              type: size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read_write
+
+        - name: zePhysicalMemCreate
+          ddi_category: PhysicalMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+            2:
+              name: desc
+              type: ze_physical_mem_desc_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_physical_mem_desc_t
+                  kind: struct
+                server_access: read
+            3:
+              name: phPhysicalMemory
+              type: ze_physical_mem_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_physical_mem_handle_t
+                  kind: scalar
+                server_access: read_write
+
+        - name: zePhysicalMemDestroy
+          ddi_category: PhysicalMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: hPhysicalMemory
+              type: ze_physical_mem_handle_t
+              kind: scalar
     #        - name : zeVirtualMemMap
     #          ddi_category :  VirtualMem
     #          returns :

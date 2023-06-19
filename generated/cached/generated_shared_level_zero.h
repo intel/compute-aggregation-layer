@@ -55,9 +55,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Sampler.zeSamplerDestroy");
     ret.push_back("VirtualMem.zeVirtualMemReserve");
     ret.push_back("VirtualMem.zeVirtualMemFree");
-    ret.push_back("VirtualMem.zeVirtualMemQueryPageSize");
-    ret.push_back("PhysicalMem.zePhysicalMemCreate");
-    ret.push_back("PhysicalMem.zePhysicalMemDestroy");
     ret.push_back("VirtualMem.zeVirtualMemMap");
     ret.push_back("VirtualMem.zeVirtualMemUnmap");
     ret.push_back("VirtualMem.zeVirtualMemSetAccessAttribute");
