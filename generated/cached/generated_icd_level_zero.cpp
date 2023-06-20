@@ -398,6 +398,31 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;
     return ret;
 }
+ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWriteGlobalTimestamp");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueCreate");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3577,6 +3602,51 @@ ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle
 
     return ret;
 }
+ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemReserve");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemReserveRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, pStart, size, pptr);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemFree");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemFreeRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, size);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemQueryPageSize");
     auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3710,6 +3780,9 @@ ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
 }
 ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     return Cal::Icd::LevelZero::zeCommandListReset(hCommandList);
+}
+ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    return Cal::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
     return Cal::Icd::LevelZero::zeCommandQueueCreate(hContext, hDevice, desc, phCommandQueue);
@@ -4001,6 +4074,12 @@ ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device
 }
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
     return Cal::Icd::LevelZero::zeContextEvictMemory(hContext, hDevice, ptr, size);
+}
+ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) {
+    return Cal::Icd::LevelZero::zeVirtualMemReserve(hContext, pStart, size, pptr);
+}
+ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zeVirtualMemFree(hContext, ptr, size);
 }
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
     return Cal::Icd::LevelZero::zeVirtualMemQueryPageSize(hContext, hDevice, size, pagesize);

@@ -35,6 +35,7 @@ ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_dev
 ze_result_t (*zeCommandListDestroy)(ze_command_list_handle_t hCommandList) = nullptr;
 ze_result_t (*zeCommandListClose)(ze_command_list_handle_t hCommandList) = nullptr;
 ze_result_t (*zeCommandListReset)(ze_command_list_handle_t hCommandList) = nullptr;
+ze_result_t (*zeCommandListAppendWriteGlobalTimestamp)(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandQueueCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) = nullptr;
 ze_result_t (*zeCommandQueueDestroy)(ze_command_queue_handle_t hCommandQueue) = nullptr;
 ze_result_t (*zeCommandQueueExecuteCommandLists)(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) = nullptr;
@@ -130,6 +131,8 @@ ze_result_t (*zeCommandListHostSynchronize)(ze_command_list_handle_t hCommandLis
 ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) = nullptr;
 ze_result_t (*zeContextMakeMemoryResident)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) = nullptr;
 ze_result_t (*zeContextEvictMemory)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) = nullptr;
+ze_result_t (*zeVirtualMemReserve)(ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) = nullptr;
+ze_result_t (*zeVirtualMemFree)(ze_context_handle_t hContext, const void* ptr, size_t size) = nullptr;
 ze_result_t (*zeVirtualMemQueryPageSize)(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) = nullptr;
 ze_result_t (*zePhysicalMemCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) = nullptr;
 ze_result_t (*zePhysicalMemDestroy)(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) = nullptr;
@@ -236,6 +239,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeCommandListReset = reinterpret_cast<decltype(zeCommandListReset)>(dlsym(libraryHandle, "zeCommandListReset"));
     if(nullptr == zeCommandListReset){
         log<Verbosity::error>("Missing symbol zeCommandListReset in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeCommandListAppendWriteGlobalTimestamp = reinterpret_cast<decltype(zeCommandListAppendWriteGlobalTimestamp)>(dlsym(libraryHandle, "zeCommandListAppendWriteGlobalTimestamp"));
+    if(nullptr == zeCommandListAppendWriteGlobalTimestamp){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendWriteGlobalTimestamp in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -809,6 +818,18 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeVirtualMemReserve = reinterpret_cast<decltype(zeVirtualMemReserve)>(dlsym(libraryHandle, "zeVirtualMemReserve"));
+    if(nullptr == zeVirtualMemReserve){
+        log<Verbosity::error>("Missing symbol zeVirtualMemReserve in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeVirtualMemFree = reinterpret_cast<decltype(zeVirtualMemFree)>(dlsym(libraryHandle, "zeVirtualMemFree"));
+    if(nullptr == zeVirtualMemFree){
+        log<Verbosity::error>("Missing symbol zeVirtualMemFree in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeVirtualMemQueryPageSize = reinterpret_cast<decltype(zeVirtualMemQueryPageSize)>(dlsym(libraryHandle, "zeVirtualMemQueryPageSize"));
     if(nullptr == zeVirtualMemQueryPageSize){
         log<Verbosity::error>("Missing symbol zeVirtualMemQueryPageSize in %s", loadPath.c_str());
@@ -846,6 +867,7 @@ void unloadLevelZeroLibrary() {
     zeCommandListDestroy = nullptr;
     zeCommandListClose = nullptr;
     zeCommandListReset = nullptr;
+    zeCommandListAppendWriteGlobalTimestamp = nullptr;
     zeCommandQueueCreate = nullptr;
     zeCommandQueueDestroy = nullptr;
     zeCommandQueueExecuteCommandLists = nullptr;
@@ -941,6 +963,8 @@ void unloadLevelZeroLibrary() {
     zeDevicePciGetPropertiesExt = nullptr;
     zeContextMakeMemoryResident = nullptr;
     zeContextEvictMemory = nullptr;
+    zeVirtualMemReserve = nullptr;
+    zeVirtualMemFree = nullptr;
     zeVirtualMemQueryPageSize = nullptr;
     zePhysicalMemCreate = nullptr;
     zePhysicalMemDestroy = nullptr;

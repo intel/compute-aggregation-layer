@@ -51,6 +51,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue);
 ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
@@ -163,6 +164,8 @@ ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList,
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr);
+ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size);
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
 ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
@@ -182,10 +185,6 @@ inline void zeDeviceReserveCacheExtUnimpl() {
 }
 inline void zeDeviceSetCacheAdviceExtUnimpl() {
     log<Verbosity::critical>("Function Device.zeDeviceSetCacheAdviceExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeCommandListAppendWriteGlobalTimestampUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendWriteGlobalTimestamp is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
@@ -306,14 +305,6 @@ inline void zeSamplerCreateUnimpl() {
 }
 inline void zeSamplerDestroyUnimpl() {
     log<Verbosity::critical>("Function Sampler.zeSamplerDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemReserveUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemReserve is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemFreeUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemFree is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeVirtualMemMapUnimpl() {
@@ -877,6 +868,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnDestroy = Cal::Icd::LevelZero::zeCommandListDestroy;
     dt.CommandList.pfnClose = Cal::Icd::LevelZero::zeCommandListClose;
     dt.CommandList.pfnReset = Cal::Icd::LevelZero::zeCommandListReset;
+    dt.CommandList.pfnAppendWriteGlobalTimestamp = Cal::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp;
     dt.CommandQueue.pfnCreate = Cal::Icd::LevelZero::zeCommandQueueCreate;
     dt.CommandQueue.pfnDestroy = Cal::Icd::LevelZero::zeCommandQueueDestroy;
     dt.CommandQueue.pfnExecuteCommandLists = Cal::Icd::LevelZero::zeCommandQueueExecuteCommandLists;
@@ -972,6 +964,8 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Device.pfnPciGetPropertiesExt = Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt;
     dt.Context.pfnMakeMemoryResident = Cal::Icd::LevelZero::zeContextMakeMemoryResident;
     dt.Context.pfnEvictMemory = Cal::Icd::LevelZero::zeContextEvictMemory;
+    dt.VirtualMem.pfnReserve = Cal::Icd::LevelZero::zeVirtualMemReserve;
+    dt.VirtualMem.pfnFree = Cal::Icd::LevelZero::zeVirtualMemFree;
     dt.VirtualMem.pfnQueryPageSize = Cal::Icd::LevelZero::zeVirtualMemQueryPageSize;
     dt.PhysicalMem.pfnCreate = Cal::Icd::LevelZero::zePhysicalMemCreate;
     dt.PhysicalMem.pfnDestroy = Cal::Icd::LevelZero::zePhysicalMemDestroy;
@@ -980,7 +974,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
     dt.Device.pfnReserveCacheExt = reinterpret_cast<decltype(dt.Device.pfnReserveCacheExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceReserveCacheExtUnimpl);
     dt.Device.pfnSetCacheAdviceExt = reinterpret_cast<decltype(dt.Device.pfnSetCacheAdviceExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceSetCacheAdviceExtUnimpl);
-    dt.CommandList.pfnAppendWriteGlobalTimestamp = reinterpret_cast<decltype(dt.CommandList.pfnAppendWriteGlobalTimestamp)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendWriteGlobalTimestampUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
     dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);
@@ -1011,8 +1004,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);
     dt.Sampler.pfnCreate = reinterpret_cast<decltype(dt.Sampler.pfnCreate)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerCreateUnimpl);
     dt.Sampler.pfnDestroy = reinterpret_cast<decltype(dt.Sampler.pfnDestroy)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerDestroyUnimpl);
-    dt.VirtualMem.pfnReserve = reinterpret_cast<decltype(dt.VirtualMem.pfnReserve)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemReserveUnimpl);
-    dt.VirtualMem.pfnFree = reinterpret_cast<decltype(dt.VirtualMem.pfnFree)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemFreeUnimpl);
     dt.VirtualMem.pfnMap = reinterpret_cast<decltype(dt.VirtualMem.pfnMap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemMapUnimpl);
     dt.VirtualMem.pfnUnmap = reinterpret_cast<decltype(dt.VirtualMem.pfnUnmap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemUnmapUnimpl);
     dt.VirtualMem.pfnSetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnSetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemSetAccessAttributeUnimpl);

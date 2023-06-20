@@ -71,6 +71,10 @@ ze_result_t zeCommandListReset(ze_command_list_handle_t hCommandList){
    return {};
 }
 
+ze_result_t zeCommandListAppendWriteGlobalTimestamp(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 ze_result_t zeCommandQueueCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue){
    return {};
 }
@@ -448,6 +452,14 @@ ze_result_t zeContextMakeMemoryResident(ze_context_handle_t hContext, ze_device_
 }
 
 ze_result_t zeContextEvictMemory(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size){
+   return {};
+}
+
+ze_result_t zeVirtualMemReserve(ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr){
+   return {};
+}
+
+ze_result_t zeVirtualMemFree(ze_context_handle_t hContext, const void* ptr, size_t size){
    return {};
 }
 

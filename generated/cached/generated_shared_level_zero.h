@@ -22,7 +22,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Context.zeContextSystemBarrier");
     ret.push_back("Device.zeDeviceReserveCacheExt");
     ret.push_back("Device.zeDeviceSetCacheAdviceExt");
-    ret.push_back("CommandList.zeCommandListAppendWriteGlobalTimestamp");
     ret.push_back("CommandList.zeCommandListAppendMemoryCopyRegion");
     ret.push_back("CommandList.zeCommandListAppendMemoryCopyFromContext");
     ret.push_back("CommandList.zeCommandListAppendImageCopy");
@@ -53,8 +52,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Context.zeContextEvictImage");
     ret.push_back("Sampler.zeSamplerCreate");
     ret.push_back("Sampler.zeSamplerDestroy");
-    ret.push_back("VirtualMem.zeVirtualMemReserve");
-    ret.push_back("VirtualMem.zeVirtualMemFree");
     ret.push_back("VirtualMem.zeVirtualMemMap");
     ret.push_back("VirtualMem.zeVirtualMemUnmap");
     ret.push_back("VirtualMem.zeVirtualMemSetAccessAttribute");

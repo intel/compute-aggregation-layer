@@ -1373,7 +1373,6 @@ config:
           Context.zeContextSystemBarrier,
           Device.zeDeviceReserveCacheExt,
           Device.zeDeviceSetCacheAdviceExt,
-          CommandList.zeCommandListAppendWriteGlobalTimestamp,
           CommandList.zeCommandListAppendMemoryCopyRegion,
           CommandList.zeCommandListAppendMemoryCopyFromContext,
           CommandList.zeCommandListAppendImageCopy,
@@ -1404,8 +1403,6 @@ config:
           Context.zeContextEvictImage,
           Sampler.zeSamplerCreate,
           Sampler.zeSamplerDestroy,
-          VirtualMem.zeVirtualMemReserve,
-          VirtualMem.zeVirtualMemFree,
           VirtualMem.zeVirtualMemMap,
           VirtualMem.zeVirtualMemUnmap,
           VirtualMem.zeVirtualMemSetAccessAttribute,
@@ -2062,34 +2059,42 @@ config:
               translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->clearRequiredMemoryTransfers()"
 
-        #        - name : zeCommandListAppendWriteGlobalTimestamp
-        #          ddi_category :  CommandList
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hCommandList
-        #                    type : ze_command_list_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : dstptr
-        #                    type : uint64_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : hSignalEvent
-        #                    type : ze_event_handle_t
-        #                    kind : scalar
-        #                 3 :
-        #                    name : numWaitEvents
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 4 :
-        #                    name : phWaitEvents
-        #                    type : ze_event_handle_t*
-        #                    kind : pointer
-        #
+        - name: zeCommandListAppendWriteGlobalTimestamp
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+            1:
+              name: dstptr
+              type: uint64_t*
+              kind: pointer
+            2:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+            3:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            4:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "numWaitEvents"
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                server_access: read_write
+
         - name: zeCommandQueueCreate
           latency: 1.0
           special_handling:
@@ -6869,50 +6874,59 @@ config:
         #                    type : ze_sampler_handle_t
         #                    kind : scalar
         #
-        #        - name : zeVirtualMemReserve
-        #          ddi_category :  VirtualMem
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hContext
-        #                    type : ze_context_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pStart
-        #                    type : const void*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : size
-        #                    type : size_t
-        #                    kind : scalar
-        #                 3 :
-        #                    name : pptr
-        #                    type : void**
-        #                    kind : pointer
-        #
-        #        - name : zeVirtualMemFree
-        #          ddi_category :  VirtualMem
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hContext
-        #                    type : ze_context_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : ptr
-        #                    type : const void*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : size
-        #                    type : size_t
-        #                    kind : scalar
-        #
+        - name: zeVirtualMemReserve
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: pStart
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: pptr
+              type: void**
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: void*
+                  kind: scalar
+                server_access: write
+
+        - name: zeVirtualMemFree
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+
         - name: zeVirtualMemQueryPageSize
           ddi_category: VirtualMem
           returns:
