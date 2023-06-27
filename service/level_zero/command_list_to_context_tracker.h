@@ -7,9 +7,8 @@
 
 #pragma once
 
+#include "boost/container/flat_map.hpp"
 #include "level_zero/ze_api.h"
-
-#include <vector>
 
 namespace Cal::Service::LevelZero {
 
@@ -21,7 +20,7 @@ class CommandListToContextTracker {
     void deregisterCommandListMapping(ze_command_list_handle_t commandList);
 
   private:
-    std::vector<std::pair<ze_command_list_handle_t, ze_context_handle_t>> commandListToContextMapping{};
+    boost::container::flat_map<ze_command_list_handle_t, ze_context_handle_t> commandListToContextMapping{};
 };
 
 } // namespace Cal::Service::LevelZero

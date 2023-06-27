@@ -41,8 +41,8 @@ TEST(CommandListToContextTrackerTest, GivenTrackerWhenRegisteringAndUnregisterin
 
     tracker.deregisterCommandListMapping(commandList);
 
-    EXPECT_EQ(nullptr, tracker.getAssociatedContext(commandList));
-    EXPECT_FALSE(logs.empty());
+    EXPECT_ANY_THROW(tracker.getAssociatedContext(commandList));
+    EXPECT_TRUE(logs.empty());
 }
 
 TEST(CommandListToContextTrackerTest, GivenEmptyTrackerWhenTryingToGetAssociatedMappingsThenNullptrIsReturnedAndErrorIsPrinted) {
@@ -51,7 +51,7 @@ TEST(CommandListToContextTrackerTest, GivenEmptyTrackerWhenTryingToGetAssociated
     CommandListToContextTracker tracker{};
     Cal::Mocks::LogCaptureContext logs;
 
-    EXPECT_EQ(nullptr, tracker.getAssociatedContext(commandList));
+    EXPECT_ANY_THROW(tracker.getAssociatedContext(commandList));
 }
 
 TEST(CommandListToContextTrackerTest, GivenRegisteredMappingsWhenTryingToGetNonregisteredOneThenNullptrIsReturnedAndErrorIsPrinted) {
@@ -78,11 +78,8 @@ TEST(CommandListToContextTrackerTest, GivenRegisteredMappingsWhenTryingToGetNonr
     auto nonregisteredCommandList = reinterpret_cast<ze_command_list_handle_t>(0x1111);
 
     Cal::Mocks::LogCaptureContext logs;
-    auto mappedContext = tracker.getAssociatedContext(nonregisteredCommandList);
-
-    // 2. Then nullptr is returned and error is printed.
-    EXPECT_EQ(nullptr, mappedContext);
-    EXPECT_FALSE(logs.empty());
+    EXPECT_ANY_THROW(tracker.getAssociatedContext(nonregisteredCommandList));
+    EXPECT_TRUE(logs.empty());
 }
 
 } // namespace Cal::Test::LevelZero::Service

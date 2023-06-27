@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "boost/container/flat_map.hpp"
 #include "level_zero/ze_api.h"
 #include "service/level_zero/artificial_events_allocator.h"
 
@@ -43,22 +44,18 @@ class ArtificialEventsManager {
   protected:
     std::unique_ptr<ArtificialEventsAllocator> eventsAllocator{new ArtificialEventsAllocator{}};
     struct EventPool {
-        ze_context_handle_t context = nullptr;
-        uint32_t eventsFromCurrentPool = 0u;
         std::vector<ze_event_pool_handle_t> pools;
         std::vector<ArtificialEvent> events;
-
+        uint32_t eventsFromCurrentPool = 0u;
         ArtificialEventsAllocator *allocator = nullptr;
-        EventPool(ArtificialEventsAllocator *allocator, ze_context_handle_t context) : context(context), allocator(allocator) {
+
+        EventPool(ArtificialEventsAllocator *allocator) : allocator(allocator) {
             pools.reserve(1);
             events.reserve(64);
         };
-        EventPool(const EventPool &) = delete;
-        EventPool(EventPool &&) = default;
-        EventPool &operator=(const EventPool &) = default;
         ~EventPool();
     };
-    std::vector<EventPool> eventPools;
+    boost::container::flat_map<ze_context_handle_t, std::unique_ptr<EventPool>> eventPools;
 };
 
 } // namespace Cal::Service::LevelZero

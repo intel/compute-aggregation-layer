@@ -22,18 +22,13 @@ ArtificialEventsManager::ArtificialEventsManager() {
 }
 
 void ArtificialEventsManager::clearDataForContext(ze_context_handle_t context) {
-    auto pos = std::remove_if(eventPools.begin(), eventPools.end(), [&context](const auto &other) { return other.context == context; });
-    if (pos == eventPools.end()) {
-        return;
-    }
-    eventPools.erase(pos);
+    eventPools.erase(context);
 }
 
 ze_event_handle_t ArtificialEventsManager::obtainEventReplacement(ze_context_handle_t context) {
-    auto pool = std::find_if(eventPools.begin(), eventPools.end(), [&context](const auto &other) { return other.context == context; });
-    if (pool == eventPools.end()) {
-        eventPools.emplace_back(eventsAllocator.get(), context);
-        pool = std::prev(eventPools.end());
+    auto &pool = this->eventPools[context];
+    if (!pool.get()) {
+        pool = std::make_unique<EventPool>(this->eventsAllocator.get());
     }
 
     for (auto &event : pool->events) {
@@ -57,7 +52,7 @@ ze_event_handle_t ArtificialEventsManager::obtainEventReplacement(ze_context_han
 
 void ArtificialEventsManager::returnObtainedEvent(ze_event_handle_t artificialEvent) {
     for (auto &eventPool : eventPools) {
-        for (auto &event : eventPool.events) {
+        for (auto &event : eventPool.second->events) {
             if (event.eventHandle == artificialEvent) {
                 event.isFree = true;
                 eventsAllocator->resetEvent(event.eventHandle);

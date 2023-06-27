@@ -89,6 +89,7 @@ include_directories(${OpenCL_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${generated_dir}
                     ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+                    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost
                     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/opencl_headers/
                     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/level_zero_headers/
                     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/level_zero_headers/level_zero
