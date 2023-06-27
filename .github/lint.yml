@@ -44,3 +44,5 @@ lint:
       todo:
       wa:
       workaround:
+        exclude:
+          - third_party/
