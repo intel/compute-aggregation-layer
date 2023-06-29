@@ -95,6 +95,10 @@ cl_int clGetPlatformInfoRpcHelper (cl_platform_id platform, cl_platform_info par
 }
  // clGetExtensionFunctionAddress ignored in generator - based on dont_generate_handler flag
 cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id* devices, cl_uint* num_devices) {
+    if (nullptr == platform) {
+        return CL_INVALID_PLATFORM;
+    }
+
     log<Verbosity::bloat>("Establishing RPC for clGetDeviceIDs");
     auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalOclPlatform->getRpcChannel();
