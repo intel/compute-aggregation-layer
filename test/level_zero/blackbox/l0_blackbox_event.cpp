@@ -27,47 +27,43 @@ enum class EventStatus {
     notSignaled = 1,
 };
 
-bool getEventPoolIpcHandle(ze_event_pool_handle_t eventPool, ze_ipc_event_pool_handle_t &eventPoolIpcHandle) {
-    log<Verbosity::info>("Getting IPC handle of ze_event_pool_handle_t = %p", eventPool);
+bool testIpcFunctionality(ze_context_handle_t context, ze_event_pool_handle_t eventPool) {
+    log<Verbosity::info>("Testing IPC functionality");
 
+    log<Verbosity::info>("Getting IPC handle of ze_event_pool_handle_t = %p", eventPool);
+    ze_ipc_event_pool_handle_t eventPoolIpcHandle{};
     const auto zeEventPoolGetIpcHandleResult = zeEventPoolGetIpcHandle(eventPool, &eventPoolIpcHandle);
-    if (zeEventPoolGetIpcHandleResult != ZE_RESULT_SUCCESS) {
+    if (zeEventPoolGetIpcHandleResult == ZE_RESULT_ERROR_UNSUPPORTED_FEATURE) {
+        log<Verbosity::info>("Events IPC features are not supported on this device. Skipping...");
+        return true;
+    } else if (zeEventPoolGetIpcHandleResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeEventPoolGetIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolGetIpcHandleResult));
         return false;
     }
 
     uint64_t firstBytes{};
     std::memcpy(&firstBytes, eventPoolIpcHandle.data, sizeof(firstBytes));
-
     log<Verbosity::info>("Successfully got IPC handle of %p! First bytes of handle as u64 = " PRIu64, eventPool, firstBytes);
-    return true;
-}
 
-bool openIpcHandleOfEventPool(ze_context_handle_t context, const ze_ipc_event_pool_handle_t &eventPoolIpcHandle, ze_event_pool_handle_t &eventPoolOpenedFromIpcHandle) {
     log<Verbosity::info>("Opening ze_ipc_event_pool_handle_t via zeEventPoolOpenIpcHandle()!");
-
+    ze_event_pool_handle_t eventPoolOpenedFromIpcHandle{};
     const auto zeEventPoolOpenIpcHandleResult = zeEventPoolOpenIpcHandle(context, eventPoolIpcHandle, &eventPoolOpenedFromIpcHandle);
     if (zeEventPoolOpenIpcHandleResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeEventPoolOpenIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolOpenIpcHandleResult));
         return false;
     }
-
     log<Verbosity::info>("Successfully opened IPC handle! Event pool handle = %p", static_cast<void *>(eventPoolOpenedFromIpcHandle));
-    return true;
-}
 
-bool closeEventPoolFromIpcHandle(ze_event_pool_handle_t &eventPoolOpenedFromIpcHandle) {
     log<Verbosity::info>("Closing ze_ipc_event_pool_handle_t via zeEventPoolCloseIpcHandle()");
-
     const auto zeEventPoolCloseIpcHandleResult = zeEventPoolCloseIpcHandle(eventPoolOpenedFromIpcHandle);
     if (zeEventPoolCloseIpcHandleResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeEventPoolCloseIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolCloseIpcHandleResult));
         return false;
     }
-
     eventPoolOpenedFromIpcHandle = nullptr;
     log<Verbosity::info>("Successfully closed IPC handle!");
 
+    log<Verbosity::info>("Successfully run IPC functionality test!");
     return true;
 }
 
@@ -223,12 +219,7 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(resetEvent(eventToBeSignaledFromCmdList));
     RUN_REQUIRED_STEP(ensureEventInState(eventToBeSignaledFromCmdList, EventStatus::notSignaled));
 
-    ze_ipc_event_pool_handle_t eventPoolIpcHandle{};
-    RUN_REQUIRED_STEP(getEventPoolIpcHandle(eventPool, eventPoolIpcHandle));
-
-    ze_event_pool_handle_t eventPoolFromIpcHandle{};
-    RUN_REQUIRED_STEP(openIpcHandleOfEventPool(context, eventPoolIpcHandle, eventPoolFromIpcHandle));
-    RUN_REQUIRED_STEP(closeEventPoolFromIpcHandle(eventPoolFromIpcHandle));
+    RUN_REQUIRED_STEP(testIpcFunctionality(context, eventPool));
 
     RUN_REQUIRED_STEP(destroyEvent(copyingFinishedEvent));
     RUN_REQUIRED_STEP(destroyEvent(intermediateBuffer2FilledEvent));

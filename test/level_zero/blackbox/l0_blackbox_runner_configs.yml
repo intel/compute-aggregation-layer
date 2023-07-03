@@ -2,167 +2,183 @@
 #
 # SPDX-License-Identifier: MIT
 
-full :
-    append_mem_fill_copy_asynchronous_queue :
-        test_binary : "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
-        preserve_logs : False
+full:
+    append_mem_fill_copy_asynchronous_queue:
+        test_binary: "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
+        preserve_logs: False
 
-    append_mem_fill_copy_immediate_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
-        preserve_logs : False
+    append_mem_fill_copy_immediate_asynchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_immediate_asynchronous"
+        preserve_logs: False
 
-    append_mem_fill_copy_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_synchronous"
-        preserve_logs : False
+    append_mem_fill_copy_immediate_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
+        preserve_logs: False
 
-    context :
-        test_binary : "l0_blackbox_context"
-        preserve_logs : False
+    append_mem_fill_copy_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_synchronous"
+        preserve_logs: False
 
-    driver :
-        test_binary : "l0_blackbox_driver"
-        preserve_logs : False
+    context:
+        test_binary: "l0_blackbox_context"
+        preserve_logs: False
 
-    device :
-        test_binary : "l0_blackbox_device"
-        preserve_logs : False
+    driver:
+        test_binary: "l0_blackbox_driver"
+        preserve_logs: False
 
-    experimental_memory :
-        test_binary : "l0_blackbox_experimental_memory"
-        preserve_logs : False
+    device:
+        test_binary: "l0_blackbox_device"
+        preserve_logs: False
 
-    event :
-        test_binary : "l0_blackbox_event"
-        preserve_logs : False
+    experimental_memory:
+        test_binary: "l0_blackbox_experimental_memory"
+        preserve_logs: False
 
-    fence :
-        test_binary : "l0_blackbox_fence"
-        preserve_logs : False
+    event:
+        test_binary: "l0_blackbox_event"
+        preserve_logs: False
 
-    memory :
-        test_binary : "l0_blackbox_memory"
-        preserve_logs : False
+    fence:
+        test_binary: "l0_blackbox_fence"
+        preserve_logs: False
 
-    module_and_kernel :
-        test_binary : "l0_blackbox_module_and_kernel"
-        preserve_logs : False
+    memory:
+        test_binary: "l0_blackbox_memory"
+        preserve_logs: False
 
-    module_create_via_pnext :
-        test_binary : "l0_blackbox_module_create_via_extension"
-        preserve_logs : False
+    module_and_kernel:
+        test_binary: "l0_blackbox_module_and_kernel"
+        preserve_logs: False
 
-    image :
-        test_binary : "l0_blackbox_image"
-        preserve_logs : False
+    module_create_via_pnext:
+        test_binary: "l0_blackbox_module_create_via_extension"
+        preserve_logs: False
 
-    dynamic_link :
-        test_binary : "l0_blackbox_dynamic_link"
-        preserve_logs : False
+    image:
+        test_binary: "l0_blackbox_image"
+        preserve_logs: False
 
-    sysman :
-        test_binary : "l0_blackbox_sysman"
-        preserve_logs : False
+    dynamic_link:
+        test_binary: "l0_blackbox_dynamic_link"
+        preserve_logs: False
 
-limited :
-    append_mem_fill_copy_asynchronous_queue :
-        test_binary : "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
-        preserve_logs : False
+    sysman:
+        test_binary: "l0_blackbox_sysman"
+        preserve_logs: False
 
-    append_mem_fill_copy_immediate_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
-        preserve_logs : False
+limited:
+    append_mem_fill_copy_asynchronous_queue:
+        test_binary: "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
+        preserve_logs: False
 
-    append_mem_fill_copy_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_synchronous"
-        preserve_logs : False
+    append_mem_fill_copy_immediate_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
+        preserve_logs: False
 
-    context :
-        test_binary : "l0_blackbox_context"
-        preserve_logs : False
+    append_mem_fill_copy_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_synchronous"
+        preserve_logs: False
 
-    driver :
-        test_binary : "l0_blackbox_driver"
-        preserve_logs : False
+    context:
+        test_binary: "l0_blackbox_context"
+        preserve_logs: False
 
-    device :
-        test_binary : "l0_blackbox_device"
-        test_args : "--allow-optional-steps"
-        preserve_logs : False
+    driver:
+        test_binary: "l0_blackbox_driver"
+        preserve_logs: False
 
-    fence :
-        test_binary : "l0_blackbox_fence"
-        preserve_logs : False
+    device:
+        test_binary: "l0_blackbox_device"
+        test_args: "--allow-optional-steps"
+        preserve_logs: False
 
-    memory :
-        test_binary : "l0_blackbox_memory"
-        test_args : "--skip-ipc-handles-tests"
-        preserve_logs : False
+    fence:
+        test_binary: "l0_blackbox_fence"
+        preserve_logs: False
 
-    module_and_kernel :
-        test_binary : "l0_blackbox_module_and_kernel"
-        preserve_logs : False
+    memory:
+        test_binary: "l0_blackbox_memory"
+        test_args: "--skip-ipc-handles-tests"
+        preserve_logs: False
 
-    module_create_via_pnext :
-        test_binary : "l0_blackbox_module_create_via_extension"
-        preserve_logs : False
+    module_and_kernel:
+        test_binary: "l0_blackbox_module_and_kernel"
+        preserve_logs: False
 
-    image :
-        test_binary : "l0_blackbox_image"
-        preserve_logs : False
+    module_create_via_pnext:
+        test_binary: "l0_blackbox_module_create_via_extension"
+        preserve_logs: False
 
-    dynamic_link :
-        test_binary : "l0_blackbox_dynamic_link"
-        preserve_logs : False
+    image:
+        test_binary: "l0_blackbox_image"
+        preserve_logs: False
 
-    sysman :
-        test_binary : "l0_blackbox_sysman"
-        preserve_logs : False
+    dynamic_link:
+        test_binary: "l0_blackbox_dynamic_link"
+        preserve_logs: False
 
-hw_test :
-    append_mem_fill_copy_asynchronous_queue :
-        test_binary : "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
-        preserve_logs : False
+    sysman:
+        test_binary: "l0_blackbox_sysman"
+        preserve_logs: False
 
-    append_mem_fill_copy_immediate_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
-        preserve_logs : False
+hw_test:
+    append_mem_fill_copy_asynchronous_queue:
+        test_binary: "l0_blackbox_append_mem_fill_copy_asynchronous_queue"
+        preserve_logs: False
 
-    append_mem_fill_copy_synchronous :
-        test_binary : "l0_blackbox_append_mem_fill_copy_synchronous"
-        preserve_logs : False
+    append_mem_fill_copy_immediate_asynchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_immediate_asynchronous"
+        preserve_logs: False
 
-    context :
-        test_binary : "l0_blackbox_context"
-        preserve_logs : False
+    append_mem_fill_copy_immediate_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_immediate_synchronous"
+        preserve_logs: False
 
-    driver :
-        test_binary : "l0_blackbox_driver"
-        preserve_logs : False
+    append_mem_fill_copy_resubmit:
+        test_binary: "l0_blackbox_append_mem_fill_copy_resubmit"
+        preserve_logs: False
 
-    device :
-        test_binary : "l0_blackbox_device"
-        preserve_logs : False
+    append_mem_fill_copy_synchronous:
+        test_binary: "l0_blackbox_append_mem_fill_copy_synchronous"
+        preserve_logs: False
 
-    fence :
-        test_binary : "l0_blackbox_fence"
-        preserve_logs : False
+    context:
+        test_binary: "l0_blackbox_context"
+        preserve_logs: False
 
-    memory :
-        test_binary : "l0_blackbox_memory"
-        preserve_logs : False
+    driver:
+        test_binary: "l0_blackbox_driver"
+        preserve_logs: False
 
-    module_and_kernel :
-        test_binary : "l0_blackbox_module_and_kernel"
-        preserve_logs : False
+    device:
+        test_binary: "l0_blackbox_device"
+        preserve_logs: False
 
-    module_create_via_pnext :
-        test_binary : "l0_blackbox_module_create_via_extension"
-        preserve_logs : False
+    fence:
+        test_binary: "l0_blackbox_fence"
+        preserve_logs: False
 
-    image :
-        test_binary : "l0_blackbox_image"
-        preserve_logs : False
+    memory:
+        test_binary: "l0_blackbox_memory"
+        preserve_logs: False
 
-    dynamic_link :
-        test_binary : "l0_blackbox_dynamic_link"
-        preserve_logs : False
+    module_and_kernel:
+        test_binary: "l0_blackbox_module_and_kernel"
+        preserve_logs: False
+
+    module_create_via_pnext:
+        test_binary: "l0_blackbox_module_create_via_extension"
+        preserve_logs: False
+
+    image:
+        test_binary: "l0_blackbox_image"
+        preserve_logs: False
+
+    dynamic_link:
+        test_binary: "l0_blackbox_dynamic_link"
+        preserve_logs: False
+
+    blackbox_event:
+        test_binary: "l0_blackbox_event"
+        preserve_logs: False
