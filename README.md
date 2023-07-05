@@ -44,7 +44,7 @@ Additional cmake build flags, that can be set during cmake invoke step (`-D<FLAG
 - `ENABLE_BLOATED_VERBOSITY` - default: `false`. Control whether `bloat` log verbosity should be available
 - `ENABLE_PERFORMANCE_DEBUG` - default: `true`. Control whether performance-related debug logs should be available
 - `REQUIRE_CACHE_VERIFICATION_DEPENDENCIES` - default: `false`. Causes failure of build when the verification of generated cache cannot be performed
-- `VERIFY_GENERATED_CACHE_IF_POSSIBLE` - default: `true`. Verifies if cached generated files are up to date and in synch with source files
+- `VERIFY_GENERATED_CACHE_IF_POSSIBLE` - default: `true`. Verifies if cached generated files are up to date and in sync with source files
 - `DISABLE_ULT` - default: `false`. Set to `true` to skip unit testing during build
 
 For development, we use Ubuntu 20.04 native and WSL, with gcc-9 and clang-14.
