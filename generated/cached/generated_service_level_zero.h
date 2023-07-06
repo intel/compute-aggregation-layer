@@ -145,6 +145,10 @@ extern ze_result_t (*zeVirtualMemFree)(ze_context_handle_t hContext, const void*
 extern ze_result_t (*zeVirtualMemQueryPageSize)(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
 extern ze_result_t (*zePhysicalMemCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
 extern ze_result_t (*zePhysicalMemDestroy)(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
+extern ze_result_t (*zeVirtualMemMap)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access);
+extern ze_result_t (*zeVirtualMemUnmap)(ze_context_handle_t hContext, const void* ptr, size_t size);
+extern ze_result_t (*zeVirtualMemSetAccessAttribute)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access);
+extern ze_result_t (*zeVirtualMemGetAccessAttribute)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize);
 } // Standard
 
 namespace Extensions {
@@ -1357,10 +1361,56 @@ inline bool zePhysicalMemDestroyHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 );
     return true;
 }
+inline bool zeVirtualMemMapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeVirtualMemMap");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemMap(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.hPhysicalMemory, 
+                                                apiCommand->args.offset, 
+                                                apiCommand->args.access
+                                                );
+    return true;
+}
+inline bool zeVirtualMemUnmapHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeVirtualMemUnmap");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemUnmap(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size
+                                                );
+    return true;
+}
+inline bool zeVirtualMemSetAccessAttributeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeVirtualMemSetAccessAttribute");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemSetAccessAttribute(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.access
+                                                );
+    return true;
+}
+inline bool zeVirtualMemGetAccessAttributeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeVirtualMemGetAccessAttribute");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemGetAccessAttribute(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.access, 
+                                                apiCommand->args.outSize ? &apiCommand->captures.outSize : nullptr
+                                                );
+    return true;
+}
 
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
-    outHandlers.resize(ZePhysicalMemDestroyRpcM::messageSubtype + 1);
+    outHandlers.resize(ZeVirtualMemGetAccessAttributeRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
     outHandlers[ZesDeviceGetStateRpcM::messageSubtype] = zesDeviceGetStateHandler;
     outHandlers[ZesDeviceProcessesGetStateRpcM::messageSubtype] = zesDeviceProcessesGetStateHandler;
@@ -1489,6 +1539,10 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeVirtualMemQueryPageSizeRpcM::messageSubtype] = zeVirtualMemQueryPageSizeHandler;
     outHandlers[ZePhysicalMemCreateRpcM::messageSubtype] = zePhysicalMemCreateHandler;
     outHandlers[ZePhysicalMemDestroyRpcM::messageSubtype] = zePhysicalMemDestroyHandler;
+    outHandlers[ZeVirtualMemMapRpcM::messageSubtype] = zeVirtualMemMapHandler;
+    outHandlers[ZeVirtualMemUnmapRpcM::messageSubtype] = zeVirtualMemUnmapHandler;
+    outHandlers[ZeVirtualMemSetAccessAttributeRpcM::messageSubtype] = zeVirtualMemSetAccessAttributeHandler;
+    outHandlers[ZeVirtualMemGetAccessAttributeRpcM::messageSubtype] = zeVirtualMemGetAccessAttributeHandler;
 }
 
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetRpcM &apiCommand) {
@@ -2402,6 +2456,40 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM &apiComma
                                                 apiCommand.args.hPhysicalMemory
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemMap(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.hPhysicalMemory, 
+                                                apiCommand.args.offset, 
+                                                apiCommand.args.access
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemUnmap(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemSetAccessAttribute(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.access
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeVirtualMemGetAccessAttribute(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.access, 
+                                                apiCommand.args.outSize
+                                                );
+}
 
 inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
@@ -2542,6 +2630,10 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM*>(command)); break;
     }
     return true;
 }

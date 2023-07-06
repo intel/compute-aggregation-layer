@@ -475,4 +475,20 @@ ze_result_t zePhysicalMemDestroy(ze_context_handle_t hContext, ze_physical_mem_h
    return {};
 }
 
+ze_result_t zeVirtualMemMap(ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access){
+   return {};
+}
+
+ze_result_t zeVirtualMemUnmap(ze_context_handle_t hContext, const void* ptr, size_t size){
+   return {};
+}
+
+ze_result_t zeVirtualMemSetAccessAttribute(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access){
+   return {};
+}
+
+ze_result_t zeVirtualMemGetAccessAttribute(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize){
+   return {};
+}
+
 // #### Generated code -- end ####

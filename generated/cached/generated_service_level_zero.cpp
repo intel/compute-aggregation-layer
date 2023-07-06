@@ -136,6 +136,10 @@ ze_result_t (*zeVirtualMemFree)(ze_context_handle_t hContext, const void* ptr, s
 ze_result_t (*zeVirtualMemQueryPageSize)(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) = nullptr;
 ze_result_t (*zePhysicalMemCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) = nullptr;
 ze_result_t (*zePhysicalMemDestroy)(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) = nullptr;
+ze_result_t (*zeVirtualMemMap)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) = nullptr;
+ze_result_t (*zeVirtualMemUnmap)(ze_context_handle_t hContext, const void* ptr, size_t size) = nullptr;
+ze_result_t (*zeVirtualMemSetAccessAttribute)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) = nullptr;
+ze_result_t (*zeVirtualMemGetAccessAttribute)(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) = nullptr;
 
 void *libraryHandle = nullptr;
 
@@ -848,6 +852,30 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeVirtualMemMap = reinterpret_cast<decltype(zeVirtualMemMap)>(dlsym(libraryHandle, "zeVirtualMemMap"));
+    if(nullptr == zeVirtualMemMap){
+        log<Verbosity::error>("Missing symbol zeVirtualMemMap in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeVirtualMemUnmap = reinterpret_cast<decltype(zeVirtualMemUnmap)>(dlsym(libraryHandle, "zeVirtualMemUnmap"));
+    if(nullptr == zeVirtualMemUnmap){
+        log<Verbosity::error>("Missing symbol zeVirtualMemUnmap in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeVirtualMemSetAccessAttribute = reinterpret_cast<decltype(zeVirtualMemSetAccessAttribute)>(dlsym(libraryHandle, "zeVirtualMemSetAccessAttribute"));
+    if(nullptr == zeVirtualMemSetAccessAttribute){
+        log<Verbosity::error>("Missing symbol zeVirtualMemSetAccessAttribute in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeVirtualMemGetAccessAttribute = reinterpret_cast<decltype(zeVirtualMemGetAccessAttribute)>(dlsym(libraryHandle, "zeVirtualMemGetAccessAttribute"));
+    if(nullptr == zeVirtualMemGetAccessAttribute){
+        log<Verbosity::error>("Missing symbol zeVirtualMemGetAccessAttribute in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     return true;
 }
 
@@ -968,6 +996,10 @@ void unloadLevelZeroLibrary() {
     zeVirtualMemQueryPageSize = nullptr;
     zePhysicalMemCreate = nullptr;
     zePhysicalMemDestroy = nullptr;
+    zeVirtualMemMap = nullptr;
+    zeVirtualMemUnmap = nullptr;
+    zeVirtualMemSetAccessAttribute = nullptr;
+    zeVirtualMemGetAccessAttribute = nullptr;
     if(libraryHandle){
         dlclose(libraryHandle);
     }

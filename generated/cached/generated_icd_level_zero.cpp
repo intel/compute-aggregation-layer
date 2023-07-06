@@ -3719,6 +3719,96 @@ ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_
 
     return ret;
 }
+ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemMap");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, size, hPhysicalMemory, offset, access);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemUnmap");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, size);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemSetAccessAttribute");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, size, access);
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
+    log<Verbosity::bloat>("Establishing RPC for zeVirtualMemGetAccessAttribute");
+    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalL0Platform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hContext, ptr, size, access, outSize);
+    command->copyFromCaller();
+    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 
 void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("zexMemGetIpcHandles", funcName)) {
@@ -4089,6 +4179,18 @@ ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_
 }
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
     return Cal::Icd::LevelZero::zePhysicalMemDestroy(hContext, hPhysicalMemory);
+}
+ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) {
+    return Cal::Icd::LevelZero::zeVirtualMemMap(hContext, ptr, size, hPhysicalMemory, offset, access);
+}
+ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zeVirtualMemUnmap(hContext, ptr, size);
+}
+ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) {
+    return Cal::Icd::LevelZero::zeVirtualMemSetAccessAttribute(hContext, ptr, size, access);
+}
+ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
+    return Cal::Icd::LevelZero::zeVirtualMemGetAccessAttribute(hContext, ptr, size, access, outSize);
 }
 } // extern "C"
 

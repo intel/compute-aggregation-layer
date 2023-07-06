@@ -169,6 +169,10 @@ ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, siz
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
 ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
+ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access);
+ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size);
+ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access);
+ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize);
 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
@@ -305,22 +309,6 @@ inline void zeSamplerCreateUnimpl() {
 }
 inline void zeSamplerDestroyUnimpl() {
     log<Verbosity::critical>("Function Sampler.zeSamplerDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemMapUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemMap is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemUnmapUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemUnmap is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemSetAccessAttributeUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemSetAccessAttribute is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeVirtualMemGetAccessAttributeUnimpl() {
-    log<Verbosity::critical>("Function VirtualMem.zeVirtualMemGetAccessAttribute is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumRasErrorSetsUnimpl() {
@@ -969,6 +957,10 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnQueryPageSize = Cal::Icd::LevelZero::zeVirtualMemQueryPageSize;
     dt.PhysicalMem.pfnCreate = Cal::Icd::LevelZero::zePhysicalMemCreate;
     dt.PhysicalMem.pfnDestroy = Cal::Icd::LevelZero::zePhysicalMemDestroy;
+    dt.VirtualMem.pfnMap = Cal::Icd::LevelZero::zeVirtualMemMap;
+    dt.VirtualMem.pfnUnmap = Cal::Icd::LevelZero::zeVirtualMemUnmap;
+    dt.VirtualMem.pfnSetAccessAttribute = Cal::Icd::LevelZero::zeVirtualMemSetAccessAttribute;
+    dt.VirtualMem.pfnGetAccessAttribute = Cal::Icd::LevelZero::zeVirtualMemGetAccessAttribute;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
@@ -1004,10 +996,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);
     dt.Sampler.pfnCreate = reinterpret_cast<decltype(dt.Sampler.pfnCreate)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerCreateUnimpl);
     dt.Sampler.pfnDestroy = reinterpret_cast<decltype(dt.Sampler.pfnDestroy)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerDestroyUnimpl);
-    dt.VirtualMem.pfnMap = reinterpret_cast<decltype(dt.VirtualMem.pfnMap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemMapUnimpl);
-    dt.VirtualMem.pfnUnmap = reinterpret_cast<decltype(dt.VirtualMem.pfnUnmap)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemUnmapUnimpl);
-    dt.VirtualMem.pfnSetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnSetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemSetAccessAttributeUnimpl);
-    dt.VirtualMem.pfnGetAccessAttribute = reinterpret_cast<decltype(dt.VirtualMem.pfnGetAccessAttribute)>(Cal::Icd::LevelZero::Unimplemented::zeVirtualMemGetAccessAttributeUnimpl);
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnReset = Cal::Icd::LevelZero::zesDeviceReset;

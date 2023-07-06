@@ -1403,10 +1403,6 @@ config:
           Context.zeContextEvictImage,
           Sampler.zeSamplerCreate,
           Sampler.zeSamplerDestroy,
-          VirtualMem.zeVirtualMemMap,
-          VirtualMem.zeVirtualMemUnmap,
-          VirtualMem.zeVirtualMemSetAccessAttribute,
-          VirtualMem.zeVirtualMemGetAccessAttribute,
         ]
 
     - name: "sysman"
@@ -7016,107 +7012,119 @@ config:
               name: hPhysicalMemory
               type: ze_physical_mem_handle_t
               kind: scalar
-    #        - name : zeVirtualMemMap
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 3 :
-    #                    name : hPhysicalMemory
-    #                    type : ze_physical_mem_handle_t
-    #                    kind : scalar
-    #                 4 :
-    #                    name : offset
-    #                    type : size_t
-    #                    kind : scalar
-    #                 5 :
-    #                    name : access
-    #                    type : ze_memory_access_attribute_t
-    #                    kind : scalar
-    #
-    #        - name : zeVirtualMemUnmap
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #
-    #        - name : zeVirtualMemSetAccessAttribute
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 3 :
-    #                    name : access
-    #                    type : ze_memory_access_attribute_t
-    #                    kind : scalar
-    #
-    #        - name : zeVirtualMemGetAccessAttribute
-    #          ddi_category :  VirtualMem
-    #          returns :
-    #                    type : ze_result_t
-    #                    kind : scalar
-    #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-    #          args :
-    #                 0 :
-    #                    name : hContext
-    #                    type : ze_context_handle_t
-    #                    kind : scalar
-    #                 1 :
-    #                    name : ptr
-    #                    type : const void*
-    #                    kind : pointer
-    #                 2 :
-    #                    name : size
-    #                    type : size_t
-    #                    kind : scalar
-    #                 3 :
-    #                    name : access
-    #                    type : ze_memory_access_attribute_t*
-    #                    kind : pointer
-    #                 4 :
-    #                    name : outSize
-    #                    type : size_t*
-    #                    kind : pointer
-    #
+
+        - name: zeVirtualMemMap
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: hPhysicalMemory
+              type: ze_physical_mem_handle_t
+              kind: scalar
+            4:
+              name: offset
+              type: size_t
+              kind: scalar
+            5:
+              name: access
+              type: ze_memory_access_attribute_t
+              kind: scalar
+
+        - name: zeVirtualMemUnmap
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+
+        - name: zeVirtualMemSetAccessAttribute
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: access
+              type: ze_memory_access_attribute_t
+              kind: scalar
+
+        - name: zeVirtualMemGetAccessAttribute
+          ddi_category: VirtualMem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: access
+              type: ze_memory_access_attribute_t*
+              kind: pointer
+              server_access: write
+            4:
+              name: outSize
+              type: size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read_write
