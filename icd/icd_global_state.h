@@ -21,7 +21,6 @@ namespace Ipc {
 class ClientConnectionFactory;
 class Connection;
 class ShmemImporter;
-class MallocShmemZeroCopyManager;
 } // namespace Ipc
 
 namespace Usm {
@@ -34,6 +33,10 @@ class ChannelClient;
 
 namespace Icd {
 class PageFaultManager;
+
+namespace MallocOverride {
+class MallocShmemExporter;
+}
 
 namespace Ocl {
 class IcdOclPlatform;
@@ -84,8 +87,8 @@ class IcdGlobalState final {
         return *this->usmShmemImporter;
     }
 
-    Cal::Ipc::MallocShmemZeroCopyManager &getMallocShmemZeroCopyManager() const {
-        return *this->mallocShmemZeroCopyManager;
+    Cal::Icd::MallocOverride::MallocShmemExporter &getMallocShmemExporter() const {
+        return *this->mallocShmemExporter;
     }
 
     Cal::Icd::PageFaultManager &getPageFaultManager() const {
@@ -98,10 +101,6 @@ class IcdGlobalState final {
 
     Cal::Rpc::ChannelClient &getRpcChannel() const {
         return *this->rpcChannel;
-    }
-
-    bool isZeroCopyForMallocShmemEnabled() const {
-        return this->connectionTraits.isZeroCopyForMallocShmemAllowed;
     }
 
     const Cal::Utils::CpuInfo &getCpuInfo() const {
@@ -149,7 +148,7 @@ class IcdGlobalState final {
 
     std::unique_ptr<Cal::Ipc::ShmemImporter> globalShmemImporter;
     std::unique_ptr<Cal::Usm::UsmShmemImporter> usmShmemImporter;
-    std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager> mallocShmemZeroCopyManager;
+    std::unique_ptr<Cal::Icd::MallocOverride::MallocShmemExporter> mallocShmemExporter;
     std::unique_ptr<Cal::Icd::PageFaultManager> pageFaultManager;
     std::unique_ptr<Cal::Ipc::Connection> connection;
     std::unique_ptr<Cal::Rpc::ChannelClient> rpcChannel;

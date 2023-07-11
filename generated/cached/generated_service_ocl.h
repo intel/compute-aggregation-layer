@@ -757,16 +757,17 @@ inline bool clEnqueueMigrateMemObjectsHandler(Provider &service, Cal::Rpc::Chann
 bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem");
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM*>(command);
+    void *importedMallocPtrHostPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.host_ptr), ((nullptr != apiCommand->args.host_ptr) ? apiCommand->args.size : 0U), 0U);
+    if(nullptr == importedMallocPtrHostPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.host_ptr, ((nullptr != apiCommand->args.host_ptr) ? apiCommand->args.size : 0U));
         return false;
     }
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
                                                 apiCommand->args.context, 
                                                 apiCommand->args.flags, 
                                                 apiCommand->args.size, 
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(apiCommand->args.host_ptr, ((nullptr != apiCommand->args.host_ptr) ? apiCommand->args.size : 0U)), 
+                                                importedMallocPtrHostPtr, 
                                                 apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
                                                 );
     return true;
@@ -971,18 +972,19 @@ inline bool clEnqueueWriteBufferRpcHelperMallocHostHandler(Provider &service, Ca
 }
 inline bool clEnqueueWriteBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem");
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcHelperZeroCopyMallocShmemRpcM*>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), apiCommand->args.size, 0U);
+    if(nullptr == importedMallocPtrPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, apiCommand->args.size);
         return false;
     }
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcHelperZeroCopyMallocShmemRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBuffer(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_write, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(apiCommand->args.ptr, apiCommand->args.size), 
+                                                importedMallocPtrPtr, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1033,11 +1035,12 @@ inline bool clEnqueueWriteBufferRectRpcHelperMallocHostHandler(Provider &service
 }
 inline bool clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem");
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    if(nullptr == importedMallocPtrPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
         return false;
     }
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
@@ -1049,7 +1052,7 @@ inline bool clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch)), 
+                                                importedMallocPtrPtr, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1116,11 +1119,12 @@ inline bool clEnqueueReadBufferRectRpcHelperMallocHostHandler(Provider &service,
 }
 inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem");
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    if(nullptr == importedMallocPtrPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
         return false;
     }
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
@@ -1132,7 +1136,7 @@ inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider 
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch)), 
+                                                importedMallocPtrPtr, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1157,18 +1161,19 @@ inline bool clEnqueueReadBufferRpcHelperMallocHostHandler(Provider &service, Cal
 }
 inline bool clEnqueueReadBufferRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRpcHelperZeroCopyMallocShmem");
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM*>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), apiCommand->args.size, 0U);
+    if(nullptr == importedMallocPtrPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, apiCommand->args.size);
         return false;
     }
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBuffer(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_read, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(apiCommand->args.ptr, apiCommand->args.size), 
+                                                importedMallocPtrPtr, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr

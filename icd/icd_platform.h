@@ -63,8 +63,8 @@ class IcdPlatform {
         return globalState.getConnection();
     }
 
-    Cal::Ipc::MallocShmemZeroCopyManager &getMallocShmemZeroCopyManager() {
-        return globalState.getMallocShmemZeroCopyManager();
+    Cal::Icd::MallocOverride::MallocShmemExporter &getMallocShmemExporter() {
+        return globalState.getMallocShmemExporter();
     }
 
     bool openNewUsmHostOrSharedPointer(void *ctx, void *assignedUsmPtr, int shmemResource, size_t offsetWithinResource, size_t size) {
@@ -214,10 +214,6 @@ class IcdPlatform {
 
     bool isUsmHostOrShared(const void *ptr) {
         return globalState.getInitialUsmHeap().contains(ptr);
-    }
-
-    bool isZeroCopyForMallocShmemEnabled() const {
-        return globalState.isZeroCopyForMallocShmemEnabled();
     }
 
     bool recordGlobalPointer(void *handle, void *ptr) {

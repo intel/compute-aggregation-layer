@@ -776,17 +776,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
     }
 
-    void *translateMappedPointer(cl_mem buffer, void *ptr, size_t offset) {
-        if (isUsmHostOrShared(ptr)) {
-            return ptr;
-        }
-
-        if (globalState.isZeroCopyForMallocShmemEnabled()) {
-            return reinterpret_cast<char *>(buffer->asLocalObject()->apiHostPtr) + offset;
-        }
-
-        return nullptr;
-    }
+    void *translateMappedPointer(cl_mem buffer, void *ptr, size_t offset);
 
     IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_device_id parentDevice, bool isSubDevice) {
         if (nullptr == calDevice) {
@@ -1073,7 +1063,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
     } envToggles;
 
     std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory() {
-        log<Verbosity::debug>("Creating connection listener based on local named socket");
+        log<Verbosity::debug>("Creating connection lfacistener based on local named socket");
         return std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
     }
 };

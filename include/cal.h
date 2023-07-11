@@ -60,6 +60,8 @@ constexpr std::string_view calUseSharedVaForRpcChannel = "CAL_USE_SHARED_VA_FOR_
 constexpr std::string_view calSharedVaArenaSizeEnvName = "CAL_SHARED_VA_ARENA_SIZE_MB";
 // Override malloc with IPC friendly implementation
 constexpr std::string_view calOverrideMallocEnvName = "CAL_OVERRIDE_MALLOC";
+// Minimum size of allocation that will be redirected to CAL implementation of malloc
+constexpr std::string_view calOverrideMallocThresholdEnvName = "CAL_OVERRIDE_MALLOC_THRESHOLD_BYTES";
 
 constexpr std::string_view calUseCustomOCLPlatformName = "CAL_USE_CUSTOM_OCL_PLATFORM_NAME";
 constexpr std::string_view calPlatformName = "Compute Aggregation Layer for oneAPI Level Zero and OpenCL(TM) Applications";

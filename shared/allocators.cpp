@@ -51,4 +51,22 @@ Cal::Utils::AddressRange RangeAllocator::allocate(size_t sizeInBytes, size_t ali
     return {addr, sizeInBytes};
 }
 
+Cal::Utils::AddressRange RangeAllocator::resizeOrAllocate(void *rangeBase, size_t newSize, size_t alignment, size_t &oldSize) {
+    auto resizedSize = this->resizeRange(rangeBase, newSize, oldSize);
+    if (0 == resizedSize) { // unknown address
+        return {};
+    }
+
+    if (resizedSize >= newSize) { // succesfull resize
+        return Cal::Utils::AddressRange{rangeBase, resizedSize};
+    }
+
+    auto newRange = this->allocate(newSize, alignment);
+    if (newRange.empty()) {
+        return {};
+    }
+
+    return newRange.base();
+}
+
 } // namespace Cal::Allocators

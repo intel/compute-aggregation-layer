@@ -58,21 +58,26 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 %     for prologue_line in prologue(rpc_func):
     ${prologue_line}
 %     endfor # prologue(rpc_func)
+    auto apiCommand = reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command);
 %      if requires_malloc_shmem_zero_copy_handler(rpc_func):
-    if(nullptr == ctx.getMallocShmemZeroCopyHandler()){
-        log<Verbosity::error>("Client unexpectedly requested zero-copy translation for user-provided memory");
+%       for arg in rpc_func.args:
+%        if arg.kind.is_pointer_zero_copy_malloc_shmem():
+<%        arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
+    void *importedMallocPtr${to_pascal_case(arg.name)} = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(${get_arg_from_api_command_struct(rpc_func, arg)}), ${arg_size}, 0U);
+    if(nullptr == importedMallocPtr${to_pascal_case(arg.name)}){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size});
         return false;
     }
+%        endif
+%       endfor # rpc_func.args
 %      endif
-    auto apiCommand = reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command);
 %      if get_struct_members_layouts(rpc_func):
     apiCommand->captures.reassembleNestedStructs();
 %      endif
     apiCommand->captures.ret = ${get_rpc_func_fqfn(rpc_func)}(
 %     for arg in rpc_func.args:
 %      if arg.kind.is_pointer_zero_copy_malloc_shmem():
-<%      arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
-                                                ctx.getMallocShmemZeroCopyHandler()->translateZeroCopyMallocShmemPtr(${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size})\
+                                                importedMallocPtr${to_pascal_case(arg.name)}\
 %      else : # not arg.kind.is_pointer_zero_copy_malloc_shmem
 %       if arg.traits.uses_standalone_allocation:
                                                 channel.decodeLocalPtrFromHeapOffset(${get_arg_from_api_command_struct(rpc_func, arg)})\

@@ -523,7 +523,7 @@ inline bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer
         }
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseMemObject(apiCommand->args.memobj);
-    if (hostPtr && false == (ctx.getMallocShmemZeroCopyHandler() && ctx.getMallocShmemZeroCopyHandler()->isImportedPointer(hostPtr))) {
+    if (hostPtr && (false == ctx.isImportedClientMallocPtr(hostPtr))) {
         auto ctxLock = ctx.lock();
         ctx.reapUsmSharedHostAlloc(hostPtr, false);
     }

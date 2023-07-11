@@ -34,10 +34,6 @@ struct ReqHandshake {
 
     static constexpr uint16_t messageSubtype = 1;
 
-    pid_t pid = 0;
-    pid_t ppid = 0;
-    char clientProcessName[512] = {};
-
     ReqHandshake(bool initClientInfo) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqHandshake::messageSubtype;
@@ -62,6 +58,10 @@ struct ReqHandshake {
         }
         return 0 != invalid;
     }
+
+    pid_t pid = 0;
+    pid_t ppid = 0;
+    char clientProcessName[512] = {};
 };
 static_assert(std::is_standard_layout<ReqHandshake>::value);
 
@@ -89,7 +89,6 @@ struct RespHandshake {
 
     pid_t pid = 0;
     uint64_t assignedClientOrdinal = 0;
-    char mallocShmemLibraryPath[PATH_MAX] = {};
 };
 static_assert(std::is_standard_layout<RespHandshake>::value);
 
@@ -397,14 +396,15 @@ struct ReqImportAddressSpace {
 
     bool isInvalid() const {
         uint32_t invalid = 0;
-        invalid |= (addressSpace <= 0) ? 1 : 0;
         if (0 != invalid) {
             log<Verbosity::error>("Message ReqImportAddressSpace is not valid");
         }
         return 0 != invalid;
     }
 
-    malloc_shmem_exported_address_space_handle_t addressSpace = -1;
+    char mallocShmemResourcePath[PATH_MAX] = {};
+    uint64_t clientAddressSpaceBaseAddress = std::numeric_limits<uint64_t>::max();
+    size_t clientAddressSpaceSize = 0U;
 };
 static_assert(std::is_standard_layout<ReqImportAddressSpace>::value);
 
@@ -422,7 +422,8 @@ struct RespImportAddressSpace {
         return false;
     }
 
-    bool allowedToUseZeroCopyForMallocShmem = false;
+    bool successfullyImported = false;
+    uintptr_t serviceBaseAddressForClientAddressSpace;
 };
 static_assert(std::is_standard_layout<RespImportAddressSpace>::value);
 

@@ -32,10 +32,17 @@
 #include <utility>
 #include <vector>
 
-namespace Cal {
-namespace Ipc {
-inline std::string getCalShmemPathBase(pid_t servicePid) {
-    return calShmemPathPrefix.data() + std::to_string(servicePid) + "_";
+namespace Cal::Ipc {
+
+inline void getCalShmemPathBase(char *buff, size_t bufferSize, pid_t pid) {
+    buff[0] = '\0';
+    snprintf(buff, bufferSize, "%s%d_", calShmemPathPrefix.data(), pid);
+}
+
+inline std::string getCalShmemPathBase(pid_t pid) {
+    char path[4096];
+    getCalShmemPathBase(path, sizeof(path), pid);
+    return path;
 }
 
 using ShmemIdT = int;
@@ -189,7 +196,7 @@ class ShmemImporter {
             log<Verbosity::critical>("Request to open invalid remote shmem");
             return {};
         }
-        auto path = basePath + std::to_string(id);
+
         if (false == Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(size)) {
             log<Verbosity::critical>("Request to open misaligned shmem %zu", size);
             return {};
@@ -201,7 +208,7 @@ class ShmemImporter {
                 return {};
             }
         }
-
+        auto path = basePath + std::to_string(id);
         int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
         if (-1 == shmemFd) {
             log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
@@ -841,5 +848,89 @@ class BasicMemoryBlocksManager {
 using MemoryBlock = BasicMemoryBlock;
 using MemoryBlocksManager = BasicMemoryBlocksManager<MemoryBlock>;
 
-} // namespace Ipc
-} // namespace Cal
+class MallocShmemImporter {
+  public:
+    ~MallocShmemImporter() {
+        if (localBaseAddress) {
+            Cal::Sys::munmap(localBaseAddress, capacity);
+            localBaseAddress = nullptr;
+        }
+        if (-1 != fd) {
+            Cal::Sys::close(fd);
+        }
+    }
+
+    bool open(std::string_view path, size_t capacity, uintptr_t exporterBaseAddress) {
+        if (-1 != fd) {
+            return false; // already opened some resource
+        }
+        this->exporterBaseAddress = exporterBaseAddress;
+        this->capacity = capacity;
+        fd = Cal::Sys::shm_open(std::string(path).c_str(), O_RDWR, 0);
+        if (-1 == fd) {
+            return false;
+        }
+        localBaseAddress = Cal::Sys::mmap(nullptr, capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, fd, 0);
+        if (MAP_FAILED == localBaseAddress) {
+            localBaseAddress = nullptr;
+            Cal::Sys::close(fd);
+            fd = -1;
+            return false;
+        }
+        return true;
+    }
+
+    void *import(uintptr_t exporterAddress, size_t size, size_t exporterHeapSizeHint) {
+        if (exporterAddress < exporterBaseAddress) { // includes translation of NULL to NULL
+            return nullptr;
+        }
+        uintptr_t offset = exporterAddress - exporterBaseAddress;
+        size_t requiredHeapSize = Cal::Utils::alignUp<Cal::Utils::pageSize4KB>(offset + size);
+        if (exporterHeapSizeHint) {
+            requiredHeapSize = exporterHeapSizeHint;
+        }
+
+        if (requiredHeapSize > capacity) {
+            return nullptr; // invalid operation
+        }
+
+        if (offset + size > requiredHeapSize) {
+            return nullptr; // invalid operation
+        }
+
+        if (offset + size < *importedHeapSize) {
+            return Cal::Utils::moveByBytes(localBaseAddress, offset);
+        }
+
+        auto growLock = importedHeapSize.lock();
+        if (offset + size < *importedHeapSize) {
+            return Cal::Utils::moveByBytes(localBaseAddress, offset);
+        }
+
+        auto importedEnd = Cal::Utils::moveByBytes(localBaseAddress, *importedHeapSize);
+        auto ptr = Cal::Sys::mmap(importedEnd, requiredHeapSize - *importedHeapSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, *importedHeapSize);
+        if (MAP_FAILED == ptr) {
+            return nullptr;
+        }
+
+        *importedHeapSize = requiredHeapSize;
+        return ptr;
+    }
+
+    bool isImported(void *ptr) {
+        return Cal::Utils::AddressRange(localBaseAddress, capacity).contains(ptr);
+    }
+
+    void *getLocalBaseAddress() {
+        return localBaseAddress;
+    }
+
+  protected:
+    int fd = -1;
+    uintptr_t exporterBaseAddress = std::numeric_limits<uintptr_t>::max();
+    size_t capacity = 0;
+    Cal::Utils::Lockable<size_t> importedHeapSize = 0;
+    void *localBaseAddress = nullptr;
+};
+
+} // namespace Cal::Ipc

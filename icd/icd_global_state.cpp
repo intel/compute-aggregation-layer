@@ -9,6 +9,7 @@
 
 #include "generated_icd_level_zero.h"
 #include "generated_icd_ocl.h"
+#include "icd/icd_malloc_override.h"
 #include "icd/icd_ocl.h"
 #include "icd/icd_page_fault_manager.h"
 #include "icd/level_zero/icd_level_zero.h"
@@ -69,7 +70,7 @@ Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
 }
 
 std::unique_ptr<Cal::Ipc::ClientConnectionFactory> IcdGlobalState::createConnectionFactory() {
-    log<Verbosity::debug>("Creating connection listener based on local named socket");
+    log<Verbosity::debug>("Creating connection factory based on local named socket");
     return std::make_unique<Cal::Ipc::NamedSocketClientConnectionFactory>();
 }
 
@@ -158,38 +159,41 @@ void IcdGlobalState::connect() {
 
     serviceDebugBreak(serviceConfig.assignedClientOrdinal);
 
-    this->mallocShmemZeroCopyManager = std::make_unique<Cal::Ipc::MallocShmemZeroCopyManager>();
-    this->mallocShmemZeroCopyManager->loadLibrary(serviceConfig.mallocShmemLibraryPath);
-    if (this->mallocShmemZeroCopyManager->isAvailable()) {
+    this->mallocShmemExporter = std::make_unique<Cal::Icd::MallocOverride::MallocShmemExporter>();
+    if (this->mallocShmemExporter->isAllowed()) {
         log<Verbosity::debug>("Exporting user address space for zero-copy sharing of user allocated memory (malloc)");
-        if (false == this->mallocShmemZeroCopyManager->exportUserAddressSpace()) {
-            log<Verbosity::debug>("Failed to export user address space for zero-copy sharing of user allocated memory (malloc)");
-        } else {
-            Cal::Messages::ReqImportAddressSpace reqImportAddressSpace;
-            reqImportAddressSpace.addressSpace = this->mallocShmemZeroCopyManager->getExportedUserAddressSpace();
-            log<Verbosity::debug>("Sending exported user address space handle %ld to service", reqImportAddressSpace.addressSpace);
-            if (false == this->connection->send(reqImportAddressSpace)) {
-                log<Verbosity::critical>("Failed to send request to import client address space");
-                this->connection.reset();
-                return;
-            }
-
-            Cal::Messages::RespImportAddressSpace respImportAddressSpace;
-            if ((false == this->connection->receive(respImportAddressSpace)) || respImportAddressSpace.isInvalid()) {
-                log<Verbosity::critical>("Failed to read response for request of importing client address space");
-                this->connection.reset();
-                return;
-            }
-
-            this->connectionTraits.isZeroCopyForMallocShmemAllowed = respImportAddressSpace.allowedToUseZeroCopyForMallocShmem;
-            if (respImportAddressSpace.allowedToUseZeroCopyForMallocShmem) {
-                log<Verbosity::performance>("Service has allowed to use zero-copy haring for user allocated memory (malloc) ");
-                log<Verbosity::info>("Service has allowed to use zero-copy sharing for user allocated memory (malloc) ");
-            } else {
-                log<Verbosity::performance>("Service has allowed to use zero-copy haring for user allocated memory (malloc) ");
-                log<Verbosity::debug>("Service has denied the use of zero-copy sharing for user allocated memory (malloc) ");
-            }
+        Cal::Messages::ReqImportAddressSpace reqImportAddressSpace;
+        strncpy(reqImportAddressSpace.mallocShmemResourcePath, this->mallocShmemExporter->getResourcePath(), sizeof(reqImportAddressSpace.mallocShmemResourcePath) - 1);
+        reqImportAddressSpace.clientAddressSpaceBaseAddress = reinterpret_cast<uintptr_t>(this->mallocShmemExporter->getHeapBaseAddress());
+        reqImportAddressSpace.clientAddressSpaceSize = this->mallocShmemExporter->getHeapCapacity();
+        log<Verbosity::debug>("Sending exported user address space resource %p to service", reqImportAddressSpace.mallocShmemResourcePath);
+        if (false == this->connection->send(reqImportAddressSpace)) {
+            log<Verbosity::critical>("Failed to send request to import client address space");
+            this->connection.reset();
+            return;
         }
+
+        Cal::Messages::RespImportAddressSpace respImportAddressSpace;
+        if ((false == this->connection->receive(respImportAddressSpace)) || respImportAddressSpace.isInvalid()) {
+            log<Verbosity::critical>("Failed to read response for request of importing client address space");
+            this->connection.reset();
+            return;
+        }
+
+        this->connectionTraits.isZeroCopyForMallocShmemAllowed = respImportAddressSpace.successfullyImported;
+        if (respImportAddressSpace.successfullyImported) {
+            log<Verbosity::performance>("Service has allowed to use zero-copy sharing for user allocated memory (malloc) ");
+            log<Verbosity::info>("Service has allowed to use zero-copy sharing for user allocated memory (malloc) ");
+            this->mallocShmemExporter->setRemoteHeapBaseAddress(respImportAddressSpace.serviceBaseAddressForClientAddressSpace);
+            this->mallocShmemExporter->enable();
+        } else {
+            log<Verbosity::performance>("Service has denied the use of zero-copy sharing for user allocated memory (malloc) ");
+            log<Verbosity::debug>("Service has denied the use of zero-copy sharing for user allocated memory (malloc) ");
+            this->mallocShmemExporter->disable();
+        }
+    } else {
+        log<Verbosity::performance>("Could not export user address space for zero-copy sharing of user allocated memory (malloc)");
+        log<Verbosity::debug>("Could not export user address space for zero-copy sharing of user allocated memory (malloc)");
     }
 
     log<Verbosity::debug>("Negotiating initial USM heap");

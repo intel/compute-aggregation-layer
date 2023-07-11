@@ -9,6 +9,7 @@
 
 #include "generated_icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
+#include "icd/icd_malloc_override.h"
 #include "icd/icd_page_fault_manager.h"
 #include "include/cal.h"
 #include "shared/log.h"
@@ -309,7 +310,7 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueReadBufferRpcHelperUsmHost(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else if (globalOclPlatform->isZeroCopyForMallocShmemEnabled()) {
+    } else if (Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(ptr, size)) {
         return clEnqueueReadBufferRpcHelperZeroCopyMallocShmem(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     } else {
         return clEnqueueReadBufferRpcHelperMallocHost(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -322,7 +323,7 @@ cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueReadBufferRectRpcHelperUsmHost(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else if (globalOclPlatform->isZeroCopyForMallocShmemEnabled()) {
+    } else if (Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch))) {
         return clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     } else {
         return clEnqueueReadBufferRectRpcHelperMallocHost(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -335,7 +336,7 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueWriteBufferRpcHelperUsmHost(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else if (globalOclPlatform->isZeroCopyForMallocShmemEnabled()) {
+    } else if (Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(ptr, size)) {
         return clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     } else {
         return clEnqueueWriteBufferRpcHelperMallocHost(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -348,7 +349,7 @@ cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, c
     auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
     if (isUsmHostPtr) {
         return clEnqueueWriteBufferRectRpcHelperUsmHost(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else if (globalOclPlatform->isZeroCopyForMallocShmemEnabled()) {
+    } else if (Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch))) {
         return clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     } else {
         return clEnqueueWriteBufferRectRpcHelperMallocHost(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -368,7 +369,7 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         log<Verbosity::performance>("Failed to recycle buffer, size %lu , host_ptr %p ", size, host_ptr);
     }
     cl_mem retMem = nullptr;
-    if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Icd::icdGlobalState.getOclPlatform()->isZeroCopyForMallocShmemEnabled()) {
+    if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(host_ptr, size)) {
         retMem = clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem(context, flags, size, host_ptr, errcode_ret);
     } else {
         Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs implicitArgs = {};
@@ -474,13 +475,24 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
     return Cal::Icd::Ocl::clGetMemObjectInfoRpcHelper(memobj, param_name, param_value_size, param_value, param_value_size_ret);
 }
 
+void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t offset) {
+    if (isUsmHostOrShared(ptr)) {
+        return ptr;
+    }
+
+    if (globalState.getMallocShmemExporter().isRegionSharable(ptr, 4)) {
+        return reinterpret_cast<char *>(buffer->asLocalObject()->apiHostPtr) + offset;
+    }
+
+    return nullptr;
+}
+
 IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReference &&parent,
                              Cal::Shared::RefCounted<_cl_context, IcdOclTypePrinter>::CleanupFuncT cleanupFunc)
     : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter>(remoteObject, std::move(parent), cleanupFunc) {
     Cal::Icd::icdGlobalState.registerAtExit(this, [this](const void *key) { this->globalReleaseCallback(); });
 
     this->skipTransferOnHostPtrMatch = Cal::Utils::getCalEnvFlag(calIcdBufferRecycleEnvName);
-    this->skipTransferOnHostPtrMatch |= Cal::Icd::icdGlobalState.getOclPlatform()->isZeroCopyForMallocShmemEnabled();
 }
 
 void IcdOclContext::beforeReleaseCallback() {

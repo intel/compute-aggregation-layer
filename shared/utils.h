@@ -34,6 +34,7 @@ using namespace std::experimental::filesystem::v1;
 #include <vector>
 
 #define predict_true(x) __builtin_expect((x), 1)
+#define predict_false(x) __builtin_expect((x), 0)
 
 namespace Cal {
 

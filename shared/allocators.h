@@ -220,6 +220,35 @@ class RangeAllocatorBase {
         sizeUsed -= bounds.size();
     }
 
+    size_t resizeRange(void *rangeBase, size_t newSize, size_t &oldSize) { // return new size
+        auto *prevRange = vma.findSubRange(Cal::Utils::AddressRange{rangeBase});
+        if (nullptr == prevRange) {
+            return 0;
+        }
+
+        auto prevSize = prevRange->getBoundingRange().size();
+        oldSize = prevSize;
+        if (prevSize == newSize) { // same size
+            return newSize;
+        }
+        if (newSize < prevSize) { // make the range smaller
+            auto rangeToDelete = prevRange->getBoundingRange();
+            rangeToDelete.start += newSize;
+            vma.destroySubRange(rangeToDelete);
+            return newSize;
+        }
+
+        auto rangeToAllocate = prevRange->getBoundingRange();
+        rangeToAllocate.end += newSize - prevSize;
+        rangeToAllocate.start += prevSize;
+        if (vma.intersectsSubRanges(rangeToAllocate)) { // check if room for grow
+            return prevSize;                            // no place to grow
+        }
+
+        prevRange->insertSubRange(rangeToAllocate); // grow
+        return newSize;
+    }
+
   private:
     Cal::Utils::PartitionedAddressRange<void> vma;
     size_t sizeUsed = 0U;
@@ -239,6 +268,12 @@ class RangeAllocator : public RangeAllocatorBase {
         return allocate(sizeInBytes, 1);
     }
 
+    Cal::Utils::AddressRange resizeOrAllocate(void *rangeBase, size_t newSize, size_t alignment, size_t &oldSize);
+
+    Cal::Utils::AddressRange resizeOrAllocate(void *rangeBase, size_t newSize, size_t &oldSize) {
+        return resizeOrAllocate(rangeBase, newSize, 1, oldSize);
+    }
+
     void free(void *rangeBase) {
         this->freeRange(rangeBase);
     }
@@ -250,6 +285,7 @@ class AddressRangeAllocator : public RangeAllocator {
     using AllocationT = void *;
 
     using RangeAllocator::RangeAllocator;
+    static constexpr size_t MinAlignment = 16U;
 
     void *allocate(size_t sizeInBytes, size_t alignment) {
         auto allocated = RangeAllocator::allocate(sizeInBytes, alignment);
@@ -257,7 +293,12 @@ class AddressRangeAllocator : public RangeAllocator {
     }
 
     void *allocate(size_t sizeInBytes) {
-        return this->allocate(sizeInBytes, 16);
+        return this->allocate(sizeInBytes, MinAlignment);
+    }
+
+    void *resizeOrAllocate(void *rangeBase, size_t newSize, size_t &oldSize) {
+        auto allocated = RangeAllocator::resizeOrAllocate(rangeBase, newSize, MinAlignment, oldSize);
+        return (allocated.size() >= newSize) ? allocated.base() : nullptr;
     }
 
     void free(void *ptr) {

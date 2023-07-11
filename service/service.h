@@ -273,12 +273,17 @@ class ClientContext {
         return hostptrCopiesManager;
     }
 
-    void setMallocShmemZeroCopyHandler(std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> handler) {
-        mallocShmemZeroCopyHandler = std::move(handler);
+    void *importClientAddressSpace(std::string_view resourcePath, size_t capacity, uintptr_t clientBaseAddress) {
+        auto succesfullyOpened = mallocShmemImporter.open(resourcePath, capacity, clientBaseAddress);
+        return succesfullyOpened ? mallocShmemImporter.getLocalBaseAddress() : nullptr;
     }
 
-    Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler *getMallocShmemZeroCopyHandler() const {
-        return mallocShmemZeroCopyHandler.get();
+    void *importClientMallocPtr(uintptr_t clientPtr, size_t size, size_t exporterCurrentHeapSizeHint) {
+        return mallocShmemImporter.import(clientPtr, size, exporterCurrentHeapSizeHint);
+    }
+
+    bool isImportedClientMallocPtr(void *ptr) {
+        return mallocShmemImporter.isImported(ptr);
     }
 
     uint32_t getCopyCommandQueueGroupIndex() const { return this->copyCommandQueueGroupIndex; }
@@ -361,7 +366,6 @@ class ClientContext {
     std::unordered_map<int, Cal::Ipc::MmappedShmemAllocationT> globalShmemsMap;
     std::unordered_map<void *, UsmSharedHostAlloc> usmSharedHostMap;
     std::vector<std::pair<std::future<void>, std::unique_ptr<Cal::Rpc::ChannelServer>>> rpcChannels;
-    std::unique_ptr<Cal::Ipc::MallocShmemZeroCopyManager::MallocShmemZeroCopyImportHandler> mallocShmemZeroCopyHandler;
 
     IMember *spectacleAssignment = nullptr;
 
@@ -380,6 +384,7 @@ class ClientContext {
     Cal::Service::LevelZero::CommandListToContextTracker commandListToContextTracker{};
     Cal::Service::LevelZero::ArtificialEventsManager artificialEventsManager{};
     Cal::Service::LevelZero::OngoingHostptrCopiesManager hostptrCopiesManager{};
+    Cal::Ipc::MallocShmemImporter mallocShmemImporter = {};
 };
 
 class Provider {
@@ -511,11 +516,6 @@ class Provider {
         }
         this->isRunning = true;
         log<Verbosity::info>("Starting Compute Aggregation Layer service from PID : %d", getpid());
-        this->mallocShmemZeroCopyManager.loadLibrary();
-        if (this->mallocShmemZeroCopyManager.isAvailable()) {
-            strncpy(this->config.mallocShmemLibraryPath, this->mallocShmemZeroCopyManager.getLibrarySoPath().c_str(), sizeof(this->config.mallocShmemLibraryPath));
-            this->config.mallocShmemLibraryPath[sizeof(this->config.mallocShmemLibraryPath) - 1] = '\0';
-        }
 
         std::vector<std::future<void>> clients;
         log<Verbosity::info>("Initializing OCL");
@@ -814,7 +814,6 @@ class Provider {
     } sharedObjects;
     Cal::Messages::RespHandshake config;
     std::unique_ptr<Cal::Ipc::GlobalShmemAllocators> globalShmemAllocators;
-    Cal::Ipc::MallocShmemZeroCopyManager mallocShmemZeroCopyManager;
     std::vector<RpcSubtypeHandlers> rpcHandlers;
     std::vector<Cal::Rpc::DirectCallCallbackT> directCallCallbacks;
     struct {
@@ -1185,17 +1184,23 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqImportAddressSpace &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d sent an address space handle to be imported : %ld", clientConnection.getId(), request.addressSpace);
+        log<Verbosity::debug>("Client : %d sent an address space handle to be imported : %s, client address: %p, address space size %zu",
+                              clientConnection.getId(), request.mallocShmemResourcePath, request.clientAddressSpaceBaseAddress, request.clientAddressSpaceSize);
 
         auto clientCtxLock = ctx.lock();
 
         Cal::Messages::RespImportAddressSpace response;
-        auto zeroCopyHandler = this->mallocShmemZeroCopyManager.importUserAddressSpace(request.addressSpace);
-        if (nullptr == zeroCopyHandler) {
-            response.allowedToUseZeroCopyForMallocShmem = false;
+        response.serviceBaseAddressForClientAddressSpace = reinterpret_cast<uintptr_t>(ctx.importClientAddressSpace(request.mallocShmemResourcePath, request.clientAddressSpaceSize, request.clientAddressSpaceBaseAddress));
+        response.successfullyImported = (0 != response.serviceBaseAddressForClientAddressSpace);
+
+        if (response.successfullyImported) {
+            log<Verbosity::debug>("Succesfully imported client %d's address space handle (resource : %s, client address: %p, address space size %zu) as local address : %p",
+                                  clientConnection.getId(), request.mallocShmemResourcePath, request.clientAddressSpaceBaseAddress, request.clientAddressSpaceSize, response.serviceBaseAddressForClientAddressSpace);
+            log<Verbosity::debug>("Zero copy malloc for client %d's - ALLOWED");
         } else {
-            response.allowedToUseZeroCopyForMallocShmem = true;
-            ctx.setMallocShmemZeroCopyHandler(std::move(zeroCopyHandler));
+            log<Verbosity::error>("Failed to import client %d's address space handle (resource : %s, client address: %p, address space size %zu) as local address : %p",
+                                  clientConnection.getId(), request.mallocShmemResourcePath, request.clientAddressSpaceBaseAddress, request.clientAddressSpaceSize, response.serviceBaseAddressForClientAddressSpace);
+            log<Verbosity::error>("Zero copy malloc for client %d's - DISABLED");
         }
 
         if (false == clientConnection.send(response)) {
