@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: MIT
 #
 
+import copy
+import itertools
 import os
 import re
 import sys
@@ -126,6 +128,18 @@ class Kind:
     def is_opaque_list(self) -> bool:
         return self.str == "opaque_list"
 
+def get_ptr_sharing_kind_abbreviation(kind : Kind):
+    if kind.is_pointer_zero_copy_malloc_shmem():
+        return "shared"
+    elif kind.is_pointer_usm():
+        return "usm"
+    else :
+        return "local"
+
+class KindVariant:
+    def __init__(self, src: dict):
+        self.kind = Kind(src.get("kind")) if "kind" in src.keys() else None
+        self.capture_details = CaptureDetails(src.get("capture_details", {})) if "capture_details" in src.keys() else None
 
 class Element:
     def __init__(self, src: dict):
@@ -221,13 +235,13 @@ class ArgTraits:
         self.uses_dynamic_arg_getter = parent_function.traits.uses_dynamic_arg_getters and self.uses_inline_dynamic_mem
         self.uses_nested_capture = arg.kind.is_pointer_to_array() and arg.kind_details.element.kind.is_pointer_to_array()
 
-
 class Arg:
     def __init__(self, arg_id, src: dict):
         self.arg_id = int(arg_id)
         self.name = src["name"]
         self.type = Type(src.get("type"))
         self.kind = Kind(src.get("kind"))
+        self.kind_variants = [KindVariant(k) for k in src.get("kind_variants")] if "kind_variants" in src.keys() else None
         self.ignore = src.get("ignore", False)
         self.kind_details = KindDetails(src["kind_details"]) if "kind_details" in src.keys() else None
         self.translate_before = Translate(src["translate_before"]) if "translate_before" in src.keys() else None
@@ -281,6 +295,12 @@ class Arg:
     def is_always_queried(self) -> bool:
         return self.is_kind_complex() and self.kind_details.always_queried
 
+    def apply_kind_variant(self, variant_id) :
+        variant = self.kind_variants[variant_id]
+        if variant.kind:
+            self.kind = variant.kind
+        if variant.capture_details:
+            self.capture_details = variant.capture_details
 
 class Member:
     def __init__(self, member_id, src: dict):
@@ -447,6 +467,7 @@ class FunctionTraits:
         self.is_extension = function.special_handling and function.special_handling.is_extension()
         self.is_variant = function.special_handling and function.special_handling.is_variant()
         self.requires_malloc_shmem_zero_copy_handler = any(arg.kind.is_pointer_zero_copy_malloc_shmem() for arg in function.args)
+        self.has_arg_kind_variants = any(arg.kind_variants for arg in function.args)
 
     def requires_copy_from_caller(self, ptr_array_args, implicit_args):
         is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args if not arg.capture_details.mode.is_standalone_mode())
@@ -1199,6 +1220,10 @@ class FunctionCaptureLayout:
                                          member_layout_formatter=MemberLayoutFormatter(),
                                          **vars(self), **Formater.get_all_formaters())
 
+class Redirection:
+    def __init__(self, destination):
+        self.destination = destination # Function
+        self.conditions = []
 
 class Function:
     def __init__(self, structures, src: dict):
@@ -1217,14 +1242,19 @@ class Function:
         self.cacheable = Cacheable(src.get("cacheable", {}))
         self.special_handling = SpecialHandling(src["special_handling"]) if "special_handling" in src.keys() else None
         self.ddi_category = src.get("ddi_category", "")
-        self.message_name = f"{self.name[0].upper()}{self.name[1:]}RpcM"
         self.aliased_function = None
+        self.redirections = []
+        self.recreteTraitsAndCaptureLayout(structures)
+
+    def recreteTraitsAndCaptureLayout(self, structures):
+        self.message_name = f"{self.name[0].upper()}{self.name[1:]}RpcM"
         self.traits = FunctionTraits(self)
         for arg in self.args:
             arg.create_traits(self)
         for iarg in self.implicit_args:
             iarg.create_traits(self)
         self.capture_layout = FunctionCaptureLayout(structures, self)
+
 
     def get_args_list_str(self) -> str:
         return ", ".join(arg.to_str() for arg in self.args)
@@ -1364,6 +1394,16 @@ class FormatRegexp:
             return src
         return re.sub(self.r_from.format(**d), self.r_to.format(**d), src)
 
+class Condition:
+    def __init__(self):
+        self.evauluate = ""
+        self.check = ""
+
+def create_condition_based_on_ptr_kind(var_name, required_kind):
+    cond = Condition()
+    cond.evauluate = f"auto {var_name}_pointer_type = globalPlatform->getPointerType({var_name})"
+    cond.check = f"{var_name}_pointer_type == {get_ptr_sharing_kind_abbreviation(required_kind)}"
+    return cond
 
 class Config:
     def __init__(self, src: dict):
@@ -1376,6 +1416,45 @@ class Config:
             s.set_all_structures_description(self.structures_by_name)
 
         self.functions = {function_group["name"] : [Function(self.structures_by_name, f) for f in function_group["members"]] for function_group in src.get("functions", [])}
+        generated_variants = []
+        for group in self.functions.keys():
+            for func in self.functions[group]:
+                if not func.traits.has_arg_kind_variants:
+                    continue
+                ids_of_args_with_variants = [arg_id for arg_id in range(0, len(func.args)) if func.args[arg_id].kind_variants]
+
+                variants_per_arg_id = []
+                for arg_id in ids_of_args_with_variants:
+                    variants_per_arg_id.append([(arg_id, variant_id) for variant_id in range(0, len(func.args[arg_id].kind_variants))])
+                
+                all_variants = list(itertools.product(*variants_per_arg_id))
+                all_redirections = []
+                for variant_desc in all_variants:
+                    function_variant = copy.deepcopy(func)
+                    if not function_variant.special_handling:
+                        function_variant.special_handling = SpecialHandling({})
+                    function_variant.special_handling.variant_of = func.name
+                    if not function_variant.special_handling.icd:
+                        function_variant.special_handling.icd = SpecialHandling.Icd({})
+                    function_variant.special_handling.icd.not_in_dispatch_table = True
+                    for variant_arg_desc in variant_desc:
+                        function_variant.args[variant_arg_desc[0]].apply_kind_variant(variant_arg_desc[1])
+                        function_variant.name += "_" + to_pascal_case(get_ptr_sharing_kind_abbreviation(function_variant.args[variant_arg_desc[0]].kind))
+                    function_variant.recreteTraitsAndCaptureLayout(self.structures_by_name)
+                    generated_variants.append(function_variant)
+                    redir = Redirection(function_variant)
+                    for arg_id in ids_of_args_with_variants:
+                        redir.conditions.append(create_condition_based_on_ptr_kind(function_variant.args[arg_id].name, function_variant.args[arg_id].kind))
+                    all_redirections.append(redir)
+                func.redirections += all_redirections
+                if not func.special_handling:
+                        func.special_handling = SpecialHandling({})
+                if not func.special_handling.rpc:
+                        func.special_handling.rpc = SpecialHandling.Rpc({})
+                func.dont_generate_rpc_message = True
+                func.dont_generate_rpc_handler = True
+            self.functions[group] = self.functions[group] + generated_variants
+            
         self.unimplemented = src.get("unimplemented", [])
         self.functions_by_name = {group_name : {func.name: func for func in self.functions[group_name]} for group_name in self.functions.keys()}
         self.icd_namespace = src.get("icd_namespace", "").split("::")

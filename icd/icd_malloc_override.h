@@ -5,6 +5,8 @@
  *
  */
 
+#pragma once
+
 #include "shared/log.h"
 #include "shared/utils.h"
 
@@ -61,9 +63,11 @@ class MallocShmemExporter {
 
     bool isRegionSharable(const void *ptr, size_t size) {
         bool sharable = localRange.contains({ptr, size});
-        if (sharable) {
-            printf("SHARABEL!!!\n\n");
-        }
+        return sharable;
+    }
+
+    bool isRegionSharable(const void *ptr) {
+        bool sharable = localRange.contains({ptr, 8});
         return sharable;
     }
 

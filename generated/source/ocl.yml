@@ -13,8 +13,8 @@ config:
 
   icd_init_dispatch_table_func_name_format: "initOclIcdDispatchTable"
   icd_get_extenion_func_addr_func_name: getOclExtensionFuncionAddressRpcHelper
-  icd_acquire_global_object: "auto *globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform()"
-  icd_acquire_channel: "globalOclPlatform->getRpcChannel()"
+  icd_acquire_global_object: "auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform()"
+  icd_acquire_channel: "globalPlatform->getRpcChannel()"
   result_type: cl_int
   result_success: CL_SUCCESS
   file_headers:
@@ -165,7 +165,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -251,7 +251,7 @@ config:
                 element:
                   type: cl_device_id
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, platform, false)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, platform, false)"
                 server_access: write
             4:
               name: num_devices
@@ -295,7 +295,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -323,7 +323,7 @@ config:
           returns:
             type: cl_context
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg})"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
           args:
             0:
               name: properties
@@ -381,7 +381,7 @@ config:
           returns:
             type: cl_context
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg})"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
           args:
             0:
               name: properties
@@ -454,14 +454,14 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
                 element:
                   type: void
                   kind: scalar
-                  translate_after: "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{  globalOclPlatform->translateRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg})); }}"
+                  translate_after: "if((param_name == CL_CONTEXT_DEVICES) && ((i%sizeof(cl_device_id)) == 0)) {{  globalPlatform->translateRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg})); }}"
                 server_access: write
             4:
               name: param_value_size_ret
@@ -512,7 +512,7 @@ config:
                 element:
                   type: cl_device_id
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device, true)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device, true)"
                 server_access: write
             4:
               name: num_devices_ret
@@ -530,7 +530,7 @@ config:
           returns:
             type: cl_command_queue
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -546,7 +546,7 @@ config:
               name: properties
               type: "cl_command_queue_properties "
               kind: scalar
-              translate_before: "{dst} = globalOclPlatform->translateQueueFlags({arg})"
+              translate_before: "{dst} = globalPlatform->translateQueueFlags({arg})"
             3:
               name: errcode_ret
               type: "cl_int*"
@@ -586,7 +586,7 @@ config:
           returns:
             type: cl_command_queue
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -602,7 +602,7 @@ config:
               name: properties
               type: "const cl_queue_properties*"
               kind: ptr_array
-              translate_before: "globalOclPlatform->translateQueueFlags(mutable_element_cast({dst_mem}))"
+              translate_before: "globalPlatform->translateQueueFlags(mutable_element_cast({dst_mem}))"
               kind_details:
                 num_elements: "nullterminated_key"
                 can_be_null: True
@@ -627,7 +627,7 @@ config:
           returns:
             type: cl_program
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -682,7 +682,7 @@ config:
           returns:
             type: cl_program
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -721,7 +721,7 @@ config:
           returns:
             type: cl_program
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -799,7 +799,7 @@ config:
           returns:
             type: cl_program
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -1010,7 +1010,7 @@ config:
           returns:
             type: cl_program
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg},context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg},context)"
           args:
             0:
               name: context
@@ -1139,7 +1139,7 @@ config:
           returns:
             type: cl_kernel
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, program)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, program)"
           args:
             0:
               name: program
@@ -1174,7 +1174,7 @@ config:
           returns:
             type: cl_kernel
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, static_cast<IcdOclKernel*>(source_kernel))"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, static_cast<IcdOclKernel*>(source_kernel))"
           args:
             0:
               name: source_kernel
@@ -1222,7 +1222,7 @@ config:
                 element:
                   type: "cl_kernel"
                   kind: "scalar"
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, program)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, program)"
                 server_access: write
             3:
               name: num_kernels_ret
@@ -1265,7 +1265,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -1378,14 +1378,14 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
                 element:
                   type: void
                   kind: scalar
-                  translate_after: "if((param_name == CL_PROGRAM_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {{\n                *reinterpret_cast<cl_device_id*>(&{dst}) = globalOclPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), program);\n            }}"
+                  translate_after: "if((param_name == CL_PROGRAM_DEVICES) && ((i % sizeof(cl_device_id)) == 0)) {{\n                *reinterpret_cast<cl_device_id*>(&{dst}) = globalPlatform->translateNewRemoteObjectToLocalObject(*reinterpret_cast<cl_device_id*>(&{arg}), program);\n            }}"
                 server_access: write
             4:
               name: param_value_size_ret
@@ -1486,7 +1486,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -1529,7 +1529,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -1572,7 +1572,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -1620,7 +1620,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -1877,7 +1877,7 @@ config:
               type: cl_program
               kind: scalar
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
-              translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalOclPlatform->removeGlobalPointers(program);\n        }}"
+              translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalPlatform->removeGlobalPointers(program);\n        }}"
         - name: clReleaseMemObject
           latency: 0.0
           special_handling:
@@ -2132,7 +2132,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueTask
           latency: 0.0
@@ -2180,7 +2180,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMarkerWithWaitList
           latency: 0.0
@@ -2223,7 +2223,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMarker
           latency: 0.0
@@ -2250,7 +2250,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueBarrierWithWaitList
           latency: 0.0
@@ -2293,7 +2293,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueBarrier
           latency: 0.0
@@ -2402,7 +2402,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clGetExtensionFunctionAddressForPlatform
           latency: 0.0
@@ -2442,7 +2442,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -2511,7 +2511,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -2554,7 +2554,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, buffer)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, buffer)"
           args:
             0:
               name: buffer
@@ -2598,7 +2598,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -2665,7 +2665,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -2689,7 +2689,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_desc))"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_desc))"
           args:
             0:
               name: context
@@ -2751,7 +2751,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_width, image_height, image_row_pitch))"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_width, image_height, image_row_pitch))"
           args:
             0:
               name: context
@@ -2814,7 +2814,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch))"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteImageObjectToLocalObject({arg}, context, OclImageTraits(image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch))"
           args:
             0:
               name: context
@@ -2885,7 +2885,7 @@ config:
           returns:
             type: cl_sampler
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -2923,7 +2923,7 @@ config:
           returns:
             type: cl_sampler
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -2960,7 +2960,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -3035,7 +3035,7 @@ config:
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -3268,7 +3268,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperMallocHost
           category: Copy
@@ -3346,7 +3346,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem
           category: Copy
@@ -3421,7 +3421,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRect
           category: Copy
@@ -3530,7 +3530,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRectRpcHelperMallocHost
           category: Copy
@@ -3648,7 +3648,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem
           category: Copy
@@ -3763,7 +3763,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBuffer
           latency: 0.0
@@ -3831,7 +3831,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRect
           latency: 0.0
@@ -3939,7 +3939,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRectRpcHelperMallocHost
           latency: 0.0
@@ -4056,7 +4056,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem
           latency: 0.0
@@ -4170,7 +4170,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRpcHelperMallocHost
           latency: 0.0
@@ -4248,7 +4248,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRpcHelperZeroCopyMallocShmem
           latency: 0.0
@@ -4322,7 +4322,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueCopyBuffer
           latency: 0.0
@@ -4387,7 +4387,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueCopyBufferRect
           latency: 0.0
@@ -4489,7 +4489,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadImage
           latency: 0.0
@@ -4586,7 +4586,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueWriteImage
           latency: 0.0
@@ -4682,7 +4682,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueCopyImage
           latency: 0.0
@@ -4768,7 +4768,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueCopyImageToBuffer
           latency: 0.0
@@ -4847,7 +4847,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueCopyBufferToImage
           latency: 0.0
@@ -4926,7 +4926,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMapBuffer
           latency: 0.0
@@ -4936,7 +4936,7 @@ config:
           returns:
             type: "void*"
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateMappedPointer(buffer, {arg}, offset)"
+            translate_after: "{dst} = globalPlatform->translateMappedPointer(buffer, {arg}, offset)"
           args:
             0:
               name: command_queue
@@ -4990,7 +4990,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
             9:
               name: errcode_ret
@@ -5054,7 +5054,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueFillBuffer
           latency: 0.0
@@ -5125,7 +5125,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueFillImage
           latency: 0.0
@@ -5206,7 +5206,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clWaitForEvents
           latency: 2.0
@@ -5255,7 +5255,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -5301,7 +5301,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -5325,7 +5325,7 @@ config:
           returns:
             type: cl_event
             kind: scalar
-            translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
@@ -5515,7 +5515,7 @@ config:
               name: ptr
               type: void*
               kind: ptr_usm_va
-              translate_before: "globalOclPlatform->destroyUsmDescriptor({arg})"
+              translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
               kind_details:
                 server_access: none
         - name: clEnqueueSVMMap
@@ -5577,7 +5577,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMUnmap
           latency: 0.0
@@ -5626,7 +5626,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clSetKernelArgSVMPointer
           latency: 0.0
@@ -5755,7 +5755,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMMigrateMem
           latency: 0.0
@@ -5830,7 +5830,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueSVMMemcpy
           category: Copy
@@ -5838,7 +5838,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_only_suffix: "RpcHelperUsm2Usm" # Dedicated handling due to differnt variants (USM->host host->USM USM->USM)
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -5856,153 +5856,7 @@ config:
               kind: scalar
             2:
               name: dst_ptr
-              type: void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: write
-            3:
-              name: src_ptr
-              type: const void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: read
-            4:
-              name: size
-              type: size_t
-              kind: scalar
-            5:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            6:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            7:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueSVMMemcpyRpcHelperMalloc2Usm
-          category: Copy
-          latency: 0.0
-          call_async: true
-          special_handling:
-            variant_of: "clEnqueueSVMMemcpy"
-            icd:
-              not_in_dispatch_table: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: blocking
-              type: cl_bool
-              kind: scalar
-            2:
-              name: dst_ptr
-              type: void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: write
-            3:
-              name: src_ptr
-              type: const void*
-              capture_details:
-                mode: standalone
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
-              kind_details:
-                num_elements: "size"
-                can_be_null: True
-                element:
-                  type: void
-                  kind: scalar
-                server_access: read
-            4:
-              name: size
-              type: size_t
-              kind: scalar
-            5:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            6:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            7:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueSVMMemcpyRpcHelperUsm2Malloc
-          category: Copy
-          latency: 0.0
-          special_handling:
-            variant_of: "clEnqueueSVMMemcpy"
-            icd:
-              not_in_dispatch_table: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: blocking
-              type: cl_bool
-              kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
-            2:
-              name: dst_ptr
-              type: void*
-              capture_details:
-                mode: standalone
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
+              type : void*
               kind_details:
                 num_elements: "size"
                 can_be_null: True
@@ -6010,12 +5864,30 @@ config:
                   type: void
                   kind: scalar
                 server_access: write
+              kind_variants:
+                - kind: ptr_array
+                  capture_details:
+                    mode: standalone
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             3:
               name: src_ptr
               type: const void*
-              kind: ptr_usm_va
               kind_details:
-                server_access: write
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: void
+                  kind: scalar
+                server_access: read
+              kind_variants:
+                - kind: ptr_array
+                  capture_details:
+                    mode: standalone
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             4:
               name: size
               type: size_t
@@ -6046,7 +5918,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         ################### cl_ext_device_fission EXTENSION
         - name: clCreateSubDevicesEXT
@@ -6090,7 +5962,7 @@ config:
                 element:
                   type: cl_device_id
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, in_device)"
                 server_access: write
             4:
               name: num_devices
@@ -6274,7 +6146,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueMemcpyINTEL
           category: Copy
@@ -6285,7 +6157,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_only_suffix: "RpcHelperUsm2Usm" # Dedicated handling due to differnt variants (USM->host host->USM USM->USM)
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -6304,156 +6176,6 @@ config:
             2:
               name: dstPtr
               type: void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: write
-            3:
-              name: srcPtr
-              type: const void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: read
-            4:
-              name: size
-              type: size_t
-              kind: scalar
-            5:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            6:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            7:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueMemcpyINTELRpcHelperMalloc2Usm
-          category: Copy
-          latency: 0.0
-          call_async: true
-          special_handling:
-            variant_of: "clEnqueueMemcpyINTEL"
-            extension_name: "USM"
-            icd:
-              not_in_dispatch_table: True
-              in_get_extension_function_address: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: blocking
-              type: cl_bool
-              kind: scalar
-            2:
-              name: dstPtr
-              type: void*
-              kind: ptr_usm_va
-              kind_details:
-                server_access: write
-            3:
-              name: srcPtr
-              type: const void*
-              capture_details:
-                mode: standalone
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
-              kind_details:
-                num_elements: "size"
-                can_be_null: True
-                element:
-                  type: void
-                  kind: scalar
-                server_access: read
-            4:
-              name: size
-              type: size_t
-              kind: scalar
-            5:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            6:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            7:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueMemcpyINTELRpcHelperUsm2Malloc
-          category: Copy
-          latency: 0.0
-          special_handling:
-            variant_of: "clEnqueueMemcpyINTEL"
-            extension_name: "USM"
-            icd:
-              not_in_dispatch_table: True
-              in_get_extension_function_address: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: blocking
-              type: cl_bool
-              kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
-            2:
-              name: dstPtr
-              type: void*
-              capture_details:
-                mode: standalone
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
               kind_details:
                 num_elements: "size"
                 can_be_null: True
@@ -6461,12 +6183,30 @@ config:
                   type: void
                   kind: scalar
                 server_access: write
+              kind_variants:
+                - kind: ptr_array
+                  capture_details:
+                    mode: standalone
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             3:
               name: srcPtr
               type: const void*
-              kind: ptr_usm_va
               kind_details:
-                server_access: write
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: void
+                  kind: scalar
+                server_access: read
+              kind_variants:
+                - kind: ptr_array
+                  capture_details:
+                    mode: standalone
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             4:
               name: size
               type: size_t
@@ -6497,7 +6237,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clSetKernelArgMemPointerINTEL
           latency: 0.0
@@ -6561,7 +6301,7 @@ config:
               name: param_value
               type: "void*"
               kind: ptr_array
-              translate_after: "globalOclPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
+              translate_after: "globalPlatform->translateRemoteObjectToLocalObjectInParams({dst}, param_name)"
               kind_details:
                 num_elements: "param_value_size"
                 can_be_null: True
@@ -6794,7 +6534,7 @@ config:
               name: ptr
               type: void*
               kind: ptr_usm_va
-              translate_before: "globalOclPlatform->destroyUsmDescriptor({arg})"
+              translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
               kind_details:
                 server_access: none
         - name: clMemBlockingFreeINTEL
@@ -6821,7 +6561,7 @@ config:
               name: ptr
               type: void*
               kind: ptr_usm_va
-              translate_before: "globalOclPlatform->destroyUsmDescriptor({arg})"
+              translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
               kind_details:
                 server_access: none
         - name: clEnqueueMigrateMemINTEL
@@ -6882,7 +6622,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalOclPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         ################### cl_get_device_global_variable_pointer_intel EXTENSION
         - name: clGetDeviceGlobalVariablePointerINTEL
@@ -6940,4 +6680,4 @@ config:
                   type: void*
                   kind: scalar
                 server_access: write
-              translate_after: "if (command->captures.ret == CL_SUCCESS)\n            globalOclPlatform->recordGlobalPointer(program, *{arg})"
+              translate_after: "if (command->captures.ret == CL_SUCCESS)\n            globalPlatform->recordGlobalPointer(program, *{arg})"

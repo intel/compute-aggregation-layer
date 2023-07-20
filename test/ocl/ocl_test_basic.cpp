@@ -666,7 +666,9 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Results are correct (got:%d, expected:%d)", readBack, expected);
 
     log<Verbosity::info>("Copying malloc ptr -> USM host");
-    if (CL_SUCCESS != usmExt.clEnqueueMemcpyINTEL(queue, false, usmHostMem, &usmInitData, sizeof(usmInitData), 0, nullptr, nullptr)) {
+    std::unique_ptr<int> mallocedPtr = std::make_unique<int>();
+    *mallocedPtr = usmInitData;
+    if (CL_SUCCESS != usmExt.clEnqueueMemcpyINTEL(queue, false, usmHostMem, mallocedPtr.get(), sizeof(*mallocedPtr), 0, nullptr, nullptr)) {
         log<Verbosity::error>("Failed to clEnqueueMemcpyINTEL");
         return 1;
     }
@@ -677,7 +679,7 @@ int main(int argc, const char *argv[]) {
     }
     log<Verbosity::info>("Succesfully synchronized the queue");
     readBack = *reinterpret_cast<int *>(usmHostMem);
-    expected = usmInitData;
+    expected = *mallocedPtr;
     if (readBack != expected) {
         log<Verbosity::error>("Results are incorrect (got:%d, expected:%d)", readBack, expected);
         return 1;

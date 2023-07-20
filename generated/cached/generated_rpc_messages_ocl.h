@@ -10729,221 +10729,9 @@ struct ClEnqueueSVMMemcpyRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpyRpcM>);
-struct ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 113;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Copy;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_bool blocking = {};
-        void* dst_ptr = {};
-        const void* src_ptr = {};
-        size_t size = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->blocking == rhs.blocking;
-            equal &= this->dst_ptr == rhs.dst_ptr;
-            equal &= this->src_ptr == rhs.src_ptr;
-            equal &= this->size == rhs.size;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM() = default;
-
-    ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.blocking = blocking;
-        args.dst_ptr = dst_ptr;
-        args.src_ptr = src_ptr;
-        args.size = size;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.blocking = blocking;
-        message.args.dst_ptr = dst_ptr;
-        message.args.src_ptr = src_ptr;
-        message.args.size = size;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM>);
-struct ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 114;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Copy;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_bool blocking = {};
-        void* dst_ptr = {};
-        const void* src_ptr = {};
-        size_t size = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->blocking == rhs.blocking;
-            equal &= this->dst_ptr == rhs.dst_ptr;
-            equal &= this->src_ptr == rhs.src_ptr;
-            equal &= this->size == rhs.size;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM() = default;
-
-    ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.blocking = blocking;
-        args.dst_ptr = dst_ptr;
-        args.src_ptr = src_ptr;
-        args.size = size;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.blocking = blocking;
-        message.args.dst_ptr = dst_ptr;
-        message.args.src_ptr = src_ptr;
-        message.args.size = size;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM>);
 struct ClCreateSubDevicesEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 115;
+    static constexpr uint16_t messageSubtype = 113;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11055,7 +10843,7 @@ struct ClCreateSubDevicesEXTRpcM {
 static_assert(std::is_standard_layout_v<ClCreateSubDevicesEXTRpcM>);
 struct ClReleaseDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 116;
+    static constexpr uint16_t messageSubtype = 114;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11107,7 +10895,7 @@ struct ClReleaseDeviceEXTRpcM {
 static_assert(std::is_standard_layout_v<ClReleaseDeviceEXTRpcM>);
 struct ClRetainDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 117;
+    static constexpr uint16_t messageSubtype = 115;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11159,7 +10947,7 @@ struct ClRetainDeviceEXTRpcM {
 static_assert(std::is_standard_layout_v<ClRetainDeviceEXTRpcM>);
 struct ClGetKernelSubGroupInfoKHRRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 118;
+    static constexpr uint16_t messageSubtype = 116;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11283,7 +11071,7 @@ struct ClGetKernelSubGroupInfoKHRRpcM {
 static_assert(std::is_standard_layout_v<ClGetKernelSubGroupInfoKHRRpcM>);
 struct ClEnqueueMemFillINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 119;
+    static constexpr uint16_t messageSubtype = 117;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11407,7 +11195,7 @@ struct ClEnqueueMemFillINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemFillINTELRpcM>);
 struct ClEnqueueMemcpyINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 120;
+    static constexpr uint16_t messageSubtype = 118;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11511,221 +11299,9 @@ struct ClEnqueueMemcpyINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTELRpcM>);
-struct ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 121;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Copy;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_bool blocking = {};
-        void* dstPtr = {};
-        const void* srcPtr = {};
-        size_t size = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->blocking == rhs.blocking;
-            equal &= this->dstPtr == rhs.dstPtr;
-            equal &= this->srcPtr == rhs.srcPtr;
-            equal &= this->size == rhs.size;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM() = default;
-
-    ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.blocking = blocking;
-        args.dstPtr = dstPtr;
-        args.srcPtr = srcPtr;
-        args.size = size;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.blocking = blocking;
-        message.args.dstPtr = dstPtr;
-        message.args.srcPtr = srcPtr;
-        message.args.size = size;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM>);
-struct ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 122;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Copy;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_bool blocking = {};
-        void* dstPtr = {};
-        const void* srcPtr = {};
-        size_t size = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->blocking == rhs.blocking;
-            equal &= this->dstPtr == rhs.dstPtr;
-            equal &= this->srcPtr == rhs.srcPtr;
-            equal &= this->size == rhs.size;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM() = default;
-
-    ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.blocking = blocking;
-        args.dstPtr = dstPtr;
-        args.srcPtr = srcPtr;
-        args.size = size;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.blocking = blocking;
-        message.args.dstPtr = dstPtr;
-        message.args.srcPtr = srcPtr;
-        message.args.size = size;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM>);
 struct ClSetKernelArgMemPointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 123;
+    static constexpr uint16_t messageSubtype = 119;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11785,7 +11361,7 @@ struct ClSetKernelArgMemPointerINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSetKernelArgMemPointerINTELRpcM>);
 struct ClGetMemAllocInfoINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 124;
+    static constexpr uint16_t messageSubtype = 120;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11880,7 +11456,7 @@ struct ClGetMemAllocInfoINTELRpcM {
 static_assert(std::is_standard_layout_v<ClGetMemAllocInfoINTELRpcM>);
 struct ClDeviceMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 125;
+    static constexpr uint16_t messageSubtype = 121;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11984,7 +11560,7 @@ struct ClHostMemAllocINTELRpcMImplicitArgs {
 
 struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 126;
+    static constexpr uint16_t messageSubtype = 122;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12088,7 +11664,7 @@ struct ClSharedMemAllocINTELRpcMImplicitArgs {
 
 struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 127;
+    static constexpr uint16_t messageSubtype = 123;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12190,7 +11766,7 @@ struct ClSharedMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSharedMemAllocINTELRpcM>);
 struct ClMemFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 128;
+    static constexpr uint16_t messageSubtype = 124;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12246,7 +11822,7 @@ struct ClMemFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemFreeINTELRpcM>);
 struct ClMemBlockingFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 129;
+    static constexpr uint16_t messageSubtype = 125;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12302,7 +11878,7 @@ struct ClMemBlockingFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemBlockingFreeINTELRpcM>);
 struct ClEnqueueMigrateMemINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 130;
+    static constexpr uint16_t messageSubtype = 126;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12404,7 +11980,7 @@ struct ClEnqueueMigrateMemINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemINTELRpcM>);
 struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 131;
+    static constexpr uint16_t messageSubtype = 127;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12500,6 +12076,1914 @@ struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClGetDeviceGlobalVariablePointerINTELRpcM>);
+struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 128;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Local_LocalRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Local_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Local_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_LocalRpcM>);
+struct ClEnqueueSVMMemcpy_Local_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 129;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Local_UsmRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Local_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Local_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_UsmRpcM>);
+struct ClEnqueueSVMMemcpy_Local_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 130;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Local_SharedRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Local_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Local_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_SharedRpcM>);
+struct ClEnqueueSVMMemcpy_Usm_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 131;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Usm_LocalRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Usm_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Usm_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_LocalRpcM>);
+struct ClEnqueueSVMMemcpy_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 132;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Usm_UsmRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Usm_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Usm_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_UsmRpcM>);
+struct ClEnqueueSVMMemcpy_Usm_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 133;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Usm_SharedRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Usm_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Usm_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_SharedRpcM>);
+struct ClEnqueueSVMMemcpy_Shared_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 134;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Shared_LocalRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Shared_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Shared_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_LocalRpcM>);
+struct ClEnqueueSVMMemcpy_Shared_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 135;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Shared_UsmRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Shared_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Shared_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_UsmRpcM>);
+struct ClEnqueueSVMMemcpy_Shared_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 136;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dst_ptr = {};
+        const void* src_ptr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dst_ptr == rhs.dst_ptr;
+            equal &= this->src_ptr == rhs.src_ptr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueSVMMemcpy_Shared_SharedRpcM() = default;
+
+    ClEnqueueSVMMemcpy_Shared_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dst_ptr = dst_ptr;
+        args.src_ptr = src_ptr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueSVMMemcpy_Shared_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dst_ptr = dst_ptr;
+        message.args.src_ptr = src_ptr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_SharedRpcM>);
+struct ClEnqueueMemcpyINTEL_Local_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 137;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Local_LocalRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Local_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Local_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_LocalRpcM>);
+struct ClEnqueueMemcpyINTEL_Local_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 138;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Local_UsmRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Local_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Local_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_UsmRpcM>);
+struct ClEnqueueMemcpyINTEL_Local_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 139;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Local_SharedRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Local_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Local_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_SharedRpcM>);
+struct ClEnqueueMemcpyINTEL_Usm_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 140;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Usm_LocalRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Usm_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Usm_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_LocalRpcM>);
+struct ClEnqueueMemcpyINTEL_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 141;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Usm_UsmRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Usm_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Usm_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_UsmRpcM>);
+struct ClEnqueueMemcpyINTEL_Usm_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 142;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Usm_SharedRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Usm_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Usm_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_SharedRpcM>);
+struct ClEnqueueMemcpyINTEL_Shared_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 143;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Shared_LocalRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Shared_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Shared_LocalRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_LocalRpcM>);
+struct ClEnqueueMemcpyINTEL_Shared_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 144;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Shared_UsmRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Shared_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Shared_UsmRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_UsmRpcM>);
+struct ClEnqueueMemcpyINTEL_Shared_SharedRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 145;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_bool blocking = {};
+        void* dstPtr = {};
+        const void* srcPtr = {};
+        size_t size = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->blocking == rhs.blocking;
+            equal &= this->dstPtr == rhs.dstPtr;
+            equal &= this->srcPtr == rhs.srcPtr;
+            equal &= this->size == rhs.size;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueMemcpyINTEL_Shared_SharedRpcM() = default;
+
+    ClEnqueueMemcpyINTEL_Shared_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.blocking = blocking;
+        args.dstPtr = dstPtr;
+        args.srcPtr = srcPtr;
+        args.size = size;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueMemcpyINTEL_Shared_SharedRpcM &message, cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.blocking = blocking;
+        message.args.dstPtr = dstPtr;
+        message.args.srcPtr = srcPtr;
+        message.args.size = size;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_SharedRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -12616,16 +14100,12 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemFillRpcM::messageSubtype).id, "clEnqueueSVMMemFill"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMigrateMemRpcM::messageSubtype).id, "clEnqueueSVMMigrateMem"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcM::messageSubtype).id, "clEnqueueSVMMemcpy"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::messageSubtype).id, "clEnqueueSVMMemcpyRpcHelperMalloc2Usm"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::messageSubtype).id, "clEnqueueSVMMemcpyRpcHelperUsm2Malloc"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateSubDevicesEXTRpcM::messageSubtype).id, "clCreateSubDevicesEXT"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype).id, "clReleaseDeviceEXT"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype).id, "clRetainDeviceEXT"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype).id, "clGetKernelSubGroupInfoKHR"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype).id, "clEnqueueMemFillINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype).id, "clEnqueueMemcpyINTELRpcHelperMalloc2Usm"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype).id, "clEnqueueMemcpyINTELRpcHelperUsm2Malloc"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype).id, "clSetKernelArgMemPointerINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype).id, "clGetMemAllocInfoINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype).id, "clDeviceMemAllocINTEL"),
@@ -12635,6 +14115,24 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype).id, "clMemBlockingFreeINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype).id, "clEnqueueMigrateMemINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype).id, "clGetDeviceGlobalVariablePointerINTEL"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_LocalRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Usm_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_UsmRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Usm_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_SharedRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Usm_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_LocalRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Shared_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_UsmRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Shared_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_SharedRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Shared_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_LocalRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Local_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_UsmRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Local_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_SharedRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Local_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_LocalRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Usm_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_UsmRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Usm_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_SharedRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Usm_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_LocalRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Shared_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_UsmRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Shared_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL_Shared_Shared"),
     };
 
     auto it = options.find(callId.id);
@@ -12760,16 +14258,12 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clEnqueueSVMMemFill", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemFillRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueSVMMigrateMem", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMigrateMemRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueSVMMemcpy", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueSVMMemcpyRpcHelperMalloc2Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueSVMMemcpyRpcHelperUsm2Malloc", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clCreateSubDevicesEXT", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateSubDevicesEXTRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clReleaseDeviceEXT", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clRetainDeviceEXT", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clGetKernelSubGroupInfoKHR", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMemFillINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMemcpyINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueMemcpyINTELRpcHelperMalloc2Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueMemcpyINTELRpcHelperUsm2Malloc", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clSetKernelArgMemPointerINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clGetMemAllocInfoINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clDeviceMemAllocINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype)),
@@ -12779,6 +14273,24 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clMemBlockingFreeINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMigrateMemINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clGetDeviceGlobalVariablePointerINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Usm_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Usm_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Shared_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Shared_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Local_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Local_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Usm_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Usm_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Shared_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueMemcpyINTEL_Shared_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -12902,16 +14414,12 @@ static constexpr RpcCallId clSetKernelExecInfo = {Cal::Rpc::RpcMessageHeader::me
 static constexpr RpcCallId clEnqueueSVMMemFill = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemFillRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueSVMMigrateMem = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMigrateMemRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueSVMMemcpy = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueSVMMemcpyRpcHelperMalloc2Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueSVMMemcpyRpcHelperUsm2Malloc = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::messageSubtype};
 static constexpr RpcCallId clCreateSubDevicesEXT = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateSubDevicesEXTRpcM::messageSubtype};
 static constexpr RpcCallId clReleaseDeviceEXT = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype};
 static constexpr RpcCallId clRetainDeviceEXT = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype};
 static constexpr RpcCallId clGetKernelSubGroupInfoKHR = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMemFillINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMemcpyINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueMemcpyINTELRpcHelperMalloc2Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueMemcpyINTELRpcHelperUsm2Malloc = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::messageSubtype};
 static constexpr RpcCallId clSetKernelArgMemPointerINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClSetKernelArgMemPointerINTELRpcM::messageSubtype};
 static constexpr RpcCallId clGetMemAllocInfoINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetMemAllocInfoINTELRpcM::messageSubtype};
 static constexpr RpcCallId clDeviceMemAllocINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClDeviceMemAllocINTELRpcM::messageSubtype};
@@ -12921,6 +14429,24 @@ static constexpr RpcCallId clMemFreeINTEL = {Cal::Rpc::RpcMessageHeader::message
 static constexpr RpcCallId clMemBlockingFreeINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMigrateMemINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype};
 static constexpr RpcCallId clGetDeviceGlobalVariablePointerINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Usm_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Usm_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Usm_SharedRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Shared_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueSVMMemcpy_Shared_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Shared_SharedRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Local_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Local_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Local_SharedRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Usm_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Usm_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Usm_SharedRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Shared_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueMemcpyINTEL_Shared_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -13037,16 +14563,12 @@ using clSetKernelExecInfo = ClSetKernelExecInfoRpcM;
 using clEnqueueSVMMemFill = ClEnqueueSVMMemFillRpcM;
 using clEnqueueSVMMigrateMem = ClEnqueueSVMMigrateMemRpcM;
 using clEnqueueSVMMemcpy = ClEnqueueSVMMemcpyRpcM;
-using clEnqueueSVMMemcpyRpcHelperMalloc2Usm = ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM;
-using clEnqueueSVMMemcpyRpcHelperUsm2Malloc = ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM;
 using clCreateSubDevicesEXT = ClCreateSubDevicesEXTRpcM;
 using clReleaseDeviceEXT = ClReleaseDeviceEXTRpcM;
 using clRetainDeviceEXT = ClRetainDeviceEXTRpcM;
 using clGetKernelSubGroupInfoKHR = ClGetKernelSubGroupInfoKHRRpcM;
 using clEnqueueMemFillINTEL = ClEnqueueMemFillINTELRpcM;
 using clEnqueueMemcpyINTEL = ClEnqueueMemcpyINTELRpcM;
-using clEnqueueMemcpyINTELRpcHelperMalloc2Usm = ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM;
-using clEnqueueMemcpyINTELRpcHelperUsm2Malloc = ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM;
 using clSetKernelArgMemPointerINTEL = ClSetKernelArgMemPointerINTELRpcM;
 using clGetMemAllocInfoINTEL = ClGetMemAllocInfoINTELRpcM;
 using clDeviceMemAllocINTEL = ClDeviceMemAllocINTELRpcM;
@@ -13056,6 +14578,24 @@ using clMemFreeINTEL = ClMemFreeINTELRpcM;
 using clMemBlockingFreeINTEL = ClMemBlockingFreeINTELRpcM;
 using clEnqueueMigrateMemINTEL = ClEnqueueMigrateMemINTELRpcM;
 using clGetDeviceGlobalVariablePointerINTEL = ClGetDeviceGlobalVariablePointerINTELRpcM;
+using clEnqueueSVMMemcpy_Local_Local = ClEnqueueSVMMemcpy_Local_LocalRpcM;
+using clEnqueueSVMMemcpy_Local_Usm = ClEnqueueSVMMemcpy_Local_UsmRpcM;
+using clEnqueueSVMMemcpy_Local_Shared = ClEnqueueSVMMemcpy_Local_SharedRpcM;
+using clEnqueueSVMMemcpy_Usm_Local = ClEnqueueSVMMemcpy_Usm_LocalRpcM;
+using clEnqueueSVMMemcpy_Usm_Usm = ClEnqueueSVMMemcpy_Usm_UsmRpcM;
+using clEnqueueSVMMemcpy_Usm_Shared = ClEnqueueSVMMemcpy_Usm_SharedRpcM;
+using clEnqueueSVMMemcpy_Shared_Local = ClEnqueueSVMMemcpy_Shared_LocalRpcM;
+using clEnqueueSVMMemcpy_Shared_Usm = ClEnqueueSVMMemcpy_Shared_UsmRpcM;
+using clEnqueueSVMMemcpy_Shared_Shared = ClEnqueueSVMMemcpy_Shared_SharedRpcM;
+using clEnqueueMemcpyINTEL_Local_Local = ClEnqueueMemcpyINTEL_Local_LocalRpcM;
+using clEnqueueMemcpyINTEL_Local_Usm = ClEnqueueMemcpyINTEL_Local_UsmRpcM;
+using clEnqueueMemcpyINTEL_Local_Shared = ClEnqueueMemcpyINTEL_Local_SharedRpcM;
+using clEnqueueMemcpyINTEL_Usm_Local = ClEnqueueMemcpyINTEL_Usm_LocalRpcM;
+using clEnqueueMemcpyINTEL_Usm_Usm = ClEnqueueMemcpyINTEL_Usm_UsmRpcM;
+using clEnqueueMemcpyINTEL_Usm_Shared = ClEnqueueMemcpyINTEL_Usm_SharedRpcM;
+using clEnqueueMemcpyINTEL_Shared_Local = ClEnqueueMemcpyINTEL_Shared_LocalRpcM;
+using clEnqueueMemcpyINTEL_Shared_Usm = ClEnqueueMemcpyINTEL_Shared_UsmRpcM;
+using clEnqueueMemcpyINTEL_Shared_Shared = ClEnqueueMemcpyINTEL_Shared_SharedRpcM;
 }
 
 } // namespace Ocl

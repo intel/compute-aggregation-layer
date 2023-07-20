@@ -15,8 +15,8 @@ config:
 
   icd_init_dispatch_table_func_name_format: "initL0{}Ddi"
   icd_get_extenion_func_addr_func_name: "getL0ExtensionFuncionAddressRpcHelper"
-  icd_acquire_global_object: "auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform()"
-  icd_acquire_channel: "globalL0Platform->getRpcChannel()"
+  icd_acquire_global_object: "auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform()"
+  icd_acquire_channel: "globalPlatform->getRpcChannel()"
   result_type: ze_result_t
   result_success: ZE_RESULT_SUCCESS
   ddi_format_regexp0:
@@ -1952,7 +1952,7 @@ config:
                 element:
                   type: ze_command_list_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::CommandListType::Regular)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::CommandListType::Regular)"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
@@ -1998,7 +1998,7 @@ config:
                 element:
                   type: ze_command_list_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::selectImmediateType(altdesc))"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::selectImmediateType(altdesc))"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
@@ -2133,7 +2133,7 @@ config:
                 element:
                   type: ze_command_queue_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, command->args.desc->mode)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command->args.desc->mode)"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
@@ -2165,7 +2165,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandQueue
@@ -2261,7 +2261,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandQueue
@@ -2307,7 +2307,7 @@ config:
                 element:
                   type: ze_context_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
@@ -2361,7 +2361,7 @@ config:
                 element:
                   type: ze_context_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
 
@@ -2753,7 +2753,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandList
@@ -3607,7 +3607,7 @@ config:
                 element:
                   type: ze_device_handle_t
                   kind: pointer
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, hDriver)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, hDriver)"
                 server_access: write
 
         - name: zeDeviceGetSubDevices
@@ -3648,7 +3648,7 @@ config:
                 element:
                   type: ze_device_handle_t
                   kind: pointer
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, hDevice)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, hDevice)"
                 server_access: write
 
         - name: zeDeviceGetProperties
@@ -4289,7 +4289,7 @@ config:
                 element:
                   type: ze_event_pool_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
         - name: zeEventPoolDestroy
@@ -4341,7 +4341,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
         - name: zeEventDestroy
@@ -4416,7 +4416,7 @@ config:
                 element:
                   type: ze_event_pool_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
         - name: zeEventPoolCloseIpcHandle
@@ -4556,7 +4556,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hEvent
@@ -4580,7 +4580,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hEvent
@@ -4899,7 +4899,7 @@ config:
                 element:
                   type: ze_fence_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
         - name: zeFenceDestroy
@@ -4927,7 +4927,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hFence
@@ -4948,7 +4948,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalL0Platform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hFence
@@ -5067,7 +5067,7 @@ config:
                 element:
                   type: ze_image_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: read_write
         - name: zeImageDestroy
           latency: 0.0
@@ -5414,7 +5414,7 @@ config:
                 element:
                   type: void*
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->validateNewUsmDevicePointer({arg}, size)"
+                  translate_after: "{dst} = globalPlatform->validateNewUsmDevicePointer({arg}, size)"
                 server_access: write
         - name: zeMemAllocHost
           latency: 1.0
@@ -5502,7 +5502,7 @@ config:
               name: ptr
               type: void*
               kind: pointer
-              translate_before: "globalL0Platform->destroyUsmDescriptor({arg})"
+              translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
         - name: zeMemGetAllocProperties
           latency: 0.0
           special_handling:
@@ -5544,7 +5544,7 @@ config:
                 element:
                   type: ze_device_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg}, static_cast<ze_device_handle_t>(nullptr))"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, static_cast<ze_device_handle_t>(nullptr))"
                 server_access: write
         - name: zeMemGetAddressRange
           latency: 0.0
@@ -5656,7 +5656,7 @@ config:
                 element:
                   type: void*
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
+                  translate_after: "{dst} = globalPlatform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
                 server_access: write
         - name: zeMemCloseIpcHandle
           latency: 0.0
@@ -5675,7 +5675,7 @@ config:
               name: ptr
               type: const void*
               kind: pointer
-              translate_after: "globalL0Platform->destroyUsmDescriptor(const_cast<void*>({arg}))"
+              translate_after: "globalPlatform->destroyUsmDescriptor(const_cast<void*>({arg}))"
         - name: zexMemGetIpcHandles
           latency: 0.0
           special_handling:
@@ -5773,7 +5773,7 @@ config:
                 element:
                   type: void*
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
+                  translate_after: "{dst} = globalPlatform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
                 server_access: write
         #        - name : zeMemFreeExt
         #          ddi_category :  Mem
@@ -5837,7 +5837,7 @@ config:
                 element:
                   type: ze_module_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: read_write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
             4:
@@ -5850,7 +5850,7 @@ config:
                 element:
                   type: ze_module_build_log_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_at_end: "ctx.trackAllocatedResource({arg})"
         - name: zeModuleDestroy
@@ -5866,7 +5866,7 @@ config:
               type: ze_module_handle_t
               kind: scalar
               translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
-              translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalL0Platform->removeGlobalPointers(hModule);\n        }}"
+              translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalPlatform->removeGlobalPointers(hModule);\n        }}"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeModuleDynamicLink
           latency: 0.0
@@ -5902,7 +5902,7 @@ config:
                 element:
                   type: ze_module_build_log_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: read_write
               daemon_action_at_end: "ctx.trackAllocatedResource({arg})"
         - name: zeModuleBuildLogDestroy
@@ -6038,7 +6038,7 @@ config:
                   type: void*
                   kind: scalar
                 server_access: read_write
-              translate_after: "command->captures.ret = globalL0Platform->recordGlobalPointer(hModule, *{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
+              translate_after: "command->captures.ret = globalPlatform->recordGlobalPointer(hModule, *{arg}) ? command->captures.ret : ZE_RESULT_ERROR_INVALID_ARGUMENT"
         - name: zeModuleGetKernelNames
           latency: 0.0
           special_handling:
@@ -6172,7 +6172,7 @@ config:
                 element:
                   type: ze_kernel_handle_t
                   kind: scalar
-                  translate_after: "{dst} = globalL0Platform->translateNewRemoteObjectToLocalObject({arg})"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
               daemon_action_on_success: "ctx.trackAllocatedResource({arg})"
         - name: zeKernelDestroy

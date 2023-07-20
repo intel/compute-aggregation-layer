@@ -45,11 +45,52 @@ auto mutable_element_cast(const T **el) {
 ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_args_list_str(func_base)}) {
 %    if itentionally_ignore(f):
     log<Verbosity::info>("Intentionally ignoring ${f.name}");
-%    if not func_base.returns.type.is_void():
+%     if not func_base.returns.type.is_void():
     return ${func_base.returns.default};
-%    endif # not func_base.returns.type.is_void():
+%     endif # not func_base.returns.type.is_void():
 }
-%    else : # not itentionally_ignore(f)
+%    elif func_base.redirections: # not itentionally_ignore(f)
+    ${config.icd_acquire_global_object};
+<%    evals = set()%>\
+%     for r in func_base.redirections:
+%      for c in r.conditions:
+%       if c.evauluate not in evals:
+    ${c.evauluate};
+<%       evals.add(c.evauluate)%>\
+%       endif #c.evauluate not in evals:
+%      endfor # r.conditions
+%     endfor # func_base.redirections:
+    
+%     for r in func_base.redirections:
+%      if not loop.last:
+%       if loop.first:
+    if(\
+%       else: # loop.first
+    else if(\
+%       endif
+%       for c in r.conditions:
+%        if not loop.first:
+ && \
+%        endif # not loop.first:
+(${c.check})\
+%       endfor # r.conditions
+)\
+%      elif not loop.first:
+    else\
+%      else: # not loop.last
+    
+%      endif # not loop.last
+{
+%     if not func_base.returns.type.is_void():
+        return \
+%     else: # not func_base.returns.type.is_void():
+         \
+%     endif # not func_base.returns.type.is_void():
+${r.destination.name}(${func_base.get_call_params_list_str()});
+    }
+%     endfor # func_base.redirections:
+}
+%    else : # not func_base.redirections
 %     for prologue_line in prologue(f):
     ${prologue_line}
 %     endfor # prologue(f)

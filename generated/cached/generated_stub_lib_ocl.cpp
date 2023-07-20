@@ -478,11 +478,39 @@ cl_int clEnqueueSVMMemcpy(cl_command_queue command_queue, cl_bool blocking, void
    return {};
 }
 
-cl_int clEnqueueSVMMemcpyRpcHelperMalloc2Usm(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+cl_int clEnqueueSVMMemcpy_Local_Local(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
    return {};
 }
 
-cl_int clEnqueueSVMMemcpyRpcHelperUsm2Malloc(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+cl_int clEnqueueSVMMemcpy_Local_Usm(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Local_Shared(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Usm_Local(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Usm_Usm(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Usm_Shared(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Shared_Local(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Shared_Usm(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueSVMMemcpy_Shared_Shared(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
    return {};
 }
 

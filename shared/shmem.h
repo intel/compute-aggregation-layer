@@ -914,7 +914,7 @@ class MallocShmemImporter {
         }
 
         *importedHeapSize = requiredHeapSize;
-        return ptr;
+        return Cal::Utils::moveByBytes(localBaseAddress, offset);
     }
 
     bool isImported(void *ptr) {

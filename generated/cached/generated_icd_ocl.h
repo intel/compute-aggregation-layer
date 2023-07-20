@@ -147,17 +147,13 @@ cl_int clSetKernelArgSVMPointer (cl_kernel kernel, cl_uint argIndex, const void*
 cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void* param_value);
 cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_pointers, const void** svm_pointers, const size_t* sizes, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueSVMMemcpyRpcHelperUsm2Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueSVMMemcpyRpcHelperMalloc2Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueSVMMemcpyRpcHelperUsm2Malloc (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices);
 cl_int clReleaseDeviceEXT (cl_device_id device);
 cl_int clRetainDeviceEXT (cl_device_id device);
 cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueMemcpyINTELRpcHelperUsm2Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueMemcpyINTELRpcHelperMalloc2Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-cl_int clEnqueueMemcpyINTELRpcHelperUsm2Malloc (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argIndex, const void* argValue);
 cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_intel param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_mem_properties_intel* properties, size_t size, cl_uint alignment, cl_int* errcode_ret);
@@ -167,6 +163,24 @@ cl_int clMemFreeINTEL (cl_context context, void* ptr);
 cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr);
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
+cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 
 namespace Unimplemented {
 inline void clSetCommandQueuePropertyUnimpl() {

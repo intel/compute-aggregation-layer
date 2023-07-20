@@ -8,6 +8,7 @@
 #pragma once
 
 #include "icd/icd_global_state.h"
+#include "icd/icd_malloc_override.h"
 #include "shared/api_types.h"
 #include "shared/ipc.h"
 #include "shared/shmem_transfer_desc.h"
@@ -32,6 +33,12 @@ class ChannelClient;
 
 namespace Cal {
 namespace Icd {
+
+enum PointerType {
+    local,  // MAP_PRIVATE
+    shared, // MAP_SHARED
+    usm     // USM
+};
 
 class PageFaultManager;
 
@@ -212,8 +219,23 @@ class IcdPlatform {
         return allUsm;
     }
 
+    bool isUsm(const void *ptr) {
+        bool usm = false;
+        return areUsm(1, &ptr, &usm);
+    }
+
     bool isUsmHostOrShared(const void *ptr) {
         return globalState.getInitialUsmHeap().contains(ptr);
+    }
+
+    PointerType getPointerType(const void *ptr) {
+        if (globalState.getMallocShmemExporter().isRegionSharable(ptr) || (nullptr == ptr)) {
+            return PointerType::shared;
+        } else if (isUsm(ptr)) {
+            return PointerType::usm;
+        } else {
+            return PointerType::local;
+        }
     }
 
     bool recordGlobalPointer(void *handle, void *ptr) {

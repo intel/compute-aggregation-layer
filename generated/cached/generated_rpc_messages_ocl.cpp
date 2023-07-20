@@ -1825,46 +1825,6 @@ size_t ClEnqueueSVMMemcpyRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueSVMMemcpyRpcHelperMalloc2UsmRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueSVMMemcpyRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
 ClCreateSubDevicesEXTRpcM::Captures::DynamicTraits ClCreateSubDevicesEXTRpcM::Captures::DynamicTraits::calculate(cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices) {
     DynamicTraits ret = {};
     ret.out_devices.count = num_entries;
@@ -1971,46 +1931,6 @@ size_t ClEnqueueMemcpyINTELRpcM::Captures::getCaptureTotalSize() const {
 }
 
 size_t ClEnqueueMemcpyINTELRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueMemcpyINTELRpcHelperMalloc2UsmRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueMemcpyINTELRpcHelperUsm2MallocRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
@@ -2132,6 +2052,366 @@ size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureTotalSize(
 
 size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countGlobalVariableName * sizeof(char));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Local_LocalRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Local_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Local_UsmRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Local_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Local_SharedRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Local_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Local_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Usm_LocalRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Usm_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Usm_UsmRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Usm_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Usm_SharedRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Usm_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Usm_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Shared_LocalRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Shared_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Shared_UsmRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Shared_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueSVMMemcpy_Shared_SharedRpcM::Captures::DynamicTraits ClEnqueueSVMMemcpy_Shared_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueSVMMemcpy_Shared_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Local_LocalRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Local_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Local_UsmRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Local_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Local_SharedRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Local_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Local_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Usm_LocalRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Usm_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Usm_UsmRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Usm_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Usm_SharedRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Usm_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Usm_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Shared_LocalRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Shared_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Shared_UsmRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Shared_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueMemcpyINTEL_Shared_SharedRpcM::Captures::DynamicTraits ClEnqueueMemcpyINTEL_Shared_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemcpyINTEL_Shared_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 

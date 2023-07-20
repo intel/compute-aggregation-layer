@@ -179,8 +179,6 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
 void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment);
 void *clHostMemAllocINTEL(cl_context context, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret);
 void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret);
-cl_int clEnqueueMemcpyINTEL(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event);
-cl_int clEnqueueSVMMemcpy(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event);
 cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret);
 cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
 cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t *buffer_offset, const size_t *host_offset, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);

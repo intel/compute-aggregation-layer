@@ -262,48 +262,6 @@ void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_me
     return ptr;
 }
 
-cl_int clEnqueueMemcpyINTEL(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event) {
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
-    const void *ptrs[] = {dstPtr, srcPtr};
-    bool testResults[2] = {};
-    globalOclPlatform->areUsm(2, ptrs, testResults);
-    bool &dstIsUsm = testResults[0];
-    bool &srcIsUsm = testResults[1];
-    if (false == (dstIsUsm || srcIsUsm)) {
-        log<Verbosity::error>("Unsuported call to clEnqueueMemcpyINTEL using 2 non-USM pointers");
-        return CL_INVALID_ARG_VALUE;
-    }
-    if (dstIsUsm && srcIsUsm) {
-        return clEnqueueMemcpyINTELRpcHelperUsm2Usm(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    } else if (dstIsUsm) {
-        return clEnqueueMemcpyINTELRpcHelperMalloc2Usm(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    } else {
-        return clEnqueueMemcpyINTELRpcHelperUsm2Malloc(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    }
-}
-
-cl_int clEnqueueSVMMemcpy(cl_command_queue commandQueue, cl_bool blocking, void *dstPtr, const void *srcPtr, size_t size, cl_uint numEventsInWaitList, const cl_event *eventWaitList, cl_event *event) {
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
-    const void *ptrs[] = {dstPtr, srcPtr};
-    bool testResults[2] = {};
-    globalOclPlatform->areUsm(2, ptrs, testResults);
-    bool &dstIsUsm = testResults[0];
-    bool &srcIsUsm = testResults[1];
-    if (false == (dstIsUsm || srcIsUsm)) {
-        log<Verbosity::error>("Unsuported call to clEnqueueSVMMemcpy using 2 non-USM pointers");
-        return CL_INVALID_ARG_VALUE;
-    }
-    if (dstIsUsm && srcIsUsm) {
-        return clEnqueueSVMMemcpyRpcHelperUsm2Usm(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    } else if (dstIsUsm) {
-        return clEnqueueSVMMemcpyRpcHelperMalloc2Usm(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    } else {
-        return clEnqueueSVMMemcpyRpcHelperUsm2Malloc(commandQueue, blocking, dstPtr, srcPtr, size, numEventsInWaitList, eventWaitList, event);
-    }
-}
-
 cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
     auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
