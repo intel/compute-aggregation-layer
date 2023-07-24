@@ -134,6 +134,13 @@ class TypedRing final {
         }
     }
 
+    void flushBatched() {
+        if (batchCounter == 0) {
+            return;
+        }
+        __atomic_store_n(tail, peekTailOffset() + batchCounter, __ATOMIC_RELAXED);
+    }
+
   protected:
     DataType *data = nullptr;
     size_t capacity = 0U;
@@ -634,7 +641,10 @@ class ChannelClient : public CommandsChannel {
         CompletionStampT *completionStamp = completionStamps.allocate();
         if (nullptr == completionStamp) {
             if (false == waitForLastTag(messageFlags)) {
-                return nullptr;
+                ring.flushBatched();
+                if (false == waitForLastTag(messageFlags)) {
+                    return nullptr;
+                }
             }
 
             completionStamp = completionStamps.allocate();
@@ -653,10 +663,18 @@ class ChannelClient : public CommandsChannel {
             }
 
             if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
-                if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, false)) {
-                    completionStamps.free(completionStamp);
-                    log<Verbosity::critical>("Could not add command to ring");
-                    return nullptr;
+                ring.flushBatched();
+                if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
+                    if (false == waitForLastTag(messageFlags)) {
+                        return nullptr;
+                    }
+                    if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
+                        if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, false)) {
+                            completionStamps.free(completionStamp);
+                            log<Verbosity::critical>("Could not add command to ring");
+                            return nullptr;
+                        }
+                    }
                 }
             }
         }
@@ -675,7 +693,7 @@ class ChannelClient : public CommandsChannel {
         auto completionStamp = this->submitCommand(command, command->flags, batched);
 
         if (nullptr == completionStamp) {
-            log<Verbosity::critical>("Synchronous call failed");
+            log<Verbosity::critical>("Asynchronous call failed");
         }
 
         if (!batched) {
