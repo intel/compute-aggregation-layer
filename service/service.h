@@ -1271,7 +1271,9 @@ class Provider {
 
             service.serviceSingleRpcCommand(*channel, ctx, header, newCommand.commandMaxSize);
 
-            channel->signalCompletion(newCommand.completionStamp, header->flags);
+            if (newCommand.completionStamp) {
+                channel->signalCompletion(newCommand.completionStamp, header->flags);
+            }
 
             if (sharedLock) {
                 sharedLock = false;

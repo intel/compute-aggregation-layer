@@ -75,6 +75,12 @@ class TypedRing final {
         return capacity;
     }
 
+    void wait() {
+        auto tailSnapshot = peekTailOffset();
+        while (peekHeadOffset() != tailSnapshot) {
+        }
+    }
+
     bool pop() {
         if (peekEmpty()) {
             log<Verbosity::error>("Ring empty");
@@ -637,48 +643,41 @@ class ChannelClient : public CommandsChannel {
         return reinterpret_cast<T *>(static_cast<uintptr_t>(Cal::Utils::byteDistanceAbs(shmem, localAddress)));
     }
 
-    CompletionStampT *submitCommand(void *command, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags, bool batched) {
+    CompletionStampT *allocateCompletionStamp() {
         CompletionStampT *completionStamp = completionStamps.allocate();
         if (nullptr == completionStamp) {
-            if (false == waitForLastTag(messageFlags)) {
-                ring.flushBatched();
-                if (false == waitForLastTag(messageFlags)) {
-                    return nullptr;
-                }
-            }
-
-            completionStamp = completionStamps.allocate();
-            if (nullptr == completionStamp) {
-                log<Verbosity::critical>("Could allocate completion stamp");
-                return nullptr;
-            }
+            log<Verbosity::critical>("Could not allocate completion stamp");
+            return nullptr;
         }
         *completionStamp = CompletionStampNotReady;
+        return completionStamp;
+    }
+
+    bool submitCommand(void *command, Cal::Rpc::RpcMessageHeader::MessageFlagsT messageFlags, CompletionStampT *completionStamp, bool batched) {
         auto commandOffsetWithinRingBuffer = getAsShmemOffset(command);
-        auto stampOffsetWithinRingBuffer = getAsShmemOffset(completionStamp);
+        auto stampOffsetWithinRingBuffer = completionStamp ? getAsShmemOffset(completionStamp) : Cal::Messages::invalidOffsetWithinChannel;
 
         if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
-            if (false == waitForLastTag(messageFlags)) {
-                return nullptr;
-            }
+            ring.wait();
 
             if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
                 ring.flushBatched();
                 if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
-                    if (false == waitForLastTag(messageFlags)) {
-                        return nullptr;
-                    }
+                    ring.wait();
+
                     if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, batched)) {
                         if (false == ring.push(RingEntry{commandOffsetWithinRingBuffer, stampOffsetWithinRingBuffer}, false)) {
-                            completionStamps.free(completionStamp);
+                            if (completionStamp) {
+                                completionStamps.free(completionStamp);
+                            }
                             log<Verbosity::critical>("Could not add command to ring");
-                            return nullptr;
+                            return false;
                         }
                     }
                 }
             }
         }
-        return completionStamp;
+        return true;
     }
 
     void freeSpace(void *ptr) {
@@ -690,9 +689,9 @@ class ChannelClient : public CommandsChannel {
             command->flags |= Cal::Rpc::RpcMessageHeader::batched;
         }
 
-        auto completionStamp = this->submitCommand(command, command->flags, batched);
+        auto ret = this->submitCommand(command, command->flags, nullptr, batched);
 
-        if (nullptr == completionStamp) {
+        if (!ret) {
             log<Verbosity::critical>("Asynchronous call failed");
         }
 
@@ -704,14 +703,14 @@ class ChannelClient : public CommandsChannel {
             }
         }
 
-        asyncTagsStorage.push_back(completionStamp);
         asyncCommandsSpaceStorage.push_back(std::move(commandSpace));
         log<Verbosity::bloat>("Successful asynchronous call");
     }
 
     bool callSynchronous(Cal::Rpc::RpcMessageHeader *command) {
-        auto completionStamp = this->submitCommand(command, command->flags, false);
-        if (nullptr == completionStamp) {
+        auto completionStamp = allocateCompletionStamp();
+        auto ret = this->submitCommand(command, command->flags, completionStamp, false);
+        if (!ret) {
             log<Verbosity::critical>("Synchronous call failed");
             return false;
         }
@@ -992,7 +991,7 @@ class ChannelServer : public CommandsChannel {
         this->ring.pop();
 
         return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.heapEnd - newRequest.messageOffset),
-                             getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
+                             newRequest.completionStampOffset == Cal::Messages::invalidOffsetWithinChannel ? nullptr : getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
     }
 
     CommandPacket semaphoreWait() {
@@ -1010,7 +1009,7 @@ class ChannelServer : public CommandsChannel {
         this->ring.pop();
 
         return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.heapEnd - newRequest.messageOffset),
-                             getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
+                             newRequest.completionStampOffset == Cal::Messages::invalidOffsetWithinChannel ? nullptr : getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
     }
 
     Cal::Ipc::Connection &connection;
