@@ -191,11 +191,14 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
 %      else : # not is_unsupported(f)
 
-%      if f.callAsync:
+%      if f.callAsync and len(func_base.traits.get_standalone_args()) == 0:
     if(
 %      for arg in func_base.args:
 %       if ("block" in arg.name) or (arg.kind_details and arg.kind_details.element and arg.kind_details.element.translate_after):
        !${arg.name} &&
+%       endif
+%       if ("hCommandList" in arg.name):
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
 %       endif
 %      endfor
        channel.isCallAsyncEnabled()){
@@ -203,6 +206,13 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       if "queue" in func_base.name:
          command_queue->asLocalObject()->enqueue();
 %       endif
+%      for arg in func_base.args:
+%        if arg.translate_after: # translate as a whole
+         {
+           ${arg.translate_after.format(arg.name, arg.name)};
+         }
+%        endif # arg.translate_after
+%      endfor
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

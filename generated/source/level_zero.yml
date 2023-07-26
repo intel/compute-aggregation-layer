@@ -2108,7 +2108,6 @@ config:
 
         - name: zeCommandQueueExecuteCommandLists
           latency: 0.0
-          call_async: true
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
@@ -2152,7 +2151,6 @@ config:
 
         - name: zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper
           latency: 0.0
-          call_async: true
           special_handling:
             variant_of: "zeCommandQueueExecuteCommandLists"
             icd:
@@ -2508,7 +2506,6 @@ config:
 
         - name: zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate
           latency: 0.0
-          call_async: true
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopy"
             icd:

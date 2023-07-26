@@ -3273,7 +3273,6 @@ config:
         - name: clEnqueueWriteBufferRpcHelperMallocHost
           category: Copy
           latency: 0.0
-          call_async: true
           special_handling:
             variant_of: "clEnqueueWriteBuffer"
             icd:
@@ -4174,7 +4173,6 @@ config:
                 server_access: write
         - name: clEnqueueReadBufferRpcHelperMallocHost
           latency: 0.0
-          call_async: true
           special_handling:
             variant_of: "clEnqueueReadBuffer"
             icd:
