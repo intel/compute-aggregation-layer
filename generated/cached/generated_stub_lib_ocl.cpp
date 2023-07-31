@@ -323,14 +323,6 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
    return {};
 }
 
-cl_int clEnqueueWriteBufferRpcHelperMallocHost(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
-   return {};
-}
-
-cl_int clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
-   return {};
-}
-
 cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
    return {};
 }
@@ -459,6 +451,18 @@ cl_int clEnqueueSVMMigrateMem(cl_command_queue command_queue, cl_uint num_svm_po
 }
 
 cl_int clEnqueueSVMMemcpy(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueWriteBuffer_Local(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueWriteBuffer_Usm(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_int clEnqueueWriteBuffer_Shared(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
    return {};
 }
 

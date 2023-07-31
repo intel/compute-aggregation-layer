@@ -2272,154 +2272,19 @@ cl_int clSetProgramSpecializationConstant (cl_program program, cl_uint spec_id, 
 
     return ret;
 }
-cl_int clEnqueueWriteBufferRpcHelperUsmHost (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer");
+cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    command->copyFromCaller(dynMemTraits);
-    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
-    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
-    if(event_wait_list)
-    {
-        auto base = command->captures.event_wait_list;
-        auto baseMutable = mutable_element_cast(base);
-        auto numEntries = dynMemTraits.event_wait_list.count;
-
-        for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
-        }
+    auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
+    
+    if(ptr_pointer_type == local){
+        return clEnqueueWriteBuffer_Local(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     }
-
-    if(
-       !blocking_write &&
-       !event &&
-       channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
-         command_queue->asLocalObject()->enqueue();
-         return static_cast<CommandT::ReturnValueT>(0);
-    }else{
-      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-      }
-
-      if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-      }
+    else if(ptr_pointer_type == usm){
+        return clEnqueueWriteBuffer_Usm(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     }
-    command->copyToCaller(dynMemTraits);
-    if(event)
-    {
-        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    else{
+        return clEnqueueWriteBuffer_Shared(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     }
-    cl_int ret = command->captures.ret;
-
-    commandSpace.reset();
-    channelLock.unlock();
-    command_queue->asLocalObject()->enqueue();
-    return ret;
-}
-cl_int clEnqueueWriteBufferRpcHelperMallocHost (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRpcHelperMallocHost");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcHelperMallocHostRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getSpace(size);
-    memcpy(standaloneSpaceForptr.get(), ptr, size);
-    command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
-    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
-    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
-    if(event_wait_list)
-    {
-        auto base = command->captures.event_wait_list;
-        auto baseMutable = mutable_element_cast(base);
-        auto numEntries = dynMemTraits.event_wait_list.count;
-
-        for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
-        }
-    }
-
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    command->copyToCaller(dynMemTraits);
-    if(event)
-    {
-        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
-    }
-    cl_int ret = command->captures.ret;
-
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
-    channelLock.unlock();
-    command_queue->asLocalObject()->enqueue();
-    return ret;
-}
-cl_int clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRpcHelperZeroCopyMallocShmem");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRpcHelperZeroCopyMallocShmemRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    command->copyFromCaller(dynMemTraits);
-    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
-    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
-    if(event_wait_list)
-    {
-        auto base = command->captures.event_wait_list;
-        auto baseMutable = mutable_element_cast(base);
-        auto numEntries = dynMemTraits.event_wait_list.count;
-
-        for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
-        }
-    }
-
-    if(
-       !blocking_write &&
-       !event &&
-       channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
-         command_queue->asLocalObject()->enqueue();
-         return static_cast<CommandT::ReturnValueT>(0);
-    }else{
-      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-      }
-
-      if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-      }
-    }
-    command->copyToCaller(dynMemTraits);
-    if(event)
-    {
-        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
-    }
-    cl_int ret = command->captures.ret;
-
-    commandSpace.reset();
-    channelLock.unlock();
-    command_queue->asLocalObject()->enqueue();
-    return ret;
 }
 cl_int clEnqueueWriteBufferRectRpcHelperUsmHost (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRect");
@@ -3980,6 +3845,142 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     }
     cl_int ret = command->captures.ret;
 
+    return ret;
+}
+cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Local");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto standaloneSpaceForptr = channel.getSpace(size);
+    memcpy(standaloneSpaceForptr.get(), ptr, size);
+    command->copyFromCaller(dynMemTraits);
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
+    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    if(event_wait_list)
+    {
+        auto base = command->captures.event_wait_list;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.event_wait_list.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(event)
+    {
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    }
+    cl_int ret = command->captures.ret;
+
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    commandSpace.reset();
+    channelLock.unlock();
+    command_queue->asLocalObject()->enqueue();
+    return ret;
+}
+cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Usm");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_UsmRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    command->copyFromCaller(dynMemTraits);
+    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
+    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    if(event_wait_list)
+    {
+        auto base = command->captures.event_wait_list;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.event_wait_list.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(event)
+    {
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    }
+    cl_int ret = command->captures.ret;
+
+    commandSpace.reset();
+    channelLock.unlock();
+    command_queue->asLocalObject()->enqueue();
+    return ret;
+}
+cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Shared");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_SharedRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    command->copyFromCaller(dynMemTraits);
+    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
+    command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    if(event_wait_list)
+    {
+        auto base = command->captures.event_wait_list;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.event_wait_list.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdOclEvent*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(event)
+    {
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    }
+    cl_int ret = command->captures.ret;
+
+    commandSpace.reset();
+    channelLock.unlock();
+    command_queue->asLocalObject()->enqueue();
     return ret;
 }
 cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
