@@ -7244,7 +7244,7 @@ struct ClEnqueueReadBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 79;
     static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Other;
+    static constexpr CallCategory category = CallCategory::Copy;
 
 
     using ReturnValueT = cl_int;
@@ -7776,229 +7776,9 @@ struct ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM>);
-struct ClEnqueueReadBufferRpcHelperMallocHostRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 83;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Other;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_mem buffer = {};
-        cl_bool blocking_read = {};
-        size_t offset = {};
-        size_t size = {};
-        void* ptr = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->buffer == rhs.buffer;
-            equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->offset == rhs.offset;
-            equal &= this->size == rhs.size;
-            equal &= this->ptr == rhs.ptr;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueReadBufferRpcHelperMallocHostRpcM() = default;
-
-    ClEnqueueReadBufferRpcHelperMallocHostRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.buffer = buffer;
-        args.blocking_read = blocking_read;
-        args.offset = offset;
-        args.size = size;
-        args.ptr = ptr;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueReadBufferRpcHelperMallocHostRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.buffer = buffer;
-        message.args.blocking_read = blocking_read;
-        message.args.offset = offset;
-        message.args.size = size;
-        message.args.ptr = ptr;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRpcHelperMallocHostRpcM>);
-struct ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM {
-    Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 84;
-    static constexpr float latency = 0.0;
-    static constexpr CallCategory category = CallCategory::Other;
-
-
-    using ReturnValueT = cl_int;
-
-    struct Args {
-        cl_command_queue command_queue = {};
-        cl_mem buffer = {};
-        cl_bool blocking_read = {};
-        size_t offset = {};
-        size_t size = {};
-        void* ptr = {};
-        cl_uint num_events_in_wait_list = {};
-        const cl_event* event_wait_list = {};
-        cl_event* event = {};
-
-        bool shallowCompareEquals(const Args &rhs) const {
-            bool equal = true;
-            equal &= this->command_queue == rhs.command_queue;
-            equal &= this->buffer == rhs.buffer;
-            equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->offset == rhs.offset;
-            equal &= this->size == rhs.size;
-            equal &= this->ptr == rhs.ptr;
-            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
-            equal &= this->event_wait_list == rhs.event_wait_list;
-            equal &= this->event == rhs.event;
-            return equal;
-        }
-    }args;
-
-    struct Captures {
-
-        struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-            uint32_t totalDynamicSize = 0;
-            DynamicArgTraits event_wait_list = {};          
-        };
-
-        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        cl_event event;
-        uint32_t countEvent_wait_list = 0;
-        cl_event event_wait_list[];
-
-        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        countEvent_wait_list = dynamicTraits.event_wait_list.count;
-        }
-        
-        Captures() = default;
-        Captures(const Captures &) = delete;
-        Captures& operator=(const Captures& rhs) = delete;
-        size_t getCaptureTotalSize() const;
-        size_t getCaptureDynMemSize() const;
-
-    }captures;
-    
-
-    cl_int returnValue(){
-        return captures.ret;
-    }
-
-    ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM() = default;
-
-    ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        header.subtype = messageSubtype;
-        args.command_queue = command_queue;
-        args.buffer = buffer;
-        args.blocking_read = blocking_read;
-        args.offset = offset;
-        args.size = size;
-        args.ptr = ptr;
-        args.num_events_in_wait_list = num_events_in_wait_list;
-        args.event_wait_list = event_wait_list;
-        args.event = event;
-        captures.adjustCaptureLayout(dynamicTraits);
-    }
-    
-    static void fillWithoutCapture(ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
-        message.header.subtype = messageSubtype;
-        message.args.command_queue = command_queue;
-        message.args.buffer = buffer;
-        message.args.blocking_read = blocking_read;
-        message.args.offset = offset;
-        message.args.size = size;
-        message.args.ptr = ptr;
-        message.args.num_events_in_wait_list = num_events_in_wait_list;
-        message.args.event_wait_list = event_wait_list;
-        message.args.event = event;
-    }
-    
-
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event_wait_list){
-            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.event){
-            *args.event = captures.event;
-        }
-    }
-};
-static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM>);
 struct ClEnqueueCopyBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 85;
+    static constexpr uint16_t messageSubtype = 83;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8108,7 +7888,7 @@ struct ClEnqueueCopyBufferRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueCopyBufferRpcM>);
 struct ClEnqueueCopyBufferRectRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 86;
+    static constexpr uint16_t messageSubtype = 84;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8246,7 +8026,7 @@ struct ClEnqueueCopyBufferRectRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueCopyBufferRectRpcM>);
 struct ClEnqueueReadImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 87;
+    static constexpr uint16_t messageSubtype = 85;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8372,7 +8152,7 @@ struct ClEnqueueReadImageRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadImageRpcM>);
 struct ClEnqueueWriteImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 88;
+    static constexpr uint16_t messageSubtype = 86;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8498,7 +8278,7 @@ struct ClEnqueueWriteImageRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteImageRpcM>);
 struct ClEnqueueCopyImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 89;
+    static constexpr uint16_t messageSubtype = 87;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8620,7 +8400,7 @@ struct ClEnqueueCopyImageRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueCopyImageRpcM>);
 struct ClEnqueueCopyImageToBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 90;
+    static constexpr uint16_t messageSubtype = 88;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8738,7 +8518,7 @@ struct ClEnqueueCopyImageToBufferRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueCopyImageToBufferRpcM>);
 struct ClEnqueueCopyBufferToImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 91;
+    static constexpr uint16_t messageSubtype = 89;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8856,7 +8636,7 @@ struct ClEnqueueCopyBufferToImageRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueCopyBufferToImageRpcM>);
 struct ClEnqueueMapBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 92;
+    static constexpr uint16_t messageSubtype = 90;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -8974,7 +8754,7 @@ struct ClEnqueueMapBufferRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMapBufferRpcM>);
 struct ClEnqueueUnmapMemObjectRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 93;
+    static constexpr uint16_t messageSubtype = 91;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9072,7 +8852,7 @@ struct ClEnqueueUnmapMemObjectRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueUnmapMemObjectRpcM>);
 struct ClEnqueueFillBufferRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 94;
+    static constexpr uint16_t messageSubtype = 92;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9200,7 +8980,7 @@ struct ClEnqueueFillBufferRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueFillBufferRpcM>);
 struct ClEnqueueFillImageRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 95;
+    static constexpr uint16_t messageSubtype = 93;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9318,7 +9098,7 @@ struct ClEnqueueFillImageRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueFillImageRpcM>);
 struct ClWaitForEventsRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 96;
+    static constexpr uint16_t messageSubtype = 94;
     static constexpr float latency = 2.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9393,7 +9173,7 @@ struct ClWaitForEventsRpcM {
 static_assert(std::is_standard_layout_v<ClWaitForEventsRpcM>);
 struct ClGetEventInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 97;
+    static constexpr uint16_t messageSubtype = 95;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9484,7 +9264,7 @@ struct ClGetEventInfoRpcM {
 static_assert(std::is_standard_layout_v<ClGetEventInfoRpcM>);
 struct ClGetEventProfilingInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 98;
+    static constexpr uint16_t messageSubtype = 96;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9575,7 +9355,7 @@ struct ClGetEventProfilingInfoRpcM {
 static_assert(std::is_standard_layout_v<ClGetEventProfilingInfoRpcM>);
 struct ClCreateUserEventRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 99;
+    static constexpr uint16_t messageSubtype = 97;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9638,7 +9418,7 @@ struct ClCreateUserEventRpcM {
 static_assert(std::is_standard_layout_v<ClCreateUserEventRpcM>);
 struct ClSetUserEventStatusRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 100;
+    static constexpr uint16_t messageSubtype = 98;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9694,7 +9474,7 @@ struct ClSetUserEventStatusRpcM {
 static_assert(std::is_standard_layout_v<ClSetUserEventStatusRpcM>);
 struct ClSetEventCallbackRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 101;
+    static constexpr uint16_t messageSubtype = 99;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9758,7 +9538,7 @@ struct ClSetEventCallbackRpcM {
 static_assert(std::is_standard_layout_v<ClSetEventCallbackRpcM>);
 struct ClGetDeviceAndHostTimerRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 102;
+    static constexpr uint16_t messageSubtype = 100;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9829,7 +9609,7 @@ struct ClGetDeviceAndHostTimerRpcM {
 static_assert(std::is_standard_layout_v<ClGetDeviceAndHostTimerRpcM>);
 struct ClGetHostTimerRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 103;
+    static constexpr uint16_t messageSubtype = 101;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9898,7 +9678,7 @@ struct ClSVMAllocRpcMImplicitArgs {
 
 struct ClSVMAllocRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 104;
+    static constexpr uint16_t messageSubtype = 102;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -9969,7 +9749,7 @@ struct ClSVMAllocRpcM {
 static_assert(std::is_standard_layout_v<ClSVMAllocRpcM>);
 struct ClSVMFreeRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 105;
+    static constexpr uint16_t messageSubtype = 103;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10021,7 +9801,7 @@ struct ClSVMFreeRpcM {
 static_assert(std::is_standard_layout_v<ClSVMFreeRpcM>);
 struct ClEnqueueSVMMapRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 106;
+    static constexpr uint16_t messageSubtype = 104;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10127,7 +9907,7 @@ struct ClEnqueueSVMMapRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMapRpcM>);
 struct ClEnqueueSVMUnmapRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 107;
+    static constexpr uint16_t messageSubtype = 105;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10221,7 +10001,7 @@ struct ClEnqueueSVMUnmapRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMUnmapRpcM>);
 struct ClSetKernelArgSVMPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 108;
+    static constexpr uint16_t messageSubtype = 106;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10281,7 +10061,7 @@ struct ClSetKernelArgSVMPointerRpcM {
 static_assert(std::is_standard_layout_v<ClSetKernelArgSVMPointerRpcM>);
 struct ClSetKernelExecInfoRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 109;
+    static constexpr uint16_t messageSubtype = 107;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10364,7 +10144,7 @@ struct ClSetKernelExecInfoRpcM {
 static_assert(std::is_standard_layout_v<ClSetKernelExecInfoRpcM>);
 struct ClEnqueueSVMMemFillRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 110;
+    static constexpr uint16_t messageSubtype = 108;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10488,7 +10268,7 @@ struct ClEnqueueSVMMemFillRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemFillRpcM>);
 struct ClEnqueueSVMMigrateMemRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 111;
+    static constexpr uint16_t messageSubtype = 109;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10625,7 +10405,7 @@ struct ClEnqueueSVMMigrateMemRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMigrateMemRpcM>);
 struct ClEnqueueSVMMemcpyRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 112;
+    static constexpr uint16_t messageSubtype = 110;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -10731,7 +10511,7 @@ struct ClEnqueueSVMMemcpyRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpyRpcM>);
 struct ClCreateSubDevicesEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 113;
+    static constexpr uint16_t messageSubtype = 111;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10843,7 +10623,7 @@ struct ClCreateSubDevicesEXTRpcM {
 static_assert(std::is_standard_layout_v<ClCreateSubDevicesEXTRpcM>);
 struct ClReleaseDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 114;
+    static constexpr uint16_t messageSubtype = 112;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10895,7 +10675,7 @@ struct ClReleaseDeviceEXTRpcM {
 static_assert(std::is_standard_layout_v<ClReleaseDeviceEXTRpcM>);
 struct ClRetainDeviceEXTRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 115;
+    static constexpr uint16_t messageSubtype = 113;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10947,7 +10727,7 @@ struct ClRetainDeviceEXTRpcM {
 static_assert(std::is_standard_layout_v<ClRetainDeviceEXTRpcM>);
 struct ClGetKernelSubGroupInfoKHRRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 116;
+    static constexpr uint16_t messageSubtype = 114;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11071,7 +10851,7 @@ struct ClGetKernelSubGroupInfoKHRRpcM {
 static_assert(std::is_standard_layout_v<ClGetKernelSubGroupInfoKHRRpcM>);
 struct ClEnqueueMemFillINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 117;
+    static constexpr uint16_t messageSubtype = 115;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11195,7 +10975,7 @@ struct ClEnqueueMemFillINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemFillINTELRpcM>);
 struct ClEnqueueMemcpyINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 118;
+    static constexpr uint16_t messageSubtype = 116;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11301,7 +11081,7 @@ struct ClEnqueueMemcpyINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTELRpcM>);
 struct ClSetKernelArgMemPointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 119;
+    static constexpr uint16_t messageSubtype = 117;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11361,7 +11141,7 @@ struct ClSetKernelArgMemPointerINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSetKernelArgMemPointerINTELRpcM>);
 struct ClGetMemAllocInfoINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 120;
+    static constexpr uint16_t messageSubtype = 118;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11456,7 +11236,7 @@ struct ClGetMemAllocInfoINTELRpcM {
 static_assert(std::is_standard_layout_v<ClGetMemAllocInfoINTELRpcM>);
 struct ClDeviceMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 121;
+    static constexpr uint16_t messageSubtype = 119;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11560,7 +11340,7 @@ struct ClHostMemAllocINTELRpcMImplicitArgs {
 
 struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 122;
+    static constexpr uint16_t messageSubtype = 120;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11664,7 +11444,7 @@ struct ClSharedMemAllocINTELRpcMImplicitArgs {
 
 struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 123;
+    static constexpr uint16_t messageSubtype = 121;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11766,7 +11546,7 @@ struct ClSharedMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSharedMemAllocINTELRpcM>);
 struct ClMemFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 124;
+    static constexpr uint16_t messageSubtype = 122;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11822,7 +11602,7 @@ struct ClMemFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemFreeINTELRpcM>);
 struct ClMemBlockingFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 125;
+    static constexpr uint16_t messageSubtype = 123;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11878,7 +11658,7 @@ struct ClMemBlockingFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemBlockingFreeINTELRpcM>);
 struct ClEnqueueMigrateMemINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 126;
+    static constexpr uint16_t messageSubtype = 124;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11980,7 +11760,7 @@ struct ClEnqueueMigrateMemINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemINTELRpcM>);
 struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 127;
+    static constexpr uint16_t messageSubtype = 125;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12076,9 +11856,339 @@ struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClGetDeviceGlobalVariablePointerINTELRpcM>);
-struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
+struct ClEnqueueReadBuffer_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 126;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_mem buffer = {};
+        cl_bool blocking_read = {};
+        size_t offset = {};
+        size_t size = {};
+        void* ptr = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->buffer == rhs.buffer;
+            equal &= this->blocking_read == rhs.blocking_read;
+            equal &= this->offset == rhs.offset;
+            equal &= this->size == rhs.size;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueReadBuffer_LocalRpcM() = default;
+
+    ClEnqueueReadBuffer_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.buffer = buffer;
+        args.blocking_read = blocking_read;
+        args.offset = offset;
+        args.size = size;
+        args.ptr = ptr;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueReadBuffer_LocalRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.buffer = buffer;
+        message.args.blocking_read = blocking_read;
+        message.args.offset = offset;
+        message.args.size = size;
+        message.args.ptr = ptr;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_LocalRpcM>);
+struct ClEnqueueReadBuffer_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 127;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_mem buffer = {};
+        cl_bool blocking_read = {};
+        size_t offset = {};
+        size_t size = {};
+        void* ptr = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->buffer == rhs.buffer;
+            equal &= this->blocking_read == rhs.blocking_read;
+            equal &= this->offset == rhs.offset;
+            equal &= this->size == rhs.size;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueReadBuffer_UsmRpcM() = default;
+
+    ClEnqueueReadBuffer_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.buffer = buffer;
+        args.blocking_read = blocking_read;
+        args.offset = offset;
+        args.size = size;
+        args.ptr = ptr;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueReadBuffer_UsmRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.buffer = buffer;
+        message.args.blocking_read = blocking_read;
+        message.args.offset = offset;
+        message.args.size = size;
+        message.args.ptr = ptr;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_UsmRpcM>);
+struct ClEnqueueReadBuffer_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 128;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Copy;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_mem buffer = {};
+        cl_bool blocking_read = {};
+        size_t offset = {};
+        size_t size = {};
+        void* ptr = {};
+        cl_uint num_events_in_wait_list = {};
+        const cl_event* event_wait_list = {};
+        cl_event* event = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->buffer == rhs.buffer;
+            equal &= this->blocking_read == rhs.blocking_read;
+            equal &= this->offset == rhs.offset;
+            equal &= this->size == rhs.size;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->num_events_in_wait_list == rhs.num_events_in_wait_list;
+            equal &= this->event_wait_list == rhs.event_wait_list;
+            equal &= this->event == rhs.event;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits event_wait_list = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        cl_event event;
+        uint32_t countEvent_wait_list = 0;
+        cl_event event_wait_list[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countEvent_wait_list = dynamicTraits.event_wait_list.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClEnqueueReadBuffer_SharedRpcM() = default;
+
+    ClEnqueueReadBuffer_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.buffer = buffer;
+        args.blocking_read = blocking_read;
+        args.offset = offset;
+        args.size = size;
+        args.ptr = ptr;
+        args.num_events_in_wait_list = num_events_in_wait_list;
+        args.event_wait_list = event_wait_list;
+        args.event = event;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClEnqueueReadBuffer_SharedRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.buffer = buffer;
+        message.args.blocking_read = blocking_read;
+        message.args.offset = offset;
+        message.args.size = size;
+        message.args.ptr = ptr;
+        message.args.num_events_in_wait_list = num_events_in_wait_list;
+        message.args.event_wait_list = event_wait_list;
+        message.args.event = event;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event_wait_list){
+            memcpy(asMemcpyDstT(captures.event_wait_list), args.event_wait_list, dynMemTraits.event_wait_list.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.event){
+            *args.event = captures.event;
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_SharedRpcM>);
+struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 129;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12184,7 +12294,7 @@ struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 129;
+    static constexpr uint16_t messageSubtype = 130;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12290,7 +12400,7 @@ struct ClEnqueueSVMMemcpy_Local_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 130;
+    static constexpr uint16_t messageSubtype = 131;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12396,7 +12506,7 @@ struct ClEnqueueSVMMemcpy_Local_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_SharedRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 131;
+    static constexpr uint16_t messageSubtype = 132;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12502,7 +12612,7 @@ struct ClEnqueueSVMMemcpy_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 132;
+    static constexpr uint16_t messageSubtype = 133;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12608,7 +12718,7 @@ struct ClEnqueueSVMMemcpy_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 133;
+    static constexpr uint16_t messageSubtype = 134;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12714,7 +12824,7 @@ struct ClEnqueueSVMMemcpy_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_SharedRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 134;
+    static constexpr uint16_t messageSubtype = 135;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12820,7 +12930,7 @@ struct ClEnqueueSVMMemcpy_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 135;
+    static constexpr uint16_t messageSubtype = 136;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12926,7 +13036,7 @@ struct ClEnqueueSVMMemcpy_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 136;
+    static constexpr uint16_t messageSubtype = 137;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13032,7 +13142,7 @@ struct ClEnqueueSVMMemcpy_Shared_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 137;
+    static constexpr uint16_t messageSubtype = 138;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13138,7 +13248,7 @@ struct ClEnqueueMemcpyINTEL_Local_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 138;
+    static constexpr uint16_t messageSubtype = 139;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13244,7 +13354,7 @@ struct ClEnqueueMemcpyINTEL_Local_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 139;
+    static constexpr uint16_t messageSubtype = 140;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13350,7 +13460,7 @@ struct ClEnqueueMemcpyINTEL_Local_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 140;
+    static constexpr uint16_t messageSubtype = 141;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13456,7 +13566,7 @@ struct ClEnqueueMemcpyINTEL_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 141;
+    static constexpr uint16_t messageSubtype = 142;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13562,7 +13672,7 @@ struct ClEnqueueMemcpyINTEL_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 142;
+    static constexpr uint16_t messageSubtype = 143;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13668,7 +13778,7 @@ struct ClEnqueueMemcpyINTEL_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 143;
+    static constexpr uint16_t messageSubtype = 144;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13774,7 +13884,7 @@ struct ClEnqueueMemcpyINTEL_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 144;
+    static constexpr uint16_t messageSubtype = 145;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13880,7 +13990,7 @@ struct ClEnqueueMemcpyINTEL_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 145;
+    static constexpr uint16_t messageSubtype = 146;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14070,8 +14180,6 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcM::messageSubtype).id, "clEnqueueReadBufferRect"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::messageSubtype).id, "clEnqueueReadBufferRectRpcHelperMallocHost"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype).id, "clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperMallocHostRpcM::messageSubtype).id, "clEnqueueReadBufferRpcHelperMallocHost"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::messageSubtype).id, "clEnqueueReadBufferRpcHelperZeroCopyMallocShmem"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRpcM::messageSubtype).id, "clEnqueueCopyBuffer"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRectRpcM::messageSubtype).id, "clEnqueueCopyBufferRect"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadImageRpcM::messageSubtype).id, "clEnqueueReadImage"),
@@ -14115,6 +14223,9 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype).id, "clMemBlockingFreeINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype).id, "clEnqueueMigrateMemINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype).id, "clGetDeviceGlobalVariablePointerINTEL"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_LocalRpcM::messageSubtype).id, "clEnqueueReadBuffer_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_UsmRpcM::messageSubtype).id, "clEnqueueReadBuffer_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_SharedRpcM::messageSubtype).id, "clEnqueueReadBuffer_Shared"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Local"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype).id, "clEnqueueSVMMemcpy_Local_Shared"),
@@ -14228,8 +14339,6 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clEnqueueReadBufferRect", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueReadBufferRectRpcHelperMallocHost", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueReadBufferRpcHelperMallocHost", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperMallocHostRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("clEnqueueReadBufferRpcHelperZeroCopyMallocShmem", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueCopyBuffer", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueCopyBufferRect", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRectRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueReadImage", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadImageRpcM::messageSubtype)),
@@ -14273,6 +14382,9 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clMemBlockingFreeINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMigrateMemINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clGetDeviceGlobalVariablePointerINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueReadBuffer_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueReadBuffer_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clEnqueueReadBuffer_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_SharedRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueSVMMemcpy_Local_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype)),
@@ -14384,8 +14496,6 @@ static constexpr RpcCallId clEnqueueReadBuffer = {Cal::Rpc::RpcMessageHeader::me
 static constexpr RpcCallId clEnqueueReadBufferRect = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueReadBufferRectRpcHelperMallocHost = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueReadBufferRpcHelperMallocHost = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperMallocHostRpcM::messageSubtype};
-static constexpr RpcCallId clEnqueueReadBufferRpcHelperZeroCopyMallocShmem = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueCopyBuffer = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueCopyBufferRect = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueCopyBufferRectRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueReadImage = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadImageRpcM::messageSubtype};
@@ -14429,6 +14539,9 @@ static constexpr RpcCallId clMemFreeINTEL = {Cal::Rpc::RpcMessageHeader::message
 static constexpr RpcCallId clMemBlockingFreeINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClMemBlockingFreeINTELRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMigrateMemINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMigrateMemINTELRpcM::messageSubtype};
 static constexpr RpcCallId clGetDeviceGlobalVariablePointerINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueReadBuffer_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_LocalRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueReadBuffer_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_UsmRpcM::messageSubtype};
+static constexpr RpcCallId clEnqueueReadBuffer_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueReadBuffer_SharedRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueSVMMemcpy_Local_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype};
@@ -14533,8 +14646,6 @@ using clEnqueueReadBuffer = ClEnqueueReadBufferRpcM;
 using clEnqueueReadBufferRect = ClEnqueueReadBufferRectRpcM;
 using clEnqueueReadBufferRectRpcHelperMallocHost = ClEnqueueReadBufferRectRpcHelperMallocHostRpcM;
 using clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem = ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM;
-using clEnqueueReadBufferRpcHelperMallocHost = ClEnqueueReadBufferRpcHelperMallocHostRpcM;
-using clEnqueueReadBufferRpcHelperZeroCopyMallocShmem = ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM;
 using clEnqueueCopyBuffer = ClEnqueueCopyBufferRpcM;
 using clEnqueueCopyBufferRect = ClEnqueueCopyBufferRectRpcM;
 using clEnqueueReadImage = ClEnqueueReadImageRpcM;
@@ -14578,6 +14689,9 @@ using clMemFreeINTEL = ClMemFreeINTELRpcM;
 using clMemBlockingFreeINTEL = ClMemBlockingFreeINTELRpcM;
 using clEnqueueMigrateMemINTEL = ClEnqueueMigrateMemINTELRpcM;
 using clGetDeviceGlobalVariablePointerINTEL = ClGetDeviceGlobalVariablePointerINTELRpcM;
+using clEnqueueReadBuffer_Local = ClEnqueueReadBuffer_LocalRpcM;
+using clEnqueueReadBuffer_Usm = ClEnqueueReadBuffer_UsmRpcM;
+using clEnqueueReadBuffer_Shared = ClEnqueueReadBuffer_SharedRpcM;
 using clEnqueueSVMMemcpy_Local_Local = ClEnqueueSVMMemcpy_Local_LocalRpcM;
 using clEnqueueSVMMemcpy_Local_Usm = ClEnqueueSVMMemcpy_Local_UsmRpcM;
 using clEnqueueSVMMemcpy_Local_Shared = ClEnqueueSVMMemcpy_Local_SharedRpcM;

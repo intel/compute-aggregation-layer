@@ -102,7 +102,7 @@ static FT getOriginalFunc(const char *fname) {
     if (NULL == orignalF) {
         auto err = dlerror();
         if (err) {
-            fprintf(stderr, "Could not find %s because %s\n", fname, dlerror());
+            fprintf(stderr, "Could not find %s because %s\n", fname, err);
         } else {
             fprintf(stderr, "Could not find %s\n", fname);
         }

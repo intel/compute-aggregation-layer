@@ -1351,46 +1351,6 @@ size_t ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::Captures::getCap
      return size;
 }
 
-ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueReadBufferRpcHelperMallocHostRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::Captures::DynamicTraits ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
-    DynamicTraits ret = {};
-    ret.event_wait_list.count = num_events_in_wait_list;
-    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
-
-
-    return ret;
-}
-
-size_t ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
-size_t ClEnqueueReadBufferRpcHelperZeroCopyMallocShmemRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
-     return size;
-}
-
 ClEnqueueCopyBufferRpcM::Captures::DynamicTraits ClEnqueueCopyBufferRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, size_t src_offset, size_t dst_offset, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = num_events_in_wait_list;
@@ -2052,6 +2012,66 @@ size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureTotalSize(
 
 size_t ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countGlobalVariableName * sizeof(char));
+     return size;
+}
+
+ClEnqueueReadBuffer_LocalRpcM::Captures::DynamicTraits ClEnqueueReadBuffer_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueReadBuffer_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueReadBuffer_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueReadBuffer_UsmRpcM::Captures::DynamicTraits ClEnqueueReadBuffer_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueReadBuffer_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueReadBuffer_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+ClEnqueueReadBuffer_SharedRpcM::Captures::DynamicTraits ClEnqueueReadBuffer_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = num_events_in_wait_list;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueReadBuffer_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueReadBuffer_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
      return size;
 }
 

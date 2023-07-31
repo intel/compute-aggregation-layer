@@ -72,7 +72,13 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 %        if not loop.first:
  && \
 %        endif # not loop.first:
-(${c.check})\
+%         if len(r.conditions) > 1:
+(\
+%         endif # len(r.conditions) > 1
+${c.check}\
+%         if len(r.conditions) > 1:
+)\
+%         endif # len(r.conditions) > 1
 %       endfor # r.conditions
 )\
 %      elif not loop.first:
