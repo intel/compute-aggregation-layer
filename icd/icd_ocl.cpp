@@ -262,19 +262,6 @@ void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_me
     return ptr;
 }
 
-cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t *buffer_offset, const size_t *host_offset, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    globalOclPlatform->getPageFaultManager().moveAllocationToGpu(ptr);
-    auto isUsmHostPtr = globalOclPlatform->isUsmHostOrShared(ptr);
-    if (isUsmHostPtr) {
-        return clEnqueueWriteBufferRectRpcHelperUsmHost(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else if (Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch))) {
-        return clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmem(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    } else {
-        return clEnqueueWriteBufferRectRpcHelperMallocHost(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    }
-}
-
 cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret) {
     if (errcode_ret) {
         *errcode_ret = CL_SUCCESS;
