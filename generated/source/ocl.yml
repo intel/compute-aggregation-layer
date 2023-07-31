@@ -3844,10 +3844,11 @@ config:
                   translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
         - name: clEnqueueReadBufferRect
+          category: Copy
           latency: 0.0
           special_handling:
             icd:
-              handler_only_suffix: "RpcHelperUsmHost" # Dedicated handling due to different variants (hostptr from malloc and hostpr from USM)
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -3920,119 +3921,6 @@ config:
             10:
               name: ptr
               type: "void*"
-              kind: ptr_usm_va
-              kind_details:
-                server_access: write
-            11:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            12:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            13:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueReadBufferRectRpcHelperMallocHost
-          latency: 0.0
-          special_handling:
-            variant_of: "clEnqueueReadBufferRect"
-            icd:
-              not_in_dispatch_table: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: buffer
-              type: cl_mem
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
-            2:
-              name: blocking_read
-              type: cl_bool
-              kind: scalar
-            3:
-              name: buffer_offset
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            4:
-              name: host_offset
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            5:
-              name: region
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            6:
-              name: buffer_row_pitch
-              type: size_t
-              kind: scalar
-            7:
-              name: buffer_slice_pitch
-              type: size_t
-              kind: scalar
-            8:
-              name: host_row_pitch
-              type: size_t
-              kind: scalar
-            9:
-              name: host_slice_pitch
-              type: size_t
-              kind: scalar
-            10:
-              name: ptr
-              type: "void*"
-              capture_details:
-                mode: standalone
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
               kind_details:
                 num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
                 can_be_null: True
@@ -4040,120 +3928,13 @@ config:
                   type: "void"
                   kind: "scalar"
                 server_access: write
-            11:
-              name: num_events_in_wait_list
-              type: cl_uint
-              kind: scalar
-            12:
-              name: event_wait_list
-              type: "const cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "num_events_in_wait_list"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-                server_access: read
-            13:
-              name: event
-              type: "cl_event*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "1"
-                can_be_null: True
-                element:
-                  type: cl_event
-                  kind: scalar
-                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
-                server_access: write
-        - name: clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem
-          latency: 0.0
-          special_handling:
-            variant_of: "clEnqueueReadBufferRect"
-            icd:
-              not_in_dispatch_table: True
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-          returns:
-            type: cl_int
-            kind: scalar
-            default: "CL_DEVICE_NOT_AVAILABLE"
-          args:
-            0:
-              name: command_queue
-              type: cl_command_queue
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-            1:
-              name: buffer
-              type: cl_mem
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
-            2:
-              name: blocking_read
-              type: cl_bool
-              kind: scalar
-            3:
-              name: buffer_offset
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            4:
-              name: host_offset
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            5:
-              name: region
-              type: "const size_t*"
-              kind: ptr_array
-              kind_details:
-                num_elements: "3"
-                can_be_null: True
-                element:
-                  type: size_t
-                  kind: scalar
-                server_access: read
-            6:
-              name: buffer_row_pitch
-              type: size_t
-              kind: scalar
-            7:
-              name: buffer_slice_pitch
-              type: size_t
-              kind: scalar
-            8:
-              name: host_row_pitch
-              type: size_t
-              kind: scalar
-            9:
-              name: host_slice_pitch
-              type: size_t
-              kind: scalar
-            10:
-              name: ptr
-              type: "void*"
-              kind: ptr_zero_copy_malloc_shmem_va
-              kind_details:
-                num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
-                can_be_null: True
-                element:
-                  type: "void"
-                  kind: "scalar"
-                server_access: write
+              kind_variants:
+                - kind: ptr_array
+                  capture_details:
+                    mode: standalone
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             11:
               name: num_events_in_wait_list
               type: cl_uint

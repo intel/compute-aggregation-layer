@@ -1096,53 +1096,6 @@ inline bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelS
                                                 );
     return true;
 }
-inline bool clEnqueueReadBufferRectRpcHelperMallocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRectRpcHelperMallocHost");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperMallocHostRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
-                                                apiCommand->args.command_queue, 
-                                                apiCommand->args.buffer, 
-                                                apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
-                                                apiCommand->args.region ? apiCommand->captures.region : nullptr, 
-                                                apiCommand->args.buffer_row_pitch, 
-                                                apiCommand->args.buffer_slice_pitch, 
-                                                apiCommand->args.host_row_pitch, 
-                                                apiCommand->args.host_slice_pitch, 
-                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
-                                                apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
-                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
-                                                );
-    return true;
-}
-inline bool clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmem");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command);
-    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
-    if(nullptr == importedMallocPtrPtr){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
-        return false;
-    }
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
-                                                apiCommand->args.command_queue, 
-                                                apiCommand->args.buffer, 
-                                                apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
-                                                apiCommand->args.region ? apiCommand->captures.region : nullptr, 
-                                                apiCommand->args.buffer_row_pitch, 
-                                                apiCommand->args.buffer_slice_pitch, 
-                                                apiCommand->args.host_row_pitch, 
-                                                apiCommand->args.host_slice_pitch, 
-                                                importedMallocPtrPtr, 
-                                                apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
-                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
-                                                );
-    return true;
-}
 inline bool clEnqueueCopyBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueCopyBuffer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM*>(command);
@@ -1653,6 +1606,74 @@ inline bool clEnqueueReadBuffer_SharedHandler(Provider &service, Cal::Rpc::Chann
                                                 );
     return true;
 }
+inline bool clEnqueueReadBufferRect_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Local");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.buffer, 
+                                                apiCommand->args.blocking_read, 
+                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
+                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.region ? apiCommand->captures.region : nullptr, 
+                                                apiCommand->args.buffer_row_pitch, 
+                                                apiCommand->args.buffer_slice_pitch, 
+                                                apiCommand->args.host_row_pitch, 
+                                                apiCommand->args.host_slice_pitch, 
+                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.ptr), 
+                                                apiCommand->args.num_events_in_wait_list, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
+                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
+                                                );
+    return true;
+}
+inline bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.buffer, 
+                                                apiCommand->args.blocking_read, 
+                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
+                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.region ? apiCommand->captures.region : nullptr, 
+                                                apiCommand->args.buffer_row_pitch, 
+                                                apiCommand->args.buffer_slice_pitch, 
+                                                apiCommand->args.host_row_pitch, 
+                                                apiCommand->args.host_slice_pitch, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.num_events_in_wait_list, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
+                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
+                                                );
+    return true;
+}
+inline bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Shared");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM*>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    if(nullptr == importedMallocPtrPtr){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->args.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
+        return false;
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.buffer, 
+                                                apiCommand->args.blocking_read, 
+                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
+                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.region ? apiCommand->captures.region : nullptr, 
+                                                apiCommand->args.buffer_row_pitch, 
+                                                apiCommand->args.buffer_slice_pitch, 
+                                                apiCommand->args.host_row_pitch, 
+                                                apiCommand->args.host_slice_pitch, 
+                                                importedMallocPtrPtr, 
+                                                apiCommand->args.num_events_in_wait_list, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
+                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
+                                                );
+    return true;
+}
 inline bool clEnqueueSVMMemcpy_Local_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMemcpy_Local_Local");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_LocalRpcM*>(command);
@@ -2067,8 +2088,6 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype] = clEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemHandler;
     outHandlers[ClEnqueueReadBufferRpcM::messageSubtype] = clEnqueueReadBufferHandler;
     outHandlers[ClEnqueueReadBufferRectRpcM::messageSubtype] = clEnqueueReadBufferRectHandler;
-    outHandlers[ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::messageSubtype] = clEnqueueReadBufferRectRpcHelperMallocHostHandler;
-    outHandlers[ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype] = clEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemHandler;
     outHandlers[ClEnqueueCopyBufferRpcM::messageSubtype] = clEnqueueCopyBufferHandler;
     outHandlers[ClEnqueueCopyBufferRectRpcM::messageSubtype] = clEnqueueCopyBufferRectHandler;
     outHandlers[ClEnqueueReadImageRpcM::messageSubtype] = clEnqueueReadImageHandler;
@@ -2115,6 +2134,9 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClEnqueueReadBuffer_LocalRpcM::messageSubtype] = clEnqueueReadBuffer_LocalHandler;
     outHandlers[ClEnqueueReadBuffer_UsmRpcM::messageSubtype] = clEnqueueReadBuffer_UsmHandler;
     outHandlers[ClEnqueueReadBuffer_SharedRpcM::messageSubtype] = clEnqueueReadBuffer_SharedHandler;
+    outHandlers[ClEnqueueReadBufferRect_LocalRpcM::messageSubtype] = clEnqueueReadBufferRect_LocalHandler;
+    outHandlers[ClEnqueueReadBufferRect_UsmRpcM::messageSubtype] = clEnqueueReadBufferRect_UsmHandler;
+    outHandlers[ClEnqueueReadBufferRect_SharedRpcM::messageSubtype] = clEnqueueReadBufferRect_SharedHandler;
     outHandlers[ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype] = clEnqueueSVMMemcpy_Local_LocalHandler;
     outHandlers[ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype] = clEnqueueSVMMemcpy_Local_UsmHandler;
     outHandlers[ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype] = clEnqueueSVMMemcpy_Local_SharedHandler;
@@ -2829,42 +2851,6 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM &apiCommand)
                                                 apiCommand.args.event
                                                 );
 }
-inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperMallocHostRpcM &apiCommand) {
-    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
-                                                apiCommand.args.command_queue, 
-                                                apiCommand.args.buffer, 
-                                                apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
-                                                apiCommand.args.region, 
-                                                apiCommand.args.buffer_row_pitch, 
-                                                apiCommand.args.buffer_slice_pitch, 
-                                                apiCommand.args.host_row_pitch, 
-                                                apiCommand.args.host_slice_pitch, 
-                                                apiCommand.args.ptr, 
-                                                apiCommand.args.num_events_in_wait_list, 
-                                                apiCommand.args.event_wait_list, 
-                                                apiCommand.args.event
-                                                );
-}
-inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM &apiCommand) {
-    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
-                                                apiCommand.args.command_queue, 
-                                                apiCommand.args.buffer, 
-                                                apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
-                                                apiCommand.args.region, 
-                                                apiCommand.args.buffer_row_pitch, 
-                                                apiCommand.args.buffer_slice_pitch, 
-                                                apiCommand.args.host_row_pitch, 
-                                                apiCommand.args.host_slice_pitch, 
-                                                apiCommand.args.ptr, 
-                                                apiCommand.args.num_events_in_wait_list, 
-                                                apiCommand.args.event_wait_list, 
-                                                apiCommand.args.event
-                                                );
-}
 inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueCopyBuffer(
                                                 apiCommand.args.command_queue, 
@@ -3328,6 +3314,60 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBuffer_SharedRpcM &apiComma
                                                 apiCommand.args.event
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.buffer, 
+                                                apiCommand.args.blocking_read, 
+                                                apiCommand.args.buffer_offset, 
+                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.region, 
+                                                apiCommand.args.buffer_row_pitch, 
+                                                apiCommand.args.buffer_slice_pitch, 
+                                                apiCommand.args.host_row_pitch, 
+                                                apiCommand.args.host_slice_pitch, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.num_events_in_wait_list, 
+                                                apiCommand.args.event_wait_list, 
+                                                apiCommand.args.event
+                                                );
+}
+inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.buffer, 
+                                                apiCommand.args.blocking_read, 
+                                                apiCommand.args.buffer_offset, 
+                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.region, 
+                                                apiCommand.args.buffer_row_pitch, 
+                                                apiCommand.args.buffer_slice_pitch, 
+                                                apiCommand.args.host_row_pitch, 
+                                                apiCommand.args.host_slice_pitch, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.num_events_in_wait_list, 
+                                                apiCommand.args.event_wait_list, 
+                                                apiCommand.args.event
+                                                );
+}
+inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.buffer, 
+                                                apiCommand.args.blocking_read, 
+                                                apiCommand.args.buffer_offset, 
+                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.region, 
+                                                apiCommand.args.buffer_row_pitch, 
+                                                apiCommand.args.buffer_slice_pitch, 
+                                                apiCommand.args.host_row_pitch, 
+                                                apiCommand.args.host_slice_pitch, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.num_events_in_wait_list, 
+                                                apiCommand.args.event_wait_list, 
+                                                apiCommand.args.event
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_LocalRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand.args.command_queue, 
@@ -3636,8 +3676,6 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueReadBufferRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM*>(command)); break;
-        case Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperMallocHostRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperMallocHostRpcM*>(command)); break;
-        case Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcHelperZeroCopyMallocShmemRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueCopyBufferRectRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueCopyBufferRectRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueReadImageRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadImageRpcM*>(command)); break;
@@ -3684,6 +3722,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClEnqueueReadBuffer_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBuffer_LocalRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueReadBuffer_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBuffer_UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueReadBuffer_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBuffer_SharedRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_LocalRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_SharedRpcM*>(command)); break;
