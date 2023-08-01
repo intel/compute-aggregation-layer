@@ -1371,8 +1371,6 @@ config:
         [
           CommandList.zeCommandListAppendMemoryRangesBarrier,
           Context.zeContextSystemBarrier,
-          Device.zeDeviceReserveCacheExt,
-          Device.zeDeviceSetCacheAdviceExt,
           CommandList.zeCommandListAppendMemoryCopyRegion,
           CommandList.zeCommandListAppendMemoryCopyFromContext,
           CommandList.zeCommandListAppendImageCopy,
@@ -1817,51 +1815,6 @@ config:
         #                    name : hDevice
         #                    type : ze_device_handle_t
         #                    kind : scalar
-        #
-        #        - name : zeDeviceReserveCacheExt
-        #          ddi_category :  Device
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hDevice
-        #                    type : ze_device_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : cacheLevel
-        #                    type : size_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : cacheReservationSize
-        #                    type : size_t
-        #                    kind : scalar
-        #
-        #        - name : zeDeviceSetCacheAdviceExt
-        #          ddi_category :  Device
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hDevice
-        #                    type : ze_device_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : ptr
-        #                    type : void*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : regionSize
-        #                    type : size_t
-        #                    kind : scalar
-        #                 3 :
-        #                    name : cacheRegion
-        #                    type : ze_cache_ext_region_t
-        #                    kind : scalar
-        #
         #        - name : zeCommandGraphExpCreate
         #          ddi_category :  CommandGraphExp
         #          returns :
@@ -4048,6 +4001,48 @@ config:
                   type: uint64_t
                   kind: scalar
                 server_access: write
+        - name : zeDeviceReserveCacheExt
+          ddi_category :  Device
+          returns :
+            type : ze_result_t
+            kind : scalar
+            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hDevice
+              type : ze_device_handle_t
+              kind : scalar
+            1 :
+              name : cacheLevel
+              type : size_t
+              kind : scalar
+            2 :
+              name : cacheReservationSize
+              type : size_t
+              kind : scalar
+        - name : zeDeviceSetCacheAdviceExt
+          ddi_category :  Device
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hDevice
+              type : ze_device_handle_t
+              kind : scalar
+            1 :
+              name : ptr
+              type : void*
+              kind : pointer
+            2 :
+              name : regionSize
+              type : size_t
+              kind : scalar
+            3 :
+              name : cacheRegion
+              type : ze_cache_ext_region_t
+              kind : scalar
         - name: zeDriverGet
           latency: 0.0
           special_handling:

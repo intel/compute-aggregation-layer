@@ -72,6 +72,8 @@ extern ze_result_t (*zeDeviceGetP2PProperties)(ze_device_handle_t hDevice, ze_de
 extern ze_result_t (*zeDeviceCanAccessPeer)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
 extern ze_result_t (*zeDeviceGetStatus)(ze_device_handle_t hDevice);
 extern ze_result_t (*zeDeviceGetGlobalTimestamps)(ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp);
+extern ze_result_t (*zeDeviceReserveCacheExt)(ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize);
+extern ze_result_t (*zeDeviceSetCacheAdviceExt)(ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion);
 extern ze_result_t (*zeDriverGet)(uint32_t* pCount, ze_driver_handle_t* phDrivers);
 extern ze_result_t (*zeDriverGetApiVersion)(ze_driver_handle_t hDriver, ze_api_version_t* version);
 extern ze_result_t (*zeDriverGetProperties)(ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties);
@@ -618,6 +620,27 @@ inline bool zeDeviceGetGlobalTimestampsHandler(Provider &service, Cal::Rpc::Chan
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.hostTimestamp ? &apiCommand->captures.hostTimestamp : nullptr, 
                                                 apiCommand->args.deviceTimestamp ? &apiCommand->captures.deviceTimestamp : nullptr
+                                                );
+    return true;
+}
+inline bool zeDeviceReserveCacheExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDeviceReserveCacheExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceReserveCacheExt(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.cacheLevel, 
+                                                apiCommand->args.cacheReservationSize
+                                                );
+    return true;
+}
+inline bool zeDeviceSetCacheAdviceExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDeviceSetCacheAdviceExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceSetCacheAdviceExt(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.regionSize, 
+                                                apiCommand->args.cacheRegion
                                                 );
     return true;
 }
@@ -1465,6 +1488,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDeviceCanAccessPeerRpcM::messageSubtype] = zeDeviceCanAccessPeerHandler;
     outHandlers[ZeDeviceGetStatusRpcM::messageSubtype] = zeDeviceGetStatusHandler;
     outHandlers[ZeDeviceGetGlobalTimestampsRpcM::messageSubtype] = zeDeviceGetGlobalTimestampsHandler;
+    outHandlers[ZeDeviceReserveCacheExtRpcM::messageSubtype] = zeDeviceReserveCacheExtHandler;
+    outHandlers[ZeDeviceSetCacheAdviceExtRpcM::messageSubtype] = zeDeviceSetCacheAdviceExtHandler;
     outHandlers[ZeDriverGetRpcM::messageSubtype] = zeDriverGetHandler;
     outHandlers[ZeDriverGetApiVersionRpcM::messageSubtype] = zeDriverGetApiVersionHandler;
     outHandlers[ZeDriverGetPropertiesRpcM::messageSubtype] = zeDriverGetPropertiesHandler;
@@ -1949,6 +1974,21 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM &a
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.hostTimestamp, 
                                                 apiCommand.args.deviceTimestamp
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceReserveCacheExt(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.cacheLevel, 
+                                                apiCommand.args.cacheReservationSize
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDeviceSetCacheAdviceExt(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.regionSize, 
+                                                apiCommand.args.cacheRegion
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeDriverGetRpcM &apiCommand) {
@@ -2557,6 +2597,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDriverGetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDriverGetApiVersionRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetApiVersionRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM*>(command)); break;

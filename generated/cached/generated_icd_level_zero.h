@@ -93,6 +93,8 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
 ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice);
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp);
+ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize);
+ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion);
 ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDrivers);
 ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t* version);
 ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties);
@@ -181,14 +183,6 @@ inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
 }
 inline void zeContextSystemBarrierUnimpl() {
     log<Verbosity::critical>("Function Context.zeContextSystemBarrier is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeDeviceReserveCacheExtUnimpl() {
-    log<Verbosity::critical>("Function Device.zeDeviceReserveCacheExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeDeviceSetCacheAdviceExtUnimpl() {
-    log<Verbosity::critical>("Function Device.zeDeviceSetCacheAdviceExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
@@ -884,6 +878,8 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Device.pfnCanAccessPeer = Cal::Icd::LevelZero::zeDeviceCanAccessPeer;
     dt.Device.pfnGetStatus = Cal::Icd::LevelZero::zeDeviceGetStatus;
     dt.Device.pfnGetGlobalTimestamps = Cal::Icd::LevelZero::zeDeviceGetGlobalTimestamps;
+    dt.Device.pfnReserveCacheExt = Cal::Icd::LevelZero::zeDeviceReserveCacheExt;
+    dt.Device.pfnSetCacheAdviceExt = Cal::Icd::LevelZero::zeDeviceSetCacheAdviceExt;
     dt.Driver.pfnGet = Cal::Icd::LevelZero::zeDriverGet;
     dt.Driver.pfnGetApiVersion = Cal::Icd::LevelZero::zeDriverGetApiVersion;
     dt.Driver.pfnGetProperties = Cal::Icd::LevelZero::zeDriverGetProperties;
@@ -964,8 +960,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
-    dt.Device.pfnReserveCacheExt = reinterpret_cast<decltype(dt.Device.pfnReserveCacheExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceReserveCacheExtUnimpl);
-    dt.Device.pfnSetCacheAdviceExt = reinterpret_cast<decltype(dt.Device.pfnSetCacheAdviceExt)>(Cal::Icd::LevelZero::Unimplemented::zeDeviceSetCacheAdviceExtUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
     dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);

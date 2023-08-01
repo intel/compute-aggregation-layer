@@ -183,6 +183,14 @@ ze_result_t zeDeviceGetGlobalTimestamps(ze_device_handle_t hDevice, uint64_t* ho
    return {};
 }
 
+ze_result_t zeDeviceReserveCacheExt(ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize){
+   return {};
+}
+
+ze_result_t zeDeviceSetCacheAdviceExt(ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion){
+   return {};
+}
+
 ze_result_t zeDriverGet(uint32_t* pCount, ze_driver_handle_t* phDrivers){
    return {};
 }

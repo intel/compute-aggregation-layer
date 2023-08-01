@@ -1646,6 +1646,48 @@ ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* h
 
     return ret;
 }
+ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize) {
+    log<Verbosity::bloat>("Establishing RPC for zeDeviceReserveCacheExt");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, cacheLevel, cacheReservationSize);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion) {
+    log<Verbosity::bloat>("Establishing RPC for zeDeviceSetCacheAdviceExt");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM;
+    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto command = new(commandSpace.get()) CommandT(hDevice, ptr, regionSize, cacheRegion);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDrivers) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGet");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3964,6 +4006,12 @@ ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
 }
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp) {
     return Cal::Icd::LevelZero::zeDeviceGetGlobalTimestamps(hDevice, hostTimestamp, deviceTimestamp);
+}
+ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize) {
+    return Cal::Icd::LevelZero::zeDeviceReserveCacheExt(hDevice, cacheLevel, cacheReservationSize);
+}
+ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion) {
+    return Cal::Icd::LevelZero::zeDeviceSetCacheAdviceExt(hDevice, ptr, regionSize, cacheRegion);
 }
 ze_result_t zeDriverGet (uint32_t* pCount, ze_driver_handle_t* phDrivers) {
     return Cal::Icd::LevelZero::zeDriverGet(pCount, phDrivers);

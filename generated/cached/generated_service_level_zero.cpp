@@ -63,6 +63,8 @@ ze_result_t (*zeDeviceGetP2PProperties)(ze_device_handle_t hDevice, ze_device_ha
 ze_result_t (*zeDeviceCanAccessPeer)(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) = nullptr;
 ze_result_t (*zeDeviceGetStatus)(ze_device_handle_t hDevice) = nullptr;
 ze_result_t (*zeDeviceGetGlobalTimestamps)(ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp) = nullptr;
+ze_result_t (*zeDeviceReserveCacheExt)(ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize) = nullptr;
+ze_result_t (*zeDeviceSetCacheAdviceExt)(ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion) = nullptr;
 ze_result_t (*zeDriverGet)(uint32_t* pCount, ze_driver_handle_t* phDrivers) = nullptr;
 ze_result_t (*zeDriverGetApiVersion)(ze_driver_handle_t hDriver, ze_api_version_t* version) = nullptr;
 ze_result_t (*zeDriverGetProperties)(ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) = nullptr;
@@ -411,6 +413,18 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeDeviceGetGlobalTimestamps = reinterpret_cast<decltype(zeDeviceGetGlobalTimestamps)>(dlsym(libraryHandle, "zeDeviceGetGlobalTimestamps"));
     if(nullptr == zeDeviceGetGlobalTimestamps){
         log<Verbosity::error>("Missing symbol zeDeviceGetGlobalTimestamps in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeDeviceReserveCacheExt = reinterpret_cast<decltype(zeDeviceReserveCacheExt)>(dlsym(libraryHandle, "zeDeviceReserveCacheExt"));
+    if(nullptr == zeDeviceReserveCacheExt){
+        log<Verbosity::error>("Missing symbol zeDeviceReserveCacheExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeDeviceSetCacheAdviceExt = reinterpret_cast<decltype(zeDeviceSetCacheAdviceExt)>(dlsym(libraryHandle, "zeDeviceSetCacheAdviceExt"));
+    if(nullptr == zeDeviceSetCacheAdviceExt){
+        log<Verbosity::error>("Missing symbol zeDeviceSetCacheAdviceExt in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -923,6 +937,8 @@ void unloadLevelZeroLibrary() {
     zeDeviceCanAccessPeer = nullptr;
     zeDeviceGetStatus = nullptr;
     zeDeviceGetGlobalTimestamps = nullptr;
+    zeDeviceReserveCacheExt = nullptr;
+    zeDeviceSetCacheAdviceExt = nullptr;
     zeDriverGet = nullptr;
     zeDriverGetApiVersion = nullptr;
     zeDriverGetProperties = nullptr;
