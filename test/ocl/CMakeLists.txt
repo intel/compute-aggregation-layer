@@ -9,8 +9,8 @@ add_executable(ocl_test_basic
                ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
-
 target_link_libraries(ocl_test_basic OpenCL ${common_library_dependencies})
 
 add_executable(ocl_test_use_host_ptr
@@ -18,6 +18,7 @@ add_executable(ocl_test_use_host_ptr
                ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
 target_link_libraries(ocl_test_use_host_ptr OpenCL ${common_library_dependencies})
 
@@ -26,9 +27,18 @@ add_executable(ocl_parallel_copy
                ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
-
 target_link_libraries(ocl_parallel_copy OpenCL ${common_library_dependencies})
+
+add_executable(ocl_staging_area
+               ${CMAKE_CURRENT_SOURCE_DIR}/ocl_staging_area.cpp
+               ${cal_source_root_dir}/shared/callstack.cpp
+               ${cal_source_root_dir}/shared/sys.cpp
+               ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
+)
+target_link_libraries(ocl_staging_area OpenCL ${common_library_dependencies})
 
 get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)
 

@@ -10,6 +10,7 @@
 #include "cal.h"
 #include "shared/log.h"
 #include "shared/ocl_wrapper.h"
+#include "test/utils/ocl_common_steps.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -18,7 +19,7 @@
 #include <unistd.h>
 #include <vector>
 
-bool testCreateCommandQueueWithProperties(cl_context ctx, cl_device_id dev) {
+bool testCreateCommandQueueWithProperties(cl_context context, cl_device_id dev) {
     auto testAndFreeQueue = [](cl_command_queue queue, cl_command_queue_properties properties, cl_int cl_err) -> bool {
         if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
             log<Verbosity::error>("Failed to create command queue with error : %d", cl_err);
@@ -54,28 +55,28 @@ bool testCreateCommandQueueWithProperties(cl_context ctx, cl_device_id dev) {
         log<Verbosity::info>("Creating cl_command_queue object with properties : %llu", c);
 
         log<Verbosity::info>(" * clCreateCommandQueue");
-        cl_command_queue queue = clCreateCommandQueue(ctx, dev, c, &cl_err);
+        cl_command_queue queue = clCreateCommandQueue(context, dev, c, &cl_err);
         if (false == testAndFreeQueue(queue, c, cl_err)) {
             return false;
         }
 
         log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringSingle");
         cl_command_queue_properties queuePropertiesStringSingle[] = {CL_QUEUE_PROPERTIES, c, 0};
-        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringSingle, &cl_err);
+        queue = clCreateCommandQueueWithProperties(context, dev, queuePropertiesStringSingle, &cl_err);
         if (false == testAndFreeQueue(queue, c, cl_err)) {
             return false;
         }
 
         log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringMultipleBefore");
         cl_command_queue_properties queuePropertiesStringMultipleBefore[] = {CL_QUEUE_PROPERTIES, c, CL_QUEUE_THROTTLE_KHR, CL_QUEUE_THROTTLE_HIGH_KHR, 0};
-        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringMultipleBefore, &cl_err);
+        queue = clCreateCommandQueueWithProperties(context, dev, queuePropertiesStringMultipleBefore, &cl_err);
         if (false == testAndFreeQueue(queue, c, cl_err)) {
             return false;
         }
 
         log<Verbosity::info>(" * clCreateCommandQueueWithProperties+queuePropertiesStringMultipleAfter");
         cl_command_queue_properties queuePropertiesStringMultipleAfter[] = {CL_QUEUE_THROTTLE_KHR, CL_QUEUE_THROTTLE_HIGH_KHR, CL_QUEUE_PROPERTIES, c, 0};
-        queue = clCreateCommandQueueWithProperties(ctx, dev, queuePropertiesStringMultipleAfter, &cl_err);
+        queue = clCreateCommandQueueWithProperties(context, dev, queuePropertiesStringMultipleAfter, &cl_err);
         if (false == testAndFreeQueue(queue, c, cl_err)) {
             return false;
         }
@@ -85,11 +86,11 @@ bool testCreateCommandQueueWithProperties(cl_context ctx, cl_device_id dev) {
     return true;
 }
 
-bool testEventProfiling(cl_context ctx, cl_device_id dev) {
+bool testEventProfiling(cl_context context, cl_device_id dev) {
     log<Verbosity::info>("Creating cl_command_queue object with profiling enabled ");
     cl_int cl_err = CL_SUCCESS;
     cl_command_queue_properties queueProperties[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
-    auto queue = clCreateCommandQueueWithProperties(ctx, dev, queueProperties, &cl_err);
+    auto queue = clCreateCommandQueueWithProperties(context, dev, queueProperties, &cl_err);
     if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create command queue with profiling enabled. Error : %d", cl_err);
         return false;
@@ -177,121 +178,21 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    cl_platform_id platform = {};
-    if (platformOrd >= 0) {
-        log<Verbosity::info>("Looking for OCL platform with ordinal %d", platformOrd);
-        platform = Cal::Utils::OclApiWrapper::getPlatformByOrdinal(platformOrd);
-        if (Cal::Utils::OclApiWrapper::invalidPlatform == platform) {
-            log<Verbosity::critical>("Could not find OCL platform with ordinal %d", platformOrd);
-            return 1;
-        }
-        log<Verbosity::info>("Found OCL platform with ordinal %d", platformOrd);
-    } else {
-        setenv(calUseCustomOCLPlatformName.data(), "1", true);
-        platform = Cal::Utils::OclApiWrapper::getPlatformByName(calPlatformName.data(), false);
-        if (Cal::Utils::OclApiWrapper::invalidPlatform == platform) {
-            log<Verbosity::critical>("Could not find Compute Aggregation Layer OCL platform");
-            return 1;
-        }
-        log<Verbosity::info>("Found Compute Aggregation Layer OCL platform");
-    }
+    auto platform = getPlatform(platformOrd);
+    auto devices = getDevices(platform, CL_DEVICE_TYPE_ALL);
+    size_t deviceIndex = 0;
+    auto context = createContext(platform, devices, deviceIndex);
+    cl_int cl_err{};
 
-    Cal::Utils::OclApiWrapper::PlatformInfo platformInfo;
-    if (false == platformInfo.read(platform)) {
-        log<Verbosity::error>("Could not read platform info");
-        return 1;
-    }
-    log<Verbosity::info>("Platform info : \n%s\n", platformInfo.str().c_str());
-
-    std::vector<cl_device_id> devices = Cal::Utils::OclApiWrapper::getDevicesForPlatform(platform, CL_DEVICE_TYPE_ALL);
-    if (devices.empty()) {
-        log<Verbosity::info>("No devices in platform");
-        return 1;
-    }
-    log<Verbosity::info>("Num devices : %zu", devices.size());
-    for (auto device : devices) {
-        Cal::Utils::OclApiWrapper::DeviceInfo deviceInfo;
-        if (false == deviceInfo.read(device)) {
-            log<Verbosity::error>("Could not read device info for device %p", device);
-            return 1;
-        }
-        log<Verbosity::info>("Device %p info : \n%s\n", device, deviceInfo.str().c_str());
-        Cal::Utils::OclApiWrapper::DeviceInfo deviceInfoCached;
-        if (false == deviceInfoCached.read(device)) {
-            log<Verbosity::error>("Could not read cached device info for device %p", device);
-            return 1;
-        }
-        if (deviceInfo != deviceInfoCached) {
-            log<Verbosity::error>("Mismatch on cached device info for device %p", device);
-            return 1;
-        }
-        log<Verbosity::info>("cached device info OK for device %p", device);
-    }
-
-    log<Verbosity::info>("Creating context for first device : %p", devices[0]);
-    cl_context_properties properties[3] = {};
-    properties[0] = CL_CONTEXT_PLATFORM;
-    properties[1] = reinterpret_cast<cl_context_properties>(platform);
-    properties[2] = 0;
-    cl_int cl_err = 0;
-    cl_context ctx = clCreateContext(properties, 1, &devices[0], nullptr, nullptr, &cl_err);
-    if ((nullptr == ctx) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create context with error : %d", cl_err);
-        return 1;
-    };
-
-    Cal::Utils::OclApiWrapper::ContextInfo contextInfo;
-    Cal::Utils::OclApiWrapper::ContextInfo contextInfoCached;
-    if (false == contextInfo.read(ctx)) {
-        log<Verbosity::error>("Could not read context info");
-        return 1;
-    }
-    log<Verbosity::info>("Context info : \n%s\n", contextInfo.str().c_str());
-    if (false == contextInfoCached.read(ctx)) {
-        log<Verbosity::error>("Could not read cached context info for context %p", ctx);
-        return 1;
-    }
-    if (contextInfo != contextInfoCached) {
-        log<Verbosity::error>("Mismatch on cached context info for context %p", ctx);
-        return 1;
-    }
-    log<Verbosity::info>("cached context info OK for context %p", ctx);
-
-    log<Verbosity::info>("Creating program object with source");
     const char *f0 = "int f0(int a) { return a + 5; }";
     const char *f1 = "int f1(int a) { return a*5; }";
     const char *k = "__kernel void k(__global int *x, int y) { *x = f0(*x)*f1(*x) + y; }";
     const char *g = "__global int my_special_global_var = 5;";
     const char *h = "__kernel void exchange_special_global_var(__global int* old_ret, int new_val) { *old_ret = my_special_global_var; my_special_global_var = new_val; }";
     const char *src[] = {f0, f1, k, g, h};
-    cl_program program = clCreateProgramWithSource(ctx, 5, src, nullptr, &cl_err);
-    if ((nullptr == program) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create program with error : %d", cl_err);
-        return 1;
-    };
-    log<Verbosity::info>("Succesfully created program : %p", program);
-
-    cl_err = clCompileProgram(program, 1, &devices[0], "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr);
-    if (CL_SUCCESS != cl_err) {
-        log<Verbosity::error>("Compilation of program failed with error : %d", cl_err);
-        std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(program, devices[0]);
-        log<Verbosity::info>("Build log %s", buildLog.c_str());
-        return 1;
-    }
-    log<Verbosity::info>("Succesfully compiled program : %p", program);
-    std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(program, devices[0]);
-    log<Verbosity::info>("Build log %s", buildLog.c_str());
-
-    auto linkedProgram = clLinkProgram(ctx, 1, &devices[0], "-cl-take-global-address", 1, &program, nullptr, nullptr, &cl_err);
-    if (CL_SUCCESS != cl_err || linkedProgram == nullptr) {
-        log<Verbosity::error>("Link failed with error : %d", cl_err);
-        buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, devices[0]);
-        log<Verbosity::info>("Build log %s", buildLog.c_str());
-        return 1;
-    }
-    log<Verbosity::info>("Succesfully linked program : %p", linkedProgram);
-    buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, devices[0]);
-    log<Verbosity::info>("Build log %s", buildLog.c_str());
+    auto program = createProgramWithSource(context, 5, src);
+    compileProgram(program, devices[deviceIndex]);
+    auto linkedProgram = linkProgram(context, devices[deviceIndex], program);
 
     log<Verbosity::info>("Trying to get an address of 'clGetDeviceGlobalVariablePointerINTEL' extension!");
     void *clGetDeviceGlobalVariablePointerINTELAddress = clGetExtensionFunctionAddress("clGetDeviceGlobalVariablePointerINTEL");
@@ -307,7 +208,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Trying to get an address of a global variable with name 'my_special_global_var'");
     size_t globalVarSize{};
     void *globalVarPtr{};
-    cl_int clGetDeviceGlobalVariablePointerINTELResult = clGetDeviceGlobalVariablePointerINTEL(devices[0], linkedProgram, "my_special_global_var", &globalVarSize, &globalVarPtr);
+    cl_int clGetDeviceGlobalVariablePointerINTELResult = clGetDeviceGlobalVariablePointerINTEL(devices[deviceIndex], linkedProgram, "my_special_global_var", &globalVarSize, &globalVarPtr);
     if (clGetDeviceGlobalVariablePointerINTELResult != CL_SUCCESS) {
         log<Verbosity::error>("Could not get a global pointer for 'my_special_global_var' variable!");
         return -1;
@@ -353,28 +254,9 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Binaries passed validation!");
 
-    log<Verbosity::info>("Creating a program from retrieved binary!");
+    const auto programFromBinary = createProgramWithBinary(context, devices[deviceIndex], binariesSizes.data(), programBinaries.data());
+    auto kernel = createKernel(linkedProgram, "k");
 
-    cl_int binaryStatus{};
-    cl_int createFromBinaryResult{};
-    const auto programFromBinary = clCreateProgramWithBinary(ctx, 1, &devices[0], binariesSizes.data(), const_cast<const unsigned char **>(programBinaries.data()), &binaryStatus, &createFromBinaryResult);
-    if (binaryStatus != CL_SUCCESS || createFromBinaryResult != CL_SUCCESS || programFromBinary == nullptr) {
-        log<Verbosity::error>("Could not create program from retrieved binary! binaryStatus = %d, errorCode = %d",
-                              static_cast<int>(binaryStatus),
-                              static_cast<int>(createFromBinaryResult));
-        return 1;
-    }
-
-    log<Verbosity::info>("Program created successfuly!");
-
-    log<Verbosity::info>("Creating kernel object");
-    cl_kernel kernel = clCreateKernel(linkedProgram, "k", &cl_err);
-    if ((nullptr == kernel) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create kernel with error : %d", cl_err);
-        return 1;
-    };
-
-    log<Verbosity::info>("Succesfully created kernel : %p", kernel);
     Cal::Utils::OclApiWrapper::KernelInfo kernelInfo;
     if (false == kernelInfo.read(kernel)) {
         log<Verbosity::error>("Could not read kernel info");
@@ -392,7 +274,7 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Creating cl_mem object #1");
     int initData = 3;
-    cl_mem mem = clCreateBuffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData, &cl_err);
+    cl_mem mem = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData, &cl_err);
     if ((nullptr == mem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create cl_mem object #1 with error : %d", cl_err);
         return 1;
@@ -408,7 +290,7 @@ int main(int argc, const char *argv[]) {
     mem = nullptr;
 
     initData = 7;
-    mem = clCreateBuffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData, &cl_err);
+    mem = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData, &cl_err);
     if ((nullptr == mem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create cl_mem object #1 with error : %d", cl_err);
         return 1;
@@ -417,7 +299,7 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Creating cl_mem object");
     int initData2 = 23;
-    cl_mem mem2 = clCreateBuffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData2, &cl_err);
+    cl_mem mem2 = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData2, &cl_err);
     if ((nullptr == mem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create cl_mem object #2 with error : %d", cl_err);
         return 1;
@@ -433,18 +315,18 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully created subbufer of cl_mem 2 : %p as cl_mem 3 : %p", mem2, mem2sub);
 
     log<Verbosity::info>("Creating cl_command_queue object");
-    cl_command_queue queue = clCreateCommandQueueWithProperties(ctx, devices[0], nullptr, &cl_err);
+    cl_command_queue queue = clCreateCommandQueueWithProperties(context, devices[deviceIndex], nullptr, &cl_err);
     if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create command queue with error : %d", cl_err);
         return 1;
     };
     log<Verbosity::info>("Succesfully created cl_command_queue : %p", queue);
 
-    if (false == testCreateCommandQueueWithProperties(ctx, devices[0])) {
+    if (false == testCreateCommandQueueWithProperties(context, devices[deviceIndex])) {
         return 1;
     }
 
-    if (false == testEventProfiling(ctx, devices[0])) {
+    if (false == testEventProfiling(context, devices[deviceIndex])) {
         return 1;
     }
 
@@ -530,7 +412,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Sucesfully loaded USM extension");
     auto usmExt = usmExtLoad.value();
     log<Verbosity::info>("Creating USM device memory");
-    void *usmDeviceMem = usmExt.clDeviceMemAllocINTEL(ctx, devices[0], nullptr, 4, 0, &cl_err);
+    void *usmDeviceMem = usmExt.clDeviceMemAllocINTEL(context, devices[deviceIndex], nullptr, 4, 0, &cl_err);
     if ((nullptr == usmDeviceMem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to allocated USM device memory");
         return 1;
@@ -552,7 +434,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Getting base USM address of usmDeviceMemWithOffset = %p", usmDeviceMemWithOffset);
     void *deviceUsmBaseAddress{};
     size_t outParamSize{};
-    const auto clGetMemAllocInfoINTELResult = clGetMemAllocInfoINTEL(ctx,
+    const auto clGetMemAllocInfoINTELResult = clGetMemAllocInfoINTEL(context,
                                                                      usmDeviceMemWithOffset,
                                                                      CL_MEM_ALLOC_BASE_PTR_INTEL,
                                                                      sizeof(deviceUsmBaseAddress),
@@ -566,7 +448,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Successfuly retrieved base address of USM allocation for %p! Base address: %p", usmDeviceMemWithOffset, deviceUsmBaseAddress);
 
     log<Verbosity::info>("Creating USM host memory");
-    void *usmHostMem = usmExt.clHostMemAllocINTEL(ctx, nullptr, 4, 0, &cl_err);
+    void *usmHostMem = usmExt.clHostMemAllocINTEL(context, nullptr, 4, 0, &cl_err);
     if ((nullptr == usmHostMem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to allocated USM host memory");
         return 1;
@@ -763,7 +645,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Sucessfully unmapped buffer %p for pointer %p", mem, mappedPtr);
 
     log<Verbosity::info>("Creating SVM coarse grain buffer");
-    void *svmMem = clSVMAlloc(ctx, 0, 4, 0);
+    void *svmMem = clSVMAlloc(context, 0, 4, 0);
     if (nullptr == svmMem) {
         log<Verbosity::error>("Failed to allocated SVM memory");
         return 1;
@@ -867,7 +749,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully unmapped SVM ptr : %p", svmMem);
 
     log<Verbosity::info>("Freeing SVM coarse grain buffer");
-    clSVMFree(ctx, svmMem);
+    clSVMFree(context, svmMem);
 
     log<Verbosity::info>("");
     log<Verbosity::info>("Releasing opencl objects");
@@ -880,14 +762,14 @@ int main(int argc, const char *argv[]) {
     clReleaseKernel(kernel);
     clRetainProgram(program);
     clReleaseProgram(program);
-    clRetainContext(ctx);
-    clReleaseContext(ctx);
-    clRetainDevice(devices[0]);
-    clReleaseDevice(devices[0]);
+    clRetainContext(context);
+    clReleaseContext(context);
+    clRetainDevice(devices[deviceIndex]);
+    clReleaseDevice(devices[deviceIndex]);
 
     bool succesfullyReleasedAllObjects = true;
-    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(ctx, usmHostMem));
-    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(ctx, usmDeviceMem));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(context, usmHostMem));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(context, usmDeviceMem));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseCommandQueue(queue));
 
     clGetEventInfo(event, CL_EVENT_COMMAND_QUEUE, sizeof(cl_command_queue), &queue, nullptr);
@@ -902,7 +784,7 @@ int main(int argc, const char *argv[]) {
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(linkedProgram));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(program));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(programFromBinary));
-    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(ctx));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(context));
     if (false == succesfullyReleasedAllObjects) {
         log<Verbosity::info>("Failed to release one of objects");
         return 1;
@@ -910,22 +792,18 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully released all objects");
 
     log<Verbosity::info>("Memory stress test - number of host mem allocations");
-    ctx = clCreateContext(properties, 1, &devices[0], nullptr, nullptr, &cl_err);
-    if ((nullptr == ctx) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create context with error : %d", cl_err);
-        return 1;
-    };
+    context = createContext(platform, devices, deviceIndex);
 
     if (false == skipStressTests) {
         int hostMemMaxAllocs = 512 / (childProcesses.size() + 1);
         log<Verbosity::info>("Creating-destroying USM host memory - number of allocations : %d", hostMemMaxAllocs);
         for (int i = 0; i < hostMemMaxAllocs; ++i) {
-            void *usmHostMem = usmExt.clHostMemAllocINTEL(ctx, nullptr, 32 * 4096, 0, &cl_err);
+            void *usmHostMem = usmExt.clHostMemAllocINTEL(context, nullptr, 32 * 4096, 0, &cl_err);
             if ((nullptr == usmHostMem) || (CL_SUCCESS != cl_err)) {
                 log<Verbosity::error>("Failed to allocate (create-destroy test) USM host memory for allocation #%d", i);
                 return 1;
             }
-            if (CL_SUCCESS != usmExt.clMemFreeINTEL(ctx, usmHostMem)) {
+            if (CL_SUCCESS != usmExt.clMemFreeINTEL(context, usmHostMem)) {
                 log<Verbosity::error>("Failed to free (create-destroy test) USM host memory");
                 return 1;
             }
@@ -935,7 +813,7 @@ int main(int argc, const char *argv[]) {
         log<Verbosity::info>("Creating USM host memory - number of allocations : %d", hostMemMaxAllocs);
         std::vector<void *> hostMems;
         for (int i = 0; i < hostMemMaxAllocs; ++i) {
-            void *usmHostMem = usmExt.clHostMemAllocINTEL(ctx, nullptr, 32 * 4096, 0, &cl_err);
+            void *usmHostMem = usmExt.clHostMemAllocINTEL(context, nullptr, 32 * 4096, 0, &cl_err);
             if ((nullptr == usmHostMem) || (CL_SUCCESS != cl_err)) {
                 log<Verbosity::error>("Failed to allocate (create test) USM host memory for allocation #%d", i);
                 return 1;
@@ -946,7 +824,7 @@ int main(int argc, const char *argv[]) {
 
         log<Verbosity::info>("Freeing USM host memory - number of allocations : %d", hostMemMaxAllocs);
         for (void *ptr : hostMems) {
-            if (CL_SUCCESS != usmExt.clMemFreeINTEL(ctx, ptr)) {
+            if (CL_SUCCESS != usmExt.clMemFreeINTEL(context, ptr)) {
                 log<Verbosity::error>("Failed to free (destroy test) USM host memory");
                 return 1;
             }
@@ -956,11 +834,11 @@ int main(int argc, const char *argv[]) {
         log<Verbosity::debug>("Skipped memory stress tests");
     }
 
-    if (CL_SUCCESS != clReleaseContext(ctx)) {
+    if (CL_SUCCESS != clReleaseContext(context)) {
         log<Verbosity::error>("Failed to free OCL context");
     }
 
-    clReleaseDevice(devices[0]);
+    clReleaseDevice(devices[deviceIndex]);
 
     if (childProcesses.size()) {
         log<Verbosity::info>("Waiting for child processes");

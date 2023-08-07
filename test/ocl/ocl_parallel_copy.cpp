@@ -10,6 +10,7 @@
 #include "cal.h"
 #include "shared/log.h"
 #include "shared/ocl_wrapper.h"
+#include "test/utils/ocl_common_steps.h"
 
 #include <algorithm>
 #include <chrono>
@@ -132,103 +133,27 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    cl_platform_id platform = {};
-    if (platformOrd >= 0) {
-        log<Verbosity::info>("Looking for OCL platform with ordinal %d", platformOrd);
-        platform = Cal::Utils::OclApiWrapper::getPlatformByOrdinal(platformOrd);
-        if (Cal::Utils::OclApiWrapper::invalidPlatform == platform) {
-            log<Verbosity::critical>("Could not find OCL platform with ordinal %d", platformOrd);
-            return 1;
-        }
-        log<Verbosity::info>("Found OCL platform with ordinal %d", platformOrd);
-    } else {
-        setenv(calUseCustomOCLPlatformName.data(), "1", true);
-        platform = Cal::Utils::OclApiWrapper::getPlatformByName(calPlatformName.data(), false);
-        if (Cal::Utils::OclApiWrapper::invalidPlatform == platform) {
-            log<Verbosity::critical>("Could not find Compute Aggregation Layer OCL platform");
-            return 1;
-        }
-        log<Verbosity::info>("Found Compute Aggregation Layer OCL platform");
-    }
+    auto platform = getPlatform(platformOrd);
+    auto devices = getDevices(platform, CL_DEVICE_TYPE_ALL);
+    size_t deviceIndex = 0;
+    auto context = createContext(platform, devices, deviceIndex);
+    cl_int cl_err{};
 
-    Cal::Utils::OclApiWrapper::PlatformInfo platformInfo;
-    if (false == platformInfo.read(platform)) {
-        log<Verbosity::error>("Could not read platform info");
-        return 1;
-    }
-    bool isParent = ((0 == forkNum) || (false == childProcesses.empty()));
-    if (isParent) {
-        log<Verbosity::info>("Platform info : \n%s\n", platformInfo.str().c_str());
-    }
-
-    std::vector<cl_device_id> devices = Cal::Utils::OclApiWrapper::getDevicesForPlatform(platform, CL_DEVICE_TYPE_ALL);
-    if (devices.empty()) {
-        log<Verbosity::info>("No devices in platform");
-        return 1;
-    }
-    log<Verbosity::info>("Num devices : %zu", devices.size());
-    for (auto device : devices) {
-        Cal::Utils::OclApiWrapper::DeviceInfo deviceInfo;
-        if (false == deviceInfo.read(device)) {
-            log<Verbosity::error>("Could not read device info for device %p", device);
-            return 1;
-        }
-        if (isParent) {
-            log<Verbosity::info>("Device %p info : \n%s\n", device, deviceInfo.str().c_str());
-        }
-    }
-
-    log<Verbosity::info>("Creating context for first device : %p", devices[0]);
-    cl_context_properties properties[3] = {};
-    properties[0] = CL_CONTEXT_PLATFORM;
-    properties[1] = reinterpret_cast<cl_context_properties>(platform);
-    properties[2] = 0;
-    cl_int cl_err = 0;
-    cl_context ctx = clCreateContext(properties, 1, &devices[0], nullptr, nullptr, &cl_err);
-    if ((nullptr == ctx) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create context with error : %d", cl_err);
-        return 1;
-    };
-
-    log<Verbosity::info>("Creating program object with source");
     const char *k = "__kernel void k(__global int *x) { *x = *x * *x; }";
     const char *src[] = {k};
-    cl_program program = clCreateProgramWithSource(ctx, 1, src, nullptr, &cl_err);
-    if ((nullptr == program) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create program with error : %d", cl_err);
-        return 1;
-    };
-
-    cl_err = clCompileProgram(program, 1, &devices[0], "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr);
-    if (CL_SUCCESS != cl_err) {
-        log<Verbosity::error>("Compilation of program failed with error : %d", cl_err);
-        std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(program, devices[0]);
-        log<Verbosity::info>("Build log %s", buildLog.c_str());
-        return 1;
-    }
-
-    auto linkedProgram = clLinkProgram(ctx, 1, &devices[0], "", 1, &program, nullptr, nullptr, &cl_err);
-    if (CL_SUCCESS != cl_err || linkedProgram == nullptr) {
-        log<Verbosity::error>("Link failed with error : %d", cl_err);
-        std::string buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, devices[0]);
-        log<Verbosity::info>("Build log %s", buildLog.c_str());
-        return 1;
-    }
-
-    log<Verbosity::info>("Creating kernel object");
-    cl_kernel kernel = clCreateKernel(linkedProgram, "k", &cl_err);
-    if ((nullptr == kernel) || (CL_SUCCESS != cl_err)) {
-        log<Verbosity::error>("Failed to create kernel with error : %d", cl_err);
-        return 1;
-    };
+    auto program = createProgramWithSource(context, 5, src);
+    compileProgram(program, devices[deviceIndex]);
+    auto linkedProgram = linkProgram(context, devices[deviceIndex], program);
+    auto kernel = createKernel(linkedProgram, "K");
 
     log<Verbosity::info>("Creating cl_command_queue object");
-    cl_command_queue queue = clCreateCommandQueueWithProperties(ctx, devices[0], nullptr, &cl_err);
+    cl_command_queue queue = clCreateCommandQueueWithProperties(context, devices[deviceIndex], nullptr, &cl_err);
     if ((nullptr == queue) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create command queue with error : %d", cl_err);
         return 1;
     };
 
+    bool isParent = ((0 == forkNum) || (false == childProcesses.empty()));
     if (isParent) {
         log<Verbosity::info>("Test outer loop count : %d (+1 warmup)", loopCount);
         log<Verbosity::info>("Test inner loop copies count (malloc -> device mem) : %d", copyCount);
@@ -249,7 +174,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Sucesfully loaded USM extension");
     auto usmExt = usmExtLoad.value();
     log<Verbosity::info>("Creating USM device memory");
-    void *usmDeviceMem = usmExt.clDeviceMemAllocINTEL(ctx, devices[0], nullptr, copyDataSize, 0, &cl_err);
+    void *usmDeviceMem = usmExt.clDeviceMemAllocINTEL(context, devices[deviceIndex], nullptr, copyDataSize, 0, &cl_err);
     if ((nullptr == usmDeviceMem) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to allocated USM device memory");
         return 1;
@@ -297,19 +222,19 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Releasing opencl objects");
     bool succesfullyReleasedAllObjects = true;
-    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(ctx, usmDeviceMem));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == usmExt.clMemFreeINTEL(context, usmDeviceMem));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseCommandQueue(queue));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseKernel(kernel));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(linkedProgram));
     succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseProgram(program));
-    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(ctx));
+    succesfullyReleasedAllObjects &= (CL_SUCCESS == clReleaseContext(context));
     if (false == succesfullyReleasedAllObjects) {
         log<Verbosity::info>("Failed to release one of objects");
         return 1;
     }
     log<Verbosity::info>("Succesfully released all objects");
 
-    clReleaseDevice(devices[0]);
+    clReleaseDevice(devices[deviceIndex]);
 
     if (childProcesses.size()) {
         log<Verbosity::info>("Waiting for child processes");
