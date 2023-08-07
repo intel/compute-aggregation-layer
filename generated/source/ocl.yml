@@ -3204,6 +3204,7 @@ config:
         - name: clEnqueueWriteBuffer
           category: Copy
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
@@ -3283,6 +3284,7 @@ config:
         - name: clEnqueueWriteBufferRect
           category: Copy
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
@@ -3403,6 +3405,7 @@ config:
         - name: clEnqueueReadBuffer
           category: Copy
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
@@ -3482,6 +3485,7 @@ config:
         - name: clEnqueueReadBufferRect
           category: Copy
           latency: 0.0
+          call_async: true
           special_handling:
             icd:
               handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"

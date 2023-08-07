@@ -3767,13 +3767,21 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_write &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -3810,13 +3818,21 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_write &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -3900,13 +3916,21 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_write &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -3943,13 +3967,21 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_write &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4033,13 +4065,21 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_read &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4076,13 +4116,21 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_read &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4166,13 +4214,21 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_read &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
@@ -4209,13 +4265,21 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !blocking_read &&
+       !event &&
+       channel.isCallAsyncEnabled()){
+         channel.callAsynchronous(command);
+         command_queue->asLocalObject()->enqueue();
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     command->copyToCaller(dynMemTraits);
     if(event)
