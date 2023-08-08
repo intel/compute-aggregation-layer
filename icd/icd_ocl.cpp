@@ -395,9 +395,9 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
 
 IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReference &&parent,
                              Cal::Shared::RefCounted<_cl_context, IcdOclTypePrinter>::CleanupFuncT cleanupFunc)
-    : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter>(remoteObject, std::move(parent), cleanupFunc) {
+    : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter>(remoteObject, std::move(parent), cleanupFunc),
+      stagingAreaManager([this](size_t size) { return this->allocateStagingArea(size); }, [this](void *ptr) { return this->deallocateStagingAreas(ptr); }) {
     Cal::Icd::icdGlobalState.registerAtExit(this, [this](const void *key) { this->globalReleaseCallback(); });
-
     this->skipTransferOnHostPtrMatch = Cal::Utils::getCalEnvFlag(calIcdBufferRecycleEnvName);
 }
 
@@ -494,6 +494,13 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
             log<Verbosity::error>("Could not create implicit queue");
         }
     }
+}
+
+void *IcdOclContext::allocateStagingArea(size_t size) {
+    return nullptr;
+}
+
+void IcdOclContext::deallocateStagingAreas(void *ptr) {
 }
 
 bool IcdOclKernel::initTraits() {

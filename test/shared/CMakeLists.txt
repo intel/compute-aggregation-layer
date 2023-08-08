@@ -17,6 +17,7 @@ add_executable(shared_test_ult # ULTs
                ${CMAKE_CURRENT_SOURCE_DIR}/memory_block_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/shared_ult_main.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/shmem_ult.cpp
+               ${CMAKE_CURRENT_SOURCE_DIR}/staging_area_manager_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/usm_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/utils_ult.cpp
 )

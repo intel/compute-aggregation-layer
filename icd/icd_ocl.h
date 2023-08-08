@@ -15,6 +15,7 @@
 #include "shared/ocl_fat_def.h"
 #include "shared/ref_counted.h"
 #include "shared/rpc.h"
+#include "shared/staging_area_manager.h"
 #include "shared/usm.h"
 
 #include <atomic>
@@ -660,6 +661,13 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
     InfoCache cache;
     cl_command_queue implicitQueue = nullptr;
     bool skipTransferOnHostPtrMatch = false;
+
+  private:
+    StagingAreaManager<std::function<void *(size_t)>,
+                       std::function<void(void *)>>
+        stagingAreaManager;
+    void *allocateStagingArea(size_t size);
+    void deallocateStagingAreas(void *ptr);
 };
 
 struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue, IcdOclTypePrinter> {
