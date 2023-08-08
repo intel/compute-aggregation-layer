@@ -46,7 +46,7 @@ cl_int clGetPlatformIDsRpcHelper (cl_uint num_entries, cl_platform_id* platforms
     using CommandT = Cal::Rpc::Ocl::ClGetPlatformIDsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(num_entries, platforms, num_platforms);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, num_entries, platforms, num_platforms);
+    auto command = new(commandSpace) CommandT(dynMemTraits, num_entries, platforms, num_platforms);
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -73,7 +73,7 @@ cl_int clGetPlatformInfoRpcHelper (cl_platform_id platform, cl_platform_info par
     using CommandT = Cal::Rpc::Ocl::ClGetPlatformInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(platform, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, platform, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, platform, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.platform = static_cast<IcdOclPlatform*>(platform)->asRemoteObject();
 
 
@@ -106,7 +106,7 @@ cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_u
     using CommandT = Cal::Rpc::Ocl::ClGetDeviceIDsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(platform, device_type, num_entries, devices, num_devices);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, platform, device_type, num_entries, devices, num_devices);
+    auto command = new(commandSpace) CommandT(dynMemTraits, platform, device_type, num_entries, devices, num_devices);
     command->args.platform = static_cast<IcdOclPlatform*>(platform)->asRemoteObject();
 
 
@@ -143,7 +143,7 @@ cl_int clGetDeviceInfo (cl_device_id device, cl_device_info param_name, size_t p
     using CommandT = Cal::Rpc::Ocl::ClGetDeviceInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(device, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, device, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, device, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
 
@@ -162,7 +162,6 @@ cl_int clGetDeviceInfo (cl_device_id device, cl_device_info param_name, size_t p
     cl_int ret = command->captures.ret;
 
     auto captured_size = command->captures.param_value_size_ret;
-    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclDevice*>(device)->cache.store(param_name, param_value, captured_size);
     return ret;
@@ -175,7 +174,7 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     using CommandT = Cal::Rpc::Ocl::ClCreateContextRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     if(properties)
     {
@@ -209,7 +208,6 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     cl_context ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret);
-    commandSpace.reset();
     channelLock.unlock();
     ret->asLocalObject()->setDevicesList(num_devices, devices);
     return ret;
@@ -222,7 +220,7 @@ cl_context clCreateContextFromType (const cl_context_properties* properties, cl_
     using CommandT = Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(properties, device_type, pfn_notify, user_data, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, properties, device_type, pfn_notify, user_data, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, properties, device_type, pfn_notify, user_data, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     if(properties)
     {
@@ -260,7 +258,7 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
     using CommandT = Cal::Rpc::Ocl::ClGetContextInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -286,7 +284,6 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
     cl_int ret = command->captures.ret;
 
     auto captured_size = command->captures.param_value_size_ret;
-    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclContext*>(context)->cache.store(param_name, param_value, captured_size);
     return ret;
@@ -299,7 +296,7 @@ cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_pro
     using CommandT = Cal::Rpc::Ocl::ClCreateSubDevicesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(in_device, properties, num_devices, out_devices, num_devices_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, in_device, properties, num_devices, out_devices, num_devices_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, in_device, properties, num_devices, out_devices, num_devices_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.in_device = static_cast<IcdOclDevice*>(in_device)->asRemoteObject();
 
@@ -333,7 +330,7 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device, 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCreateCommandQueueRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, device, properties, errcode_ret);
+    auto command = new(commandSpace) CommandT(context, device, properties, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.properties = globalPlatform->translateQueueFlags(properties);
@@ -359,7 +356,7 @@ cl_int clSetDefaultDeviceCommandQueue (cl_context context, cl_device_id device, 
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSetDefaultDeviceCommandQueueRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, device, command_queue);
+    auto command = new(commandSpace) CommandT(context, device, command_queue);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
@@ -384,7 +381,7 @@ cl_command_queue clCreateCommandQueueWithProperties (cl_context context, cl_devi
     using CommandT = Cal::Rpc::Ocl::ClCreateCommandQueueWithPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, device, properties, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, device, properties, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, device, properties, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
@@ -415,7 +412,7 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
     using CommandT = Cal::Rpc::Ocl::ClCreateProgramWithSourceRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, count, strings, lengths, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, count, strings, lengths, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, count, strings, lengths, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
@@ -441,7 +438,7 @@ cl_program clCreateProgramWithIL (cl_context context, const void* il, size_t len
     using CommandT = Cal::Rpc::Ocl::ClCreateProgramWithILRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, il, length, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, il, length, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, il, length, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
@@ -467,7 +464,7 @@ cl_program clCreateProgramWithBinary (cl_context context, cl_uint num_devices, c
     using CommandT = Cal::Rpc::Ocl::ClCreateProgramWithBinaryRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     if(device_list)
@@ -503,7 +500,7 @@ cl_program clCreateProgramWithBuiltInKernels (cl_context context, cl_uint num_de
     using CommandT = Cal::Rpc::Ocl::ClCreateProgramWithBuiltInKernelsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, num_devices, device_list, kernel_names, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, num_devices, device_list, kernel_names, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, num_devices, device_list, kernel_names, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     if(device_list)
@@ -547,7 +544,7 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
     using CommandT = Cal::Rpc::Ocl::ClBuildProgramRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, num_devices, device_list, options, pfn_notify, user_data);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, num_devices, device_list, options, pfn_notify, user_data);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, num_devices, device_list, options, pfn_notify, user_data);
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
     if(device_list)
@@ -581,7 +578,7 @@ cl_int clCompileProgram (cl_program program, cl_uint num_devices, const cl_devic
     using CommandT = Cal::Rpc::Ocl::ClCompileProgramRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, num_devices, device_list, options, num_input_headers, input_headers, header_include_names, pfn_notify, user_data);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, num_devices, device_list, options, num_input_headers, input_headers, header_include_names, pfn_notify, user_data);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, num_devices, device_list, options, num_input_headers, input_headers, header_include_names, pfn_notify, user_data);
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
     if(device_list)
@@ -625,7 +622,7 @@ cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_devi
     using CommandT = Cal::Rpc::Ocl::ClLinkProgramRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, num_devices, device_list, options, num_input_programs, input_programs, pfn_notify, user_data, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, num_devices, device_list, options, num_input_programs, input_programs, pfn_notify, user_data, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, num_devices, device_list, options, num_input_programs, input_programs, pfn_notify, user_data, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     if(device_list)
@@ -671,7 +668,7 @@ cl_int clGetProgramBuildInfo (cl_program program, cl_device_id device, cl_progra
     using CommandT = Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, device, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, device, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, device, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
@@ -696,7 +693,7 @@ cl_kernel clCreateKernelRpcHelper (cl_program program, const char* kernel_name, 
     using CommandT = Cal::Rpc::Ocl::ClCreateKernelRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, kernel_name, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, kernel_name, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, kernel_name, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
@@ -721,7 +718,7 @@ cl_kernel clCloneKernel (cl_kernel source_kernel, cl_int* errcode_ret) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCloneKernelRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(source_kernel, errcode_ret);
+    auto command = new(commandSpace) CommandT(source_kernel, errcode_ret);
     command->args.source_kernel = static_cast<IcdOclKernel*>(source_kernel)->asRemoteObject();
 
 
@@ -746,7 +743,7 @@ cl_int clCreateKernelsInProgramRpcHelper (cl_program program, cl_uint num_kernel
     using CommandT = Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, num_kernels, kernels, num_kernels_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, num_kernels, kernels, num_kernels_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, num_kernels, kernels, num_kernels_ret);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
 
@@ -783,7 +780,7 @@ cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_i
     using CommandT = Cal::Rpc::Ocl::ClGetCommandQueueInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
@@ -802,7 +799,6 @@ cl_int clGetCommandQueueInfo (cl_command_queue command_queue, cl_command_queue_i
     cl_int ret = command->captures.ret;
 
     auto captured_size = command->captures.param_value_size_ret;
-    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value, captured_size);
     return ret;
@@ -816,7 +812,7 @@ cl_int clGetProgramInfoRpcHelper (cl_program program, cl_program_info param_name
     using CommandT = Cal::Rpc::Ocl::ClGetProgramInfoRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
 
@@ -853,7 +849,7 @@ cl_int clGetProgramInfoGetBinariesRpcHelper (cl_program program, size_t total_bi
     using CommandT = Cal::Rpc::Ocl::ClGetProgramInfoGetBinariesRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, total_binaries_size, concatenated_binaries, binaries_count, binaries_lengths, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, total_binaries_size, concatenated_binaries, binaries_count, binaries_lengths, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, total_binaries_size, concatenated_binaries, binaries_count, binaries_lengths, param_value_size_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
@@ -878,7 +874,7 @@ cl_int clGetMemObjectInfoRpcHelper (cl_mem memobj, cl_mem_info param_name, size_
     using CommandT = Cal::Rpc::Ocl::ClGetMemObjectInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(memobj, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, memobj, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, memobj, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.memobj = memobj->asLocalObject()->asRemoteObject();
 
 
@@ -906,7 +902,7 @@ cl_int clGetImageInfo (cl_mem image, cl_image_info param_name, size_t param_valu
     using CommandT = Cal::Rpc::Ocl::ClGetImageInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(image, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, image, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, image, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.image = image->asLocalObject()->asRemoteObject();
 
 
@@ -934,7 +930,7 @@ cl_int clGetSamplerInfo (cl_sampler sampler, cl_sampler_info param_name, size_t 
     using CommandT = Cal::Rpc::Ocl::ClGetSamplerInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(sampler, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, sampler, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, sampler, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
 
@@ -965,7 +961,7 @@ cl_int clGetKernelInfo (cl_kernel kernel, cl_kernel_info param_name, size_t para
     using CommandT = Cal::Rpc::Ocl::ClGetKernelInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
 
@@ -984,7 +980,6 @@ cl_int clGetKernelInfo (cl_kernel kernel, cl_kernel_info param_name, size_t para
     cl_int ret = command->captures.ret;
 
     auto captured_size = command->captures.param_value_size_ret;
-    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value, captured_size);
     return ret;
@@ -997,7 +992,7 @@ cl_int clGetKernelWorkGroupInfo (cl_kernel kernel, cl_device_id device, cl_kerne
     using CommandT = Cal::Rpc::Ocl::ClGetKernelWorkGroupInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, device, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, device, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, device, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
@@ -1022,7 +1017,7 @@ cl_int clGetKernelArgInfo (cl_kernel kernel, cl_uint arg_indx, cl_kernel_arg_inf
     using CommandT = Cal::Rpc::Ocl::ClGetKernelArgInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
 
@@ -1046,7 +1041,7 @@ cl_int clGetKernelSubGroupInfo (cl_kernel kernel, cl_device_id device, cl_kernel
     using CommandT = Cal::Rpc::Ocl::ClGetKernelSubGroupInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
@@ -1071,12 +1066,12 @@ cl_int clReleaseCommandQueue (cl_command_queue command_queue) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseCommandQueueRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue);
+    auto command = new(commandSpace) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          {
            command_queue->asLocalObject()->dec();
          }
@@ -1105,12 +1100,12 @@ cl_int clReleaseContext (cl_context context) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseContextRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context);
+    auto command = new(commandSpace) CommandT(context);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          {
            context->asLocalObject()->dec();
          }
@@ -1138,7 +1133,7 @@ cl_int clReleaseDevice (cl_device_id device) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseDeviceRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device);
+    auto command = new(commandSpace) CommandT(device);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
 
@@ -1163,7 +1158,7 @@ cl_int clReleaseKernel (cl_kernel kernel) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseKernelRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(kernel);
+    auto command = new(commandSpace) CommandT(kernel);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
 
@@ -1188,7 +1183,7 @@ cl_int clReleaseSampler (cl_sampler sampler) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseSamplerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(sampler);
+    auto command = new(commandSpace) CommandT(sampler);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
 
@@ -1213,7 +1208,7 @@ cl_int clReleaseProgram (cl_program program) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseProgramRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(program);
+    auto command = new(commandSpace) CommandT(program);
     command->args.program = program->asLocalObject()->asRemoteObject();
 
 
@@ -1243,7 +1238,7 @@ cl_int clReleaseMemObject (cl_mem memobj) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseMemObjectRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(memobj);
+    auto command = new(commandSpace) CommandT(memobj);
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
 
 
@@ -1268,12 +1263,12 @@ cl_int clReleaseEvent (cl_event event) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseEventRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(event);
+    auto command = new(commandSpace) CommandT(event);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          {
            event->asLocalObject()->dec();
          }
@@ -1301,7 +1296,7 @@ cl_int clRetainCommandQueue (cl_command_queue command_queue) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainCommandQueueRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue);
+    auto command = new(commandSpace) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
@@ -1326,7 +1321,7 @@ cl_int clRetainContext (cl_context context) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainContextRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context);
+    auto command = new(commandSpace) CommandT(context);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -1351,7 +1346,7 @@ cl_int clRetainDevice (cl_device_id device) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainDeviceRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device);
+    auto command = new(commandSpace) CommandT(device);
     command->args.device = device->asLocalObject()->asRemoteObject();
 
 
@@ -1376,7 +1371,7 @@ cl_int clRetainProgram (cl_program program) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainProgramRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(program);
+    auto command = new(commandSpace) CommandT(program);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
 
@@ -1401,7 +1396,7 @@ cl_int clRetainMemObject (cl_mem memobj) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainMemObjectRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(memobj);
+    auto command = new(commandSpace) CommandT(memobj);
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
 
 
@@ -1426,7 +1421,7 @@ cl_int clRetainSampler (cl_sampler sampler) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainSamplerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(sampler);
+    auto command = new(commandSpace) CommandT(sampler);
     command->args.sampler = sampler->asLocalObject()->asRemoteObject();
 
 
@@ -1451,7 +1446,7 @@ cl_int clRetainKernel (cl_kernel kernel) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainKernelRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(kernel);
+    auto command = new(commandSpace) CommandT(kernel);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
 
@@ -1476,7 +1471,7 @@ cl_int clRetainEvent (cl_event event) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainEventRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(event);
+    auto command = new(commandSpace) CommandT(event);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
 
@@ -1501,12 +1496,12 @@ cl_int clFlush (cl_command_queue command_queue) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClFlushRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue);
+    auto command = new(commandSpace) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1530,7 +1525,7 @@ cl_int clFinish (cl_command_queue command_queue) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClFinishRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue);
+    auto command = new(commandSpace) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
@@ -1543,7 +1538,6 @@ cl_int clFinish (cl_command_queue command_queue) {
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->synchronizeNow();
     return ret;
@@ -1558,7 +1552,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     using CommandT = Cal::Rpc::Ocl::ClEnqueueNDRangeKernelRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
@@ -1576,7 +1570,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     if(
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -1595,7 +1589,6 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1608,7 +1601,7 @@ cl_int clEnqueueTask (cl_command_queue command_queue, cl_kernel kernel, cl_uint 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueTaskRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
@@ -1638,7 +1631,6 @@ cl_int clEnqueueTask (cl_command_queue command_queue, cl_kernel kernel, cl_uint 
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1651,7 +1643,7 @@ cl_int clEnqueueMarkerWithWaitList (cl_command_queue command_queue, cl_uint num_
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMarkerWithWaitListRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -1680,7 +1672,6 @@ cl_int clEnqueueMarkerWithWaitList (cl_command_queue command_queue, cl_uint num_
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1692,7 +1683,7 @@ cl_int clEnqueueMarker (cl_command_queue command_queue, cl_event* event) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMarkerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue, event);
+    auto command = new(commandSpace) CommandT(command_queue, event);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
@@ -1710,7 +1701,6 @@ cl_int clEnqueueMarker (cl_command_queue command_queue, cl_event* event) {
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1723,7 +1713,7 @@ cl_int clEnqueueBarrierWithWaitList (cl_command_queue command_queue, cl_uint num
     using CommandT = Cal::Rpc::Ocl::ClEnqueueBarrierWithWaitListRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -1752,7 +1742,6 @@ cl_int clEnqueueBarrierWithWaitList (cl_command_queue command_queue, cl_uint num
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1764,7 +1753,7 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueBarrierRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(command_queue);
+    auto command = new(commandSpace) CommandT(command_queue);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
@@ -1777,7 +1766,6 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue) {
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1790,7 +1778,7 @@ cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_event
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWaitForEventsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_events, event_list);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, num_events, event_list);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_events, event_list);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_list)
@@ -1814,7 +1802,6 @@ cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_event
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1827,7 +1814,7 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMigrateMemObjectsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(mem_objects)
@@ -1866,7 +1853,6 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -1880,7 +1866,7 @@ cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t s
     using CommandT = Cal::Rpc::Ocl::ClCreateBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, size, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, size, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, size, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits, implArgsForClCreateBufferRpcM);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -1906,7 +1892,7 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context,
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, flags, size, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(context, flags, size, host_ptr, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -1931,7 +1917,7 @@ cl_mem clCreateSubBuffer (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_ty
     using CommandT = Cal::Rpc::Ocl::ClCreateSubBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -1958,7 +1944,7 @@ cl_mem clCreatePipe (cl_context context, cl_mem_flags flags, cl_uint pipe_packet
     using CommandT = Cal::Rpc::Ocl::ClCreatePipeRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -1985,7 +1971,7 @@ cl_int clGetPipeInfo (cl_mem pipe, cl_pipe_info param_name, size_t param_value_s
     using CommandT = Cal::Rpc::Ocl::ClGetPipeInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(pipe, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, pipe, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, pipe, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.pipe = static_cast<IcdOclMem*>(pipe)->asRemoteObject();
 
 
@@ -2013,7 +1999,7 @@ cl_mem clCreateImage (cl_context context, cl_mem_flags flags, const cl_image_for
     using CommandT = Cal::Rpc::Ocl::ClCreateImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, image_format, image_desc, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, image_format, image_desc, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, image_format, image_desc, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -2040,7 +2026,7 @@ cl_mem clCreateImage2D (cl_context context, cl_mem_flags flags, const cl_image_f
     using CommandT = Cal::Rpc::Ocl::ClCreateImage2DRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -2067,7 +2053,7 @@ cl_mem clCreateImage3D (cl_context context, cl_mem_flags flags, const cl_image_f
     using CommandT = Cal::Rpc::Ocl::ClCreateImage3DRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -2093,7 +2079,7 @@ cl_sampler clCreateSampler (cl_context context, cl_bool normalized_coords, cl_ad
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCreateSamplerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
+    auto command = new(commandSpace) CommandT(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
     command->args.context = context->asLocalObject()->asRemoteObject();
 
 
@@ -2118,7 +2104,7 @@ cl_sampler clCreateSamplerWithProperties (cl_context context, const cl_sampler_p
     using CommandT = Cal::Rpc::Ocl::ClCreateSamplerWithPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, properties, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, properties, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, properties, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
 
@@ -2144,7 +2130,7 @@ cl_mem clCreateImageWithProperties (cl_context context, const cl_mem_properties*
     using CommandT = Cal::Rpc::Ocl::ClCreateImageWithPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, properties, flags, image_format, image_desc, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, properties, flags, image_format, image_desc, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, properties, flags, image_format, image_desc, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -2171,7 +2157,7 @@ cl_mem clCreateBufferWithProperties (cl_context context, const cl_mem_properties
     using CommandT = Cal::Rpc::Ocl::ClCreateBufferWithPropertiesRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, properties, flags, size, host_ptr, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, properties, flags, size, host_ptr, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, properties, flags, size, host_ptr, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
@@ -2198,7 +2184,7 @@ cl_int clGetSupportedImageFormats (cl_context context, cl_mem_flags flags, cl_me
     using CommandT = Cal::Rpc::Ocl::ClGetSupportedImageFormatsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, image_type, num_entries, image_formats, num_image_formats);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, flags, image_type, num_entries, image_formats, num_image_formats);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, image_type, num_entries, image_formats, num_image_formats);
     command->args.context = context->asLocalObject()->asRemoteObject();
     command->args.flags = Cal::Icd::Ocl::translateUseHostPtr(flags);
 
@@ -2223,7 +2209,7 @@ cl_int clSetKernelArgRpcHelper (cl_kernel kernel, cl_uint arg_index, size_t arg_
     using CommandT = Cal::Rpc::Ocl::ClSetKernelArgRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, arg_index, arg_size, arg_value);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, arg_index, arg_size, arg_value);
     command->copyFromCaller(dynMemTraits);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     if(arg_value)
@@ -2233,7 +2219,7 @@ cl_int clSetKernelArgRpcHelper (cl_kernel kernel, cl_uint arg_index, size_t arg_
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2256,7 +2242,7 @@ cl_int clSetProgramSpecializationConstant (cl_program program, cl_uint spec_id, 
     using CommandT = Cal::Rpc::Ocl::ClSetProgramSpecializationConstantRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(program, spec_id, spec_size, spec_value);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, program, spec_id, spec_size, spec_value);
+    auto command = new(commandSpace) CommandT(dynMemTraits, program, spec_id, spec_size, spec_value);
     command->copyFromCaller(dynMemTraits);
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
 
@@ -2336,7 +2322,7 @@ cl_int clEnqueueCopyBuffer (cl_command_queue command_queue, cl_mem src_buffer, c
     using CommandT = Cal::Rpc::Ocl::ClEnqueueCopyBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, src_buffer, dst_buffer, src_offset, dst_offset, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, src_buffer, dst_buffer, src_offset, dst_offset, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, src_buffer, dst_buffer, src_offset, dst_offset, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.src_buffer = static_cast<IcdOclMem*>(src_buffer)->asRemoteObject();
@@ -2367,7 +2353,6 @@ cl_int clEnqueueCopyBuffer (cl_command_queue command_queue, cl_mem src_buffer, c
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2380,7 +2365,7 @@ cl_int clEnqueueCopyBufferRect (cl_command_queue command_queue, cl_mem src_buffe
     using CommandT = Cal::Rpc::Ocl::ClEnqueueCopyBufferRectRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, src_buffer, dst_buffer, src_origin, dst_origin, region, src_row_pitch, src_slice_pitch, dst_row_pitch, dst_slice_pitch, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, src_buffer, dst_buffer, src_origin, dst_origin, region, src_row_pitch, src_slice_pitch, dst_row_pitch, dst_slice_pitch, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, src_buffer, dst_buffer, src_origin, dst_origin, region, src_row_pitch, src_slice_pitch, dst_row_pitch, dst_slice_pitch, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.src_buffer = static_cast<IcdOclMem*>(src_buffer)->asRemoteObject();
@@ -2411,7 +2396,6 @@ cl_int clEnqueueCopyBufferRect (cl_command_queue command_queue, cl_mem src_buffe
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2424,7 +2408,7 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch));
     command->copyFromCaller(dynMemTraits);
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
@@ -2459,7 +2443,6 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2472,7 +2455,7 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
     memcpy(standaloneSpaceForptr.get(), ptr, Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
     command->copyFromCaller(dynMemTraits);
@@ -2506,7 +2489,6 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2519,7 +2501,7 @@ cl_int clEnqueueCopyImage (cl_command_queue command_queue, cl_mem src_image, cl_
     using CommandT = Cal::Rpc::Ocl::ClEnqueueCopyImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, src_image, dst_image, src_origin, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, src_image, dst_image, src_origin, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, src_image, dst_image, src_origin, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.src_image = static_cast<IcdOclMem*>(src_image)->asRemoteObject();
@@ -2550,7 +2532,6 @@ cl_int clEnqueueCopyImage (cl_command_queue command_queue, cl_mem src_image, cl_
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2563,7 +2544,7 @@ cl_int clEnqueueCopyImageToBuffer (cl_command_queue command_queue, cl_mem src_im
     using CommandT = Cal::Rpc::Ocl::ClEnqueueCopyImageToBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, src_image, dst_buffer, src_origin, region, dst_offset, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, src_image, dst_buffer, src_origin, region, dst_offset, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, src_image, dst_buffer, src_origin, region, dst_offset, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.src_image = static_cast<IcdOclMem*>(src_image)->asRemoteObject();
@@ -2594,7 +2575,6 @@ cl_int clEnqueueCopyImageToBuffer (cl_command_queue command_queue, cl_mem src_im
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2607,7 +2587,7 @@ cl_int clEnqueueCopyBufferToImage (cl_command_queue command_queue, cl_mem src_bu
     using CommandT = Cal::Rpc::Ocl::ClEnqueueCopyBufferToImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, src_buffer, dst_image, src_offset, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, src_buffer, dst_image, src_offset, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, src_buffer, dst_image, src_offset, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.src_buffer = static_cast<IcdOclMem*>(src_buffer)->asRemoteObject();
@@ -2638,7 +2618,6 @@ cl_int clEnqueueCopyBufferToImage (cl_command_queue command_queue, cl_mem src_bu
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2651,7 +2630,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMapBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -2682,7 +2661,6 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     void* ret = command->captures.ret;
 
     ret = globalPlatform->translateMappedPointer(buffer, ret, offset);
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2695,7 +2673,7 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
     using CommandT = Cal::Rpc::Ocl::ClEnqueueUnmapMemObjectRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
@@ -2725,7 +2703,6 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2738,7 +2715,7 @@ cl_int clEnqueueFillBuffer (cl_command_queue command_queue, cl_mem memobj, const
     using CommandT = Cal::Rpc::Ocl::ClEnqueueFillBufferRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, memobj, pattern, patternSize, offset, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, memobj, pattern, patternSize, offset, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, memobj, pattern, patternSize, offset, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.memobj = static_cast<IcdOclMem*>(memobj)->asRemoteObject();
@@ -2768,7 +2745,6 @@ cl_int clEnqueueFillBuffer (cl_command_queue command_queue, cl_mem memobj, const
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2781,7 +2757,7 @@ cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const v
     using CommandT = Cal::Rpc::Ocl::ClEnqueueFillImageRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.image = static_cast<IcdOclMem*>(image)->asRemoteObject();
@@ -2811,7 +2787,6 @@ cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const v
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2824,7 +2799,7 @@ cl_int clWaitForEvents (cl_uint num_events, const cl_event* event_list) {
     using CommandT = Cal::Rpc::Ocl::ClWaitForEventsRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(num_events, event_list);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, num_events, event_list);
+    auto command = new(commandSpace) CommandT(dynMemTraits, num_events, event_list);
     command->copyFromCaller(dynMemTraits);
     if(event_list)
     {
@@ -2857,7 +2832,7 @@ cl_int clGetEventInfo (cl_event event, cl_event_info param_name, size_t param_va
     using CommandT = Cal::Rpc::Ocl::ClGetEventInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(event, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
 
@@ -2886,7 +2861,7 @@ cl_int clGetEventProfilingInfo (cl_event event, cl_profiling_info param_name, si
     using CommandT = Cal::Rpc::Ocl::ClGetEventProfilingInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(event, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, event, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
 
@@ -2913,7 +2888,7 @@ cl_event clCreateUserEvent (cl_context context, cl_int* errcode_ret) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCreateUserEventRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, errcode_ret);
+    auto command = new(commandSpace) CommandT(context, errcode_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -2937,7 +2912,7 @@ cl_int clSetUserEventStatus (cl_event event, cl_int execution_status) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSetUserEventStatusRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(event, execution_status);
+    auto command = new(commandSpace) CommandT(event, execution_status);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
 
 
@@ -2959,7 +2934,7 @@ cl_int clSetEventCallback (cl_event event, cl_int command_exec_callback_type, vo
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSetEventCallbackRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(event, command_exec_callback_type, pfn_notify, user_data);
+    auto command = new(commandSpace) CommandT(event, command_exec_callback_type, pfn_notify, user_data);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
     return command->returnValue();
 }
@@ -2970,7 +2945,7 @@ cl_int clGetDeviceAndHostTimer (cl_device_id device, cl_ulong* device_timestamp,
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClGetDeviceAndHostTimerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device, device_timestamp, host_timestamp);
+    auto command = new(commandSpace) CommandT(device, device_timestamp, host_timestamp);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
 
@@ -2993,7 +2968,7 @@ cl_int clGetHostTimerRpcHelper (cl_device_id device, cl_ulong* host_timestamp) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClGetHostTimerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device, host_timestamp);
+    auto command = new(commandSpace) CommandT(device, host_timestamp);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
 
@@ -3016,7 +2991,7 @@ void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t si
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSVMAllocRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, flags, size, alignment);
+    auto command = new(commandSpace) CommandT(context, flags, size, alignment);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -3040,7 +3015,7 @@ void clSVMFree (cl_context context, void* ptr) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSVMFreeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, ptr);
+    auto command = new(commandSpace) CommandT(context, ptr);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalPlatform->destroyUsmDescriptor(ptr);
 
@@ -3061,7 +3036,7 @@ cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMapRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking_map, map_flags, svm_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking_map, map_flags, svm_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking_map, map_flags, svm_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3090,7 +3065,6 @@ cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3103,7 +3077,7 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMUnmapRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, svm_ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, svm_ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, svm_ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3132,7 +3106,6 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3146,13 +3119,13 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     using CommandT = Cal::Rpc::Ocl::ClSetKernelExecInfoRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, param_name, param_value_size, param_value);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, param_name, param_value_size, param_value);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, param_name, param_value_size, param_value);
     command->copyFromCaller(dynMemTraits);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3165,7 +3138,6 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);
     return ret;
@@ -3178,7 +3150,7 @@ cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemFillRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, svm_ptr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, svm_ptr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, svm_ptr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3207,7 +3179,6 @@ cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3220,7 +3191,7 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMigrateMemRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_svm_pointers, svm_pointers, sizes, flags, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, num_svm_pointers, svm_pointers, sizes, flags, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_svm_pointers, svm_pointers, sizes, flags, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3249,7 +3220,6 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3295,7 +3265,7 @@ cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_
     using CommandT = Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(in_device, properties, num_entries, out_devices, num_devices);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, in_device, properties, num_entries, out_devices, num_devices);
+    auto command = new(commandSpace) CommandT(dynMemTraits, in_device, properties, num_entries, out_devices, num_devices);
     command->copyFromCaller(dynMemTraits);
     command->args.in_device = static_cast<IcdOclDevice*>(in_device)->asRemoteObject();
 
@@ -3329,7 +3299,7 @@ cl_int clReleaseDeviceEXT (cl_device_id device) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device);
+    auto command = new(commandSpace) CommandT(device);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
 
 
@@ -3354,7 +3324,7 @@ cl_int clRetainDeviceEXT (cl_device_id device) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(device);
+    auto command = new(commandSpace) CommandT(device);
     command->args.device = device->asLocalObject()->asRemoteObject();
 
 
@@ -3380,7 +3350,7 @@ cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_ker
     using CommandT = Cal::Rpc::Ocl::ClGetKernelSubGroupInfoKHRRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
@@ -3406,7 +3376,7 @@ cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, cons
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, dstPtr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, dstPtr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, dstPtr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3435,7 +3405,6 @@ cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, cons
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3480,12 +3449,12 @@ cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argInde
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(kernel, argIndex, argValue);
+    auto command = new(commandSpace) CommandT(kernel, argIndex, argValue);
     command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
       if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3508,7 +3477,7 @@ cl_int clGetMemAllocInfoINTEL (cl_context context, const void* ptr, cl_mem_info_
     using CommandT = Cal::Rpc::Ocl::ClGetMemAllocInfoINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, ptr, param_name, param_value_size, param_value, param_value_size_ret);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
 
@@ -3536,7 +3505,7 @@ void* clDeviceMemAllocINTEL (cl_context context, cl_device_id device, const cl_m
     using CommandT = Cal::Rpc::Ocl::ClDeviceMemAllocINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, device, properties, size, alignment, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, device, properties, size, alignment, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, device, properties, size, alignment, errcode_ret);
     command->copyFromCaller(dynMemTraits);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
@@ -3563,7 +3532,7 @@ void* clHostMemAllocINTELRpcHelper (cl_context context, const cl_mem_properties_
     using CommandT = Cal::Rpc::Ocl::ClHostMemAllocINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, properties, size, alignment, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, properties, size, alignment, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, properties, size, alignment, errcode_ret);
     command->copyFromCaller(dynMemTraits, implArgsForClHostMemAllocINTELRpcM);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
 
@@ -3588,7 +3557,7 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
     using CommandT = Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, device, properties, size, alignment, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, context, device, properties, size, alignment, errcode_ret);
+    auto command = new(commandSpace) CommandT(dynMemTraits, context, device, properties, size, alignment, errcode_ret);
     command->copyFromCaller(dynMemTraits, implArgsForClSharedMemAllocINTELRpcM);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
@@ -3615,7 +3584,7 @@ cl_int clMemFreeINTEL (cl_context context, void* ptr) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClMemFreeINTELRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, ptr);
+    auto command = new(commandSpace) CommandT(context, ptr);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalPlatform->destroyUsmDescriptor(ptr);
 
@@ -3639,7 +3608,7 @@ cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr) {
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(context, ptr);
+    auto command = new(commandSpace) CommandT(context, ptr);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     globalPlatform->destroyUsmDescriptor(ptr);
 
@@ -3663,7 +3632,7 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -3692,7 +3661,6 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3705,7 +3673,7 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     using CommandT = Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
+    auto command = new(commandSpace) CommandT(dynMemTraits, device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);
     command->copyFromCaller(dynMemTraits);
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
     command->args.program = static_cast<IcdOclProgram*>(program)->asRemoteObject();
@@ -3737,7 +3705,7 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForptr.get(), ptr, size);
     command->copyFromCaller(dynMemTraits);
@@ -3771,7 +3739,6 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3785,7 +3752,7 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -3815,7 +3782,6 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3829,7 +3795,7 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -3859,7 +3825,6 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3873,7 +3838,7 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     memcpy(standaloneSpaceForptr.get(), ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     command->copyFromCaller(dynMemTraits);
@@ -3907,7 +3872,6 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3921,7 +3885,7 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -3951,7 +3915,6 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3965,7 +3928,7 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -3995,7 +3958,6 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4009,7 +3971,7 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBuffer_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
@@ -4043,7 +4005,6 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4057,7 +4018,7 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBuffer_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -4087,7 +4048,6 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4101,7 +4061,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBuffer_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -4131,7 +4091,6 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4145,7 +4104,7 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     command->copyFromCaller(dynMemTraits);
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
@@ -4179,7 +4138,6 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4193,7 +4151,7 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -4223,7 +4181,6 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4237,7 +4194,7 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
@@ -4267,7 +4224,6 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4281,7 +4237,7 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
     auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
@@ -4318,7 +4274,6 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4332,7 +4287,7 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
     command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
@@ -4365,7 +4320,6 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4379,7 +4333,7 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
     command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
@@ -4412,7 +4366,6 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4426,7 +4379,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Usm_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
@@ -4459,7 +4412,6 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4473,7 +4425,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Usm_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4491,7 +4443,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4510,7 +4462,6 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4524,7 +4475,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Usm_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4542,7 +4493,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4561,7 +4512,6 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4575,7 +4525,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
@@ -4608,7 +4558,6 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4622,7 +4571,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4640,7 +4589,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4659,7 +4608,6 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4673,7 +4621,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4691,7 +4639,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4710,7 +4658,6 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4724,7 +4671,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
     auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
@@ -4761,7 +4708,6 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4775,7 +4721,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
     command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
@@ -4808,7 +4754,6 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4822,7 +4767,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
     command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
@@ -4855,7 +4800,6 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4869,7 +4813,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
@@ -4902,7 +4846,6 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4916,7 +4859,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4934,7 +4877,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4953,7 +4896,6 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4967,7 +4909,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -4985,7 +4927,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -5004,7 +4946,6 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -5018,7 +4959,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
     memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
@@ -5051,7 +4992,6 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     cl_int ret = command->captures.ret;
 
     command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -5065,7 +5005,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -5083,7 +5023,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -5102,7 +5042,6 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -5116,7 +5055,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
@@ -5134,7 +5073,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -5153,7 +5092,6 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     }
     cl_int ret = command->captures.ret;
 
-    commandSpace.reset();
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;

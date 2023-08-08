@@ -178,6 +178,37 @@ class TagAllocator final {
     BitAllocator allocator;
 };
 
+class LinearAllocator {
+  public:
+    LinearAllocator() = default;
+    LinearAllocator(Cal::Utils::AddressRange vaRange) : vaRange(vaRange){};
+
+    void *allocate(size_t sizeInBytes, size_t alignment) {
+        const auto addr = vaRange.start + sizeUsed;
+        const auto addrAligned = Cal::Utils::alignUp(addr, alignment);
+        const auto size = Cal::Utils::alignUp(sizeInBytes, alignment);
+        const auto totalSizeUsed = size + addrAligned - addr;
+        sizeUsed += totalSizeUsed;
+        if (sizeUsed > this->vaRange.size()) {
+            log<Verbosity::critical>("Command channel's heap is full");
+            return nullptr;
+        }
+        return (void *)addrAligned;
+    }
+
+    void free() {
+        this->sizeUsed = 0u;
+    }
+
+    Cal::Utils::AddressRange getRange() const {
+        return vaRange;
+    }
+
+  protected:
+    Cal::Utils::AddressRange vaRange = Cal::Utils::AddressRange::createEmpty();
+    size_t sizeUsed = 0u;
+};
+
 class RangeAllocatorBase {
   public:
     RangeAllocatorBase() : vma({0U, 0U}) {

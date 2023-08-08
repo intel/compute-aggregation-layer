@@ -112,10 +112,10 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %      if func_base.capture_layout.emit_dynamic_traits:
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(${func_base.get_call_params_list_str()});
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace.get()) CommandT(dynMemTraits, ${func_base.get_call_params_list_str()});
+    auto command = new(commandSpace) CommandT(dynMemTraits, ${func_base.get_call_params_list_str()});
 %      else : # not func_base.capture_layout.emit_dynamic_traits
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace.get()) CommandT(${func_base.get_call_params_list_str()});
+    auto command = new(commandSpace) CommandT(${func_base.get_call_params_list_str()});
 %      endif # not func_base.capture_layout.emit_dynamic_traits
 %      for arg in func_base.traits.get_standalone_args():
     auto standaloneSpaceFor${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
@@ -208,7 +208,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       endif
 %      endfor
        channel.isCallAsyncEnabled()){
-         channel.callAsynchronous(command, commandSpace);
+         channel.callAsynchronous(command);
 %       if "queue" in func_base.name:
          command_queue->asLocalObject()->enqueue();
 %       endif
@@ -291,7 +291,6 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %           endfor # epilogue_data(f)
 %       endif #epilogue_data(f)
 %       if epilogue(f):
-    commandSpace.reset();
     channelLock.unlock();
 %       endif #epilogue(f)
 %       for epilogue_line in epilogue(f):

@@ -81,7 +81,7 @@ ze_result_t HostptrCopiesReader::performNonlockingTransferDescsRequest(Cal::Rpc:
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(chunksCount, chunks, outDescsCount, outDescs);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
 
-    auto command = new (commandSpace.get()) CommandT(dynMemTraits, chunksCount, chunks, outDescsCount, outDescs);
+    auto command = new (commandSpace) CommandT(dynMemTraits, chunksCount, chunks, outDescsCount, outDescs);
     command->copyFromCaller(dynMemTraits);
 
     if (channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
