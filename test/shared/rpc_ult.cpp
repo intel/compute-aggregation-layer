@@ -747,10 +747,11 @@ class ChannelClientWhiteBox : public Cal::Rpc::ChannelClient {
     using CommandsChannel::partition;
 
     using ChannelClient::ChannelClient;
+    using ChannelClient::cmdHeap;
     using ChannelClient::completionStamps;
-    using ChannelClient::heap;
     using ChannelClient::semaphoreWaitThreshold;
     using ChannelClient::serviceSynchronizationMethod;
+    using ChannelClient::standaloneHeap;
     using ChannelClient::underlyingShmem;
 };
 
@@ -985,8 +986,10 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
               channelClient.completionStamps.allocate());
     EXPECT_EQ(channelClient.layout.completionStampsCapacity, channelClient.completionStamps.getCapacity());
 
-    auto heapRamge = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.heapStart), static_cast<size_t>(channelClient.layout.heapEnd - channelClient.layout.heapStart)};
-    EXPECT_EQ(heapRamge, channelClient.heap.getRange());
+    auto fullHeapRange = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.heapStart), static_cast<size_t>(channelClient.layout.heapEnd - channelClient.layout.heapStart)};
+    EXPECT_EQ(fullHeapRange.base(), channelClient.cmdHeap.getRange().base());
+    EXPECT_EQ(fullHeapRange.rightBound(), channelClient.standaloneHeap.getRange().rightBound());
+    EXPECT_EQ(channelClient.cmdHeap.getRange().rightBound(), channelClient.standaloneHeap.getRange().base());
 
     shmemManager.free(commandsChannelShmem);
 }

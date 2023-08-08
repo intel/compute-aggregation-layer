@@ -79,7 +79,7 @@ ze_result_t HostptrCopiesReader::performNonlockingTransferDescsRequest(Cal::Rpc:
 
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(chunksCount, chunks, outDescsCount, outDescs);
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
 
     auto command = new (commandSpace.get()) CommandT(dynMemTraits, chunksCount, chunks, outDescsCount, outDescs);
     command->copyFromCaller(dynMemTraits);

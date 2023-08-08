@@ -591,7 +591,10 @@ class ChannelClient : public CommandsChannel {
         }
 
         this->completionStamps = CompletionStampBufferT(getAsLocalAddress<CompletionStampT>(this->layout.completionStampsStart), this->layout.completionStampsCapacity);
-        this->heap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), this->layout.heapEnd - this->layout.heapStart));
+        auto totalHeapSize = this->layout.heapEnd - this->layout.heapStart;
+        auto cmdHeapSize = totalHeapSize / 4;
+        this->cmdHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), cmdHeapSize));
+        this->standaloneHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart + cmdHeapSize), totalHeapSize - cmdHeapSize));
         this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, this->useAsyncCalls);
         this->useBatchedCalls = Cal::Utils::getCalEnvFlag(calBatchedCalls, this->useBatchedCalls);
 
@@ -603,10 +606,10 @@ class ChannelClient : public CommandsChannel {
         return true;
     }
 
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpaceAligned(size_t size, size_t alignment) {
-        auto addr = heap.allocate(size, alignment);
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpaceAligned(size_t size, size_t alignment) {
+        auto addr = cmdHeap.allocate(size, alignment);
         if (nullptr == addr) {
-            log<Verbosity::critical>("Command channel's heap is full");
+            log<Verbosity::critical>("Command channel's commands heap is full");
             std::abort();
             return std::unique_ptr<void, ChannelSpaceDeleter>(nullptr, ChannelSpaceDeleter(*this));
         }
@@ -614,28 +617,43 @@ class ChannelClient : public CommandsChannel {
         return std::unique_ptr<void, ChannelSpaceDeleter>(addr, ChannelSpaceDeleter(*this));
     }
 
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpace(size_t size) {
-        return this->getSpaceAligned(size, Cal::Utils::defaultAlignmentSize);
+    std::unique_ptr<void, ChannelSpaceDeleter> getStandaloneSpaceAligned(size_t size, size_t alignment) {
+        auto addr = standaloneHeap.allocate(size, alignment);
+        if (nullptr == addr) {
+            log<Verbosity::critical>("Command channel's standalone heap is full");
+            std::abort();
+            return std::unique_ptr<void, ChannelSpaceDeleter>(nullptr, ChannelSpaceDeleter(*this));
+        }
+
+        return std::unique_ptr<void, ChannelSpaceDeleter>(addr, ChannelSpaceDeleter(*this));
+    }
+
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpace(size_t size) {
+        return this->getCmdSpaceAligned(size, Cal::Utils::defaultAlignmentSize);
     }
 
     template <typename MessageT>
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpaceAligned(size_t dynamicSize, size_t alignment) {
-        return this->getSpaceAligned(sizeof(MessageT) + dynamicSize, alignment);
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpaceAligned(size_t dynamicSize, size_t alignment) {
+        return this->getCmdSpaceAligned(sizeof(MessageT) + dynamicSize, alignment);
     }
 
     template <typename MessageT>
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpaceAligned(size_t alignment) {
-        return this->getSpaceAligned<MessageT>(0U, alignment);
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpaceAligned(size_t alignment) {
+        return this->getCmdSpaceAligned<MessageT>(0U, alignment);
     }
 
     template <typename MessageT>
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpace(size_t dynamicSize) {
-        return this->getSpaceAligned<MessageT>(dynamicSize, Cal::Utils::defaultAlignmentSize);
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpace(size_t dynamicSize) {
+        return this->getCmdSpaceAligned<MessageT>(dynamicSize, Cal::Utils::defaultAlignmentSize);
     }
 
     template <typename MessageT>
-    std::unique_ptr<void, ChannelSpaceDeleter> getSpace() {
-        return this->getSpaceAligned<MessageT>(Cal::Utils::defaultAlignmentSize);
+    std::unique_ptr<void, ChannelSpaceDeleter> getCmdSpace() {
+        return this->getCmdSpaceAligned<MessageT>(Cal::Utils::defaultAlignmentSize);
+    }
+
+    std::unique_ptr<void, ChannelSpaceDeleter> getStandaloneSpace(size_t size) {
+        return this->getStandaloneSpaceAligned(size, Cal::Utils::defaultAlignmentSize);
     }
 
     template <typename T>
@@ -681,7 +699,11 @@ class ChannelClient : public CommandsChannel {
     }
 
     void freeSpace(void *ptr) {
-        heap.free(ptr);
+        if (cmdHeap.getRange().contains(ptr)) {
+            cmdHeap.free(ptr);
+        } else {
+            standaloneHeap.free(ptr);
+        }
     }
 
     void callAsynchronous(Cal::Rpc::RpcMessageHeader *command, std::unique_ptr<void, ChannelSpaceDeleter> &commandSpace, bool batched) {
@@ -892,7 +914,8 @@ class ChannelClient : public CommandsChannel {
     bool useAsyncCalls = false;
     bool useBatchedCalls = false;
     CompletionStampBufferT completionStamps;
-    Cal::Allocators::AddressRangeAllocator heap;
+    Cal::Allocators::AddressRangeAllocator cmdHeap;
+    Cal::Allocators::AddressRangeAllocator standaloneHeap;
 
     std::vector<std::unique_ptr<void, ChannelSpaceDeleter>> asyncCommandsSpaceStorage;
     std::vector<CompletionStampT *> asyncTagsStorage;

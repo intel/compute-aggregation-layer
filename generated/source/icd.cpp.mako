@@ -111,14 +111,14 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     using CommandT = ${get_fq_message_name(func_base)};
 %      if func_base.capture_layout.emit_dynamic_traits:
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(${func_base.get_call_params_list_str()});
-    auto commandSpace = channel.getSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace.get()) CommandT(dynMemTraits, ${func_base.get_call_params_list_str()});
 %      else : # not func_base.capture_layout.emit_dynamic_traits
-    auto commandSpace = channel.getSpace<CommandT>(0);
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace.get()) CommandT(${func_base.get_call_params_list_str()});
 %      endif # not func_base.capture_layout.emit_dynamic_traits
 %      for arg in func_base.traits.get_standalone_args():
-    auto standaloneSpaceFor${arg.name} = channel.getSpace(${arg.get_calculated_array_size()});
+    auto standaloneSpaceFor${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
 %       if not arg.kind_details.server_access.write_only():
     memcpy(standaloneSpaceFor${arg.name}.get(), ${arg.name}, ${arg.get_calculated_array_size()});
 %       endif # not arg.kind_details.server_access.write_only()
