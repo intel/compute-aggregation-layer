@@ -595,7 +595,7 @@ class ChannelClient : public CommandsChannel {
         auto cmdHeapSize = totalHeapSize / 4;
         this->cmdHeap = Cal::Allocators::LinearAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), cmdHeapSize));
         this->standaloneHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart + cmdHeapSize), totalHeapSize - cmdHeapSize));
-        this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, this->useAsyncCalls);
+        this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, true);
         this->useBatchedCalls = Cal::Utils::getCalEnvFlag(calBatchedCalls, this->useBatchedCalls);
 
         if (this->useAsyncCalls) {

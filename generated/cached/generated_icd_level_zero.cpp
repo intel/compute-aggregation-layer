@@ -854,7 +854,10 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchro
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto standaloneSpaceForsrcptr = channel.getStandaloneSpace(size);
+    memcpy(standaloneSpaceForsrcptr.get(), srcptr, size);
     command->copyFromCaller(dynMemTraits);
+    command->args.srcptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrcptr.get());
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
     {
@@ -862,7 +865,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchro
     }
     if(phWaitEvents)
     {
-        auto base = command->captures.getPhWaitEvents();
+        auto base = command->captures.phWaitEvents;
         auto baseMutable = mutable_element_cast(base);
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
@@ -881,6 +884,7 @@ ze_result_t zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchro
     }
     ze_result_t ret = command->captures.ret;
 
+    standaloneSpaceForsrcptr.release();
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {

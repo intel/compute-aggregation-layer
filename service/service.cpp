@@ -969,11 +969,11 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       mappedDstPtr,
-                                                                                                      apiCommand->args.srcptr ? apiCommand->captures.getSrcptr() : nullptr,
+                                                                                                      apiCommand->args.srcptr ? channel.decodeLocalPtrFromHeapOffset(apiCommand->args.srcptr) : nullptr,
                                                                                                       apiCommand->args.size,
                                                                                                       copyToHostptrEvent,
                                                                                                       apiCommand->args.numWaitEvents,
-                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
+                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
         apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
