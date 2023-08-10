@@ -307,7 +307,8 @@ bool doInit() {
                                              S_IRUSR | S_IWUSR);
 
     if (-1 == globalState.shmemFd) {
-        snprintf(globalState.initError, sizeof(globalState.initError), "Could not open : %s", globalState.privateMallocShmemPath);
+        auto err = errno;
+        snprintf(globalState.initError, sizeof(globalState.initError), "Could not open : %s (errno=%d=%s)", globalState.privateMallocShmemPath, err, strerror(err));
         return false;
     }
     if (-1 == Cal::Sys::ftruncate(globalState.shmemFd, globalState.initialCapacity)) {

@@ -211,7 +211,8 @@ class ShmemImporter {
         auto path = basePath + std::to_string(id);
         int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
         if (-1 == shmemFd) {
-            log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
+            auto err = errno;
+            log<Verbosity::error>("Failed to open shmem object for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
             return {};
         }
         void *ptr = Cal::Sys::mmap(enforcedVaForMmap, size, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMmap ? MAP_FIXED : 0), shmemFd, offset);
@@ -868,6 +869,8 @@ class MallocShmemImporter {
         this->capacity = capacity;
         fd = Cal::Sys::shm_open(std::string(path).c_str(), O_RDWR, 0);
         if (-1 == fd) {
+            auto err = errno;
+            log<Verbosity::error>("Failed to open shmem object for path : %s (errno=%d=%s)", std::string(path).c_str(), err, strerror(err));
             return false;
         }
         localBaseAddress = Cal::Sys::mmap(nullptr, capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, fd, 0);
