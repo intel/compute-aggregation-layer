@@ -182,6 +182,11 @@ struct RemoteShmemDesc {
 // thread-safe
 class ShmemImporter {
   public:
+    struct RefCountedFd {
+        int fd = -1;
+        int refcnt = 0;
+    };
+
     static constexpr bool isThreadSafe = true;
 
     using AllocationT = MmappedShmemSubAllocationT;
@@ -209,15 +214,15 @@ class ShmemImporter {
             }
         }
         auto path = basePath + std::to_string(id);
-        int shmemFd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
+        int shmemFd = this->getFileDescriptor(path);
         if (-1 == shmemFd) {
-            auto err = errno;
-            log<Verbosity::error>("Failed to open shmem object for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
+            log<Verbosity::error>("Failed to open shmem object for path : %s", path.c_str());
             return {};
         }
         void *ptr = Cal::Sys::mmap(enforcedVaForMmap, size, PROT_READ | PROT_WRITE, MAP_SHARED | (enforcedVaForMmap ? MAP_FIXED : 0), shmemFd, offset);
         if (ptr == MAP_FAILED) {
-            log<Verbosity::error>("Failed to mmap for shmem %s (offset : %zu) of size : %zu", path.c_str(), offset, size);
+            auto err = errno;
+            log<Verbosity::error>("Failed to mmap for shmem %s (offset : %zu) of size : %zu (errno=%d=%s)", path.c_str(), offset, size, err, strerror(err));
             Cal::Sys::shm_unlink(path.c_str());
             return {};
         }
@@ -246,12 +251,7 @@ class ShmemImporter {
         }
 
         if (shmem.isOwnerOfFd()) {
-            if (-1 == Cal::Sys::close(shmem.getFd())) {
-                auto err = errno;
-                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.getFd(), path.c_str(), err, strerror(err));
-            } else {
-                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.getFd(), path.c_str(), shmem.getMmappedSize());
-            }
+            closeFileDescriptor(shmem, path);
         }
     }
 
@@ -259,8 +259,58 @@ class ShmemImporter {
         return this->basePath;
     }
 
+    int getFileDescriptor(const std::string &path) {
+        auto fileMapLock = fileMap.lock();
+        int fd = -1;
+        auto iter = (*fileMap).find(path);
+        if (iter == (*fileMap).end()) {
+            fd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
+            if (-1 == fd) {
+                log<Verbosity::error>("Failed to open shmem for path : %s", path.c_str());
+                return -1;
+            }
+            log<Verbosity::debug>("Opened shmem for path : %s", path.c_str());
+            (*fileMap)[path] = {fd, 1};
+        } else {
+            fd = (*iter).second.fd;
+            ++iter->second.refcnt;
+        }
+        return fd;
+    }
+
+    void closeFileDescriptor(const AllocationT &shmem, const std::string &path) {
+        auto fileMapLock = fileMap.lock();
+        auto iter = (*fileMap).find(path);
+        if (iter == (*fileMap).end()) {
+            log<Verbosity::debug>("Couldn't find shmem FD %s for path : %s", shmem.getFd(), path.c_str());
+            return;
+        }
+        int fd = (*iter).second.fd;
+        if (fd != shmem.getFd()) {
+            log<Verbosity::error>("Found incorrect fd %d for path : %s with shmem FD %d", fd, path.c_str(), shmem.getFd());
+            return;
+        }
+        int refcnt = (*iter).second.refcnt;
+        if (refcnt <= 0) {
+            log<Verbosity::error>("Found incorrect refcnt %d for path : %s with shmem FD %d", fd, path.c_str(), shmem.getFd());
+            return;
+        }
+        if (refcnt == 1) {
+            if (-1 == Cal::Sys::close(fd)) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", fd, path.c_str(), err, strerror(err));
+                return;
+            }
+            log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", fd, path.c_str(), shmem.getMmappedSize());
+            (*fileMap).erase(path);
+        } else {
+            --iter->second.refcnt;
+        }
+    }
+
   protected:
     std::string basePath;
+    Cal::Utils::Lockable<std::unordered_map<std::string, RefCountedFd>> fileMap{};
 };
 
 inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,

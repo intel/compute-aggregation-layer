@@ -122,12 +122,7 @@ class UsmShmemImporter {
         if (unmapSucesful) {
             if (shmem.isOwnerOfFd()) {
                 auto path = base.getBasePath() + std::to_string(shmem.getShmemId());
-                if (-1 == Cal::Sys::close(shmem.getFd())) {
-                    auto err = errno;
-                    log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", shmem.getFd(), path.c_str(), err, strerror(err));
-                } else {
-                    log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", shmem.getFd(), path.c_str(), shmem.getMmappedSize());
-                }
+                base.closeFileDescriptor(shmem, path);
             }
         } else {
             log<Verbosity::debug>("Leaking FD %d because %p failed to unmap", shmem.getFd(), shmem.getMmappedPtr());

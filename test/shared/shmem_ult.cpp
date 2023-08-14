@@ -251,15 +251,90 @@ TEST(ShmemImporterOpen, whenMmapingTheShmemFileThenUsesProperFlagsAndFd) {
     EXPECT_TRUE(logs.empty()) << logs.str();
 }
 
+TEST(ShmemImporterOpen, givenAllocationWhenGettingFileDescriptorThenCallShmOpen) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+
+    Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+    int fd = globalShmemImporter.getFileDescriptor(path);
+
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd, 4096U, true};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, nullptr, 4096U};
+
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+
+    globalShmemImporter.release(mmappedShmemAlloc);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
+TEST(ShmemImporterOpen, givenAllocationWhenGettingFileDescriptorForSameShmemIdManyTimesThenCallOpenOnceOnly) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+
+    Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+
+    int fd1 = globalShmemImporter.getFileDescriptor(path);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+    auto shmemAlloc1 = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd1, 4096U, true};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc1{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc1, 0}, nullptr, 4096U};
+
+    int fd2 = globalShmemImporter.getFileDescriptor(path);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+    auto shmemAlloc2 = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd2, 4096U, true};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc2{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc2, 0}, nullptr, 4096U};
+
+    EXPECT_EQ(fd1, fd2);
+
+    globalShmemImporter.closeFileDescriptor(mmappedShmemAlloc1, path);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.close.callCount);
+
+    globalShmemImporter.closeFileDescriptor(mmappedShmemAlloc2, path);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
+TEST(ShmemImporterOpen, givenGlobalShmemImporterWhenCallingOpenThenCallShmOpen) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    Cal::Ipc::ShmemImporter globalShmemImporter;
+
+    auto mmappedShmemAlloc = globalShmemImporter.open(1, 0, 4096U, nullptr);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+
+    globalShmemImporter.release(mmappedShmemAlloc);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
+TEST(ShmemImporterOpen, givenGlobalShmemWhenCallingOpenForSameShmemIdManyTimesThenCallShmOpenOnceOnly) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 3;
+
+    auto mmappedShmemAlloc1 = globalShmemImporter.open(id, 0, 4096U, nullptr);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+
+    auto mmappedShmemAlloc2 = globalShmemImporter.open(id, 32, 4096U, nullptr);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+
+    globalShmemImporter.release(mmappedShmemAlloc1);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.close.callCount);
+
+    globalShmemImporter.release(mmappedShmemAlloc2);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
 TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenFreeingAndMunmapFailsThenEmitsError) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
     Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+    int fd = globalShmemImporter.getFileDescriptor(path);
 
     void *ptr = Cal::Sys::mmap(nullptr, 4096U, PROT_NONE, 0, -1, 0);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
-    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd, 4096U, true};
     Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, ptr, 4096U};
 
     tempSysCallsCtx.apiConfig.munmap.returnValue = -1;
@@ -276,10 +351,13 @@ TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenOwnsFdThenFreeingMun
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+    int fd = globalShmemImporter.getFileDescriptor(path);
 
     void *ptr = Cal::Sys::mmap(nullptr, 4096U, PROT_NONE, 0, -1, 0);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.mmap.callCount);
-    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd, 4096U, true};
     Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, ptr, 4096U};
 
     globalShmemImporter.release(mmappedShmemAlloc);
@@ -312,14 +390,31 @@ TEST(ShmemImporterRelease, givenAllocationWithoutMmappedPtrThenOnlyClosesFd) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 
     Cal::Ipc::ShmemImporter globalShmemImporter;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+    int fd = globalShmemImporter.getFileDescriptor(path);
 
-    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{1, false}, 1, 4096U, true};
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd, 4096U, true};
     Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, nullptr, 4096U};
 
     globalShmemImporter.release(mmappedShmemAlloc);
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.mmap.callCount);
     EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.munmap.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
+TEST(ShmemImporterRelease, givenAllocationWithoutMmappedPtrAndFdThenDontCloseFd) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+
+    Cal::Ipc::ShmemImporter globalShmemImporter;
+
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{0, false}, 0, 4096U, true};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, nullptr, 4096U};
+
+    globalShmemImporter.release(mmappedShmemAlloc);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.mmap.callCount);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.munmap.callCount);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.close.callCount);
 }
 
 TEST(ShmemAllocatorAllocate, whenRequestedNonPow2AlignmentThenReturnsInvalidAllocationAndEmitsError) {
