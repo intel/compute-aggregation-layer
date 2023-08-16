@@ -191,7 +191,6 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
 cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const void *argValue);
 cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue);
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
-
 cl_int clReleaseMemObject(cl_mem memobj);
 
 size_t getTexelSizeBytes(const cl_image_format *imageFormat);
@@ -655,6 +654,9 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
     cl_mem tryGetRecycledClBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret);
     bool tryRecycleClBuffer(cl_mem mem);
     void setDevicesList(size_t numDevices, const cl_device_id *devices);
+    StagingAreaManager<std::function<void *(size_t)>,
+                       std::function<void(void *)>> &
+    getStagingAreaManager() { return stagingAreaManager; }
 
     std::vector<cl_device_id> devices;
     ClBufferRecycler clBufferRecycler;
@@ -694,7 +696,17 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         temporaryAllocations.allocations.push_back(std::move(alloc));
     }
 
+    void registerTemporaryAllocation(std::unique_ptr<void, std::function<void(void *)>> alloc) {
+        std::lock_guard<std::mutex> lock(temporaryStagingAreas.mutex);
+        temporaryStagingAreas.allocations.push_back(std::move(alloc));
+    }
+
     void cleanTemporaryAllocations() {
+        {
+            std::lock_guard<std::mutex> lock(temporaryStagingAreas.mutex);
+            temporaryStagingAreas.allocations.clear();
+        }
+
         std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> tmp;
         {
             std::lock_guard<std::mutex> lock(temporaryAllocations.mutex);
@@ -715,7 +727,13 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> allocations;
     } temporaryAllocations;
 
+    struct {
+        std::mutex mutex;
+        std::vector<std::unique_ptr<void, std::function<void(void *)>>> allocations;
+    } temporaryStagingAreas;
+
     InfoCache cache;
+    IcdOclContext *context{};
 };
 
 struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclTypePrinter> {

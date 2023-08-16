@@ -403,6 +403,7 @@ IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReferen
 
 void IcdOclContext::beforeReleaseCallback() {
     if (1 == this->peekRefCount()) {
+        this->getStagingAreaManager().clearStagingAreaAllocations();
         clBufferRecycler.cleanup();
         if (implicitQueue) {
             Cal::Icd::Ocl::clReleaseCommandQueue(implicitQueue);
@@ -497,10 +498,18 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
 }
 
 void *IcdOclContext::allocateStagingArea(size_t size) {
-    return nullptr;
+    cl_int cl_err{};
+    void *usmHostMem = Cal::Icd::Ocl::clHostMemAllocINTEL(this->asLocalObject(), nullptr, size, 0, &cl_err);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::critical>("Failed to allocate staging buffer via clHostMemAllocINTEL of size %zu", size);
+        return nullptr;
+    }
+
+    return usmHostMem;
 }
 
 void IcdOclContext::deallocateStagingAreas(void *ptr) {
+    Cal::Icd::Ocl::clMemFreeINTEL(this->asLocalObject(), ptr);
 }
 
 bool IcdOclKernel::initTraits() {

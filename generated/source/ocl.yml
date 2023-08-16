@@ -527,6 +527,9 @@ config:
                 server_access: write
         - name: clCreateCommandQueue
           latency: 1.0
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
           returns:
             type: cl_command_queue
             kind: scalar
@@ -583,6 +586,9 @@ config:
               translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
         - name: clCreateCommandQueueWithProperties
           latency: 1.0
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
           returns:
             type: cl_command_queue
             kind: scalar
@@ -3247,9 +3253,9 @@ config:
                   kind: "scalar"
                 server_access: read
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
@@ -5135,7 +5141,7 @@ config:
               kind: scalar
             2:
               name: dst_ptr
-              type : void*
+              type: void*
               kind_details:
                 num_elements: "size"
                 can_be_null: True
@@ -5463,9 +5469,9 @@ config:
                   kind: scalar
                 server_access: write
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
@@ -5480,9 +5486,9 @@ config:
                   kind: scalar
                 server_access: read
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va

@@ -107,6 +107,11 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %     else : # f == func_base
     ${config.icd_acquire_global_object};
     auto &channel = ${config.icd_acquire_channel};
+%      for arg in func_base.traits.get_standalone_args():
+%        if arg.capture_details.mode.is_staging_usm_mode():
+    std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+%        endif
+%      endfor # arg in func_base.traits.get_standalone_args()
     auto channelLock = channel.lock();
     using CommandT = ${get_fq_message_name(func_base)};
 %      if func_base.capture_layout.emit_dynamic_traits:
@@ -118,16 +123,22 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     auto command = new(commandSpace) CommandT(${func_base.get_call_params_list_str()});
 %      endif # not func_base.capture_layout.emit_dynamic_traits
 %      for arg in func_base.traits.get_standalone_args():
-    auto standaloneSpaceFor${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
+%        if arg.capture_details.mode.is_standalone_mode():
+    auto standalone_${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
+%        endif
 %       if not arg.kind_details.server_access.write_only():
-    memcpy(standaloneSpaceFor${arg.name}.get(), ${arg.name}, ${arg.get_calculated_array_size()});
+    memcpy(standalone_${arg.name}.get(), ${arg.name}, ${arg.get_calculated_array_size()});
 %       endif # not arg.kind_details.server_access.write_only()
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_copy_from_caller:
     command->copyFromCaller(${get_copy_from_caller_call_params_list_str(func_base)});
 %      endif # func_base.traits.emit_copy_from_caller:
 %      for arg in func_base.traits.get_standalone_args():
-    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFor${arg.name}.get());
+%        if arg.capture_details.mode.is_standalone_mode():
+    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(standalone_${arg.name}.get());
+%        elif arg.capture_details.mode.is_staging_usm_mode():
+    command->args.${arg.name} = standalone_${arg.name}.get();
+%        endif
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_reassemblation_in_icd:
     command->captures.reassembleNestedStructs();
@@ -244,7 +255,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       endif # func_base.traits.emit_copy_to_caller
 %       for arg in func_base.traits.get_standalone_args():
 %        if not arg.kind_details.server_access.read_only():
-    memcpy(${arg.name}, standaloneSpaceFor${arg.name}.get(), ${arg.get_calculated_array_size()});
+    memcpy(${arg.name}, standalone_${arg.name}.get(), ${arg.get_calculated_array_size()});
 %        endif # not arg.kind_details.server_access.write_only()
 %       endfor # arg in func_base.traits.get_standalone_args():
 %       for arg in get_args_requiring_translation_after(func_base):
@@ -282,7 +293,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       endif # func_base.returns.translate_after
 %       for arg in func_base.traits.get_standalone_args():
 %        if not arg.capture_details.reclaim_method.is_immediate_mode():
-    ${arg.capture_details.reclaim_method.format(f"standaloneSpaceFor{arg.name}")};
+    ${arg.capture_details.reclaim_method.format(f"standalone_{arg.name}")};
 %        endif # not arg.capture_details.reclaim_method.is_immediate_mode()
 %       endfor # arg in func_base.traits.get_standalone_args():
 %       if epilogue_data(f):

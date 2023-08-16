@@ -347,6 +347,8 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device, 
     cl_command_queue ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_int clSetDefaultDeviceCommandQueue (cl_context context, cl_device_id device, cl_command_queue command_queue) {
@@ -402,6 +404,8 @@ cl_command_queue clCreateCommandQueueWithProperties (cl_context context, cl_devi
     cl_command_queue ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const char** strings, const size_t* lengths, cl_int* errcode_ret) {
@@ -2409,9 +2413,9 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch));
+    auto standalone_ptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.image = static_cast<IcdOclMem*>(image)->asRemoteObject();
     Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
@@ -2435,14 +2439,14 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(ptr, standaloneSpaceForptr.get(), Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch));
+    memcpy(ptr, standalone_ptr.get(), Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, src_origin, region, row_pitch, slice_pitch));
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -2456,10 +2460,10 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
-    memcpy(standaloneSpaceForptr.get(), ptr, Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
+    auto standalone_ptr = channel.getStandaloneSpace(Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
+    memcpy(standalone_ptr.get(), ptr, Cal::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.image = static_cast<IcdOclMem*>(image)->asRemoteObject();
     if(event_wait_list)
@@ -2488,7 +2492,7 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3701,15 +3705,15 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_ptr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForptr.get(), ptr, size);
+    memcpy(standalone_ptr.get(), ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = standalone_ptr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
     if(event_wait_list)
@@ -3738,7 +3742,7 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -3855,10 +3859,10 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
-    memcpy(standaloneSpaceForptr.get(), ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
+    auto standalone_ptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
+    memcpy(standalone_ptr.get(), ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
     if(event_wait_list)
@@ -3887,7 +3891,7 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4004,9 +4008,9 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(size);
+    auto standalone_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
     if(event_wait_list)
@@ -4029,14 +4033,14 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(ptr, standaloneSpaceForptr.get(), size);
+    memcpy(ptr, standalone_ptr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4153,9 +4157,9 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
+    auto standalone_ptr = channel.getStandaloneSpace(Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForptr.get());
+    command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
     if(event_wait_list)
@@ -4178,14 +4182,14 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(ptr, standaloneSpaceForptr.get(), Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
+    memcpy(ptr, standalone_ptr.get(), Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4302,12 +4306,12 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
-    auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
+    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
+    auto standalone_src_ptr = channel.getStandaloneSpace(size);
+    memcpy(standalone_src_ptr.get(), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
-    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrc_ptr.get());
+    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_dst_ptr.get());
+    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_src_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4329,15 +4333,15 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dst_ptr, standaloneSpaceFordst_ptr.get(), size);
+    memcpy(dst_ptr, standalone_dst_ptr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_src_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4352,9 +4356,9 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
+    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
+    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_dst_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4376,14 +4380,14 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dst_ptr, standaloneSpaceFordst_ptr.get(), size);
+    memcpy(dst_ptr, standalone_dst_ptr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4398,9 +4402,9 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordst_ptr = channel.getStandaloneSpace(size);
+    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordst_ptr.get());
+    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_dst_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4422,14 +4426,14 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dst_ptr, standaloneSpaceFordst_ptr.get(), size);
+    memcpy(dst_ptr, standalone_dst_ptr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordst_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4444,10 +4448,10 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
+    auto standalone_src_ptr = channel.getStandaloneSpace(size);
+    memcpy(standalone_src_ptr.get(), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrc_ptr.get());
+    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_src_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4475,7 +4479,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_src_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4590,10 +4594,10 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForsrc_ptr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrc_ptr.get(), src_ptr, size);
+    auto standalone_src_ptr = channel.getStandaloneSpace(size);
+    memcpy(standalone_src_ptr.get(), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrc_ptr.get());
+    command->args.src_ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_src_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4621,7 +4625,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrc_ptr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_src_ptr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4731,17 +4735,17 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_dstPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    std::unique_ptr<void, std::function<void(void*)>> standalone_srcPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
-    auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
+    memcpy(standalone_srcPtr.get(), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
-    command->args.srcPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrcPtr.get());
+    command->args.dstPtr = standalone_dstPtr.get();
+    command->args.srcPtr = standalone_srcPtr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4763,15 +4767,15 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dstPtr, standaloneSpaceFordstPtr.get(), size);
+    memcpy(dstPtr, standalone_dstPtr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcPtr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4781,14 +4785,14 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_dstPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
+    command->args.dstPtr = standalone_dstPtr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4810,14 +4814,14 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dstPtr, standaloneSpaceFordstPtr.get(), size);
+    memcpy(dstPtr, standalone_dstPtr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstPtr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4827,14 +4831,14 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_dstPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceFordstPtr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceFordstPtr.get());
+    command->args.dstPtr = standalone_dstPtr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4856,14 +4860,14 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
-    memcpy(dstPtr, standaloneSpaceFordstPtr.get(), size);
+    memcpy(dstPtr, standalone_dstPtr.get(), size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceFordstPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstPtr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -4873,15 +4877,15 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Usm_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_srcPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
+    memcpy(standalone_srcPtr.get(), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrcPtr.get());
+    command->args.srcPtr = standalone_srcPtr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -4909,7 +4913,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcPtr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;
@@ -5019,15 +5023,15 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Shared_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    std::unique_ptr<void, std::function<void(void*)>> standalone_srcPtr(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standaloneSpaceForsrcPtr = channel.getStandaloneSpace(size);
-    memcpy(standaloneSpaceForsrcPtr.get(), srcPtr, size);
+    memcpy(standalone_srcPtr.get(), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcPtr = channel.encodeHeapOffsetFromLocalPtr(standaloneSpaceForsrcPtr.get());
+    command->args.srcPtr = standalone_srcPtr.get();
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     if(event_wait_list)
     {
@@ -5055,7 +5059,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     }
     cl_int ret = command->captures.ret;
 
-    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standaloneSpaceForsrcPtr));
+    command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcPtr));
     channelLock.unlock();
     command_queue->asLocalObject()->enqueue();
     return ret;

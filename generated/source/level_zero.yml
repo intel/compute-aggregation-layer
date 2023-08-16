@@ -2692,7 +2692,7 @@ config:
               type: const void*
               capture_details:
                 mode: standalone
-                reclaim_method: standaloneSpaceForsrcptr.release()
+                reclaim_method: "{allocation}.release()"
               kind: ptr_array
               kind_details:
                 num_elements: "size"

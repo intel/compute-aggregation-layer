@@ -160,7 +160,7 @@ ${func.capture_layout.generate_h()}
 %    if func.traits.emit_copy_from_caller:
 
     void copyFromCaller(${', '.join(get_copy_from_caller_args(func))}){
-%     for arg in [arg for arg in get_ptr_array_args(func) if not arg.traits.uses_standalone_allocation] :
+%     for arg in [arg for arg in get_ptr_array_args(func) if not (arg.traits.uses_standalone_allocation or arg.traits.uses_staging_usm_allocation)] :
 %      if not arg.kind_details.server_access.write_only():
 %       if arg.kind_details.can_be_null:
         if(args.${arg.name}){

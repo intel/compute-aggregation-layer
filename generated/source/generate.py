@@ -210,6 +210,9 @@ class CaptureMode:
     def is_standalone_mode(self):
         return self.str == "standalone"
 
+    def is_staging_usm_mode(self):
+        return self.str == "staging_usm"
+
 class CaptureReclaimMethod:
     def __init__(self, src: str):
         self.str = src
@@ -229,9 +232,10 @@ class ArgTraits:
     def __init__(self, arg, parent_function):
         self.arg = arg
         self.uses_standalone_allocation = arg.capture_details.mode.is_standalone_mode()
-        if self.uses_standalone_allocation:
+        self.uses_staging_usm_allocation = arg.capture_details.mode.is_staging_usm_mode()
+        if self.uses_standalone_allocation or self.uses_staging_usm_allocation:
             assert( arg.kind.is_pointer() )
-        self.uses_inline_dynamic_mem = arg.kind.is_pointer_to_array() and (not arg.kind_details.num_elements.is_constant()) and (not self.uses_standalone_allocation)
+        self.uses_inline_dynamic_mem = arg.kind.is_pointer_to_array() and (not arg.kind_details.num_elements.is_constant()) and (not self.uses_standalone_allocation) and (not self.uses_staging_usm_allocation)
         self.uses_dynamic_arg_getter = parent_function.traits.uses_dynamic_arg_getters and self.uses_inline_dynamic_mem
         self.uses_nested_capture = arg.kind.is_pointer_to_array() and arg.kind_details.element.kind.is_pointer_to_array()
 
@@ -470,7 +474,7 @@ class FunctionTraits:
         self.has_arg_kind_variants = any(arg.kind_variants for arg in function.args)
 
     def requires_copy_from_caller(self, ptr_array_args, implicit_args):
-        is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args if not arg.capture_details.mode.is_standalone_mode())
+        is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args if not (arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()))
         is_copy_required_for_implicit_args = any(not arg.server_access.write_only() for arg in implicit_args)
 
         capturable_struct_args = [arg for arg in ptr_array_args if self.is_non_trivial_struct_dependency(arg.kind_details.element)]
@@ -512,14 +516,14 @@ class FunctionTraits:
         return total_count
 
     def get_standalone_args(self):
-        return [arg for arg in self.function.args if arg.capture_details.mode.is_standalone_mode()]
+        return [arg for arg in self.function.args if arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()]
 
     def get_ptr_array_args(self):
         return [arg for arg in self.function.args if arg.kind.is_pointer_to_array()]
 
     def get_inline_dyn_ptr_array_args(self):
         dyn_ptr_array_args = [arg for arg in self.function.args if arg.kind.is_pointer_to_array()
-                             and (not arg.kind_details.num_elements.is_constant()) and (not arg.capture_details.mode.is_standalone_mode())]
+                             and (not arg.kind_details.num_elements.is_constant()) and not (arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode())]
 
         def is_costly(arg):
             return arg.kind_details.num_elements.is_nullterminated() or arg.kind_details.num_elements.is_nullterminated_key() or arg.kind_details.element.kind.is_pointer_to_array()
@@ -1069,7 +1073,7 @@ class FunctionCaptureLayout:
         self.struct_members_layouts = {}
 
         for arg in function.traits.get_ptr_array_args():
-            if arg.traits.uses_standalone_allocation:
+            if arg.traits.uses_standalone_allocation or arg.traits.uses_staging_usm_allocation:
                 continue
             # Ensure that capture layout includes nested structure fields.
             if arg.kind_details.element.kind.is_struct() and arg.kind_details.element.type.str in structures:
@@ -1082,7 +1086,7 @@ class FunctionCaptureLayout:
                         arg, parent_layout, member) for member in members_to_capture]
 
         for arg in function.traits.get_fixed_ptr_array_args():
-            if arg.traits.uses_standalone_allocation:
+            if arg.traits.uses_standalone_allocation or arg.traits.uses_staging_usm_allocation:
                 continue
             arg_layout = FunctionCaptureLayout.ArgCaptureLayout()
             arg_layout.arg = arg
@@ -1799,7 +1803,7 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
     def get_arg_from_api_command_struct(rpc_func, arg):
         if arg.is_always_queried():
             return f"&apiCommand->captures.{arg.name}"
-        if arg.kind.is_pointer_to_array() and not arg.traits.uses_standalone_allocation:
+        if arg.kind.is_pointer_to_array() and not (arg.traits.uses_standalone_allocation or arg.traits.uses_staging_usm_allocation):
             if arg.kind_details.num_elements.is_constant() or not rpc_func.traits.uses_dynamic_arg_getters:
                 captured_arg = f"{'&' if (arg.kind_details.num_elements.get_constant() == 1) else ''}apiCommand->captures.{arg.name}"
             else:
