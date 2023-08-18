@@ -748,7 +748,7 @@ class ChannelClientWhiteBox : public Cal::Rpc::ChannelClient {
 
     using ChannelClient::ChannelClient;
     using ChannelClient::cmdHeap;
-    using ChannelClient::completionStamps;
+    using ChannelClient::completionStamp;
     using ChannelClient::semaphoreWaitThreshold;
     using ChannelClient::serviceSynchronizationMethod;
     using ChannelClient::standaloneHeap;
@@ -983,8 +983,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
     EXPECT_TRUE(connection.encodeIssues.empty()) << " in messages issues : [" << connection.getEncodeLogFlat() << "]";
 
     EXPECT_EQ(channelClient.getAsLocalAddress(channelClient.layout.completionStampsStart),
-              channelClient.completionStamps.allocate());
-    EXPECT_EQ(channelClient.layout.completionStampsCapacity, channelClient.completionStamps.getCapacity());
+              channelClient.completionStamp);
 
     auto fullHeapRange = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.heapStart), static_cast<size_t>(channelClient.layout.heapEnd - channelClient.layout.heapStart)};
     EXPECT_EQ(fullHeapRange.base(), channelClient.cmdHeap.getRange().base());
