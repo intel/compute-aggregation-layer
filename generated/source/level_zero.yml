@@ -7112,8 +7112,14 @@ config:
             3:
               name: access
               type: ze_memory_access_attribute_t*
-              kind: pointer
-              server_access: write
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_memory_access_attribute_t
+                  kind: scalar
+                server_access: write
             4:
               name: outSize
               type: size_t*

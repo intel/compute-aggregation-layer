@@ -1425,7 +1425,7 @@ inline bool zeVirtualMemGetAccessAttributeHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.hContext, 
                                                 apiCommand->args.ptr, 
                                                 apiCommand->args.size, 
-                                                apiCommand->args.access, 
+                                                apiCommand->args.access ? &apiCommand->captures.access : nullptr, 
                                                 apiCommand->args.outSize ? &apiCommand->captures.outSize : nullptr
                                                 );
     return true;

@@ -12704,6 +12704,7 @@ struct ZeVirtualMemGetAccessAttributeRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        ze_memory_access_attribute_t access;
         size_t outSize;
 
         Captures() = default;
@@ -12749,6 +12750,9 @@ struct ZeVirtualMemGetAccessAttributeRpcM {
     }
 
     void copyToCaller(){
+        if(args.access){
+            *args.access = captures.access;
+        }
         if(args.outSize){
             *args.outSize = captures.outSize;
         }
