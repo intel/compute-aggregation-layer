@@ -273,6 +273,7 @@ struct ZesDeviceGetStateRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        zes_device_state_t pState;
 
         Captures() = default;
         Captures(const Captures &) = delete;
@@ -303,6 +304,12 @@ struct ZesDeviceGetStateRpcM {
         message.args.pState = pState;
     }
     
+
+    void copyToCaller(){
+        if(args.pState){
+            *args.pState = captures.pState;
+        }
+    }
 };
 static_assert(std::is_standard_layout_v<ZesDeviceGetStateRpcM>);
 struct ZesDeviceProcessesGetStateRpcM {
@@ -414,6 +421,7 @@ struct ZesDevicePciGetPropertiesRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        zes_pci_properties_t pProperties;
 
         Captures() = default;
         Captures(const Captures &) = delete;
@@ -444,6 +452,12 @@ struct ZesDevicePciGetPropertiesRpcM {
         message.args.pProperties = pProperties;
     }
     
+
+    void copyToCaller(){
+        if(args.pProperties){
+            *args.pProperties = captures.pProperties;
+        }
+    }
 };
 static_assert(std::is_standard_layout_v<ZesDevicePciGetPropertiesRpcM>);
 struct ZesDevicePciGetStateRpcM {
@@ -470,6 +484,7 @@ struct ZesDevicePciGetStateRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        zes_pci_state_t pState;
 
         Captures() = default;
         Captures(const Captures &) = delete;
@@ -500,6 +515,12 @@ struct ZesDevicePciGetStateRpcM {
         message.args.pState = pState;
     }
     
+
+    void copyToCaller(){
+        if(args.pState){
+            *args.pState = captures.pState;
+        }
+    }
 };
 static_assert(std::is_standard_layout_v<ZesDevicePciGetStateRpcM>);
 struct ZesDevicePciGetBarsRpcM {
@@ -528,6 +549,7 @@ struct ZesDevicePciGetBarsRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        zes_pci_bar_properties_t pProperties;
 
         Captures() = default;
         Captures(const Captures &) = delete;
@@ -560,6 +582,12 @@ struct ZesDevicePciGetBarsRpcM {
         message.args.pProperties = pProperties;
     }
     
+
+    void copyToCaller(){
+        if(args.pProperties){
+            *args.pProperties = captures.pProperties;
+        }
+    }
 };
 static_assert(std::is_standard_layout_v<ZesDevicePciGetBarsRpcM>);
 struct ZesDevicePciGetStatsRpcM {
@@ -586,6 +614,7 @@ struct ZesDevicePciGetStatsRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        zes_pci_stats_t pStats;
 
         Captures() = default;
         Captures(const Captures &) = delete;
@@ -616,6 +645,12 @@ struct ZesDevicePciGetStatsRpcM {
         message.args.pStats = pStats;
     }
     
+
+    void copyToCaller(){
+        if(args.pStats){
+            *args.pStats = captures.pStats;
+        }
+    }
 };
 static_assert(std::is_standard_layout_v<ZesDevicePciGetStatsRpcM>);
 struct ZesDeviceGetPropertiesRpcM {

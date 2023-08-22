@@ -77,6 +77,7 @@ ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -122,6 +123,7 @@ ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_prop
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -143,6 +145,7 @@ ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -164,6 +167,7 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -185,6 +189,7 @@ ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;

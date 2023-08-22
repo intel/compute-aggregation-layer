@@ -174,7 +174,7 @@ inline bool zesDeviceGetStateHandler(Provider &service, Cal::Rpc::ChannelServer 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceGetState(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pState
+                                                apiCommand->args.pState ? &apiCommand->captures.pState : nullptr
                                                 );
     return true;
 }
@@ -193,7 +193,7 @@ inline bool zesDevicePciGetPropertiesHandler(Provider &service, Cal::Rpc::Channe
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetProperties(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pProperties
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
                                                 );
     return true;
 }
@@ -202,7 +202,7 @@ inline bool zesDevicePciGetStateHandler(Provider &service, Cal::Rpc::ChannelServ
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetStateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetState(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pState
+                                                apiCommand->args.pState ? &apiCommand->captures.pState : nullptr
                                                 );
     return true;
 }
@@ -212,7 +212,7 @@ inline bool zesDevicePciGetBarsHandler(Provider &service, Cal::Rpc::ChannelServe
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetBars(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount, 
-                                                apiCommand->args.pProperties
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
                                                 );
     return true;
 }
@@ -221,7 +221,7 @@ inline bool zesDevicePciGetStatsHandler(Provider &service, Cal::Rpc::ChannelServ
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetStatsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetStats(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pStats
+                                                apiCommand->args.pStats ? &apiCommand->captures.pStats : nullptr
                                                 );
     return true;
 }

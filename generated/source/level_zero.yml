@@ -1585,7 +1585,14 @@ config:
             1:
               name: pState
               type: zes_device_state_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_device_state_t
+                  kind: scalar
+                server_access: write
 
         - name: zesDeviceProcessesGetState
           latency: 1.0
@@ -1631,7 +1638,14 @@ config:
             1:
               name: pProperties
               type: zes_pci_properties_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_pci_properties_t
+                  kind: scalar
+                server_access: write
 
         - name: zesDevicePciGetState
           latency: 1.0
@@ -1648,7 +1662,14 @@ config:
             1:
               name: pState
               type: zes_pci_state_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_pci_state_t
+                  kind: scalar
+                server_access: write
 
         - name: zesDevicePciGetBars
           latency: 1.0
@@ -1669,7 +1690,14 @@ config:
             2:
               name: pProperties
               type: zes_pci_bar_properties_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_pci_bar_properties_t
+                  kind: scalar
+                server_access: write
 
         - name: zesDevicePciGetStats
           latency: 1.0
@@ -1686,7 +1714,14 @@ config:
             1:
               name: pStats
               type: zes_pci_stats_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_pci_stats_t
+                  kind: scalar
+                server_access: write
 
         - name: zesDeviceGetProperties
           latency: 1.0
@@ -4001,48 +4036,48 @@ config:
                   type: uint64_t
                   kind: scalar
                 server_access: write
-        - name : zeDeviceReserveCacheExt
-          ddi_category :  Device
-          returns :
-            type : ze_result_t
-            kind : scalar
-            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args :
-            0 :
-              name : hDevice
-              type : ze_device_handle_t
-              kind : scalar
-            1 :
-              name : cacheLevel
-              type : size_t
-              kind : scalar
-            2 :
-              name : cacheReservationSize
-              type : size_t
-              kind : scalar
-        - name : zeDeviceSetCacheAdviceExt
-          ddi_category :  Device
-          returns :
-              type : ze_result_t
-              kind : scalar
-              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args :
-            0 :
-              name : hDevice
-              type : ze_device_handle_t
-              kind : scalar
-            1 :
-              name : ptr
-              type : void*
-              kind : pointer
-            2 :
-              name : regionSize
-              type : size_t
-              kind : scalar
-            3 :
-              name : cacheRegion
-              type : ze_cache_ext_region_t
-              kind : scalar
+        - name: zeDeviceReserveCacheExt
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+            1:
+              name: cacheLevel
+              type: size_t
+              kind: scalar
+            2:
+              name: cacheReservationSize
+              type: size_t
+              kind: scalar
+        - name: zeDeviceSetCacheAdviceExt
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+            1:
+              name: ptr
+              type: void*
+              kind: pointer
+            2:
+              name: regionSize
+              type: size_t
+              kind: scalar
+            3:
+              name: cacheRegion
+              type: ze_cache_ext_region_t
+              kind: scalar
         - name: zeDriverGet
           latency: 0.0
           special_handling:
