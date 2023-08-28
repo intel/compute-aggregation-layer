@@ -261,6 +261,12 @@ class ClientContext {
         return memoryBlocksManager;
     }
 
+    void *remapPointer(Cal::Ipc::NonUsmMmappedShmemAllocator &nonUsmShmemAllocator, const void *clientAddress, size_t memorySize) {
+        auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(nonUsmShmemAllocator, clientAddress, memorySize);
+        auto remappedPtr = memoryBlock.translate(clientAddress);
+        return remappedPtr;
+    }
+
     Cal::Service::LevelZero::CommandListToContextTracker &getCommandListToContextTracker() {
         return commandListToContextTracker;
     }

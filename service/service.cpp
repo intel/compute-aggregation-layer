@@ -866,13 +866,9 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
-    auto mappedSrcPtr = memoryBlock.translate(apiCommand->args.srcptr);
-
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       apiCommand->args.dstptr,
-                                                                                                      mappedSrcPtr,
+                                                                                                      ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size),
                                                                                                       apiCommand->args.size,
                                                                                                       apiCommand->args.hSignalEvent,
                                                                                                       apiCommand->args.numWaitEvents,
@@ -887,9 +883,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronous");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -912,7 +906,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
     }
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
-                                                                                                      mappedDstPtr,
+                                                                                                      remappedDstPtr,
                                                                                                       apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
                                                                                                       copyToHostptrEvent,
@@ -949,9 +943,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronous");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -968,7 +960,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
     }
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
-                                                                                                      mappedDstPtr,
+                                                                                                      remappedDstPtr,
                                                                                                       apiCommand->args.srcptr ? channel.decodeLocalPtrFromHeapOffset(apiCommand->args.srcptr) : nullptr,
                                                                                                       apiCommand->args.size,
                                                                                                       copyToHostptrEvent,
@@ -994,15 +986,13 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
-    auto mappedSrcPtr = memoryBlock.translate(apiCommand->args.srcptr);
+    auto remappedSrcPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
 
-    std::memcpy(mappedSrcPtr, apiCommand->captures.getSrcptr(), apiCommand->args.size);
+    std::memcpy(remappedSrcPtr, apiCommand->captures.getSrcptr(), apiCommand->args.size);
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       apiCommand->args.dstptr,
-                                                                                                      mappedSrcPtr,
+                                                                                                      remappedSrcPtr,
                                                                                                       apiCommand->args.size,
                                                                                                       apiCommand->args.hSignalEvent,
                                                                                                       apiCommand->args.numWaitEvents,
@@ -1014,9 +1004,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &memoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    auto mappedDstPtr = memoryBlock.translate(apiCommand->args.dstptr);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -1033,7 +1021,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
     }
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
-                                                                                                      mappedDstPtr,
+                                                                                                      remappedDstPtr,
                                                                                                       apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
                                                                                                       copyToHostptrEvent,
@@ -1059,12 +1047,8 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2MallocRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &srcMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
-    auto mappedSrcPtr = srcMemoryBlock.translate(apiCommand->args.srcptr);
-
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.dstptr);
+    auto remappedSrcPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -1081,8 +1065,8 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     }
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
-                                                                                                      mappedDstPtr,
-                                                                                                      mappedSrcPtr,
+                                                                                                      remappedDstPtr,
+                                                                                                      remappedSrcPtr,
                                                                                                       apiCommand->args.size,
                                                                                                       copyToHostptrEvent,
                                                                                                       apiCommand->args.numWaitEvents,
@@ -1106,9 +1090,7 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryFillRpcHelperUsm2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
-    auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -1126,7 +1108,7 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
         apiCommand->args.hCommandList,
-        mappedDstPtr,
+        remappedDstPtr,
         apiCommand->args.pattern,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
@@ -1153,9 +1135,7 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM *>(command);
 
-    auto &memoryBlocksManager = ctx.getMemoryBlocksManager();
-    auto &dstMemoryBlock = memoryBlocksManager.registerMemoryBlock(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
-    auto mappedDstPtr = dstMemoryBlock.translate(apiCommand->args.ptr);
+    auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
 
     auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
     auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
@@ -1173,7 +1153,7 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryFill(
         apiCommand->args.hCommandList,
-        mappedDstPtr,
+        remappedDstPtr,
         apiCommand->args.pattern ? apiCommand->captures.getPattern() : nullptr,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
