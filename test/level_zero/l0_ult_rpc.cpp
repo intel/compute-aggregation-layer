@@ -802,8 +802,19 @@ TEST(CapturesAssignFrom, GivenTwoCapturesWithTheSameDynMemSizeWhenTryingToAssign
 
 struct MockProvider : public Cal::Service::Provider {
     using Cal::Service::Provider::commandQueueGroups;
+    using Cal::Service::Provider::defaultRpcMessageChannelSizeMB;
+    using Cal::Service::Provider::defaultSharedVaSizeInGB;
     using Cal::Service::Provider::Provider;
+    using Cal::Service::Provider::sharedVaArenaSizeMB;
 };
+
+TEST(CopyGroupAssign, whenServiceProviderIsCreatedThenApplyDefaultServiceConfigurationSettings) {
+    MockProvider service(nullptr, Cal::Service::ServiceConfig());
+
+    EXPECT_EQ(service.defaultSharedVaSizeInGB, 32);
+    EXPECT_EQ(service.defaultRpcMessageChannelSizeMB, 256);
+    EXPECT_EQ(service.sharedVaArenaSizeMB, 256);
+}
 
 TEST(CopyGroupAssign, givenParsedCommandQueueGroupsWhenOverrideClientsDescsThenAssignProperCopyQueueGroups) {
     MockProvider service(nullptr, Cal::Service::ServiceConfig());

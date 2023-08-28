@@ -393,7 +393,7 @@ class Provider {
     using RpcSubtypeHandlers = std::vector<RpcHandler>;
     static constexpr int32_t staticDefaultSharedVaSizeGB = 32;
     static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 256;
-    static constexpr int32_t staticSharedVaArenaSizeMB = 64;
+    static constexpr int32_t staticSharedVaArenaSizeMB = 256;
 
     enum ErrorCode : int {
         Success = 0,
