@@ -3435,6 +3435,7 @@ config:
               name: blocking_read
               type: cl_bool
               kind: scalar
+              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: offset
               type: size_t

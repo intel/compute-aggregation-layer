@@ -4013,6 +4013,7 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     command->args.ptr = channel.encodeHeapOffsetFromLocalPtr(standalone_ptr.get());
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4058,6 +4059,7 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4109,6 +4111,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
     command->args.buffer = static_cast<IcdOclMem*>(buffer)->asRemoteObject();
+    Cal::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
