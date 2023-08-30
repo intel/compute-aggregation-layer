@@ -3374,9 +3374,9 @@ config:
                   kind: "scalar"
                 server_access: read
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
@@ -3455,9 +3455,9 @@ config:
                   kind: "scalar"
                 server_access: write
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
@@ -3576,9 +3576,9 @@ config:
                   kind: "scalar"
                 server_access: write
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
@@ -3836,9 +3836,9 @@ config:
               name: ptr
               type: "void*"
               capture_details:
-                mode: standalone
+                mode: staging_usm
                 reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
+              kind: ptr_va
               kind_details:
                 num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}src_origin, {arg_prefix}region, {arg_prefix}row_pitch, {arg_prefix}slice_pitch)"
                 can_be_null: True
@@ -3932,9 +3932,9 @@ config:
               name: ptr
               type: "const void*"
               capture_details:
-                mode: standalone
+                mode: staging_usm
                 reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
-              kind: ptr_array
+              kind: ptr_va
               kind_details:
                 num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}origin, {arg_prefix}region, {arg_prefix}input_row_pitch, {arg_prefix}input_slice_pitch)"
                 can_be_null: True
@@ -5168,9 +5168,9 @@ config:
                   kind: scalar
                 server_access: read
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
