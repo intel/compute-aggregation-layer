@@ -107,7 +107,7 @@ TEST(TypedRingPush, whenBatchedPushThenDoNotUpdateHead) {
     EXPECT_EQ(19, data[1]);
 }
 
-TEST(TypedRingPush, whenTailAtEndAndHeadOn0ThenPushFailsDueToRingBeingFull) {
+TEST(TypedRingPush, whenTailAtEndAndHeadOn0ThenPushReturnsFalseDueToRingBeingFull) {
     Cal::Mocks::LogCaptureContext logs;
     std::vector<int> data = {2, 3, 5};
     int head = 0;
@@ -125,8 +125,6 @@ TEST(TypedRingPush, whenTailAtEndAndHeadOn0ThenPushFailsDueToRingBeingFull) {
     EXPECT_EQ(17, data[0]);
     EXPECT_EQ(19, data[1]);
     EXPECT_EQ(5, data[2]);
-
-    EXPECT_FALSE(logs.empty());
 }
 
 TEST(TypedRingPush, whenTailAtEndAndHeadNotOn0ThenPushSucceedsAndWraps) {
@@ -163,7 +161,7 @@ TEST(TypedRingPush, whenWrappedAndRingNotFullThenPushMovesTailByOne) {
     EXPECT_EQ(5, data[2]);
 }
 
-TEST(TypedRingPush, whenWrappedAndRingFullThenFailsAndEmitsLog) {
+TEST(TypedRingPush, whenWrappedAndRingFullThenPushReturnsFalse) {
     Cal::Mocks::LogCaptureContext logs;
     std::vector<int> data = {2, 3, 5};
     int head = 1;
@@ -179,7 +177,6 @@ TEST(TypedRingPush, whenWrappedAndRingFullThenFailsAndEmitsLog) {
     EXPECT_EQ(2, data[0]);
     EXPECT_EQ(3, data[1]);
     EXPECT_EQ(5, data[2]);
-    EXPECT_FALSE(logs.empty());
 }
 
 TEST(TypedRingPop, whenEmptyThenFailsAndEmitsLog) {
@@ -856,7 +853,7 @@ TEST(ChannelClientInit, whenFailedToPartitionTheCommandChannelThenFailsAndEmitsE
 
 auto createChannelClientInitProtocolMockConnection(int shmemId, void *shmem, size_t shmemSize) {
     CommandsChannelWhiteBox tempChannel;
-    if (false == tempChannel.partition(shmem, shmemSize, false, false)) {
+    if (false == tempChannel.partition(shmem, shmemSize, false, true)) {
         throw std::runtime_error("Failed to partition channel for mock");
     }
 

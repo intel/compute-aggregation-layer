@@ -113,7 +113,7 @@ class TypedRing final {
                 return true;
             } else { // loop
                 if (headSnapshot == 0) {
-                    log<Verbosity::error>("Ring full");
+                    log<Verbosity::performance>("Ring full");
                     return false;
                 }
                 data[tailSnapshot + batchCounter] = std::forward<T>(el);
@@ -134,7 +134,7 @@ class TypedRing final {
                 }
                 return true;
             } else {
-                log<Verbosity::error>("Ring full");
+                log<Verbosity::performance>("Ring full");
                 return false;
             }
         }
@@ -307,7 +307,8 @@ class CommandsChannel {
             log<Verbosity::info>("Changing default RPC ring size from <= 1 page %d page(s)", requestedRpcRingPages);
             layout.resizeCommandsRing(requestedRpcRingPages);
         } else if (useAsyncCalls) {
-            static constexpr size_t minPagesForAsyncRpcRing = 4;
+            static constexpr size_t minPagesForAsyncRpcRing = 1;
+            log<Verbosity::info>("Applied RPC ring size for async calls %d page(s)", minPagesForAsyncRpcRing);
             layout.resizeCommandsRing(minPagesForAsyncRpcRing);
         }
 
@@ -579,6 +580,7 @@ class ChannelClient : public CommandsChannel {
 
         log<Verbosity::debug>("Creating RPC ring buffer");
         this->usesSharedVaForRpcChannel = useSharedVaForRpcChannel;
+        this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, true);
         if (false == createRingBuffer()) {
             log<Verbosity::critical>("Failed to create RPC ring buffer");
             return false;
@@ -595,7 +597,6 @@ class ChannelClient : public CommandsChannel {
         auto cmdHeapSize = totalHeapSize / 4;
         this->cmdHeap = Cal::Allocators::LinearAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), cmdHeapSize));
         this->standaloneHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart + cmdHeapSize), totalHeapSize - cmdHeapSize));
-        this->useAsyncCalls = Cal::Utils::getCalEnvFlag(calAsynchronousCalls, true);
         this->useBatchedCalls = Cal::Utils::getCalEnvFlag(calBatchedCalls, this->useBatchedCalls);
 
         return true;
