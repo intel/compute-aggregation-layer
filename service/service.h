@@ -898,6 +898,11 @@ class Provider {
             }
         }
 
+        if (clientConnection->peekEof()) {
+            log<Verbosity::info>("Client : #%d detected socket shutdown", clientConnection->getId());
+            return;
+        }
+
         if (clientConnection->peek(prologueMessageHeader) && (Cal::Ipc::ControlMessageHeader::messageTypeStop == prologueMessageHeader.type)) {
             clientConnection->receive(prologueMessageHeader);
             log<Verbosity::info>("Client : %d requested service to stop", clientConnection->getId());

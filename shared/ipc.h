@@ -74,6 +74,11 @@ class Connection {
         return sizeof(v) == peek(&v, sizeof(v));
     }
 
+    bool peekEof() {
+        char data = 0;
+        return 1 != peek(&data, 1);
+    }
+
     static std::string connectionErrnoToError(int err) {
         constexpr int length = 256;
         char buf[length];
