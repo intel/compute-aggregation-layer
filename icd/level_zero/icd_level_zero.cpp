@@ -21,6 +21,30 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 
+IcdL0Context::IcdL0Context(ze_context_handle_t remoteObject, Cal::Shared::SingleReference &&parent, CleanupFuncT cleanupFunc)
+    : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Logic::IcdL0TypePrinter>(remoteObject, std::move(parent), cleanupFunc),
+      stagingAreaManager([this](size_t size) { return this->allocateStagingArea(size); },
+                         [this](void *ptr) { return this->deallocateStagingAreas(ptr); }) {}
+
+void IcdL0Context::beforeReleaseCallback() {
+    this->getStagingAreaManager().clearStagingAreaAllocations();
+}
+
+void *IcdL0Context::allocateStagingArea(size_t size) {
+    void *usmHostMem{};
+    ze_host_mem_alloc_desc_t desc{ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC, nullptr, 0};
+    if (ZE_RESULT_SUCCESS != Cal::Icd::LevelZero::zeMemAllocHost(this->asLocalObject(), &desc, size, 0, &usmHostMem)) {
+        log<Verbosity::critical>("Failed to allocate staging buffer via zeMemAllocHost of size %zu", size);
+        return nullptr;
+    }
+
+    return usmHostMem;
+}
+
+void IcdL0Context::deallocateStagingAreas(void *ptr) {
+    Cal::Icd::LevelZero::zeMemFree(this->asLocalObject(), ptr);
+}
+
 IcdL0CommandList::CommandListType IcdL0CommandList::selectImmediateType(const ze_command_queue_desc_t *altdesc) {
     if (altdesc && altdesc->mode == ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
         return CommandListType::ImmediateSynchronous;
@@ -145,6 +169,16 @@ void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
             moveSharedAllocationsToGpuImpl(alloc);
         }
     }
+}
+
+void IcdL0CommandList::registerTemporaryAllocation(std::unique_ptr<void, std::function<void(void *)>> alloc) {
+    std::lock_guard lock{temporaryStagingAreas.mutex};
+    temporaryStagingAreas.allocations.push_back(std::move(alloc));
+}
+
+void IcdL0CommandList::cleanTemporaryAllocations() {
+    std::lock_guard lock{temporaryStagingAreas.mutex};
+    temporaryStagingAreas.allocations.clear();
 }
 
 void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {

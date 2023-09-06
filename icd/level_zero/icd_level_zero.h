@@ -23,6 +23,7 @@
 #include "level_zero/zes_ddi.h"
 #include "shared/ref_counted.h"
 #include "shared/shmem_transfer_desc.h"
+#include "shared/staging_area_manager.h"
 
 #include <atomic>
 #include <cstdlib>
@@ -41,6 +42,8 @@ void objectCleanup(void *remote, void *local);
 
 struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+
+    IcdL0Context(ze_context_handle_t remoteObject, Cal::Shared::SingleReference &&parent, CleanupFuncT cleanupFunc);
 
     struct AllocPropertiesCache {
         struct CacheEntry {
@@ -78,6 +81,19 @@ struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Lo
             this->cache.clear();
         }
     } allocPropertiesCache;
+
+    void beforeReleaseCallback();
+
+    StagingAreaManager<std::function<void *(size_t)>,
+                       std::function<void(void *)>> &
+    getStagingAreaManager() { return stagingAreaManager; }
+
+  private:
+    StagingAreaManager<std::function<void *(size_t)>,
+                       std::function<void(void *)>>
+        stagingAreaManager;
+    void *allocateStagingArea(size_t size);
+    void deallocateStagingAreas(void *ptr);
 };
 
 class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, Logic::IcdL0TypePrinter> {
@@ -127,6 +143,11 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     }
     void moveKernelArgsToGpu(IcdL0Kernel *kernel);
 
+    void registerTemporaryAllocation(std::unique_ptr<void, std::function<void(void *)>> alloc);
+    void cleanTemporaryAllocations();
+
+    IcdL0Context *context{};
+
   protected:
     friend IcdL0Platform;
 
@@ -138,6 +159,11 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 
     void registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory);
     ChunkEntry mergeChunks(const ChunkEntry &first, const ChunkEntry &second);
+
+    struct {
+        std::mutex mutex;
+        std::vector<std::unique_ptr<void, std::function<void(void *)>>> allocations;
+    } temporaryStagingAreas;
 
     CommandListType commandListType{CommandListType::Regular};
     std::mutex memoryToWriteMutex{};

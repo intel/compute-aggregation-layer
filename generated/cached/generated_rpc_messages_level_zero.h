@@ -2416,32 +2416,17 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM {
         struct DynamicTraits {
             static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits srcptr = {};          
             DynamicArgTraits phWaitEvents = {};          
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        uint32_t offsetPhWaitEvents = 0;
-        uint32_t countSrcptr = 0;
         uint32_t countPhWaitEvents = 0;
-        const void* getSrcptr() {
-            auto offset = 0;
-            return reinterpret_cast<const void*>(dynMem + offset);
-        }
-
-        ze_event_handle_t* getPhWaitEvents() {
-            auto offset = offsetPhWaitEvents;
-            return reinterpret_cast<ze_event_handle_t*>(dynMem + offset);
-        }
-
+        ze_event_handle_t phWaitEvents[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetPhWaitEvents = dynamicTraits.phWaitEvents.offset;
-        countSrcptr = dynamicTraits.srcptr.count;
         countPhWaitEvents = dynamicTraits.phWaitEvents.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -2484,11 +2469,8 @@ struct ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.srcptr){
-            memcpy(asMemcpyDstT(captures.getSrcptr()), args.srcptr, dynMemTraits.srcptr.size);
-        }
         if(args.phWaitEvents){
-            memcpy(asMemcpyDstT(captures.getPhWaitEvents()), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
         }
     }
 };
@@ -2529,32 +2511,17 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM 
         struct DynamicTraits {
             static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
             uint32_t totalDynamicSize = 0;
-            DynamicArgTraits dstptr = {};          
             DynamicArgTraits phWaitEvents = {};          
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-        uint32_t offsetPhWaitEvents = 0;
-        uint32_t countDstptr = 0;
         uint32_t countPhWaitEvents = 0;
-        void* getDstptr() {
-            auto offset = 0;
-            return reinterpret_cast<void*>(dynMem + offset);
-        }
-
-        ze_event_handle_t* getPhWaitEvents() {
-            auto offset = offsetPhWaitEvents;
-            return reinterpret_cast<ze_event_handle_t*>(dynMem + offset);
-        }
-
+        ze_event_handle_t phWaitEvents[];
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
-        offsetPhWaitEvents = dynamicTraits.phWaitEvents.offset;
-        countDstptr = dynamicTraits.dstptr.count;
         countPhWaitEvents = dynamicTraits.phWaitEvents.count;
         }
         
-        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -2598,13 +2565,7 @@ struct ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM 
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.phWaitEvents){
-            memcpy(asMemcpyDstT(captures.getPhWaitEvents()), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
-        }
-    }
-
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.dstptr){
-            memcpy(args.dstptr, captures.getDstptr(), dynMemTraits.dstptr.size);
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
         }
     }
 };

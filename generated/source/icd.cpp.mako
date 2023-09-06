@@ -109,7 +109,11 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     auto &channel = ${config.icd_acquire_channel};
 %      for arg in func_base.traits.get_standalone_args():
 %        if arg.capture_details.mode.is_staging_usm_mode():
+%           if config.api_name == "ocl":
     std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+%           else:
+    std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+%           endif
 %        endif
 %      endfor # arg in func_base.traits.get_standalone_args()
     auto channelLock = channel.lock();

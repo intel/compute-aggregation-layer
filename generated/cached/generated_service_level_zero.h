@@ -416,12 +416,12 @@ inline bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronous
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateSynchronousRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                apiCommand->args.dstptr ? apiCommand->captures.getDstptr() : nullptr, 
+                                                apiCommand->args.dstptr, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
-                                                apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
     return true;
 }

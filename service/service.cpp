@@ -992,17 +992,13 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateHandler(Provider &
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRpcHelperMalloc2UsmImmediateRpcM *>(command);
 
-    auto remappedSrcPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
-
-    std::memcpy(remappedSrcPtr, apiCommand->captures.getSrcptr(), apiCommand->args.size);
-
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(apiCommand->args.hCommandList,
                                                                                                       apiCommand->args.dstptr,
-                                                                                                      remappedSrcPtr,
+                                                                                                      apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
                                                                                                       apiCommand->args.hSignalEvent,
                                                                                                       apiCommand->args.numWaitEvents,
-                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
+                                                                                                      apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
     return true;
 }
 

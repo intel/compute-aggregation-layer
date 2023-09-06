@@ -1920,6 +1920,8 @@ config:
           special_handling:
             rpc:
               handler_prologue: "service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
+            icd:
+              handler_epilogue: "if (hContext != nullptr) {\n        static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -1966,6 +1968,8 @@ config:
           special_handling:
             rpc:
               handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->args.altdesc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->captures.altdesc : nullptr, ctx);"
+            icd:
+              handler_epilogue: "static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -2375,6 +2379,8 @@ config:
           special_handling:
             rpc:
               custom_handler: True
+            icd:
+              handler_prologue: "hContext->asLocalObject()->beforeReleaseCallback();"
           ddi_category: Context
           returns:
             type: ze_result_t
@@ -2583,7 +2589,7 @@ config:
             2:
               name: srcptr
               type: const void*
-              kind: ptr_array
+              kind: ptr_va
               kind_details:
                 num_elements: "size"
                 can_be_null: True
@@ -2591,6 +2597,9 @@ config:
                   type: void
                   kind: scalar
                 server_access: read
+              capture_details:
+                mode: staging_usm
+                reclaim_method: "hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))"
             3:
               name: size
               type: size_t
@@ -2640,7 +2649,7 @@ config:
             1:
               name: dstptr
               type: void*
-              kind: ptr_array
+              kind: ptr_va
               kind_details:
                 num_elements: "size"
                 can_be_null: True
@@ -2648,6 +2657,8 @@ config:
                   type: void
                   kind: scalar
                 server_access: write
+              capture_details:
+                mode: staging_usm
             2:
               name: srcptr
               type: const void*
