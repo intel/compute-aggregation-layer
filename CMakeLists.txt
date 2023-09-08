@@ -10,11 +10,18 @@ project(cal)
 
 include(CTest)
 include(os_release_info.cmake)
+include(CheckIPOSupported)
 
 file(READ ".branch" BRANCH_TYPE)
 string(STRIP "${BRANCH_TYPE}" BRANCH_TYPE)
 set(BRANCH_DIR_SUFFIX "/${BRANCH_TYPE}")
 message("BRANCH_DIR_SUFFIX : ${BRANCH_DIR_SUFFIX}")
+
+check_ipo_supported(RESULT __IPO_SUPPORTED)
+if(__IPO_SUPPORTED)
+  message(STATUS "Link Time Optimizations are enabled")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")
