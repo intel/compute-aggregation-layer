@@ -18,6 +18,7 @@ add_executable(l0_test_ult_icd
                ${cal_source_root_dir}/shared/callstack.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/signal_utils.cpp
 
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
@@ -44,6 +45,7 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/signal_utils.cpp
 
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp

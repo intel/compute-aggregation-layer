@@ -15,6 +15,7 @@ set(SERVICE_L0_TESTS_SOURCES
 
     ${cal_source_root_dir}/test/mocks/artificial_events_allocator_mock.cpp
     ${cal_source_root_dir}/test/mocks/sys_mock.cpp
+    ${cal_source_root_dir}/test/utils/signal_utils.cpp
 )
 
 set(SERVICE_L0_TESTS_SHARED_DEPENDECIES

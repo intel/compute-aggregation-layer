@@ -59,6 +59,8 @@ add_executable(ocl_test_ult_icd
                ${generated_dir}/generated_icd_ocl.cpp
                ${generated_dir}/generated_rpc_messages_ocl.cpp
 
+               ${cal_source_root_dir}/test/utils/signal_utils.cpp
+
                ${ICD_L0_OBJECTS_SOURCES}
 )
 

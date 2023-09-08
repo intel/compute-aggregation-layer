@@ -10,6 +10,7 @@ add_executable(shared_test_ult # ULTs
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/test/mocks/sys_mock.cpp
+               ${cal_source_root_dir}/test/utils/signal_utils.cpp
 
                ${CMAKE_CURRENT_SOURCE_DIR}/allocators_ult.cpp
                ${CMAKE_CURRENT_SOURCE_DIR}/ref_counted_ult.cpp

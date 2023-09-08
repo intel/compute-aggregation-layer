@@ -6,7 +6,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(cal)
+project(cal LANGUAGES C CXX)
 
 include(CTest)
 include(os_release_info.cmake)
