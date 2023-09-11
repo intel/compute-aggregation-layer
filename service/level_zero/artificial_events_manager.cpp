@@ -26,6 +26,9 @@ void ArtificialEventsManager::clearDataForContext(ze_context_handle_t context) {
 }
 
 ze_event_handle_t ArtificialEventsManager::obtainEventReplacement(ze_context_handle_t context) {
+    if (nullptr == context) {
+        return nullptr;
+    }
     auto &pool = this->eventPools[context];
     if (!pool.get()) {
         pool = std::make_unique<EventPool>(this->eventsAllocator.get());

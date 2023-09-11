@@ -40,15 +40,16 @@ TEST_F(ArtificialEventsManagerTest, GivenCreatedEventPoolsForContextsWhenTryingT
     allocator->eventPoolsToCreate[firstContext].resize(2);
     allocator->eventPoolsToCreate[secondContext].resize(2);
     allocator->eventPoolsToCreate[thirdContext].resize(2);
+    size_t uniqueHandle = 1;
     for (auto &context : {firstContext, secondContext, thirdContext}) {
-        for (size_t i = 0; i < 2; ++i) {
-            allocator->eventPoolsToCreate[context].push_back(reinterpret_cast<ze_event_pool_handle_t>(i));
+        for (size_t i = 0U; i < 2; ++i) {
+            allocator->eventPoolsToCreate[context].push_back(reinterpret_cast<ze_event_pool_handle_t>(++uniqueHandle));
         }
     }
     for (auto &context : allocator->eventPoolsToCreate) {
         for (auto &pool : context.second) {
-            for (size_t i = 0u; i < 128; ++i) {
-                allocator->eventsToCreate[pool].push_back(reinterpret_cast<ze_event_handle_t>(i));
+            for (size_t i = 0U; i < 128; ++i) {
+                allocator->eventsToCreate[pool].push_back(reinterpret_cast<ze_event_handle_t>(++uniqueHandle));
             }
         }
     }

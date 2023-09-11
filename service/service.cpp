@@ -876,6 +876,11 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     return true;
 }
 
+ze_event_handle_t getInternalEvent(ClientContext &calClientCtx, ze_command_list_handle_t cmdList) {
+    auto l0Ctx = calClientCtx.getCommandListToContextTracker().getAssociatedContext(cmdList);
+    return calClientCtx.getArtificialEventsManager().obtainEventReplacement(l0Ctx);
+}
+
 bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandler(Provider &service,
                                                                                   Cal::Rpc::ChannelServer &channel,
                                                                                   ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command,
@@ -885,20 +890,11 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-
-    ze_event_handle_t copyToHostptrEvent;
+    ze_event_handle_t copyToHostptrEvent = {};
     if (service.useSyncMallocCopy() && apiCommand->args.hSignalEvent) {
         copyToHostptrEvent = apiCommand->args.hSignalEvent;
     } else {
-        copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+        copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
         if (!copyToHostptrEvent) {
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
             return true;
@@ -945,15 +941,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!copyToHostptrEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
@@ -1006,15 +994,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!copyToHostptrEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
@@ -1050,15 +1030,7 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     auto remappedSrcPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!copyToHostptrEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
@@ -1091,16 +1063,7 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM *>(command);
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
-
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!copyToHostptrEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
@@ -1137,15 +1100,7 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
 
-    auto &commandListToContextTracker = ctx.getCommandListToContextTracker();
-    auto contextOfCommandList = commandListToContextTracker.getAssociatedContext(apiCommand->args.hCommandList);
-    if (!contextOfCommandList) {
-        apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
-        return true;
-    }
-
-    auto &artificialEventsManager = ctx.getArtificialEventsManager();
-    auto copyToHostptrEvent = artificialEventsManager.obtainEventReplacement(contextOfCommandList);
+    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!copyToHostptrEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
