@@ -876,9 +876,40 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2UsmHandler(Provider &service, 
     return true;
 }
 
+// acquire internal event suitable for given cmdList
 ze_event_handle_t getInternalEvent(ClientContext &calClientCtx, ze_command_list_handle_t cmdList) {
     auto l0Ctx = calClientCtx.getCommandListToContextTracker().getAssociatedContext(cmdList);
     return calClientCtx.getArtificialEventsManager().obtainEventReplacement(l0Ctx);
+}
+
+// trigger one event using different event
+bool addRelay(ze_result_t &status, ze_event_handle_t action, ze_event_handle_t trigger, ze_command_list_handle_t cmdList) {
+    if (status != ZE_RESULT_SUCCESS) {
+        return false;
+    }
+
+    if (nullptr == action) {
+        return true;
+    }
+
+    if (nullptr == trigger) {
+        return false;
+    }
+
+    status = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(cmdList, action, 1u, &trigger);
+    return ZE_RESULT_SUCCESS == status;
+}
+
+bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, void *ptr, size_t size) {
+    if (status != ZE_RESULT_SUCCESS) {
+        return false;
+    }
+    status = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(event, -1);
+    if (false == channel.pushHostptrCopyToUpdate({ptr, size})) {
+        log<Verbosity::error>("Could not notify client about required memory update!");
+        return false;
+    }
+    return true;
 }
 
 bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandler(Provider &service,
@@ -890,14 +921,14 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    ze_event_handle_t copyToHostptrEvent = {};
+    ze_event_handle_t updateClientMemoryMarkerEvent = {};
     if (service.useSyncMallocCopy() && apiCommand->args.hSignalEvent) {
-        copyToHostptrEvent = apiCommand->args.hSignalEvent;
+        updateClientMemoryMarkerEvent = apiCommand->args.hSignalEvent;
     } else {
-        copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-        if (!copyToHostptrEvent) {
+        updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+        if (!updateClientMemoryMarkerEvent) {
             apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-            return true;
+            return false;
         }
     }
 
@@ -905,27 +936,19 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocImmediateAsynchronousHandle
                                                                                                       remappedDstPtr,
                                                                                                       apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
-                                                                                                      copyToHostptrEvent,
+                                                                                                      updateClientMemoryMarkerEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && service.useSyncMallocCopy()) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(copyToHostptrEvent, -1);
-        if (false == channel.pushHostptrCopyToUpdate({apiCommand->args.dstptr, apiCommand->args.size})) {
-            log<Verbosity::error>("Could not notify client about update of hostptr copies!");
-            return false;
-        }
-        return true;
-    } else if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
+    if (service.useSyncMallocCopy()) {
+        return synchronizeOnEventAndRequestClientMemoryUpdate(apiCommand->captures.ret, updateClientMemoryMarkerEvent, channel, apiCommand->args.dstptr, apiCommand->args.size);
     }
+
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
     }
 
     return true;
@@ -941,8 +964,8 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-    if (!copyToHostptrEvent) {
+    auto updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!updateClientMemoryMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
     }
@@ -951,20 +974,15 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocImmediateAsynchronousHan
                                                                                                       remappedDstPtr,
                                                                                                       apiCommand->args.srcptr ? channel.decodeLocalPtrFromHeapOffset(apiCommand->args.srcptr) : nullptr,
                                                                                                       apiCommand->args.size,
-                                                                                                      copyToHostptrEvent,
+                                                                                                      updateClientMemoryMarkerEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
-    }
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.dstptr, apiCommand->args.size, false);
     }
 
     return true;
@@ -994,8 +1012,8 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-    if (!copyToHostptrEvent) {
+    auto updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!updateClientMemoryMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
     }
@@ -1004,20 +1022,15 @@ bool zeCommandListAppendMemoryCopyRpcHelperUsm2MallocHandler(Provider &service, 
                                                                                                       remappedDstPtr,
                                                                                                       apiCommand->args.srcptr,
                                                                                                       apiCommand->args.size,
-                                                                                                      copyToHostptrEvent,
+                                                                                                      updateClientMemoryMarkerEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
-    }
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
     }
 
     return true;
@@ -1030,8 +1043,8 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
     auto remappedSrcPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.srcptr, apiCommand->args.size);
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
 
-    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-    if (!copyToHostptrEvent) {
+    auto updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!updateClientMemoryMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
     }
@@ -1040,19 +1053,15 @@ bool zeCommandListAppendMemoryCopyRpcHelperMalloc2MallocHandler(Provider &servic
                                                                                                       remappedDstPtr,
                                                                                                       remappedSrcPtr,
                                                                                                       apiCommand->args.size,
-                                                                                                      copyToHostptrEvent,
+                                                                                                      updateClientMemoryMarkerEvent,
                                                                                                       apiCommand->args.numWaitEvents,
                                                                                                       apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
-    }
+
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.dstptr, apiCommand->args.size, true);
     }
 
     return true;
@@ -1063,8 +1072,8 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM *>(command);
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
-    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-    if (!copyToHostptrEvent) {
+    auto updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!updateClientMemoryMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
     }
@@ -1075,20 +1084,15 @@ bool zeCommandListAppendMemoryFillRpcHelperUsm2MallocHandler(Provider &service, 
         apiCommand->args.pattern,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
-        copyToHostptrEvent,
+        updateClientMemoryMarkerEvent,
         apiCommand->args.numWaitEvents,
         apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
-    }
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.ptr, apiCommand->args.size, true);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.ptr, apiCommand->args.size, true);
     }
 
     return true;
@@ -1100,8 +1104,8 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
 
     auto remappedDstPtr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.ptr, apiCommand->args.size);
 
-    auto copyToHostptrEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
-    if (!copyToHostptrEvent) {
+    auto updateClientMemoryMarkerEvent = getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!updateClientMemoryMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         return true;
     }
@@ -1112,20 +1116,15 @@ bool zeCommandListAppendMemoryFillRpcHelperMalloc2MallocHandler(Provider &servic
         apiCommand->args.pattern ? apiCommand->captures.getPattern() : nullptr,
         apiCommand->args.pattern_size,
         apiCommand->args.size,
-        copyToHostptrEvent,
+        updateClientMemoryMarkerEvent,
         apiCommand->args.numWaitEvents,
         apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr);
 
-    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && apiCommand->args.hSignalEvent) {
-        apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendBarrier(apiCommand->args.hCommandList,
-                                                                                                       apiCommand->args.hSignalEvent,
-                                                                                                       1u,
-                                                                                                       &copyToHostptrEvent);
-    }
+    addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, updateClientMemoryMarkerEvent, apiCommand->args.hCommandList);
 
     if (apiCommand->captures.ret == ZE_RESULT_SUCCESS) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, copyToHostptrEvent, apiCommand->args.ptr, apiCommand->args.size, true);
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, updateClientMemoryMarkerEvent, apiCommand->args.ptr, apiCommand->args.size, true);
     }
 
     return true;

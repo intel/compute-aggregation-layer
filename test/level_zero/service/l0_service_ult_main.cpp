@@ -6,6 +6,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "test/mocks/log_mock.h"
 #include "test/utils/cli_utils.h"
 #include "test/utils/custom_event_listener.h"
 #include "test/utils/signal_utils.h"
@@ -27,5 +28,6 @@ int main(int argc, char **argv) {
         listeners.Append(customEventListener);
     }
 
+    Cal::Mocks::DisallowLogs disallowLogs;
     return RUN_ALL_TESTS();
 }

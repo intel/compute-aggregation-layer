@@ -42,13 +42,19 @@ ze_event_handle_t ArtificialEventsManager::obtainEventReplacement(ze_context_han
     }
 
     if (pool->pools.empty() || pool->eventsFromCurrentPool >= ArtificialEventsManager::eventsCountPerPool) {
-        pool->pools.push_back(eventsAllocator->createEventPool(context, ArtificialEventsManager::eventsCountPerPool));
+        auto newlyCreatedEventPool = eventsAllocator->createEventPool(context, ArtificialEventsManager::eventsCountPerPool);
+        if (nullptr == newlyCreatedEventPool) {
+            return nullptr;
+        }
+        pool->pools.push_back(newlyCreatedEventPool);
         pool->eventsFromCurrentPool = 0u;
     }
 
     auto eventPool = pool->pools.back();
     auto event = eventsAllocator->createEvent(eventPool, pool->eventsFromCurrentPool++);
-    pool->events.emplace_back(false, event);
+    if (nullptr != event) {
+        pool->events.emplace_back(false, event);
+    }
 
     return event;
 }

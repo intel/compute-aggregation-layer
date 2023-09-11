@@ -265,5 +265,6 @@ int main(int argc, char **argv) {
         listeners.Append(customEventListener);
     }
 
+    Cal::Mocks::DisallowLogs disallowLogs;
     return RUN_ALL_TESTS();
 }
