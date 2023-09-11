@@ -15,6 +15,10 @@ ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
    return {};
 }
 
+ze_result_t zesDeviceResetExt(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties){
+   return {};
+}
+
 ze_result_t zesDeviceGetState(zes_device_handle_t hDevice, zes_device_state_t* pState){
    return {};
 }

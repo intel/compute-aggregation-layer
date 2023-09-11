@@ -37,6 +37,7 @@ namespace Cal {
 namespace Icd {
 namespace LevelZero {
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
+ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
 ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
 ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
@@ -993,6 +994,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
 }
 inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnReset = Cal::Icd::LevelZero::zesDeviceReset;
+    dt.Device.pfnResetExt = Cal::Icd::LevelZero::zesDeviceResetExt;
     dt.Device.pfnGetState = Cal::Icd::LevelZero::zesDeviceGetState;
     dt.Device.pfnProcessesGetState = Cal::Icd::LevelZero::zesDeviceProcessesGetState;
     dt.Device.pfnPciGetProperties = Cal::Icd::LevelZero::zesDevicePciGetProperties;

@@ -1570,6 +1570,23 @@ config:
               type: ze_bool_t
               kind: scalar
 
+        - name: zesDeviceResetExt
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_reset_properties_t*
+              kind: pointer
+
         - name: zesDeviceGetState
           latency: 1.0
           ddi_category: Device

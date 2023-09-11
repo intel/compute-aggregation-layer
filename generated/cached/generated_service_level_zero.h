@@ -30,6 +30,7 @@ void unloadLevelZeroLibrary();
 bool isLevelZeroLibraryLoaded();
 
 extern ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force);
+extern ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 extern ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState);
 extern ze_result_t (*zesDeviceProcessesGetState)(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
 extern ze_result_t (*zesDevicePciGetProperties)(zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
@@ -166,6 +167,15 @@ inline bool zesDeviceResetHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceReset(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.force
+                                                );
+    return true;
+}
+inline bool zesDeviceResetExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceResetExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pProperties
                                                 );
     return true;
 }
@@ -1435,6 +1445,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     using namespace Cal::Rpc::LevelZero;
     outHandlers.resize(ZeVirtualMemGetAccessAttributeRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
+    outHandlers[ZesDeviceResetExtRpcM::messageSubtype] = zesDeviceResetExtHandler;
     outHandlers[ZesDeviceGetStateRpcM::messageSubtype] = zesDeviceGetStateHandler;
     outHandlers[ZesDeviceProcessesGetStateRpcM::messageSubtype] = zesDeviceProcessesGetStateHandler;
     outHandlers[ZesDevicePciGetPropertiesRpcM::messageSubtype] = zesDevicePciGetPropertiesHandler;
@@ -1574,6 +1585,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceReset(
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.force
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pProperties
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM &apiCommand) {
@@ -2545,6 +2562,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
             log<Verbosity::debug>("Tried to call directly unknown message subtype %d", command->subtype);
             return false;
         case Cal::Rpc::LevelZero::ZesDeviceResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM*>(command)); break;
