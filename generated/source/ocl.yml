@@ -319,7 +319,7 @@ config:
           latency: 1.0
           special_handling:
             icd:
-              handler_epilogue: "ret->asLocalObject()->setDevicesList(num_devices, devices);"
+              handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n    }"
           returns:
             type: cl_context
             kind: scalar
