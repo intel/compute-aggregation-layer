@@ -397,7 +397,7 @@ class Provider {
   public:
     using RpcHandler = bool (*)(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
     using RpcSubtypeHandlers = std::vector<RpcHandler>;
-    static constexpr int32_t staticDefaultSharedVaSizeGB = 32;
+    static constexpr int32_t staticDefaultSharedVaSizeGB = 128;
     static constexpr int32_t staticDefaultRpcMessageChannelSizeMB = 256;
     static constexpr int32_t staticSharedVaArenaSizeMB = 256;
 
