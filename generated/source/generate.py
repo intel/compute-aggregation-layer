@@ -116,6 +116,9 @@ class Kind:
     def is_pointer_zero_copy_malloc_shmem(self) -> bool:
         return self.str == "ptr_zero_copy_malloc_shmem_va"
 
+    def is_pointer_remapped(self) -> bool:
+        return self.str == "ptr_remapped_va"
+
     def is_pointer_function(self) -> bool:
         return self.str == "ptr_func"
 
@@ -133,6 +136,8 @@ def get_ptr_sharing_kind_abbreviation(kind : Kind):
         return "shared"
     elif kind.is_pointer_usm():
         return "usm"
+    if kind.is_pointer_remapped():
+        return "remapped"
     else :
         return "local"
 
@@ -199,6 +204,7 @@ class KindDetails:
         self.possible_nontrivial_nested_types_by_name = {opaque_type.type_name : opaque_type for opaque_type in self.possible_nontrivial_nested_types}
         self.requires_opaque_elements_translation_before = src.get("requires_opaque_elements_translation_before", False)
         self.always_queried = src.get("always_queried", False)
+        self.is_op_end_event = src.get("op_end_event", False)
 
 class CaptureMode:
     def __init__(self, src: str):
@@ -227,6 +233,7 @@ class CaptureDetails:
     def __init__(self, src: dict):
         self.mode = CaptureMode(src.get("mode", "inline"))
         self.reclaim_method = CaptureReclaimMethod(src.get("reclaim_method", "immediate"))
+        self.replayable_command = src.get("replayable_command", False)
 
 class ArgTraits:
     def __init__(self, arg, parent_function):
@@ -471,6 +478,7 @@ class FunctionTraits:
         self.is_extension = function.special_handling and function.special_handling.is_extension()
         self.is_variant = function.special_handling and function.special_handling.is_variant()
         self.requires_malloc_shmem_zero_copy_handler = any(arg.kind.is_pointer_zero_copy_malloc_shmem() for arg in function.args)
+        self.requires_pointer_remapping = any(arg.kind.is_pointer_remapped() for arg in function.args)
         self.has_arg_kind_variants = any(arg.kind_variants for arg in function.args)
 
     def requires_copy_from_caller(self, ptr_array_args, implicit_args):
@@ -518,6 +526,9 @@ class FunctionTraits:
     def get_standalone_args(self):
         return [arg for arg in self.function.args if arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()]
 
+    def get_remapped_pointer_args(self):
+        return [arg for arg in self.function.args if arg.kind.is_pointer_remapped()]
+
     def get_ptr_array_args(self):
         return [arg for arg in self.function.args if arg.kind.is_pointer_to_array()]
 
@@ -539,6 +550,12 @@ class FunctionTraits:
             return False
         struct_type = self.function.structures[variable.type.str]
         return not struct_type.traits.is_trivial()
+
+    def getOpEndEventArg(self):
+        ev = [arg for arg in self.function.args if arg.kind_details and arg.kind_details.is_op_end_event]
+        assert(len(ev) <= 1)
+        return ev[0] if ev else None
+
 
 
 class FunctionCaptureLayout:
@@ -1248,9 +1265,10 @@ class Function:
         self.ddi_category = src.get("ddi_category", "")
         self.aliased_function = None
         self.redirections = []
-        self.recreteTraitsAndCaptureLayout(structures)
+        self.const_expressions = []
+        self.recreateTraitsAndCaptureLayout(structures)
 
-    def recreteTraitsAndCaptureLayout(self, structures):
+    def recreateTraitsAndCaptureLayout(self, structures):
         self.message_name = f"{self.name[0].upper()}{self.name[1:]}RpcM"
         self.traits = FunctionTraits(self)
         for arg in self.args:
@@ -1400,12 +1418,12 @@ class FormatRegexp:
 
 class Condition:
     def __init__(self):
-        self.evauluate = ""
+        self.evaluate = ""
         self.check = ""
 
 def create_condition_based_on_ptr_kind(var_name, required_kind):
     cond = Condition()
-    cond.evauluate = f"auto {var_name}_pointer_type = globalPlatform->getPointerType({var_name})"
+    cond.evaluate = f"[[maybe_unused]] auto {var_name}_pointer_type = globalPlatform->getPointerType({var_name})"
     cond.check = f"{var_name}_pointer_type == {get_ptr_sharing_kind_abbreviation(required_kind)}"
     return cond
 
@@ -1437,14 +1455,17 @@ class Config:
                     function_variant = copy.deepcopy(func)
                     if not function_variant.special_handling:
                         function_variant.special_handling = SpecialHandling({})
-                    function_variant.special_handling.variant_of = func.name
+                    function_variant.special_handling.variant_of = func.name if not (func.special_handling and func.special_handling.is_variant()) else func.special_handling.variant_of
                     if not function_variant.special_handling.icd:
                         function_variant.special_handling.icd = SpecialHandling.Icd({})
                     function_variant.special_handling.icd.not_in_dispatch_table = True
                     for variant_arg_desc in variant_desc:
                         function_variant.args[variant_arg_desc[0]].apply_kind_variant(variant_arg_desc[1])
                         function_variant.name += "_" + to_pascal_case(get_ptr_sharing_kind_abbreviation(function_variant.args[variant_arg_desc[0]].kind))
-                    function_variant.recreteTraitsAndCaptureLayout(self.structures_by_name)
+                    function_variant.recreateTraitsAndCaptureLayout(self.structures_by_name)
+                    function_variant.const_expressions = []
+                    for variant_arg_desc in variant_desc:
+                        function_variant.const_expressions.append(f"[[maybe_unused]] constexpr auto {function_variant.args[variant_arg_desc[0]].name}_kind = {get_ptr_sharing_kind_abbreviation(function_variant.args[variant_arg_desc[0]].kind)}")
                     generated_variants.append(function_variant)
                     redir = Redirection(function_variant)
                     for arg_id in ids_of_args_with_variants:

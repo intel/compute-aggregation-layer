@@ -2278,7 +2278,7 @@ cl_int clSetProgramSpecializationConstant (cl_program program, cl_uint spec_id, 
 }
 cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
+    [[maybe_unused]] auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
     
     if(ptr_pointer_type == local){
         return clEnqueueWriteBuffer_Local(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -2292,7 +2292,7 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer, cl_b
 }
 cl_int clEnqueueWriteBufferRect (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
+    [[maybe_unused]] auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
     
     if(ptr_pointer_type == local){
         return clEnqueueWriteBufferRect_Local(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -2306,7 +2306,7 @@ cl_int clEnqueueWriteBufferRect (cl_command_queue command_queue, cl_mem buffer, 
 }
 cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
+    [[maybe_unused]] auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
     
     if(ptr_pointer_type == local){
         return clEnqueueReadBuffer_Local(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -2320,7 +2320,7 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bo
 }
 cl_int clEnqueueReadBufferRect (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
+    [[maybe_unused]] auto ptr_pointer_type = globalPlatform->getPointerType(ptr);
     
     if(ptr_pointer_type == local){
         return clEnqueueReadBufferRect_Local(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -3244,8 +3244,8 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
 }
 cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto dst_ptr_pointer_type = globalPlatform->getPointerType(dst_ptr);
-    auto src_ptr_pointer_type = globalPlatform->getPointerType(src_ptr);
+    [[maybe_unused]] auto dst_ptr_pointer_type = globalPlatform->getPointerType(dst_ptr);
+    [[maybe_unused]] auto src_ptr_pointer_type = globalPlatform->getPointerType(src_ptr);
     
     if((dst_ptr_pointer_type == local) && (src_ptr_pointer_type == local)){
         return clEnqueueSVMMemcpy_Local_Local(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -3433,8 +3433,8 @@ cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, cons
 }
 cl_int clEnqueueMemcpyINTEL (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
-    auto dstPtr_pointer_type = globalPlatform->getPointerType(dstPtr);
-    auto srcPtr_pointer_type = globalPlatform->getPointerType(srcPtr);
+    [[maybe_unused]] auto dstPtr_pointer_type = globalPlatform->getPointerType(dstPtr);
+    [[maybe_unused]] auto srcPtr_pointer_type = globalPlatform->getPointerType(srcPtr);
     
     if((dstPtr_pointer_type == local) && (srcPtr_pointer_type == local)){
         return clEnqueueMemcpyINTEL_Local_Local(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
@@ -3719,6 +3719,7 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     return ret;
 }
 cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3766,6 +3767,7 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     return ret;
 }
 cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3817,6 +3819,7 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
     return ret;
 }
 cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBuffer_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3868,6 +3871,7 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
     return ret;
 }
 cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRect_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3915,6 +3919,7 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     return ret;
 }
 cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRect_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -3966,6 +3971,7 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
     return ret;
 }
 cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueWriteBufferRect_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4017,6 +4023,7 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     return ret;
 }
 cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBuffer_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4065,6 +4072,7 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     return ret;
 }
 cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBuffer_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4117,6 +4125,7 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     return ret;
 }
 cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBuffer_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4169,6 +4178,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBufferRect_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4216,6 +4226,7 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBufferRect_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4267,6 +4278,7 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueReadBufferRect_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4318,6 +4330,8 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = local;
+    [[maybe_unused]] constexpr auto src_ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4368,6 +4382,8 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = local;
+    [[maybe_unused]] constexpr auto src_ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4414,6 +4430,8 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = local;
+    [[maybe_unused]] constexpr auto src_ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4460,6 +4478,8 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = usm;
+    [[maybe_unused]] constexpr auto src_ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Usm_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4506,6 +4526,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = usm;
+    [[maybe_unused]] constexpr auto src_ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Usm_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4556,6 +4578,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = usm;
+    [[maybe_unused]] constexpr auto src_ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Usm_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4606,6 +4630,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = shared;
+    [[maybe_unused]] constexpr auto src_ptr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Shared_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4652,6 +4678,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = shared;
+    [[maybe_unused]] constexpr auto src_ptr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Shared_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4702,6 +4730,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dst_ptr_kind = shared;
+    [[maybe_unused]] constexpr auto src_ptr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Shared_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4752,6 +4782,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = local;
+    [[maybe_unused]] constexpr auto srcPtr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4802,6 +4834,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = local;
+    [[maybe_unused]] constexpr auto srcPtr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4848,6 +4882,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = local;
+    [[maybe_unused]] constexpr auto srcPtr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Local_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4894,6 +4930,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = usm;
+    [[maybe_unused]] constexpr auto srcPtr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Usm_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4940,6 +4978,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = usm;
+    [[maybe_unused]] constexpr auto srcPtr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Usm_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -4990,6 +5030,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = usm;
+    [[maybe_unused]] constexpr auto srcPtr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Usm_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -5040,6 +5082,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = shared;
+    [[maybe_unused]] constexpr auto srcPtr_kind = local;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Shared_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -5086,6 +5130,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = shared;
+    [[maybe_unused]] constexpr auto srcPtr_kind = usm;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Shared_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -5136,6 +5182,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    [[maybe_unused]] constexpr auto dstPtr_kind = shared;
+    [[maybe_unused]] constexpr auto srcPtr_kind = shared;
     Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemcpyINTEL_Shared_Shared");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();

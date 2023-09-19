@@ -284,7 +284,7 @@ inline void initDynamicVerbosity() {
         auto requestedVerbosity = parseVerbosity(requestedVerbosityStr);
         if (Verbosity::unknown != requestedVerbosity) {
             initMaxDynamicVerbosity(requestedVerbosity);
-            log<Verbosity::info>("Initialing verbosity level to %s based on %s environment variable", requestedVerbosityStr, calVerbosityEnvName.data());
+            log<Verbosity::info>("Initializing verbosity level to %s based on %s environment variable", requestedVerbosityStr, calVerbosityEnvName.data());
         } else {
             std::string existing = getListOfAllExistingVerbosityLevels();
             log<Verbosity::error>("Ignoring unkown verbosity level %s from %s environment variable (expected one of (case sensitive) : %s)", requestedVerbosityStr, calVerbosityEnvName.data(), existing.c_str());
@@ -296,7 +296,7 @@ inline void initDynamicVerbosity() {
         auto requestedCallStackVerbosity = parseVerbosity(requestedCallStackVerbosityStr);
         if (Verbosity::unknown != requestedCallStackVerbosity) {
             initMaxDynamicCallStackDumpingVerbosity(requestedCallStackVerbosity);
-            log<Verbosity::info>("Initialing verbosity level of callstack dumping to %s based on %s environment variable", requestedCallStackVerbosityStr, calVerbosityCallStackEnvName.data());
+            log<Verbosity::info>("Initializing verbosity level of callstack dumping to %s based on %s environment variable", requestedCallStackVerbosityStr, calVerbosityCallStackEnvName.data());
         } else {
             std::string existing = getListOfAllExistingVerbosityLevels();
             log<Verbosity::error>("Ignoring unkown callstack dumping verbosity level %s from %s environment variable (expected one of (case sensitive) : %s)", requestedCallStackVerbosityStr, calVerbosityCallStackEnvName.data(), existing.c_str());

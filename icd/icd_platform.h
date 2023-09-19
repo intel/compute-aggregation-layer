@@ -35,9 +35,10 @@ namespace Cal {
 namespace Icd {
 
 enum PointerType {
-    local,  // MAP_PRIVATE
-    shared, // MAP_SHARED
-    usm     // USM
+    local,           // MAP_PRIVATE
+    shared,          // MAP_SHARED
+    usm,             // USM
+    remapped = local // LOCAL, REMAPPED (deferred cmd list with block manager)
 };
 
 class PageFaultManager;

@@ -54,10 +54,10 @@ ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_ar
 <%    evals = set()%>\
 %     for r in func_base.redirections:
 %      for c in r.conditions:
-%       if c.evauluate not in evals:
-    ${c.evauluate};
-<%       evals.add(c.evauluate)%>\
-%       endif #c.evauluate not in evals:
+%       if c.evaluate not in evals:
+    ${c.evaluate};
+<%       evals.add(c.evaluate)%>\
+%       endif #c.evaluate not in evals:
 %      endfor # r.conditions
 %     endfor # func_base.redirections:
     
@@ -97,9 +97,19 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %     endfor # func_base.redirections:
 }
 %    else : # not func_base.redirections
+%     for constexpr in f.const_expressions:
+    ${constexpr};
+%endfor # constexpr in f.const_expressions:
 %     for prologue_line in prologue(f):
     ${prologue_line}
 %     endfor # prologue(f)
+%     if f.traits.requires_pointer_remapping:
+%      for arg in func_base.traits.get_remapped_pointer_args():
+%       if not arg.kind_details.server_access.write_only():
+    hCommandList->asLocalObject()->registerMemoryToWrite(${arg.name}, ${arg.get_calculated_array_size()});
+%       endif # not arg.kind_details.server_access.write_only():
+%      endfor # in func_base.traits.get_remapped_pointer_args
+%     endif # f.traits.requires_pointer_remapping
     log<Verbosity::bloat>("Establishing RPC for ${f.name}");
 %     if f != func_base:
     ${"return " if not func_base.returns.type.is_void() else ""}${'::'.join(config.icd_namespace + [func_base.name])}(${func_base.get_call_params_list_str()});

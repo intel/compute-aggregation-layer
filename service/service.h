@@ -1330,6 +1330,12 @@ class Provider {
 void checkForRequiredFiles();
 void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 
+namespace Apis::LevelZero {
+ze_event_handle_t getInternalEvent(ClientContext &calClientCtx, ze_command_list_handle_t cmdList);
+bool addRelay(ze_result_t &status, ze_event_handle_t action, ze_event_handle_t trigger, ze_command_list_handle_t cmdList);
+bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, void *ptr, size_t size);
+} // namespace Apis::LevelZero
+
 } // namespace Service
 
 } // namespace Cal

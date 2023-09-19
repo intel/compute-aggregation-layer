@@ -60,6 +60,7 @@ Cal::Icd::Ocl::IcdOclPlatform *IcdGlobalState::getOclPlatform() {
 Cal::Icd::LevelZero::IcdL0Platform *IcdGlobalState::getL0Platform() {
     std::call_once(l0Platform.onceFlag, [this]() {
         if (this->ensureApiIsAvailable(ApiType::LevelZero) == false) {
+            log<Verbosity::debug>("L0 API is not available for client with pid : %d", getpid());
             return;
         }
         Cal::Icd::LevelZero::initL0Ddi(l0Ddi);
@@ -86,6 +87,7 @@ bool IcdGlobalState::ensureServiceIsAvailable() {
 
 bool IcdGlobalState::ensureApiIsAvailable(ApiType api) {
     if (false == ensureServiceIsAvailable()) {
+        log<Verbosity::debug>("CAL service is not available for client with pid : %d", getpid());
         return false;
     }
 

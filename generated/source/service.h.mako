@@ -59,18 +59,33 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
     ${prologue_line}
 %     endfor # prologue(rpc_func)
     auto apiCommand = reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command);
-%      if requires_malloc_shmem_zero_copy_handler(rpc_func):
-%       for arg in rpc_func.args:
-%        if arg.kind.is_pointer_zero_copy_malloc_shmem():
-<%        arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
+<%     op_end_marker_event_arg = None%>\
+%      for arg in rpc_func.args:
+%       if arg.kind.is_pointer_zero_copy_malloc_shmem():
+<%       arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
     void *importedMallocPtr${to_pascal_case(arg.name)} = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(${get_arg_from_api_command_struct(rpc_func, arg)}), ${arg_size}, 0U);
-    if(nullptr == importedMallocPtr${to_pascal_case(arg.name)}){
+    if((nullptr == importedMallocPtr${to_pascal_case(arg.name)})  && (nullptr != apiCommand->args.${arg.name})){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size});
         return false;
     }
+%       elif arg.kind.is_pointer_remapped():
+    void *remappedPtr${to_pascal_case(arg.name)} = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.${arg.name}, ${arg.get_calculated_array_size('apiCommand->args.')});
+    if((nullptr == remappedPtr${to_pascal_case(arg.name)}) && (nullptr != apiCommand->args.${arg.name})){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg.get_calculated_array_size('apiCommand->args.')});
+        return false;
+    }
+%        if not arg.kind_details.server_access.read_only():
+<%        op_end_marker_event_arg = rpc_func.traits.getOpEndEventArg()%>\
 %        endif
-%       endfor # rpc_func.args
-%      endif
+%       endif # arg.kind.is_pointer_remapped():
+%      endfor # rpc_func.args
+%      if op_end_marker_event_arg:
+    auto opEndMarkerEvent = Cal::Service::Apis::${to_pascal_case(config.api_name)}::getInternalEvent(ctx, apiCommand->args.hCommandList);
+    if (!opEndMarkerEvent) {
+        apiCommand->captures.ret = ${rpc_func.returns.default};
+        return false;
+    }
+%      endif #op_end_marker_event_arg
 %      if get_struct_members_layouts(rpc_func):
     apiCommand->captures.reassembleNestedStructs();
 %      endif
@@ -78,6 +93,10 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 %     for arg in rpc_func.args:
 %      if arg.kind.is_pointer_zero_copy_malloc_shmem():
                                                 importedMallocPtr${to_pascal_case(arg.name)}\
+%      elif arg.kind.is_pointer_remapped():
+                                                remappedPtr${to_pascal_case(arg.name)}\
+%      elif arg == op_end_marker_event_arg:
+                                                opEndMarkerEvent\
 %      else : # not arg.kind.is_pointer_zero_copy_malloc_shmem
 %       if arg.traits.uses_standalone_allocation:
                                                 channel.decodeLocalPtrFromHeapOffset(${get_arg_from_api_command_struct(rpc_func, arg)})\
@@ -88,6 +107,17 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 ${", " if not loop.last else ""}
 %     endfor # rpc_func.args
                                                 );
+%     if op_end_marker_event_arg:
+    Cal::Service::Apis::${to_pascal_case(config.api_name)}::addRelay(apiCommand->captures.ret, ${get_arg_from_api_command_struct(rpc_func, op_end_marker_event_arg)}, opEndMarkerEvent, apiCommand->args.hCommandList);
+    if (apiCommand->captures.ret == 0) {
+        auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
+%      for arg in rpc_func.args:
+%        if arg.kind.is_pointer_remapped() and (not arg.kind_details.server_access.read_only()):
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, opEndMarkerEvent, ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg.get_calculated_array_size('apiCommand->args.')}, ${str(arg.capture_details.replayable_command).lower()});
+%        endif
+%      endfor
+    }
+%     endif # op_end_marker_event_arg
 %     for arg in rpc_func.args:
 %      if arg.daemon_action_on_success:
     if(isSuccessful(apiCommand->captures.ret)) {

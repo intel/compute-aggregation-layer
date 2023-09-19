@@ -47,7 +47,7 @@ bool load${to_pascal_case(config.api_name)}Library(std::optional<std::string> pa
     }
 
 % for group_name in standard_functions:    
-%  for f in standard_functions[group_name]:
+%  for f in [icd_function for icd_function in standard_functions[group_name] if not (icd_function.special_handling and icd_function.special_handling.icd and icd_function.special_handling.icd.not_in_dispatch_table)]:
     ${f.name} = reinterpret_cast<decltype(${f.name})>(dlsym(libraryHandle, "${f.name}"));
     if(nullptr == ${f.name}){
 %   if f.special_handling and f.special_handling.optional:

@@ -1145,7 +1145,17 @@ inline cl_mem_flags translateUseHostPtr(cl_mem_flags memFlags) {
     return memFlags;
 }
 
-inline void warnIfNonBlockingRead(cl_bool &blockingRead) {
+constexpr void warnIfNonBlockingRead(cl_bool &blockingRead) {
+    if (false == blockingRead) {
+        log<Verbosity::debug>("Overriding async read with serialized one to ensure memory coherency");
+        blockingRead = true;
+    }
+}
+
+constexpr void warnIfNonBlockingRead(cl_bool &blockingRead, Cal::Icd::PointerType pt) {
+    if (pt != Cal::Icd::PointerType::local) {
+        return;
+    }
     if (false == blockingRead) {
         log<Verbosity::debug>("Overriding async read with serialized one to ensure memory coherency");
         blockingRead = true;

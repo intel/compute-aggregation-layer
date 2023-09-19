@@ -170,9 +170,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     }
     zesDeviceResetExt = reinterpret_cast<decltype(zesDeviceResetExt)>(dlsym(libraryHandle, "zesDeviceResetExt"));
     if(nullptr == zesDeviceResetExt){
-        log<Verbosity::error>("Missing symbol zesDeviceResetExt in %s", loadPath.c_str());
-        unloadLevelZeroLibrary();
-        return false;
+        log<Verbosity::debug>("Missing symbol zesDeviceResetExt in %s", loadPath.c_str());
     }
     zesDeviceGetState = reinterpret_cast<decltype(zesDeviceGetState)>(dlsym(libraryHandle, "zesDeviceGetState"));
     if(nullptr == zesDeviceGetState){
