@@ -145,6 +145,10 @@ class ShmemAllocator final {
         auto path = basePath + std::to_string(alloc.getShmemId());
 
         if (alloc.isOwnerOfFd()) {
+            if (-1 == Cal::Sys::ftruncate(alloc.getFd(), 0)) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to ftruncate shmem %s to size : 0 (errno=%d=%s)", path.c_str(), err, strerror(err));
+            }
             if (-1 == Cal::Sys::close(alloc.getFd())) {
                 auto err = errno;
                 log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", alloc.getFd(), path.c_str(), err, strerror(err));
@@ -155,7 +159,10 @@ class ShmemAllocator final {
 
         if (alloc.isOwnerOfShmem()) {
             if (-1 == Cal::Sys::shm_unlink(path.c_str())) {
-                log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu", path.c_str(), alloc.getFileSize());
+                auto err = errno;
+                if (err != ENOENT) {
+                    log<Verbosity::error>("Failed to shm_unlink shmem %s of size : %zu (errno=%d=%s)", path.c_str(), alloc.getFileSize(), err, strerror(err));
+                }
             } else {
                 log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), alloc.getFileSize());
                 shmemIdAllocator.free(alloc.getShmemId());
@@ -193,6 +200,7 @@ class ShmemImporter {
 
     ShmemImporter() = default;
     ShmemImporter(const std::string &path) : basePath(path) {
+        doEarlyUnlink = Cal::Utils::getCalEnvI64(calEarlyShmUnlinkEnvName, false);
     }
     mockable ~ShmemImporter() = default;
 
@@ -266,11 +274,15 @@ class ShmemImporter {
         if (iter == (*fileMap).end()) {
             fd = Cal::Sys::shm_open(path.c_str(), O_RDWR, 0);
             if (-1 == fd) {
-                log<Verbosity::error>("Failed to open shmem for path : %s", path.c_str());
+                auto err = errno;
+                log<Verbosity::error>("Failed to open shmem for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
                 return -1;
             }
             log<Verbosity::debug>("Opened shmem for path : %s", path.c_str());
             (*fileMap)[path] = {fd, 1};
+            if (doEarlyUnlink) {
+                Cal::Sys::shm_unlink(path.c_str());
+            }
         } else {
             fd = (*iter).second.fd;
             ++iter->second.refcnt;
@@ -295,22 +307,27 @@ class ShmemImporter {
             log<Verbosity::error>("Found incorrect refcnt %d for path : %s with shmem FD %d", fd, path.c_str(), shmem.getFd());
             return;
         }
-        if (refcnt == 1) {
-            if (-1 == Cal::Sys::close(fd)) {
-                auto err = errno;
-                log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", fd, path.c_str(), err, strerror(err));
-                return;
-            }
-            log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", fd, path.c_str(), shmem.getMmappedSize());
-            (*fileMap).erase(path);
-        } else {
+        if (doEarlyUnlink) {
             --iter->second.refcnt;
+        } else {
+            if (refcnt == 1) {
+                if (-1 == Cal::Sys::close(fd)) {
+                    auto err = errno;
+                    log<Verbosity::error>("Failed to close shmem FD %d for path : %s (errno=%d=%s)", fd, path.c_str(), err, strerror(err));
+                    return;
+                }
+                log<Verbosity::debug>("Closed FD %d for shmem %s of size : %zu", fd, path.c_str(), shmem.getMmappedSize());
+                (*fileMap).erase(path);
+            } else {
+                --iter->second.refcnt;
+            }
         }
     }
 
   protected:
     std::string basePath;
     Cal::Utils::Lockable<std::unordered_map<std::string, RefCountedFd>> fileMap{};
+    bool doEarlyUnlink = false;
 };
 
 inline RemoteShmemDesc allocateShmemOnRemote(Cal::Ipc::Connection &remoteConnection,

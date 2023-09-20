@@ -451,20 +451,20 @@ TEST(ShmemAllocatorAllocate, whenOutOfShmemIdsThenReturnsInvalidAllocationAndEmi
 
     allocator.free(alloc);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
-    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
+    EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
     EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
 
     alloc2 = allocator.allocate(4U, 4096U);
     EXPECT_TRUE(alloc2.isValid());
     EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.shm_open.callCount);
-    EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
+    EXPECT_EQ(3U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
     EXPECT_EQ(3U, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
 
     allocator.free(alloc2);
     EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.shm_open.callCount);
-    EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
+    EXPECT_EQ(4U, tempSysCallsCtx.apiConfig.ftruncate.callCount);
     EXPECT_EQ(2U, tempSysCallsCtx.apiConfig.close.callCount);
     EXPECT_EQ(4U, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
 

@@ -75,6 +75,8 @@ constexpr std::string_view calUseSemaphoresThresholdInChannelClientEnvName = "CA
 
 constexpr std::string_view calUsePnextInZeDeviceGetProperties = "CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES";
 
+constexpr std::string_view calEarlyShmUnlinkEnvName = "CAL_EARLY_SHM_UNLINK";
+
 // Debug
 // Sets required logging verbosity. Available levels: [performance, silent, critical, error, info, debug, bloat]. Warning: bloat verbosity requires CAL to be built with ENABLE_BLOATED_VERBOSITY=1 cmake option
 constexpr std::string_view calVerbosityEnvName = "CAL_MAX_VERBOSITY";
