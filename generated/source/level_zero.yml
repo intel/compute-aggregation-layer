@@ -1370,7 +1370,6 @@ config:
       members:
         [
           CommandList.zeCommandListAppendMemoryRangesBarrier,
-          Context.zeContextSystemBarrier,
           CommandList.zeCommandListAppendMemoryCopyRegion,
           CommandList.zeCommandListAppendMemoryCopyFromContext,
           CommandList.zeCommandListAppendImageCopy,
@@ -1851,21 +1850,24 @@ config:
         #                    type : ze_event_handle_t*
         #                    kind : pointer
         #
-        #        - name : zeContextSystemBarrier
-        #          ddi_category :  Context
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hContext
-        #                    type : ze_context_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : hDevice
-        #                    type : ze_device_handle_t
-        #                    kind : scalar
+        - name : zeContextSystemBarrier
+          latency : 0.0
+          ddi_category :  Context
+          returns :
+            type : ze_result_t
+            kind : scalar
+            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hContext
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+            1 :
+              name : hDevice
+              type : ze_device_handle_t
+              kind : scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
         #        - name : zeCommandGraphExpCreate
         #          ddi_category :  CommandGraphExp
         #          returns :

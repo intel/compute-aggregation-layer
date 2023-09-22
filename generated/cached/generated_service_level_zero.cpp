@@ -31,6 +31,7 @@ ze_result_t (*zesDevicePciGetStats)(zes_device_handle_t hDevice, zes_pci_stats_t
 ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
+ze_result_t (*zeContextSystemBarrier)(ze_context_handle_t hContext, ze_device_handle_t hDevice) = nullptr;
 ze_result_t (*zeCommandListCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) = nullptr;
 ze_result_t (*zeCommandListCreateImmediate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) = nullptr;
 ze_result_t (*zeCommandListDestroy)(ze_command_list_handle_t hCommandList) = nullptr;
@@ -223,6 +224,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeInit = reinterpret_cast<decltype(zeInit)>(dlsym(libraryHandle, "zeInit"));
     if(nullptr == zeInit){
         log<Verbosity::error>("Missing symbol zeInit in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeContextSystemBarrier = reinterpret_cast<decltype(zeContextSystemBarrier)>(dlsym(libraryHandle, "zeContextSystemBarrier"));
+    if(nullptr == zeContextSystemBarrier){
+        log<Verbosity::error>("Missing symbol zeContextSystemBarrier in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -919,6 +926,7 @@ void unloadLevelZeroLibrary() {
     zesDeviceGetProperties = nullptr;
     zesDeviceEnumMemoryModules = nullptr;
     zeInit = nullptr;
+    zeContextSystemBarrier = nullptr;
     zeCommandListCreate = nullptr;
     zeCommandListCreateImmediate = nullptr;
     zeCommandListDestroy = nullptr;

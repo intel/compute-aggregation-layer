@@ -55,6 +55,10 @@ ze_result_t zeInit(ze_init_flags_t flags){
    return {};
 }
 
+ze_result_t zeContextSystemBarrier(ze_context_handle_t hContext, ze_device_handle_t hDevice){
+   return {};
+}
+
 ze_result_t zeCommandListCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList){
    return {};
 }

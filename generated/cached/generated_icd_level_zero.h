@@ -47,6 +47,7 @@ ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* 
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
+ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList);
@@ -181,10 +182,6 @@ ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryRangesBarrier is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeContextSystemBarrierUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextSystemBarrier is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
@@ -843,6 +840,7 @@ inline void zetTracerExpSetEnabledUnimpl() {
 
 inline void initL0Ddi(ze_dditable_t &dt){
     dt.Global.pfnInit = Cal::Icd::LevelZero::zeInit;
+    dt.Context.pfnSystemBarrier = Cal::Icd::LevelZero::zeContextSystemBarrier;
     dt.CommandList.pfnCreate = Cal::Icd::LevelZero::zeCommandListCreate;
     dt.CommandList.pfnCreateImmediate = Cal::Icd::LevelZero::zeCommandListCreateImmediate;
     dt.CommandList.pfnDestroy = Cal::Icd::LevelZero::zeCommandListDestroy;
@@ -958,7 +956,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.VirtualMem.pfnGetAccessAttribute = Cal::Icd::LevelZero::zeVirtualMemGetAccessAttribute;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
-    dt.Context.pfnSystemBarrier = reinterpret_cast<decltype(dt.Context.pfnSystemBarrier)>(Cal::Icd::LevelZero::Unimplemented::zeContextSystemBarrierUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
     dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);

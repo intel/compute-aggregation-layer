@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -48,6 +48,21 @@ bool createContextEx(ze_driver_handle_t driver, std::vector<ze_device_handle_t> 
     return true;
 }
 
+bool setContextSystemBarrier(ze_context_handle_t hContext, ze_device_handle_t hDevice) {
+    auto ret = zeContextSystemBarrier(hContext, hDevice);
+    switch (ret) {
+    case ZE_RESULT_ERROR_UNSUPPORTED_FEATURE:
+        log<Verbosity::info>("zeContextSystemBarrier is currently unsupported!");
+        return true;
+    case ZE_RESULT_SUCCESS:
+        log<Verbosity::info>("zeContextSystemBarrier is no longer unsupported! Test should be updated.");
+        return true;
+    default:
+        log<Verbosity::error>("zeContextSystemBarrier() failed! Error code = %d", static_cast<int>(ret));
+        return false;
+    }
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::createContext;
     using Cal::Testing::Utils::LevelZero::destroyContext;
@@ -69,6 +84,7 @@ int main(int argc, const char *argv[]) {
 
     RUN_REQUIRED_STEP(createContext(drivers[0], context));
     RUN_REQUIRED_STEP(getContextStatus(context));
+    RUN_REQUIRED_STEP(setContextSystemBarrier(context, devices[0]));
     RUN_REQUIRED_STEP(destroyContext(context));
 
     RUN_REQUIRED_STEP(createContextEx(drivers[0], devices, contextEx));
