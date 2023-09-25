@@ -268,6 +268,30 @@ TEST(ShmemImporterOpen, givenAllocationWhenGettingFileDescriptorThenCallShmOpen)
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
 }
 
+TEST(ShmemImporterOpen, givenShmemImporterWithEarlyUnlinkEnabledByDefaultWhenGettingFileDescriptorThenCallShmOpenAndUnlinkButDontCloseFdOnRelease) {
+    struct MockShmemImporter : Cal::Ipc::ShmemImporter {
+        MockShmemImporter(const std::string &path) : ShmemImporter(path) {}
+        using ShmemImporter::doEarlyUnlink;
+    };
+
+    MockShmemImporter shmemImporter("compute_aggregation_layer_shmem_361004_0");
+    EXPECT_TRUE(shmemImporter.doEarlyUnlink);
+
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    ShmemIdT id = 1;
+    auto path = std::to_string(id);
+    int fd = shmemImporter.getFileDescriptor(path);
+
+    auto shmemAlloc = OpenedShmemAllocationT{ShmemAllocation{id, false}, fd, 4096U, true};
+    Cal::Ipc::ShmemImporter::AllocationT mmappedShmemAlloc{Cal::Ipc::ShmemImporter::AllocationT::BaseT{shmemAlloc, 0}, nullptr, 4096U};
+
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_open.callCount);
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
+
+    shmemImporter.release(mmappedShmemAlloc);
+    EXPECT_EQ(0U, tempSysCallsCtx.apiConfig.close.callCount);
+}
+
 TEST(ShmemImporterOpen, givenAllocationWhenGettingFileDescriptorForSameShmemIdManyTimesThenCallOpenOnceOnly) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
 

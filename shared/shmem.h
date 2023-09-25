@@ -200,7 +200,7 @@ class ShmemImporter {
 
     ShmemImporter() = default;
     ShmemImporter(const std::string &path) : basePath(path) {
-        doEarlyUnlink = Cal::Utils::getCalEnvI64(calEarlyShmUnlinkEnvName, false);
+        doEarlyUnlink = Cal::Utils::getCalEnvI64(calEarlyShmUnlinkEnvName, true);
     }
     mockable ~ShmemImporter() = default;
 
