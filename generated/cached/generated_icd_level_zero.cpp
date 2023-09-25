@@ -3541,6 +3541,45 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
     return ret;
 }
+ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchCooperativeKernel");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.phWaitEvents;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;
     static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));
@@ -4236,6 +4275,9 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
 }
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+}
+ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    return Cal::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect(hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);

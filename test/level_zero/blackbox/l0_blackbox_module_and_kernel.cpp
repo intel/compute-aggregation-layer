@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -409,6 +409,20 @@ bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList, ze_kernel_hand
     return true;
 }
 
+bool appendLaunchCooperativeKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel, ze_group_count_t &launchArgs,
+                                   ze_event_handle_t signalEvent) {
+    const auto zeCommandListAppendLaunchCooperativeKernelResult =
+        zeCommandListAppendLaunchCooperativeKernel(cmdList, kernel, &launchArgs, signalEvent, 0, nullptr);
+    if (zeCommandListAppendLaunchCooperativeKernelResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendLaunchCooperativeKernel() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendLaunchCooperativeKernelResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Launch cooperative kernel operation appended successfully!");
+    return true;
+}
+
 bool setGlobalOffset(ze_kernel_handle_t kernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     const auto zeKernelSetGlobalOffsetExpResult = zeKernelSetGlobalOffsetExp(kernel, offsetX, offsetY, offsetZ);
     if (zeKernelSetGlobalOffsetExpResult != ZE_RESULT_SUCCESS) {
@@ -638,6 +652,12 @@ int main(int argc, const char *argv[]) {
 
     RUN_REQUIRED_STEP(verifyCopyBufferResults(sourceCopyBuffer, destinationCopyBuffer, bufferSize));
     RUN_REQUIRED_STEP(verifyDoubleValsResults(sourceDoubleVals, destinationDoubleVals, bufferSize));
+
+    RUN_REQUIRED_STEP(resetCommandList(cmdList));
+    RUN_REQUIRED_STEP(appendLaunchCooperativeKernel(cmdList, copyBufferKernel, launchArgs, copyBufferFinishedEvent));
+    RUN_REQUIRED_STEP(closeCommandList(cmdList));
+    RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
+    RUN_REQUIRED_STEP(synchronizeCommandQueue(queue));
 
     RUN_REQUIRED_STEP(queryKernelTimestamp(copyBufferFinishedEvent, devices[0]));
 

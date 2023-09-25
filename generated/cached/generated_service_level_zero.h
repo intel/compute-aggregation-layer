@@ -138,6 +138,7 @@ extern ze_result_t (*zeKernelSetCacheConfig)(ze_kernel_handle_t hKernel, ze_cach
 extern ze_result_t (*zeKernelGetProperties)(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
 extern ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
 extern ze_result_t (*zeCommandListAppendLaunchKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+extern ze_result_t (*zeCommandListAppendLaunchCooperativeKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeCommandListAppendLaunchKernelIndirect)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zeCommandListHostSynchronize)(ze_command_list_handle_t hCommandList, uint64_t timeout);
 extern ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
@@ -1289,6 +1290,19 @@ inline bool zeCommandListAppendLaunchKernelHandler(Provider &service, Cal::Rpc::
                                                 );
     return true;
 }
+inline bool zeCommandListAppendLaunchCooperativeKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendLaunchCooperativeKernel");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendLaunchCooperativeKernel(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.hKernel, 
+                                                apiCommand->args.pLaunchFuncArgs ? &apiCommand->captures.pLaunchFuncArgs : nullptr, 
+                                                apiCommand->args.hSignalEvent, 
+                                                apiCommand->args.numWaitEvents, 
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
+                                                );
+    return true;
+}
 inline bool zeCommandListAppendLaunchKernelIndirectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendLaunchKernelIndirect");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM*>(command);
@@ -1565,6 +1579,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeKernelGetPropertiesRpcM::messageSubtype] = zeKernelGetPropertiesHandler;
     outHandlers[ZeKernelGetNameRpcM::messageSubtype] = zeKernelGetNameHandler;
     outHandlers[ZeCommandListAppendLaunchKernelRpcM::messageSubtype] = zeCommandListAppendLaunchKernelHandler;
+    outHandlers[ZeCommandListAppendLaunchCooperativeKernelRpcM::messageSubtype] = zeCommandListAppendLaunchCooperativeKernelHandler;
     outHandlers[ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype] = zeCommandListAppendLaunchKernelIndirectHandler;
     outHandlers[ZeCommandListHostSynchronizeRpcM::messageSubtype] = zeCommandListHostSynchronizeHandler;
     outHandlers[ZeDevicePciGetPropertiesExtRpcM::messageSubtype] = zeDevicePciGetPropertiesExtHandler;
@@ -2438,6 +2453,16 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpc
                                                 apiCommand.args.phWaitEvents
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendLaunchCooperativeKernel(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.hKernel, 
+                                                apiCommand.args.pLaunchFuncArgs, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendLaunchKernelIndirect(
                                                 apiCommand.args.hCommandList, 
@@ -2680,6 +2705,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeKernelGetNameRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetNameRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command)); break;

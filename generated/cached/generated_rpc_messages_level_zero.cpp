@@ -1766,6 +1766,26 @@ size_t ZeCommandListAppendLaunchKernelRpcM::Captures::getCaptureDynMemSize() con
      return size;
 }
 
+ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
 ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
     ret.phWaitEvents.count = numWaitEvents;
