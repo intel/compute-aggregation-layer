@@ -132,6 +132,7 @@ ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* 
 ze_result_t (*zeCommandListAppendLaunchKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendLaunchCooperativeKernel)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendLaunchKernelIndirect)(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
+ze_result_t (*zeCommandListAppendLaunchMultipleKernelsIndirect)(ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListHostSynchronize)(ze_command_list_handle_t hCommandList, uint64_t timeout) = nullptr;
 ze_result_t (*zeDevicePciGetPropertiesExt)(ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) = nullptr;
 ze_result_t (*zeContextMakeMemoryResident)(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) = nullptr;
@@ -833,6 +834,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeCommandListAppendLaunchMultipleKernelsIndirect = reinterpret_cast<decltype(zeCommandListAppendLaunchMultipleKernelsIndirect)>(dlsym(libraryHandle, "zeCommandListAppendLaunchMultipleKernelsIndirect"));
+    if(nullptr == zeCommandListAppendLaunchMultipleKernelsIndirect){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendLaunchMultipleKernelsIndirect in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeCommandListHostSynchronize = reinterpret_cast<decltype(zeCommandListHostSynchronize)>(dlsym(libraryHandle, "zeCommandListHostSynchronize"));
     if(nullptr == zeCommandListHostSynchronize){
         log<Verbosity::error>("Missing symbol zeCommandListHostSynchronize in %s", loadPath.c_str());
@@ -1027,6 +1034,7 @@ void unloadLevelZeroLibrary() {
     zeCommandListAppendLaunchKernel = nullptr;
     zeCommandListAppendLaunchCooperativeKernel = nullptr;
     zeCommandListAppendLaunchKernelIndirect = nullptr;
+    zeCommandListAppendLaunchMultipleKernelsIndirect = nullptr;
     zeCommandListHostSynchronize = nullptr;
     zeDevicePciGetPropertiesExt = nullptr;
     zeContextMakeMemoryResident = nullptr;

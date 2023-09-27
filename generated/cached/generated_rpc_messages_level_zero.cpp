@@ -1806,6 +1806,36 @@ size_t ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::getCaptureDynMemSi
      return size;
 }
 
+ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phKernels.count = numKernels;
+    ret.phKernels.size = ret.phKernels.count * sizeof(ze_kernel_handle_t);
+
+    ret.phWaitEvents.offset = alignUpPow2<8>(ret.phKernels.offset + ret.phKernels.size);
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 } // namespace LevelZero
 } // namespace Rpc
 } // namespace Cal

@@ -165,6 +165,7 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout);
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
@@ -278,10 +279,6 @@ inline void zeMemFreeExtUnimpl() {
 }
 inline void zeKernelGetSourceAttributesUnimpl() {
     log<Verbosity::critical>("Function Kernel.zeKernelGetSourceAttributes is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeCommandListAppendLaunchMultipleKernelsIndirectUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeContextMakeImageResidentUnimpl() {
@@ -941,6 +938,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendLaunchKernel = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel;
     dt.CommandList.pfnAppendLaunchCooperativeKernel = Cal::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel;
     dt.CommandList.pfnAppendLaunchKernelIndirect = Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect;
+    dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = Cal::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect;
     dt.CommandList.pfnHostSynchronize = Cal::Icd::LevelZero::zeCommandListHostSynchronize;
     dt.Device.pfnPciGetPropertiesExt = Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt;
     dt.Context.pfnMakeMemoryResident = Cal::Icd::LevelZero::zeContextMakeMemoryResident;
@@ -980,7 +978,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
     dt.Mem.pfnFreeExt = reinterpret_cast<decltype(dt.Mem.pfnFreeExt)>(Cal::Icd::LevelZero::Unimplemented::zeMemFreeExtUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
-    dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = reinterpret_cast<decltype(dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect)>(Cal::Icd::LevelZero::Unimplemented::zeCommandListAppendLaunchMultipleKernelsIndirectUnimpl);
     dt.Context.pfnMakeImageResident = reinterpret_cast<decltype(dt.Context.pfnMakeImageResident)>(Cal::Icd::LevelZero::Unimplemented::zeContextMakeImageResidentUnimpl);
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);
     dt.Sampler.pfnCreate = reinterpret_cast<decltype(dt.Sampler.pfnCreate)>(Cal::Icd::LevelZero::Unimplemented::zeSamplerCreateUnimpl);

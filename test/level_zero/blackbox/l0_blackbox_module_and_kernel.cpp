@@ -394,6 +394,20 @@ bool appendLaunchKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t ker
     return true;
 }
 
+bool appendLaunchCooperativeKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel, ze_group_count_t &launchArgs,
+                                   ze_event_handle_t signalEvent) {
+    const auto zeCommandListAppendLaunchCooperativeKernelResult =
+        zeCommandListAppendLaunchCooperativeKernel(cmdList, kernel, &launchArgs, signalEvent, 0, nullptr);
+    if (zeCommandListAppendLaunchCooperativeKernelResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendLaunchCooperativeKernel() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendLaunchCooperativeKernelResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Launch cooperative kernel operation appended successfully!");
+    return true;
+}
+
 bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel,
                                 ze_group_count_t *launchArgsDeviceAccessibleBuffer, ze_event_handle_t signalEvent,
                                 uint32_t numWaitEvents, ze_event_handle_t *waitEvents) {
@@ -409,17 +423,18 @@ bool appendLaunchKernelIndirect(ze_command_list_handle_t cmdList, ze_kernel_hand
     return true;
 }
 
-bool appendLaunchCooperativeKernel(ze_command_list_handle_t cmdList, ze_kernel_handle_t kernel, ze_group_count_t &launchArgs,
-                                   ze_event_handle_t signalEvent) {
-    const auto zeCommandListAppendLaunchCooperativeKernelResult =
-        zeCommandListAppendLaunchCooperativeKernel(cmdList, kernel, &launchArgs, signalEvent, 0, nullptr);
-    if (zeCommandListAppendLaunchCooperativeKernelResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListAppendLaunchCooperativeKernel() call has failed! Error code = %d",
-                              static_cast<int>(zeCommandListAppendLaunchCooperativeKernelResult));
+bool appendLaunchMultipleKernelsIndirect(ze_command_list_handle_t cmdList, uint32_t numKernels, ze_kernel_handle_t *kernels,
+                                         const uint32_t *countBuffer, const ze_group_count_t *launchArgumentsBuffer,
+                                         ze_event_handle_t signalEvent, uint32_t numWaitEvents, ze_event_handle_t *waitEvents) {
+    const auto zeCommandListAppendLaunchMultipleKernelsIndirectResult = zeCommandListAppendLaunchMultipleKernelsIndirect(
+        cmdList, numKernels, kernels, countBuffer, launchArgumentsBuffer, signalEvent, numWaitEvents, waitEvents);
+    if (zeCommandListAppendLaunchMultipleKernelsIndirectResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendLaunchMultipleKernelsIndirect() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendLaunchMultipleKernelsIndirectResult));
         return false;
     }
 
-    log<Verbosity::info>("Launch cooperative kernel operation appended successfully!");
+    log<Verbosity::info>("Launch multiple kernels indirect operation appended successfully!");
     return true;
 }
 
@@ -653,14 +668,36 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(verifyCopyBufferResults(sourceCopyBuffer, destinationCopyBuffer, bufferSize));
     RUN_REQUIRED_STEP(verifyDoubleValsResults(sourceDoubleVals, destinationDoubleVals, bufferSize));
 
+    RUN_REQUIRED_STEP(queryKernelTimestamp(copyBufferFinishedEvent, devices[0]));
+
     RUN_REQUIRED_STEP(resetCommandList(cmdList));
     RUN_REQUIRED_STEP(appendLaunchCooperativeKernel(cmdList, copyBufferKernel, launchArgs, copyBufferFinishedEvent));
     RUN_REQUIRED_STEP(closeCommandList(cmdList));
     RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
     RUN_REQUIRED_STEP(synchronizeCommandQueue(queue));
 
-    RUN_REQUIRED_STEP(queryKernelTimestamp(copyBufferFinishedEvent, devices[0]));
+    RUN_REQUIRED_STEP(resetCommandList(cmdList));
+    ze_kernel_handle_t kernels[] = {copyBufferKernel, doubleValsKernel};
+    void *countBuffer{nullptr};
+    RUN_REQUIRED_STEP(allocateDeviceMemory(context, sizeof(uint32_t), sizeof(uint32_t), devices[0], countBuffer));
+    void *multipleKernelsIndirectLaunchArgs{nullptr};
+    RUN_REQUIRED_STEP(allocateDeviceMemory(context, sizeof(ze_group_count_t) * 2, sizeof(uint32_t), devices[0], multipleKernelsIndirectLaunchArgs));
+    ze_event_handle_t multipleKernelsIndirectLaunchArgsPreparedEvents[2];
+    RUN_REQUIRED_STEP(createEvent(eventPool, 3, multipleKernelsIndirectLaunchArgsPreparedEvents[0]));
+    RUN_REQUIRED_STEP(createEvent(eventPool, 4, multipleKernelsIndirectLaunchArgsPreparedEvents[1]));
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, multipleKernelsIndirectLaunchArgs, &launchArgs, sizeof(ze_group_count_t),
+                                       multipleKernelsIndirectLaunchArgsPreparedEvents[0]));
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, static_cast<ze_group_count_t *>(multipleKernelsIndirectLaunchArgs) + 1, &launchArgs,
+                                       sizeof(ze_group_count_t), multipleKernelsIndirectLaunchArgsPreparedEvents[1]));
+    RUN_REQUIRED_STEP(appendLaunchMultipleKernelsIndirect(cmdList, 2, kernels, static_cast<const uint32_t *>(countBuffer),
+                                                          static_cast<ze_group_count_t *>(multipleKernelsIndirectLaunchArgs),
+                                                          nullptr, 2, multipleKernelsIndirectLaunchArgsPreparedEvents));
+    RUN_REQUIRED_STEP(closeCommandList(cmdList));
+    RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
+    RUN_REQUIRED_STEP(synchronizeCommandQueue(queue));
 
+    RUN_REQUIRED_STEP(destroyEvent(multipleKernelsIndirectLaunchArgsPreparedEvents[1]));
+    RUN_REQUIRED_STEP(destroyEvent(multipleKernelsIndirectLaunchArgsPreparedEvents[0]));
     RUN_REQUIRED_STEP(destroyEvent(indirectLaunchArgsPreparedEvent));
     RUN_REQUIRED_STEP(destroyEvent(copyBufferFinishedEvent));
     RUN_REQUIRED_STEP(destroyEventPool(eventPool));

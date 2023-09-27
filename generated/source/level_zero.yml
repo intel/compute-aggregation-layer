@@ -1394,7 +1394,6 @@ config:
           Module.zeModuleInspectLinkageExt,
           Mem.zeMemFreeExt,
           Kernel.zeKernelGetSourceAttributes,
-          CommandList.zeCommandListAppendLaunchMultipleKernelsIndirect,
           Context.zeContextMakeImageResident,
           Context.zeContextEvictImage,
           Sampler.zeSamplerCreate,
@@ -6718,6 +6717,7 @@ config:
             3:
               name: hSignalEvent
               type: ze_event_handle_t
+              kind: scalar
               kind_details:
                 can_be_null: True
               translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
@@ -6737,46 +6737,72 @@ config:
                   kind: scalar
                   translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
                 server_access: read
-        #        - name : zeCommandListAppendLaunchMultipleKernelsIndirect
-        #          ddi_category :  CommandList
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hCommandList
-        #                    type : ze_command_list_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : numKernels
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : phKernels
-        #                    type : ze_kernel_handle_t*
-        #                    kind : pointer
-        #                 3 :
-        #                    name : pCountBuffer
-        #                    type : const uint32_t*
-        #                    kind : pointer
-        #                 4 :
-        #                    name : pLaunchArgumentsBuffer
-        #                    type : const ze_group_count_t*
-        #                    kind : pointer
-        #                 5 :
-        #                    name : hSignalEvent
-        #                    type : ze_event_handle_t
-        #                    kind : scalar
-        #                 6 :
-        #                    name : numWaitEvents
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 7 :
-        #                    name : phWaitEvents
-        #                    type : ze_event_handle_t*
-        #                    kind : pointer
-        #
+        - name: zeCommandListAppendLaunchMultipleKernelsIndirect
+          latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "for (uint32_t i = 0; i < numKernels; i++) {\n        static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(phKernels[i])->sharedIndirectAccessSet;\n        static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(phKernels[i]));\n    }"
+              handler_epilogue: "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+            1:
+              name: numKernels
+              type: uint32_t
+              kind: scalar
+            2:
+              name: phKernels
+              type: ze_kernel_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numKernels
+                can_be_null: True
+                element:
+                  type: ze_kernel_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+                server_access: read
+            3:
+              name: pCountBuffer
+              type: const uint32_t*
+              kind: pointer
+              kind_details:
+                can_be_null: True
+            4:
+              name: pLaunchArgumentsBuffer
+              type: const ze_group_count_t*
+              kind: pointer
+            5:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            6:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            7:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                server_access: read
         - name: zeCommandListHostSynchronize
           latency: 0.0
           ddi_category: CommandList
