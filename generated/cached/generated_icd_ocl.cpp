@@ -363,7 +363,7 @@ cl_int clSetDefaultDeviceCommandQueue (cl_context context, cl_device_id device, 
     auto command = new(commandSpace) CommandT(context, device, command_queue);
     command->args.context = static_cast<IcdOclContext*>(context)->asRemoteObject();
     command->args.device = static_cast<IcdOclDevice*>(device)->asRemoteObject();
-    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
+    if (command_queue) command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

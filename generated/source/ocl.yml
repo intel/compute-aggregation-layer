@@ -583,7 +583,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "if ({arg}) {dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
         - name: clCreateCommandQueueWithProperties
           latency: 1.0
           special_handling:
