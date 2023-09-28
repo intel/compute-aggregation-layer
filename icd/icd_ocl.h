@@ -953,6 +953,17 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
             return;
         }
 
+        case CL_CONTEXT_PROPERTIES: {
+            auto properties = static_cast<cl_context_properties *>(dst);
+            for (int i = 0; properties[i] != 0; i += 2) {
+                if (properties[i] == CL_CONTEXT_PLATFORM) {
+                    auto value = reinterpret_cast<void *>(&properties[i + 1]);
+                    translateRemoteObjectToLocalObject<cl_platform_id>(value);
+                }
+            }
+            return;
+        }
+
         case CL_MEM_ALLOC_DEVICE_INTEL:
         case CL_DEVICE_PARENT_DEVICE:
         case CL_QUEUE_DEVICE: {
