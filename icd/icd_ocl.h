@@ -771,6 +771,10 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
             log<Verbosity::error>("Invalid cl_mem arg size");
             return;
         }
+        if (nullptr == *(reinterpret_cast<cl_mem *>(argData))) {
+            log<Verbosity::debug>("Null cl_mem arg value");
+            return;
+        }
         *static_cast<cl_mem *>(argData) = static_cast<IcdOclMem *>(*(reinterpret_cast<cl_mem *>(argData)))->asRemoteObject();
     }
     KernelArgCache clSetKernelArgCache;
