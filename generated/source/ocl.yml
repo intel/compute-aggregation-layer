@@ -5362,6 +5362,55 @@ config:
                   type: size_t
                   kind: scalar
                 server_access: write
+        ################### cl_khr_create_command_queue EXTENSION
+        - name: clCreateCommandQueueWithPropertiesKHR
+          latency: 1.0
+          special_handling:
+            extension_name: "cl_khr_create_command_queue"
+            icd:
+              in_get_extension_function_address: True
+              alias_to: clCreateCommandQueueWithProperties
+              not_in_dispatch_table: True
+              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
+          returns:
+            type: cl_command_queue
+            kind: scalar
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+          args:
+            0:
+              name: context
+              type: cl_context
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+            1:
+              name: device
+              type: cl_device_id
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+            2:
+              name: properties
+              type: "const cl_queue_properties*"
+              kind: ptr_array
+              translate_before: "globalPlatform->translateQueueFlags(mutable_element_cast({dst_mem}))"
+              kind_details:
+                num_elements: "nullterminated_key"
+                can_be_null: True
+                element:
+                  type: "cl_queue_properties"
+                  kind: "scalar"
+                server_access: read
+            3:
+              name: errcode_ret
+              type: "cl_int*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: cl_int
+                  kind: scalar
+                  default: "CL_DEVICE_NOT_AVAILABLE"
+                server_access: write
         ################### USM EXTENSION
         - name: clEnqueueMemFillINTEL
           latency: 0.0

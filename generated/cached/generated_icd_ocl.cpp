@@ -3374,6 +3374,10 @@ cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_ker
 
     return ret;
 }
+cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
+    log<Verbosity::bloat>("Establishing RPC for clCreateCommandQueueWithPropertiesKHR");
+    return Cal::Icd::Ocl::clCreateCommandQueueWithProperties(context, device, properties, errcode_ret);
+}
 cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemFillINTEL");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -5183,6 +5187,9 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("clGetKernelSubGroupInfoKHR", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clGetKernelSubGroupInfoKHR);
     }
+    if(0 == strcmp("clCreateCommandQueueWithPropertiesKHR", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::Ocl::clCreateCommandQueueWithPropertiesKHR);
+    }
     if(0 == strcmp("clEnqueueMemFillINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clEnqueueMemFillINTEL);
     }
@@ -5560,6 +5567,9 @@ cl_int clRetainDeviceEXT (cl_device_id device) {
 }
 cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     return Cal::Icd::Ocl::clGetKernelSubGroupInfoKHR(kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
+}
+cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
+    return Cal::Icd::Ocl::clCreateCommandQueueWithPropertiesKHR(context, device, properties, errcode_ret);
 }
 cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     return Cal::Icd::Ocl::clEnqueueMemFillINTEL(command_queue, dstPtr, pattern, patternSize, size, num_events_in_wait_list, event_wait_list, event);

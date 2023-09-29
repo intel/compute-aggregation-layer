@@ -1725,6 +1725,26 @@ size_t ClGetKernelSubGroupInfoKHRRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::DynamicTraits ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
+    DynamicTraits ret = {};
+    ret.properties.count = Cal::Utils::countNullterminatedKey(properties);
+    ret.properties.size = ret.properties.count * sizeof(cl_queue_properties);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.properties.offset + ret.properties.size);
+
+
+    return ret;
+}
+
+size_t ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, properties) + Cal::Utils::alignUpPow2<8>(this->countProperties * sizeof(cl_queue_properties));
+     return size;
+}
+
+size_t ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countProperties * sizeof(cl_queue_properties));
+     return size;
+}
+
 ClEnqueueMemFillINTELRpcM::Captures::DynamicTraits ClEnqueueMemFillINTELRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.pattern.count = patternSize;
