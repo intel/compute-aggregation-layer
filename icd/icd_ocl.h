@@ -742,6 +742,8 @@ struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclType
     void storeSizesOfBinaries(void *paramValue, size_t paramValueSize);
     std::vector<size_t> getBinariesSizes();
 
+    IcdOclContext *context{};
+
   protected:
     std::vector<size_t> binariesSizes;
     std::mutex binariesSizesMutex;

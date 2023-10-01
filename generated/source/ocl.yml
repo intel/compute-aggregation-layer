@@ -630,6 +630,9 @@ config:
                 server_access: write
         - name: clCreateProgramWithSource
           latency: 0.5
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
           returns:
             type: cl_program
             kind: scalar
@@ -685,6 +688,9 @@ config:
                 server_access: write
         - name: clCreateProgramWithIL
           latency: 0.5
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
           returns:
             type: cl_program
             kind: scalar
@@ -723,6 +729,9 @@ config:
                   default: "CL_DEVICE_NOT_AVAILABLE"
                 server_access: write
         - name: clCreateProgramWithBinary
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
           latency: 1.0
           returns:
             type: cl_program
@@ -802,6 +811,9 @@ config:
                 server_access: write
         - name: clCreateProgramWithBuiltInKernels
           latency: 1.0
+          special_handling:
+            icd:
+              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
           returns:
             type: cl_program
             kind: scalar
@@ -1873,6 +1885,9 @@ config:
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseProgram
           latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "if (static_cast<IcdOclProgram *>(program)->context) {\n        static_cast<IcdOclProgram *>(program)->context->asLocalObject()->beforeReleaseCallback();\n    }"
           returns:
             type: cl_int
             kind: scalar

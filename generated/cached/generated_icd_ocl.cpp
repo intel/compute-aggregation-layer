@@ -434,6 +434,8 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
     cl_program ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_program clCreateProgramWithIL (cl_context context, const void* il, size_t length, cl_int* errcode_ret) {
@@ -460,6 +462,8 @@ cl_program clCreateProgramWithIL (cl_context context, const void* il, size_t len
     cl_program ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_program clCreateProgramWithBinary (cl_context context, cl_uint num_devices, const cl_device_id* device_list, const size_t* lengths, const unsigned char** binaries, cl_int* binary_status, cl_int* errcode_ret) {
@@ -496,6 +500,8 @@ cl_program clCreateProgramWithBinary (cl_context context, cl_uint num_devices, c
     cl_program ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_program clCreateProgramWithBuiltInKernels (cl_context context, cl_uint num_devices, const cl_device_id* device_list, const char* kernel_names, cl_int* errcode_ret) {
@@ -532,6 +538,8 @@ cl_program clCreateProgramWithBuiltInKernels (cl_context context, cl_uint num_de
     cl_program ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
+    channelLock.unlock();
+    static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);
     return ret;
 }
 cl_int clUnloadCompiler () {
@@ -1208,6 +1216,9 @@ cl_int clReleaseSampler (cl_sampler sampler) {
     return ret;
 }
 cl_int clReleaseProgram (cl_program program) {
+    if (static_cast<IcdOclProgram *>(program)->context) {
+        static_cast<IcdOclProgram *>(program)->context->asLocalObject()->beforeReleaseCallback();
+    }
     log<Verbosity::bloat>("Establishing RPC for clReleaseProgram");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
