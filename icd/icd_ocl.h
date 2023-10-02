@@ -722,6 +722,12 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         tmp.clear();
     }
 
+    void beforeReleaseCallback() {
+        if (1 == this->peekRefCount()) {
+            this->cleanTemporaryAllocations();
+        }
+    }
+
     struct {
         std::mutex mutex;
         std::vector<std::unique_ptr<void, Cal::Rpc::ChannelClient::ChannelSpaceDeleter>> allocations;

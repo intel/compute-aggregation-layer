@@ -1816,6 +1816,9 @@ config:
         - name: clReleaseCommandQueue
           latency: 0.0
           call_async: true
+          special_handling:
+            icd:
+              handler_prologue: "static_cast<IcdOclCommandQueue *>(command_queue)->beforeReleaseCallback();"
           returns:
             type: cl_int
             kind: scalar

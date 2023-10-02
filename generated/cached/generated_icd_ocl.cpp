@@ -1074,6 +1074,7 @@ cl_int clGetKernelSubGroupInfo (cl_kernel kernel, cl_device_id device, cl_kernel
     return ret;
 }
 cl_int clReleaseCommandQueue (cl_command_queue command_queue) {
+    static_cast<IcdOclCommandQueue *>(command_queue)->beforeReleaseCallback();
     log<Verbosity::bloat>("Establishing RPC for clReleaseCommandQueue");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
