@@ -132,7 +132,7 @@ cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_u
 
     return ret;
 }
-cl_int clGetDeviceInfo (cl_device_id device, cl_device_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+cl_int clGetDeviceInfoRpcHelper (cl_device_id device, cl_device_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     if (static_cast<IcdOclDevice*>(device)->cache.find(param_name,param_value,param_value_size_ret)) {
         return CL_SUCCESS;
     }

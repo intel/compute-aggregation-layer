@@ -173,6 +173,7 @@ namespace Icd {
 namespace Ocl {
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms);
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
+cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 void *clGetExtensionFunctionAddress(const char *funcname);
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret);

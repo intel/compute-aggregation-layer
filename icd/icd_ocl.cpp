@@ -96,6 +96,15 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
     return clGetPlatformInfoRpcHelper(platform, param_name, param_value_size, param_value, param_value_size_ret);
 }
 
+cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    if (param_name == CL_DEVICE_IMAGE_SUPPORT) {
+        log<Verbosity::info>("Note: CAL does not support images.");
+        return CL_IMAGE_FORMAT_NOT_SUPPORTED;
+    }
+
+    return clGetDeviceInfoRpcHelper(device, param_name, param_value_size, param_value, param_value_size_ret);
+}
+
 static cl_int getProgramBinaries(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
     auto icdProgram = static_cast<IcdOclProgram *>(program);
     const auto binariesSizes = icdProgram->getBinariesSizes();
