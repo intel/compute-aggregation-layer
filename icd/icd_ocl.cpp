@@ -109,6 +109,10 @@ static cl_int getProgramBinaries(cl_program program, cl_program_info param_name,
     }
 
     auto outputBinaries = reinterpret_cast<unsigned char **>(param_value);
+    if (outputBinaries == nullptr) {
+        return CL_SUCCESS;
+    }
+
     auto offset = 0u;
 
     for (auto i = 0u; i < binariesSizes.size(); ++i) {

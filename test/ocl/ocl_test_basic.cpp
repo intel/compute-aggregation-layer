@@ -233,6 +233,13 @@ int main(int argc, const char *argv[]) {
         programBinaries[i] = programBinariesStorage[i].data();
     }
 
+    size_t size = 0;
+    clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARIES, 0, nullptr, &size);
+    if (clGetProgramInfoResult != CL_SUCCESS) {
+        log<Verbosity::error>("Sanity check for getting program binaries with null param value failed!");
+        return -1;
+    }
+
     clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARIES, sizeof(char *) * devices.size(), programBinaries.data(), nullptr);
     if (clGetProgramInfoResult != CL_SUCCESS) {
         log<Verbosity::error>("Could not get compiled program binaries from the service!");
