@@ -6936,3 +6936,86 @@ config:
                   type: size_t
                   kind: scalar
                 server_access: read_write
+
+        - name: zexDriverImportExternalPointer
+          latency: 0.0
+          special_handling:
+            extension_name: "zex_import_ptr"
+            icd:
+              not_in_dispatch_table: True
+              in_get_extension_function_address: True
+              handler_only_suffix: "RpcHelper"
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: void*
+              kind: pointer
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+
+        - name: zexDriverReleaseImportedPointer
+          latency: 0.0
+          special_handling:
+            extension_name: "zex_import_ptr"
+            icd:
+              not_in_dispatch_table: True
+              in_get_extension_function_address: True
+              handler_only_suffix: "RpcHelper"
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: void*
+              kind: pointer
+
+        - name: zexDriverGetHostPointerBaseAddress
+          latency: 0.0
+          special_handling:
+            extension_name: "zex_import_ptr"
+            icd:
+              not_in_dispatch_table: True
+              in_get_extension_function_address: True
+              handler_only_suffix: "RpcHelper"
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+            1:
+              name: ptr
+              type: void*
+              kind: pointer
+            2:
+              name: baseAddress
+              type: void**
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: False
+                element:
+                  type: "void*"
+                  kind: "ptr"

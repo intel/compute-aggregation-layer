@@ -160,6 +160,9 @@ extern ze_result_t (*zeVirtualMemGetAccessAttribute)(ze_context_handle_t hContex
 namespace Extensions {
 extern ze_result_t (*zexMemGetIpcHandles)(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
 extern ze_result_t (*zexMemOpenIpcHandles)(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
+extern ze_result_t (*zexDriverImportExternalPointer)(ze_driver_handle_t hDriver, void* ptr, size_t size);
+extern ze_result_t (*zexDriverReleaseImportedPointer)(ze_driver_handle_t hDriver, void* ptr);
+extern ze_result_t (*zexDriverGetHostPointerBaseAddress)(ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
 } // Extensions
 
 bool isSuccessful(ze_result_t result);
@@ -1514,6 +1517,35 @@ inline bool zeVirtualMemGetAccessAttributeHandler(Provider &service, Cal::Rpc::C
                                                 );
     return true;
 }
+inline bool zexDriverImportExternalPointerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zexDriverImportExternalPointer");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverImportExternalPointer(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size
+                                                );
+    return true;
+}
+inline bool zexDriverReleaseImportedPointerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zexDriverReleaseImportedPointer");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverReleaseImportedPointer(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.ptr
+                                                );
+    return true;
+}
+inline bool zexDriverGetHostPointerBaseAddressHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zexDriverGetHostPointerBaseAddress");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverGetHostPointerBaseAddress(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.baseAddress ? &apiCommand->captures.baseAddress : nullptr
+                                                );
+    return true;
+}
 inline bool zeCommandListAppendMemoryCopyDeferred_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyDeferred_Usm_Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM*>(command);
@@ -2295,6 +2327,9 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeVirtualMemUnmapRpcM::messageSubtype] = zeVirtualMemUnmapHandler;
     outHandlers[ZeVirtualMemSetAccessAttributeRpcM::messageSubtype] = zeVirtualMemSetAccessAttributeHandler;
     outHandlers[ZeVirtualMemGetAccessAttributeRpcM::messageSubtype] = zeVirtualMemGetAccessAttributeHandler;
+    outHandlers[ZexDriverImportExternalPointerRpcM::messageSubtype] = zexDriverImportExternalPointerHandler;
+    outHandlers[ZexDriverReleaseImportedPointerRpcM::messageSubtype] = zexDriverReleaseImportedPointerHandler;
+    outHandlers[ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype] = zexDriverGetHostPointerBaseAddressHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_SharedHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_RemappedHandler;
@@ -3252,6 +3287,26 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM
                                                 apiCommand.args.outSize
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverImportExternalPointer(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverReleaseImportedPointer(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.ptr
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexDriverGetHostPointerBaseAddress(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.baseAddress
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
@@ -3693,6 +3748,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM*>(command)); break;

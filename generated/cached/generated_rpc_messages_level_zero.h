@@ -12475,9 +12475,194 @@ struct ZeVirtualMemGetAccessAttributeRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeVirtualMemGetAccessAttributeRpcM>);
-struct ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM {
+struct ZexDriverImportExternalPointerRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 132;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_driver_handle_t hDriver = {};
+        void* ptr = {};
+        size_t size = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hDriver == rhs.hDriver;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->size == rhs.size;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZexDriverImportExternalPointerRpcM() = default;
+
+    ZexDriverImportExternalPointerRpcM(ze_driver_handle_t hDriver, void* ptr, size_t size) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hDriver = hDriver;
+        args.ptr = ptr;
+        args.size = size;
+    }
+    
+    static void fillWithoutCapture(ZexDriverImportExternalPointerRpcM &message, ze_driver_handle_t hDriver, void* ptr, size_t size) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hDriver = hDriver;
+        message.args.ptr = ptr;
+        message.args.size = size;
+    }
+    
+};
+static_assert(std::is_standard_layout_v<ZexDriverImportExternalPointerRpcM>);
+struct ZexDriverReleaseImportedPointerRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 133;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_driver_handle_t hDriver = {};
+        void* ptr = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hDriver == rhs.hDriver;
+            equal &= this->ptr == rhs.ptr;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZexDriverReleaseImportedPointerRpcM() = default;
+
+    ZexDriverReleaseImportedPointerRpcM(ze_driver_handle_t hDriver, void* ptr) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hDriver = hDriver;
+        args.ptr = ptr;
+    }
+    
+    static void fillWithoutCapture(ZexDriverReleaseImportedPointerRpcM &message, ze_driver_handle_t hDriver, void* ptr) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hDriver = hDriver;
+        message.args.ptr = ptr;
+    }
+    
+};
+static_assert(std::is_standard_layout_v<ZexDriverReleaseImportedPointerRpcM>);
+struct ZexDriverGetHostPointerBaseAddressRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 134;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_driver_handle_t hDriver = {};
+        void* ptr = {};
+        void** baseAddress = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hDriver == rhs.hDriver;
+            equal &= this->ptr == rhs.ptr;
+            equal &= this->baseAddress == rhs.baseAddress;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        void* baseAddress;
+
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZexDriverGetHostPointerBaseAddressRpcM() = default;
+
+    ZexDriverGetHostPointerBaseAddressRpcM(ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hDriver = hDriver;
+        args.ptr = ptr;
+        args.baseAddress = baseAddress;
+    }
+    
+    static void fillWithoutCapture(ZexDriverGetHostPointerBaseAddressRpcM &message, ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hDriver = hDriver;
+        message.args.ptr = ptr;
+        message.args.baseAddress = baseAddress;
+    }
+    
+
+    void copyFromCaller(){
+        captures.baseAddress = *args.baseAddress;
+    }
+
+    void copyToCaller(){
+            *args.baseAddress = captures.baseAddress;
+    }
+};
+static_assert(std::is_standard_layout_v<ZexDriverGetHostPointerBaseAddressRpcM>);
+struct ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 135;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12572,7 +12757,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 133;
+    static constexpr uint16_t messageSubtype = 136;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12667,7 +12852,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 134;
+    static constexpr uint16_t messageSubtype = 137;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12762,7 +12947,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 135;
+    static constexpr uint16_t messageSubtype = 138;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12857,7 +13042,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 136;
+    static constexpr uint16_t messageSubtype = 139;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -12952,7 +13137,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 137;
+    static constexpr uint16_t messageSubtype = 140;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13047,7 +13232,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 138;
+    static constexpr uint16_t messageSubtype = 141;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13142,7 +13327,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 139;
+    static constexpr uint16_t messageSubtype = 142;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13237,7 +13422,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 140;
+    static constexpr uint16_t messageSubtype = 143;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13332,7 +13517,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 141;
+    static constexpr uint16_t messageSubtype = 144;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13427,7 +13612,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 142;
+    static constexpr uint16_t messageSubtype = 145;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13522,7 +13707,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 143;
+    static constexpr uint16_t messageSubtype = 146;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13617,7 +13802,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 144;
+    static constexpr uint16_t messageSubtype = 147;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13712,7 +13897,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 145;
+    static constexpr uint16_t messageSubtype = 148;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13807,7 +13992,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 146;
+    static constexpr uint16_t messageSubtype = 149;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13902,7 +14087,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 147;
+    static constexpr uint16_t messageSubtype = 150;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -13997,7 +14182,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 148;
+    static constexpr uint16_t messageSubtype = 151;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14092,7 +14277,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 149;
+    static constexpr uint16_t messageSubtype = 152;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14187,7 +14372,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 150;
+    static constexpr uint16_t messageSubtype = 153;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14316,7 +14501,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 151;
+    static constexpr uint16_t messageSubtype = 154;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14432,7 +14617,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 152;
+    static constexpr uint16_t messageSubtype = 155;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14548,7 +14733,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 153;
+    static constexpr uint16_t messageSubtype = 156;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14661,7 +14846,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 154;
+    static constexpr uint16_t messageSubtype = 157;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14756,7 +14941,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 155;
+    static constexpr uint16_t messageSubtype = 158;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14851,7 +15036,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 156;
+    static constexpr uint16_t messageSubtype = 159;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -14964,7 +15149,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 157;
+    static constexpr uint16_t messageSubtype = 160;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -15059,7 +15244,7 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 158;
+    static constexpr uint16_t messageSubtype = 161;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -15287,6 +15472,9 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemUnmapRpcM::messageSubtype).id, "zeVirtualMemUnmap"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemSetAccessAttributeRpcM::messageSubtype).id, "zeVirtualMemSetAccessAttribute"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemGetAccessAttributeRpcM::messageSubtype).id, "zeVirtualMemGetAccessAttribute"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverImportExternalPointerRpcM::messageSubtype).id, "zexDriverImportExternalPointer"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverReleaseImportedPointerRpcM::messageSubtype).id, "zexDriverReleaseImportedPointer"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype).id, "zexDriverGetHostPointerBaseAddress"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Usm_Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Usm_Shared"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Usm_Remapped"),
@@ -15458,6 +15646,9 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeVirtualMemUnmap", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemUnmapRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeVirtualMemSetAccessAttribute", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemSetAccessAttributeRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeVirtualMemGetAccessAttribute", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemGetAccessAttributeRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zexDriverImportExternalPointer", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverImportExternalPointerRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zexDriverReleaseImportedPointer", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverReleaseImportedPointerRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zexDriverGetHostPointerBaseAddress", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Usm_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Usm_Remapped", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype)),
@@ -15627,6 +15818,9 @@ static constexpr RpcCallId zeVirtualMemMap = {Cal::Rpc::RpcMessageHeader::messag
 static constexpr RpcCallId zeVirtualMemUnmap = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemUnmapRpcM::messageSubtype};
 static constexpr RpcCallId zeVirtualMemSetAccessAttribute = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemSetAccessAttributeRpcM::messageSubtype};
 static constexpr RpcCallId zeVirtualMemGetAccessAttribute = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeVirtualMemGetAccessAttributeRpcM::messageSubtype};
+static constexpr RpcCallId zexDriverImportExternalPointer = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverImportExternalPointerRpcM::messageSubtype};
+static constexpr RpcCallId zexDriverReleaseImportedPointer = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverReleaseImportedPointerRpcM::messageSubtype};
+static constexpr RpcCallId zexDriverGetHostPointerBaseAddress = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Usm_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Usm_Remapped = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype};
@@ -15789,6 +15983,9 @@ using zeVirtualMemMap = ZeVirtualMemMapRpcM;
 using zeVirtualMemUnmap = ZeVirtualMemUnmapRpcM;
 using zeVirtualMemSetAccessAttribute = ZeVirtualMemSetAccessAttributeRpcM;
 using zeVirtualMemGetAccessAttribute = ZeVirtualMemGetAccessAttributeRpcM;
+using zexDriverImportExternalPointer = ZexDriverImportExternalPointerRpcM;
+using zexDriverReleaseImportedPointer = ZexDriverReleaseImportedPointerRpcM;
+using zexDriverGetHostPointerBaseAddress = ZexDriverGetHostPointerBaseAddressRpcM;
 using zeCommandListAppendMemoryCopyDeferred_Usm_Usm = ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM;
 using zeCommandListAppendMemoryCopyDeferred_Usm_Shared = ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM;
 using zeCommandListAppendMemoryCopyDeferred_Usm_Remapped = ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM;

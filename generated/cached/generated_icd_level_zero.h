@@ -173,6 +173,9 @@ ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size
 ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size);
 ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access);
 ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize);
+ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr, size_t size);
+ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr);
+ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);

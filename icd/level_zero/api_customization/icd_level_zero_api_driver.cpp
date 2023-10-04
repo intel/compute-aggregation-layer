@@ -77,31 +77,44 @@ ze_result_t zeDriverGetExtensionProperties(ze_driver_handle_t hDriver, uint32_t 
     return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Platform *>(hDriver), pCount, pExtensionProperties, zeDriverGetExtensionPropertiesRpcHelper);
 }
 
-static ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
-    log<Verbosity::bloat>("Handling zexDriverImportExternalPointer() solely via ICD!");
+ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto ptrType = globalPlatform->getPointerType(ptr);
+    if (ptrType != local) {
+        return Cal::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
+    } else {
+        log<Verbosity::performance>("zexDriverImportExternalPointer on private pages has no effect");
+        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto instanceLock = instance.lock();
 
-    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
-    auto instanceLock = instance.lock();
-
-    return instance.importExternalPointer(ptr, size);
+        return instance.importExternalPointer(ptr, size);
+    }
 }
 
-static ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
-    log<Verbosity::bloat>("Handling zexDriverReleaseImportedPointer() solely via ICD!");
+ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto ptrType = globalPlatform->getPointerType(ptr);
+    if (ptrType != local) {
+        return Cal::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
+    } else {
+        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto instanceLock = instance.lock();
 
-    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
-    auto instanceLock = instance.lock();
-
-    return instance.releaseImportedPointer(ptr);
+        return instance.releaseImportedPointer(ptr);
+    }
 }
 
-static ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
-    log<Verbosity::bloat>("Handling zexDriverGetHostPointerBaseAddress() solely via ICD!");
+ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto ptrType = globalPlatform->getPointerType(ptr);
+    if (ptrType != local) {
+        return Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
+    } else {
+        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto instanceLock = instance.lock();
 
-    auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
-    auto instanceLock = instance.lock();
-
-    return instance.getHostPointerBaseAddress(ptr, baseAddress);
+        return instance.getHostPointerBaseAddress(ptr, baseAddress);
+    }
 }
 
 ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, const char *name, void **ppFunctionAddress) {
@@ -113,17 +126,9 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (0 == strcmp(name, "zexDriverImportExternalPointer")) {
-        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverImportExternalPointer);
-    } else if (0 == strcmp(name, "zexDriverReleaseImportedPointer")) {
-        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverReleaseImportedPointer);
-    } else if (0 == strcmp(name, "zexDriverGetHostPointerBaseAddress")) {
-        *ppFunctionAddress = reinterpret_cast<void *>(Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
-    } else {
-        *ppFunctionAddress = getL0ExtensionFuncionAddressRpcHelper(name);
-        if (*ppFunctionAddress == nullptr) {
-            log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
-        }
+    *ppFunctionAddress = getL0ExtensionFuncionAddressRpcHelper(name);
+    if (*ppFunctionAddress == nullptr) {
+        log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
     }
 
     return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;

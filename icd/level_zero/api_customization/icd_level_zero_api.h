@@ -77,6 +77,10 @@ ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properti
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue);
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties);
 
+ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size);
+ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr);
+ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress);
+
 void translateRequiredPNextExtensions(const void *pNext);
 
 } // namespace Cal::Icd::LevelZero

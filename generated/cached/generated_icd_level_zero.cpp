@@ -3747,6 +3747,74 @@ ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const 
 
     return ret;
 }
+ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr, size_t size) {
+    log<Verbosity::bloat>("Establishing RPC for zexDriverImportExternalPointer");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDriver, ptr, size);
+    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr) {
+    log<Verbosity::bloat>("Establishing RPC for zexDriverReleaseImportedPointer");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDriver, ptr);
+    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
+    log<Verbosity::bloat>("Establishing RPC for zexDriverGetHostPointerBaseAddress");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDriver, ptr, baseAddress);
+    command->copyFromCaller();
+    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
@@ -4958,6 +5026,15 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("zexMemOpenIpcHandles", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexMemOpenIpcHandles);
     }
+    if(0 == strcmp("zexDriverImportExternalPointer", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverImportExternalPointer);
+    }
+    if(0 == strcmp("zexDriverReleaseImportedPointer", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverReleaseImportedPointer);
+    }
+    if(0 == strcmp("zexDriverGetHostPointerBaseAddress", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
+    }
     return nullptr;
 }
 
@@ -5350,6 +5427,15 @@ ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const 
 }
 ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
     return Cal::Icd::LevelZero::zeVirtualMemGetAccessAttribute(hContext, ptr, size, access, outSize);
+}
+ze_result_t zexDriverImportExternalPointer (ze_driver_handle_t hDriver, void* ptr, size_t size) {
+    return Cal::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
+}
+ze_result_t zexDriverReleaseImportedPointer (ze_driver_handle_t hDriver, void* ptr) {
+    return Cal::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
+}
+ze_result_t zexDriverGetHostPointerBaseAddress (ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
+    return Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
 }
 } // extern "C"
 

@@ -1082,9 +1082,45 @@ ze_result_t zexMemOpenIpcHandlesLoad(ze_context_handle_t hContext, ze_device_han
     Cal::Service::Apis::LevelZero::Extensions::zexMemOpenIpcHandles = extAddr;
     return extAddr(hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
 }
+ze_result_t zexDriverImportExternalPointerLoad(ze_driver_handle_t hDriver, void* ptr, size_t size){
+    using ExtFuncT = decltype(zexDriverImportExternalPointerLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::LevelZero::getExtensionFuncAddress("zexDriverImportExternalPointer"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : zexDriverImportExternalPointer");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::LevelZero::Extensions::zexDriverImportExternalPointer = extAddr;
+    return extAddr(hDriver, ptr, size);
+}
+ze_result_t zexDriverReleaseImportedPointerLoad(ze_driver_handle_t hDriver, void* ptr){
+    using ExtFuncT = decltype(zexDriverReleaseImportedPointerLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::LevelZero::getExtensionFuncAddress("zexDriverReleaseImportedPointer"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : zexDriverReleaseImportedPointer");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::LevelZero::Extensions::zexDriverReleaseImportedPointer = extAddr;
+    return extAddr(hDriver, ptr);
+}
+ze_result_t zexDriverGetHostPointerBaseAddressLoad(ze_driver_handle_t hDriver, void* ptr, void** baseAddress){
+    using ExtFuncT = decltype(zexDriverGetHostPointerBaseAddressLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::LevelZero::getExtensionFuncAddress("zexDriverGetHostPointerBaseAddress"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : zexDriverGetHostPointerBaseAddress");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::LevelZero::Extensions::zexDriverGetHostPointerBaseAddress = extAddr;
+    return extAddr(hDriver, ptr, baseAddress);
+}
 } // namespace Lazy Load
 ze_result_t (*zexMemGetIpcHandles)(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexMemGetIpcHandlesLoad;
 ze_result_t (*zexMemOpenIpcHandles)(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexMemOpenIpcHandlesLoad;
+ze_result_t (*zexDriverImportExternalPointer)(ze_driver_handle_t hDriver, void* ptr, size_t size) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexDriverImportExternalPointerLoad;
+ze_result_t (*zexDriverReleaseImportedPointer)(ze_driver_handle_t hDriver, void* ptr) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexDriverReleaseImportedPointerLoad;
+ze_result_t (*zexDriverGetHostPointerBaseAddress)(ze_driver_handle_t hDriver, void* ptr, void** baseAddress) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexDriverGetHostPointerBaseAddressLoad;
 } // namespace Extensions
 
 bool isSuccessful(ze_result_t result) {
