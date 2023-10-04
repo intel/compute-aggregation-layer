@@ -532,6 +532,10 @@ inline bool clReleaseCommandQueueHandler(Provider &service, Cal::Rpc::ChannelSer
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseCommandQueue(
                                                 apiCommand->args.command_queue
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clReleaseCommandQueue (as clReleaseCommandQueueHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clReleaseContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -540,6 +544,10 @@ inline bool clReleaseContextHandler(Provider &service, Cal::Rpc::ChannelServer &
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseContext(
                                                 apiCommand->args.context
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clReleaseContext (as clReleaseContextHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clReleaseDeviceHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -581,6 +589,10 @@ inline bool clReleaseEventHandler(Provider &service, Cal::Rpc::ChannelServer &ch
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseEvent(
                                                 apiCommand->args.event
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clReleaseEvent (as clReleaseEventHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clRetainCommandQueueHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -653,6 +665,10 @@ inline bool clFlushHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clFlush(
                                                 apiCommand->args.command_queue
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clFlush (as clFlushHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clFinishHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -677,6 +693,10 @@ inline bool clEnqueueNDRangeKernelHandler(Provider &service, Cal::Rpc::ChannelSe
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueNDRangeKernel (as clEnqueueNDRangeKernelHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueTaskHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -925,6 +945,10 @@ inline bool clSetKernelArgHandler(Provider &service, Cal::Rpc::ChannelServer &ch
                                                 apiCommand->args.arg_size, 
                                                 apiCommand->args.arg_value ? apiCommand->captures.arg_value : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clSetKernelArg (as clSetKernelArgHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clSetProgramSpecializationConstantHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -952,6 +976,10 @@ inline bool clEnqueueWriteBufferHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBuffer (as clEnqueueWriteBufferHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -973,6 +1001,10 @@ inline bool clEnqueueWriteBufferRectHandler(Provider &service, Cal::Rpc::Channel
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect (as clEnqueueWriteBufferRectHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -989,6 +1021,10 @@ inline bool clEnqueueReadBufferHandler(Provider &service, Cal::Rpc::ChannelServe
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBuffer (as clEnqueueReadBufferHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1010,6 +1046,10 @@ inline bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelS
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect (as clEnqueueReadBufferRectHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueCopyBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1286,6 +1326,10 @@ inline bool clSetKernelArgSVMPointerHandler(Provider &service, Cal::Rpc::Channel
                                                 apiCommand->args.argIndex, 
                                                 apiCommand->args.argValue
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clSetKernelArgSVMPointer (as clSetKernelArgSVMPointerHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clSetKernelExecInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1297,6 +1341,10 @@ inline bool clSetKernelExecInfoHandler(Provider &service, Cal::Rpc::ChannelServe
                                                 apiCommand->args.param_value_size, 
                                                 apiCommand->args.param_value ? apiCommand->captures.param_value : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clSetKernelExecInfo (as clSetKernelExecInfoHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemFillHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1328,6 +1376,10 @@ inline bool clEnqueueSVMMemcpyHandler(Provider &service, Cal::Rpc::ChannelServer
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy (as clEnqueueSVMMemcpyHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clCreateSubDevicesEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1401,6 +1453,10 @@ inline bool clEnqueueMemcpyINTELHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL (as clEnqueueMemcpyINTELHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1411,6 +1467,10 @@ inline bool clSetKernelArgMemPointerINTELHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.argIndex, 
                                                 apiCommand->args.argValue
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clSetKernelArgMemPointerINTEL (as clSetKernelArgMemPointerINTELHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clGetMemAllocInfoINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1483,6 +1543,10 @@ inline bool clEnqueueWriteBuffer_LocalHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBuffer_Local (as clEnqueueWriteBuffer_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBuffer_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1499,6 +1563,10 @@ inline bool clEnqueueWriteBuffer_UsmHandler(Provider &service, Cal::Rpc::Channel
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBuffer_Usm (as clEnqueueWriteBuffer_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBuffer_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1520,6 +1588,10 @@ inline bool clEnqueueWriteBuffer_SharedHandler(Provider &service, Cal::Rpc::Chan
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBuffer_Shared (as clEnqueueWriteBuffer_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBufferRect_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1541,6 +1613,10 @@ inline bool clEnqueueWriteBufferRect_LocalHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Local (as clEnqueueWriteBufferRect_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBufferRect_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1562,6 +1638,10 @@ inline bool clEnqueueWriteBufferRect_UsmHandler(Provider &service, Cal::Rpc::Cha
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Usm (as clEnqueueWriteBufferRect_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueWriteBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1588,6 +1668,10 @@ inline bool clEnqueueWriteBufferRect_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Shared (as clEnqueueWriteBufferRect_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBuffer_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1604,6 +1688,10 @@ inline bool clEnqueueReadBuffer_LocalHandler(Provider &service, Cal::Rpc::Channe
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBuffer_Local (as clEnqueueReadBuffer_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBuffer_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1620,6 +1708,10 @@ inline bool clEnqueueReadBuffer_UsmHandler(Provider &service, Cal::Rpc::ChannelS
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBuffer_Usm (as clEnqueueReadBuffer_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBuffer_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1641,6 +1733,10 @@ inline bool clEnqueueReadBuffer_SharedHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBuffer_Shared (as clEnqueueReadBuffer_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBufferRect_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1662,6 +1758,10 @@ inline bool clEnqueueReadBufferRect_LocalHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Local (as clEnqueueReadBufferRect_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1683,6 +1783,10 @@ inline bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::Chan
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Usm (as clEnqueueReadBufferRect_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1709,6 +1813,10 @@ inline bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Shared (as clEnqueueReadBufferRect_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Local_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1724,6 +1832,10 @@ inline bool clEnqueueSVMMemcpy_Local_LocalHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Local_Local (as clEnqueueSVMMemcpy_Local_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Local_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1739,6 +1851,10 @@ inline bool clEnqueueSVMMemcpy_Local_UsmHandler(Provider &service, Cal::Rpc::Cha
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Local_Usm (as clEnqueueSVMMemcpy_Local_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Local_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1759,6 +1875,10 @@ inline bool clEnqueueSVMMemcpy_Local_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Local_Shared (as clEnqueueSVMMemcpy_Local_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Usm_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1774,6 +1894,10 @@ inline bool clEnqueueSVMMemcpy_Usm_LocalHandler(Provider &service, Cal::Rpc::Cha
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Usm_Local (as clEnqueueSVMMemcpy_Usm_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1789,6 +1913,10 @@ inline bool clEnqueueSVMMemcpy_Usm_UsmHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Usm_Usm (as clEnqueueSVMMemcpy_Usm_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Usm_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1809,6 +1937,10 @@ inline bool clEnqueueSVMMemcpy_Usm_SharedHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Usm_Shared (as clEnqueueSVMMemcpy_Usm_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Shared_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1829,6 +1961,10 @@ inline bool clEnqueueSVMMemcpy_Shared_LocalHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Shared_Local (as clEnqueueSVMMemcpy_Shared_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Shared_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1849,6 +1985,10 @@ inline bool clEnqueueSVMMemcpy_Shared_UsmHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Shared_Usm (as clEnqueueSVMMemcpy_Shared_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueSVMMemcpy_Shared_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1874,6 +2014,10 @@ inline bool clEnqueueSVMMemcpy_Shared_SharedHandler(Provider &service, Cal::Rpc:
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueSVMMemcpy_Shared_Shared (as clEnqueueSVMMemcpy_Shared_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Local_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1889,6 +2033,10 @@ inline bool clEnqueueMemcpyINTEL_Local_LocalHandler(Provider &service, Cal::Rpc:
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Local_Local (as clEnqueueMemcpyINTEL_Local_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Local_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1904,6 +2052,10 @@ inline bool clEnqueueMemcpyINTEL_Local_UsmHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Local_Usm (as clEnqueueMemcpyINTEL_Local_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Local_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1924,6 +2076,10 @@ inline bool clEnqueueMemcpyINTEL_Local_SharedHandler(Provider &service, Cal::Rpc
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Local_Shared (as clEnqueueMemcpyINTEL_Local_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Usm_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1939,6 +2095,10 @@ inline bool clEnqueueMemcpyINTEL_Usm_LocalHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Usm_Local (as clEnqueueMemcpyINTEL_Usm_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1954,6 +2114,10 @@ inline bool clEnqueueMemcpyINTEL_Usm_UsmHandler(Provider &service, Cal::Rpc::Cha
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Usm_Usm (as clEnqueueMemcpyINTEL_Usm_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1974,6 +2138,10 @@ inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Usm_Shared (as clEnqueueMemcpyINTEL_Usm_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Shared_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1994,6 +2162,10 @@ inline bool clEnqueueMemcpyINTEL_Shared_LocalHandler(Provider &service, Cal::Rpc
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Shared_Local (as clEnqueueMemcpyINTEL_Shared_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Shared_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -2014,6 +2186,10 @@ inline bool clEnqueueMemcpyINTEL_Shared_UsmHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Shared_Usm (as clEnqueueMemcpyINTEL_Shared_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool clEnqueueMemcpyINTEL_Shared_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -2039,6 +2215,10 @@ inline bool clEnqueueMemcpyINTEL_Shared_SharedHandler(Provider &service, Cal::Rp
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueMemcpyINTEL_Shared_Shared (as clEnqueueMemcpyINTEL_Shared_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 

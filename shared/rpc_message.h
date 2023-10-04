@@ -18,7 +18,8 @@ struct RpcMessageHeader {
     using MessageFlagsT = uint8_t;
     enum FlagsBits : MessageFlagsT {
         signalSemaphoreOnCompletion = 1 << 0,
-        batched = 1 << 1
+        batched = 1 << 1,
+        async = 1 << 2
     };
 
     using MessageTypeT = uint8_t;

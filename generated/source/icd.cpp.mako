@@ -233,6 +233,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       endif
 %      endfor
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
 %       if "queue" in func_base.name:
          command_queue->asLocalObject()->enqueue();

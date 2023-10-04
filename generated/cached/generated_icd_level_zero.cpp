@@ -1837,6 +1837,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -1870,6 +1871,7 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -1913,6 +1915,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -2059,6 +2062,7 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3037,6 +3041,7 @@ ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t 
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3112,6 +3117,7 @@ ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint3
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3139,6 +3145,7 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3283,6 +3290,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4177,6 +4185,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Usm (ze_command_list
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4223,6 +4232,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Shared (ze_command_l
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4313,6 +4323,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_hand
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4359,6 +4370,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4449,6 +4461,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4495,6 +4508,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4541,6 +4555,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_co
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4588,6 +4603,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_comm
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4635,6 +4651,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4682,6 +4699,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_comm
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4728,6 +4746,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_comman
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4774,6 +4793,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4820,6 +4840,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4866,6 +4887,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -4912,6 +4934,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
     if(
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{

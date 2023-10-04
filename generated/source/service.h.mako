@@ -107,6 +107,12 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 ${", " if not loop.last else ""}
 %     endfor # rpc_func.args
                                                 );
+%     if rpc_func.callAsync:
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to ${rpc_func.name} (as ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+%     endif # rpc_func.callAsync
 %     if op_end_marker_event_arg:
     Cal::Service::Apis::${to_pascal_case(config.api_name)}::addRelay(apiCommand->captures.ret, ${get_arg_from_api_command_struct(rpc_func, op_end_marker_event_arg)}, opEndMarkerEvent, apiCommand->args.hCommandList);
     if (apiCommand->captures.ret == 0) {

@@ -433,6 +433,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateHandler(Provider &service, Cal
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate (as zeCommandListAppendMemoryCopyImmediateHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronousHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -447,6 +451,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronousHandler(Provider &s
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous (as zeCommandListAppendMemoryCopyImmediateSynchronousHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryFillRpcHelperUsm2UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -808,6 +816,10 @@ inline bool zeCommandListAppendBarrierHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendBarrier (as zeCommandListAppendBarrierHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendSignalEventHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -817,6 +829,10 @@ inline bool zeCommandListAppendSignalEventHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.hEvent
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendSignalEvent (as zeCommandListAppendSignalEventHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendWaitOnEventsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -827,6 +843,10 @@ inline bool zeCommandListAppendWaitOnEventsHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.numEvents, 
                                                 apiCommand->args.phEvents ? apiCommand->captures.phEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendWaitOnEvents (as zeCommandListAppendWaitOnEventsHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeEventHostSignalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -854,6 +874,10 @@ inline bool zeEventHostResetHandler(Provider &service, Cal::Rpc::ChannelServer &
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventHostReset(
                                                 apiCommand->args.hEvent
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeEventHostReset (as zeEventHostResetHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeEventQueryKernelTimestampHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1199,6 +1223,10 @@ inline bool zeKernelSetGroupSizeHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 apiCommand->args.groupSizeY, 
                                                 apiCommand->args.groupSizeZ
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeKernelSetGroupSize (as zeKernelSetGroupSizeHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeKernelSuggestGroupSizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1233,6 +1261,10 @@ inline bool zeKernelSetArgumentValueHandler(Provider &service, Cal::Rpc::Channel
                                                 apiCommand->args.argSize, 
                                                 apiCommand->args.pArgValue ? apiCommand->captures.pArgValue : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeKernelSetArgumentValue (as zeKernelSetArgumentValueHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeKernelSetIndirectAccessHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1242,6 +1274,10 @@ inline bool zeKernelSetIndirectAccessHandler(Provider &service, Cal::Rpc::Channe
                                                 apiCommand->args.hKernel, 
                                                 apiCommand->args.flags
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeKernelSetIndirectAccess (as zeKernelSetIndirectAccessHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeKernelGetIndirectAccessHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1293,6 +1329,10 @@ inline bool zeCommandListAppendLaunchKernelHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendLaunchKernel (as zeCommandListAppendLaunchKernelHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendLaunchCooperativeKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1712,6 +1752,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler(Provide
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Local (as zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
     if (apiCommand->captures.ret == 0) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
@@ -1741,6 +1785,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler(Provider 
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Usm (as zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
     if (apiCommand->captures.ret == 0) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
@@ -1775,6 +1823,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler(Provid
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Shared (as zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
     if (apiCommand->captures.ret == 0) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
@@ -1794,6 +1846,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Usm_LocalHandler(Provider &se
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Usm_Local (as zeCommandListAppendMemoryCopyImmediate_Usm_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediate_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1808,6 +1864,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Usm_UsmHandler(Provider &serv
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Usm_Usm (as zeCommandListAppendMemoryCopyImmediate_Usm_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediate_Usm_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1827,6 +1887,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Usm_SharedHandler(Provider &s
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Usm_Shared (as zeCommandListAppendMemoryCopyImmediate_Usm_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediate_Shared_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1846,6 +1910,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_LocalHandler(Provider 
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Shared_Local (as zeCommandListAppendMemoryCopyImmediate_Shared_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediate_Shared_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1865,6 +1933,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_UsmHandler(Provider &s
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Shared_Usm (as zeCommandListAppendMemoryCopyImmediate_Shared_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediate_Shared_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1889,6 +1961,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_SharedHandler(Provider
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Shared_Shared (as zeCommandListAppendMemoryCopyImmediate_Shared_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1903,6 +1979,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalHandler
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (as zeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1917,6 +1997,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmHandler(P
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (as zeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1936,6 +2020,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedHandle
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (as zeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1950,6 +2038,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalHandler(P
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (as zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1964,6 +2056,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmHandler(Pro
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (as zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1983,6 +2079,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedHandler(
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (as zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -2002,6 +2102,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalHandle
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.getPhWaitEvents() : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (as zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -2021,6 +2125,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmHandler(
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (as zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -2045,6 +2153,10 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedHandl
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (as zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 

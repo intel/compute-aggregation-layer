@@ -1086,6 +1086,7 @@ cl_int clReleaseCommandQueue (cl_command_queue command_queue) {
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          {
            command_queue->asLocalObject()->dec();
@@ -1120,6 +1121,7 @@ cl_int clReleaseContext (cl_context context) {
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          {
            context->asLocalObject()->dec();
@@ -1286,6 +1288,7 @@ cl_int clReleaseEvent (cl_event event) {
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          {
            event->asLocalObject()->dec();
@@ -1519,6 +1522,7 @@ cl_int clFlush (cl_command_queue command_queue) {
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -1588,6 +1592,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     if(
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -2237,6 +2242,7 @@ cl_int clSetKernelArgRpcHelper (cl_kernel kernel, cl_uint arg_index, size_t arg_
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3143,6 +3149,7 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3476,6 +3483,7 @@ cl_int clSetKernelArgMemPointerINTELRpcHelper (cl_kernel kernel, cl_uint argInde
 
     if(
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          return static_cast<CommandT::ReturnValueT>(0);
     }else{
@@ -3795,6 +3803,7 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
        !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -3847,6 +3856,7 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
        !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -3947,6 +3957,7 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
        !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -3999,6 +4010,7 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
        !blocking_write &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4101,6 +4113,7 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
        !blocking_read &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4154,6 +4167,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
        !blocking_read &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4254,6 +4268,7 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
        !blocking_read &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4306,6 +4321,7 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
        !blocking_read &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4554,6 +4570,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4606,6 +4623,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4706,6 +4724,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -4758,6 +4777,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -5006,6 +5026,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -5058,6 +5079,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -5158,6 +5180,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);
@@ -5210,6 +5233,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
        !blocking &&
        !event &&
        channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
          command_queue->asLocalObject()->enqueue();
          return static_cast<CommandT::ReturnValueT>(0);

@@ -1253,6 +1253,7 @@ class Provider {
         static std::shared_mutex batchedMtx;
         static std::thread::id mtxOwner{};
         bool sharedLock = false;
+        bool brokenChannel = false;
         while (false == ctx.isClientStopping()) {
             auto newCommand = channel->wait(service.getYieldThreads());
             if (nullptr == newCommand.command) {
@@ -1280,7 +1281,14 @@ class Provider {
                 }
             }
 
-            service.serviceSingleRpcCommand(*channel, ctx, header, newCommand.commandMaxSize);
+            if (false == brokenChannel) {
+                if (false == service.serviceSingleRpcCommand(*channel, ctx, header, newCommand.commandMaxSize)) {
+                    log<Verbosity::error>("Channel : %d is broken", channel->getId(), header->type, header->subtype);
+                    brokenChannel = true;
+                }
+            } else {
+                log<Verbosity::error>("Ignoring new RPC command request on broken channel : %d (type : %u, subtype %u)", channel->getId(), header->type, header->subtype);
+            }
 
             if (newCommand.completionStamp) {
                 channel->signalCompletion(newCommand.completionStamp, header->flags);
