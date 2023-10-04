@@ -97,9 +97,13 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 }
 
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-    if (param_name == CL_DEVICE_IMAGE_SUPPORT) {
+    if (param_name == CL_DEVICE_IMAGE_SUPPORT && param_value_size == sizeof(cl_bool) && param_value != nullptr) {
         log<Verbosity::info>("Note: CAL does not support images.");
-        return CL_IMAGE_FORMAT_NOT_SUPPORTED;
+        *reinterpret_cast<cl_bool *>(param_value) = false;
+        if (param_value_size_ret) {
+            *param_value_size_ret = sizeof(cl_bool);
+        }
+        return CL_SUCCESS;
     }
 
     return clGetDeviceInfoRpcHelper(device, param_name, param_value_size, param_value, param_value_size_ret);
