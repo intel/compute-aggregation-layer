@@ -120,9 +120,23 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %      for arg in func_base.traits.get_standalone_args():
 %        if arg.capture_details.mode.is_staging_usm_mode():
 %           if config.api_name == "ocl":
-    std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    void *standalone_${arg.name}{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}_alloc(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_${arg.name} = standalone_${arg.name}_alloc.get();
+%           if not arg.capture_details.reclaim_method.is_immediate_mode():
+        ${arg.capture_details.reclaim_method.format(f"standalone_{arg.name}")};
+    }
+%           endif
 %           else:
-    std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    void *standalone_${arg.name}{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_${arg.name} = standalone_${arg.name}_alloc.get();
+%           if not arg.capture_details.reclaim_method.is_immediate_mode():
+        ${arg.capture_details.reclaim_method.format(f"standalone_{arg.name}")};
+    }
+%           endif
 %           endif
 %        endif
 %      endfor # arg in func_base.traits.get_standalone_args()
@@ -141,7 +155,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     auto standalone_${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
 %        endif
 %       if not arg.kind_details.server_access.write_only():
-    memcpy(standalone_${arg.name}.get(), ${arg.name}, ${arg.get_calculated_array_size()});
+    memcpy(Cal::Utils::toAddress(standalone_${arg.name}), ${arg.name}, ${arg.get_calculated_array_size()});
 %       endif # not arg.kind_details.server_access.write_only()
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_copy_from_caller:
@@ -149,9 +163,9 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %      endif # func_base.traits.emit_copy_from_caller:
 %      for arg in func_base.traits.get_standalone_args():
 %        if arg.capture_details.mode.is_standalone_mode():
-    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(standalone_${arg.name}.get());
+    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_${arg.name}));
 %        elif arg.capture_details.mode.is_staging_usm_mode():
-    command->args.${arg.name} = standalone_${arg.name}.get();
+    command->args.${arg.name} = standalone_${arg.name};
 %        endif
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_reassemblation_in_icd:
@@ -222,7 +236,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     return${"" if func_base.returns.type.is_void() else " command->returnValue()"};
 %      else : # not is_unsupported(f)
 
-%      if f.callAsync and len(func_base.traits.get_standalone_args()) == 0:
+%      if f.callAsync:
     if(
 %      for arg in func_base.args:
 %       if ("block" in arg.name) or (arg.kind_details and arg.kind_details.element and arg.kind_details.element.translate_after):
@@ -272,8 +286,8 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     command->copyToCaller(${get_copy_to_caller_call_params_list_str(func_base)});
 %       endif # func_base.traits.emit_copy_to_caller
 %       for arg in func_base.traits.get_standalone_args():
-%        if not arg.kind_details.server_access.read_only():
-    memcpy(${arg.name}, standalone_${arg.name}.get(), ${arg.get_calculated_array_size()});
+%        if not arg.kind_details.server_access.read_only() and config.api_name == "ocl" and arg.capture_details.mode.is_staging_usm_mode():
+    memcpy(${arg.name}, standalone_${arg.name}, ${arg.get_calculated_array_size()});
 %        endif # not arg.kind_details.server_access.write_only()
 %       endfor # arg in func_base.traits.get_standalone_args():
 %       for arg in get_args_requiring_translation_after(func_base):
@@ -309,11 +323,6 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       if func_base.returns.translate_after:
     ${func_base.returns.translate_after.format("ret", "ret")};
 %       endif # func_base.returns.translate_after
-%       for arg in func_base.traits.get_standalone_args():
-%        if not arg.capture_details.reclaim_method.is_immediate_mode():
-    ${arg.capture_details.reclaim_method.format(f"standalone_{arg.name}")};
-%        endif # not arg.capture_details.reclaim_method.is_immediate_mode()
-%       endfor # arg in func_base.traits.get_standalone_args():
 %       if epilogue_data(f):
 %           for epilogue_data_line in epilogue_data(f):
     ${epilogue_data_line}

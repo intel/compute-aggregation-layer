@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -28,6 +28,7 @@ class MockMemoryBlocksManager : public Cal::Ipc::BasicMemoryBlocksManager<MockMe
     using BasicMemoryBlocksManager::getOverlappingBlocksBegin;
     using BasicMemoryBlocksManager::getOverlappingBlocksEnd;
     using BasicMemoryBlocksManager::memoryBlocks;
+    using BasicMemoryBlocksManager::usmMemoryPairs;
 };
 
 } // namespace Cal::Mocks

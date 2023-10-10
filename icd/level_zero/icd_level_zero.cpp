@@ -145,7 +145,7 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
         return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
     }
 
-    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    std::vector<Cal::Rpc::TransferDesc> transferDescs;
     transferDescs.resize(transferDescsCount);
 
     const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(chunksToWrite.size()),

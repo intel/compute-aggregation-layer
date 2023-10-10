@@ -3352,7 +3352,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             6:
@@ -3473,7 +3473,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             11:
@@ -3554,7 +3554,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             6:
@@ -3675,7 +3675,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             11:
@@ -3933,7 +3933,7 @@ config:
               type: "void*"
               capture_details:
                 mode: staging_usm
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
               kind: ptr_va
               kind_details:
                 num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}src_origin, {arg_prefix}region, {arg_prefix}row_pitch, {arg_prefix}slice_pitch)"
@@ -4029,7 +4029,7 @@ config:
               type: "const void*"
               capture_details:
                 mode: staging_usm
-                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
               kind: ptr_va
               kind_details:
                 num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}origin, {arg_prefix}region, {arg_prefix}input_row_pitch, {arg_prefix}input_slice_pitch)"
@@ -5255,7 +5255,7 @@ config:
                 - kind: ptr_array
                   capture_details:
                     mode: standalone
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             3:
@@ -5272,7 +5272,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             4:
@@ -5683,7 +5683,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             3:
@@ -5700,7 +5700,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))
+                    reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             4:

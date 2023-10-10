@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "boost/container/flat_map.hpp"
 #include "include/cal.h"
 #include "shared/allocators.h"
 #include "shared/callstack.h"
@@ -631,7 +632,7 @@ class BasicMemoryBlock {
     bool appendOverlappingChunks(const void *srcPtr,
                                  size_t srcSize,
                                  uint32_t &appendedTransfersCount,
-                                 Cal::Rpc::ShmemTransferDesc *transferDescs,
+                                 Cal::Rpc::TransferDesc *transferDescs,
                                  uint32_t transferDescsCount) {
         const auto srcBegin = reinterpret_cast<uintptr_t>(srcPtr);
         const auto srcEnd = srcBegin + srcSize;
@@ -654,10 +655,10 @@ class BasicMemoryBlock {
                 const auto bytesCountToCopy = copyEnd - copyBegin;
 
                 transferDescs[appendedTransfersCount].bytesCountToCopy = bytesCountToCopy;
-                transferDescs[appendedTransfersCount].transferStart = copyBegin;
+                transferDescs[appendedTransfersCount].clientAddress = copyBegin;
 
                 const auto offset = copyBegin - chunkBegin;
-                transferDescs[appendedTransfersCount].offsetFromMapping = offset;
+                transferDescs[appendedTransfersCount].offsetFromResourceStart = offset;
 
                 ++appendedTransfersCount;
             }
@@ -743,53 +744,96 @@ class BasicMemoryBlocksManager {
         return (*insertedBlockIt).second;
     }
 
+    void registerUSMStaging(const void *usmAddress, const size_t size) {
+        usmMemoryPairs.emplace(usmAddress, size);
+    }
+
     bool getCountOfRequiredTransferDescs(uint32_t &transferDescsCount, uint32_t chunksCount, const Cal::Rpc::MemChunk *chunks) {
         transferDescsCount = 0;
 
         for (uint32_t i = 0; i < chunksCount; ++i) {
             auto memoryBlock = getMemoryBlockWhichIncludesChunk(chunks[i].address, chunks[i].size);
-            if (!memoryBlock) {
-                log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
-                return false;
+            if (memoryBlock) {
+                transferDescsCount += memoryBlock->getCountOfOverlappingChunks(chunks[i].address, chunks[i].size);
+                continue;
+            } else {
+                bool foundAsUSM{false};
+                for (auto &pair : usmMemoryPairs) {
+                    if (pair.first == chunks[i].address) {
+                        transferDescsCount++;
+                        foundAsUSM = true;
+                        break;
+                    }
+                }
+                if (foundAsUSM) {
+                    continue;
+                }
             }
 
-            transferDescsCount += memoryBlock->getCountOfOverlappingChunks(chunks[i].address, chunks[i].size);
+            log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
+            return false;
         }
 
         return true;
     }
 
     bool getRequiredTransferDescs(uint32_t &transferDescsCount,
-                                  Cal::Rpc::ShmemTransferDesc *transferDescs,
+                                  Cal::Rpc::TransferDesc *transferDescs,
                                   uint32_t chunksCount,
                                   const Cal::Rpc::MemChunk *chunks) {
         uint32_t appendedTransfersCount{0};
 
         for (uint32_t i = 0; i < chunksCount; ++i) {
             auto memoryBlock = getMemoryBlockWhichIncludesChunk(chunks[i].address, chunks[i].size);
-            if (!memoryBlock) {
-                log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
-                return false;
+            if (memoryBlock) {
+                const auto enoughtSpace = memoryBlock->appendOverlappingChunks(chunks[i].address,
+                                                                               chunks[i].size,
+                                                                               appendedTransfersCount,
+                                                                               transferDescs,
+                                                                               transferDescsCount);
+                if (!enoughtSpace) {
+                    log<Verbosity::error>("Client has not provided enough space for transferDescs!");
+                    return false;
+                }
+                continue;
+            } else {
+                bool foundAsUSM{false};
+                for (auto &pair : usmMemoryPairs) {
+                    if (pair.first == chunks[i].address) {
+                        transferDescs[appendedTransfersCount].offsetFromResourceStart = reinterpret_cast<uint64_t>(pair.first);
+                        transferDescs[appendedTransfersCount].bytesCountToCopy = pair.second;
+                        transferDescs[appendedTransfersCount].shmemId = -1;
+                        appendedTransfersCount++;
+                        foundAsUSM = true;
+                        break;
+                    }
+                }
+                if (foundAsUSM) {
+                    continue;
+                }
             }
 
-            const auto enoughtSpace = memoryBlock->appendOverlappingChunks(chunks[i].address,
-                                                                           chunks[i].size,
-                                                                           appendedTransfersCount,
-                                                                           transferDescs,
-                                                                           transferDescsCount);
-            if (!enoughtSpace) {
-                log<Verbosity::error>("Client has not provided enough space for transferDescs!");
-                return false;
-            }
+            log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
+            return false;
         }
 
         transferDescsCount = appendedTransfersCount;
         return true;
     }
 
-    bool getRequiredTransferDescs(Cal::Utils::AddressRange range, std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
+    bool getRequiredTransferDescs(Cal::Utils::AddressRange range, std::vector<Cal::Rpc::TransferDesc> &transferDescs) {
         auto memoryBlock = getMemoryBlockWhichIncludesChunk(range.base(), range.size());
         if (!memoryBlock) {
+            for (auto &pair : usmMemoryPairs) {
+                if (pair.first == range.base()) {
+                    auto &transferDesc = transferDescs.emplace_back();
+                    transferDesc.offsetFromResourceStart = reinterpret_cast<uint64_t>(pair.first);
+                    transferDesc.bytesCountToCopy = pair.second;
+                    transferDesc.shmemId = -1;
+                    return true;
+                }
+            }
+
             log<Verbosity::error>("Could not retrieve memory block, which includes given range!");
             return false;
         }
@@ -822,7 +866,6 @@ class BasicMemoryBlocksManager {
     BasicMemoryBlockT *getMemoryBlockWhichIncludesChunk(const void *srcptr, size_t size) {
         const auto overlappingBegin = getOverlappingBlocksBegin(srcptr, size);
         if (overlappingBegin == memoryBlocks.end()) {
-            log<Verbosity::error>("Queried file descriptors of non-registered chunk!");
             return nullptr;
         }
 
@@ -942,6 +985,7 @@ class BasicMemoryBlocksManager {
 
     static constexpr auto pageSize{Cal::Utils::pageSize4KB};
     std::map<uintptr_t, BasicMemoryBlockT> memoryBlocks{};
+    boost::container::flat_map<const void *, size_t> usmMemoryPairs{};
 };
 
 using MemoryBlock = BasicMemoryBlock;

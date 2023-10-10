@@ -31,8 +31,12 @@ ze_result_t HostptrCopiesReader::readMemory(Cal::Rpc::ChannelClient &channel, Ca
     return ZE_RESULT_SUCCESS;
 }
 
-std::vector<Cal::Rpc::ShmemTransferDesc> HostptrCopiesReader::getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel) {
-    std::vector<Cal::Rpc::ShmemTransferDesc> memoryToRead{};
+void HostptrCopiesReader::addToMap(void *usmPtr, uintptr_t hostPtr) {
+    usmToHostAddressMap[usmPtr] = hostPtr;
+}
+
+std::vector<Cal::Rpc::TransferDesc> HostptrCopiesReader::getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel) {
+    std::vector<Cal::Rpc::TransferDesc> memoryToRead{};
 
     while (true) {
         auto chunk = channel.acquireHostptrCopiesUpdate();
@@ -47,20 +51,27 @@ std::vector<Cal::Rpc::ShmemTransferDesc> HostptrCopiesReader::getHostptrCopiesTo
 }
 
 bool HostptrCopiesReader::copyMappedMemory(Cal::Ipc::ShmemImporter &shmemImporter,
-                                           const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
+                                           const std::vector<Cal::Rpc::TransferDesc> &transferDescs) {
     for (const auto &transfer : transferDescs) {
-        auto shmem = shmemImporter.open(transfer.shmemId, transfer.underlyingSize, nullptr);
-        if (!shmem.isValid()) {
-            log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
-            return false;
+        if (transfer.shmemId != -1) { // Perform transfer via shmem
+            auto shmem = shmemImporter.open(transfer.shmemId, transfer.underlyingSize, nullptr);
+            if (!shmem.isValid()) {
+                log<Verbosity::error>("Cannot map shared memory to perform transfer from service to client!");
+                return false;
+            }
+
+            const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromResourceStart;
+            const auto source = reinterpret_cast<const void *>(sourceAddress);
+            const auto destination = reinterpret_cast<void *>(transfer.clientAddress);
+
+            std::memcpy(destination, source, transfer.bytesCountToCopy);
+            shmemImporter.release(shmem);
+        } else { // Perform transfer via USM
+            const auto source = reinterpret_cast<const void *>(transfer.offsetFromResourceStart);
+            const auto destination = reinterpret_cast<void *>(usmToHostAddressMap[source]);
+
+            std::memcpy(destination, source, transfer.bytesCountToCopy);
         }
-
-        const auto sourceAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromMapping;
-        const auto source = reinterpret_cast<const void *>(sourceAddress);
-        const auto destination = reinterpret_cast<void *>(transfer.transferStart);
-
-        std::memcpy(destination, source, transfer.bytesCountToCopy);
-        shmemImporter.release(shmem);
     }
 
     return true;

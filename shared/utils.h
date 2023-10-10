@@ -788,5 +788,16 @@ class Lockable {
     ObjT obj = {};
 };
 
+template <typename T>
+constexpr T *toAddress(T *p) noexcept {
+    static_assert(!std::is_function_v<T>);
+    return p;
+}
+
+template <typename T>
+constexpr auto toAddress(const T &p) noexcept {
+    return p.get();
+}
+
 } // namespace Utils
 } // namespace Cal

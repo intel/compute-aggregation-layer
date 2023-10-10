@@ -1778,14 +1778,10 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Remapped_RemappedHandler(Provi
     }
     return true;
 }
-inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Remapped_Local");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM*>(command);
-    void *remappedPtrDstptr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    if((nullptr == remappedPtrDstptr) && (nullptr != apiCommand->args.dstptr)){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstptr, apiCommand->args.size);
-        return false;
-    }
+inline bool zeCommandListAppendMemoryCopyImmediate_Local_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Local_Local");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM*>(command);
+    ctx.getMemoryBlocksManager().registerUSMStaging(apiCommand->args.dstptr, apiCommand->args.size);
     auto opEndMarkerEvent = Cal::Service::Apis::LevelZero::getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!opEndMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
@@ -1793,7 +1789,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler(Provide
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                remappedPtrDstptr, 
+                                                apiCommand->args.dstptr, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 opEndMarkerEvent, 
@@ -1801,7 +1797,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler(Provide
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
     if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
-        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Local (as zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Local_Local (as zeCommandListAppendMemoryCopyImmediate_Local_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
         return false;
     }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
@@ -1811,14 +1807,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler(Provide
     }
     return true;
 }
-inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Remapped_Usm");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM*>(command);
-    void *remappedPtrDstptr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    if((nullptr == remappedPtrDstptr) && (nullptr != apiCommand->args.dstptr)){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstptr, apiCommand->args.size);
-        return false;
-    }
+inline bool zeCommandListAppendMemoryCopyImmediate_Local_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Local_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM*>(command);
+    ctx.getMemoryBlocksManager().registerUSMStaging(apiCommand->args.dstptr, apiCommand->args.size);
     auto opEndMarkerEvent = Cal::Service::Apis::LevelZero::getInternalEvent(ctx, apiCommand->args.hCommandList);
     if (!opEndMarkerEvent) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
@@ -1826,7 +1818,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler(Provider 
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                remappedPtrDstptr, 
+                                                apiCommand->args.dstptr, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 opEndMarkerEvent, 
@@ -1834,7 +1826,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler(Provider 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
     if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
-        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Usm (as zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Local_Usm (as zeCommandListAppendMemoryCopyImmediate_Local_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
         return false;
     }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
@@ -1844,14 +1836,10 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler(Provider 
     }
     return true;
 }
-inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Remapped_Shared");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM*>(command);
-    void *remappedPtrDstptr = ctx.remapPointer(service.getGlobalShmemAllocators().getNonUsmMmappedAllocator(), apiCommand->args.dstptr, apiCommand->args.size);
-    if((nullptr == remappedPtrDstptr) && (nullptr != apiCommand->args.dstptr)){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstptr, apiCommand->args.size);
-        return false;
-    }
+inline bool zeCommandListAppendMemoryCopyImmediate_Local_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyImmediate_Local_Shared");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM*>(command);
+    ctx.getMemoryBlocksManager().registerUSMStaging(apiCommand->args.dstptr, apiCommand->args.size);
     void *importedMallocPtrSrcptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcptr), apiCommand->args.size, 0U);
     if((nullptr == importedMallocPtrSrcptr)  && (nullptr != apiCommand->args.srcptr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.srcptr, apiCommand->args.size);
@@ -1864,7 +1852,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler(Provid
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                remappedPtrDstptr, 
+                                                apiCommand->args.dstptr, 
                                                 importedMallocPtrSrcptr, 
                                                 apiCommand->args.size, 
                                                 opEndMarkerEvent, 
@@ -1872,7 +1860,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler(Provid
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
     if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
-        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Remapped_Shared (as zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendMemoryCopyImmediate_Local_Shared (as zeCommandListAppendMemoryCopyImmediate_Local_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
         return false;
     }
     Cal::Service::Apis::LevelZero::addRelay(apiCommand->captures.ret, apiCommand->args.hSignalEvent, opEndMarkerEvent, apiCommand->args.hCommandList);
@@ -2356,9 +2344,9 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Remapped_UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Remapped_SharedHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Remapped_RemappedHandler;
-    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Remapped_LocalHandler;
-    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Remapped_UsmHandler;
-    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Remapped_SharedHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Local_LocalHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Local_UsmHandler;
+    outHandlers[ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Local_SharedHandler;
     outHandlers[ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Usm_LocalHandler;
     outHandlers[ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Usm_UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyImmediate_Usm_SharedHandler;
@@ -3435,7 +3423,7 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDefer
                                                 apiCommand.args.phWaitEvents
                                                 );
 }
-inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM &apiCommand) {
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.dstptr, 
@@ -3446,7 +3434,7 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmed
                                                 apiCommand.args.phWaitEvents
                                                 );
 }
-inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM &apiCommand) {
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.dstptr, 
@@ -3457,7 +3445,7 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmed
                                                 apiCommand.args.phWaitEvents
                                                 );
 }
-inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM &apiCommand) {
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand.args.hCommandList, 
                                                 apiCommand.args.dstptr, 
@@ -3790,9 +3778,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM*>(command)); break;
-        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM*>(command)); break;
-        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM*>(command)); break;
-        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM*>(command)); break;

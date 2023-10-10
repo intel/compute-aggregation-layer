@@ -707,7 +707,7 @@ bool updateHostptrCopies(Cal::Rpc::ChannelServer &channel, ClientContext &ctx) {
     auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
     std::vector<Cal::Utils::AddressRange> finishedCopies;
     copiesManager.acquireFinishedCopies(ctx.getArtificialEventsManager(), finishedCopies);
-    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    std::vector<Cal::Rpc::TransferDesc> transferDescs;
     transferDescs.reserve(finishedCopies.size());
     for (const auto &fc : finishedCopies) {
         ctx.getMemoryBlocksManager().getRequiredTransferDescs(fc, transferDescs);
@@ -1065,7 +1065,7 @@ bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_even
         return false;
     }
     status = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(event, -1);
-    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    std::vector<Cal::Rpc::TransferDesc> transferDescs;
     ctx.getMemoryBlocksManager().getRequiredTransferDescs({ptr, size}, transferDescs);
     for (const auto &td : transferDescs) {
         if (false == channel.pushHostptrCopyToUpdate(td)) {

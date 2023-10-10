@@ -77,7 +77,12 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 %        if not arg.kind_details.server_access.read_only():
 <%        op_end_marker_event_arg = rpc_func.traits.getOpEndEventArg()%>\
 %        endif
-%       endif # arg.kind.is_pointer_remapped():
+%       elif arg.kind.is_pointer_va() and arg.traits.uses_staging_usm_allocation:
+%        if not arg.kind_details.server_access.read_only() and config.api_name == "level_zero":
+<%        op_end_marker_event_arg = rpc_func.traits.getOpEndEventArg()%>\
+    ctx.getMemoryBlocksManager().registerUSMStaging(apiCommand->args.${arg.name}, ${arg.get_calculated_array_size('apiCommand->args.')});
+%        endif
+%       endif # arg.kind.is_pointer_va():
 %      endfor # rpc_func.args
 %      if op_end_marker_event_arg:
     auto opEndMarkerEvent = Cal::Service::Apis::${to_pascal_case(config.api_name)}::getInternalEvent(ctx, apiCommand->args.hCommandList);
@@ -118,9 +123,14 @@ ${", " if not loop.last else ""}
     if (apiCommand->captures.ret == 0) {
         auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
 %      for arg in rpc_func.args:
-%        if arg.kind.is_pointer_remapped() and (not arg.kind_details.server_access.read_only()):
+%       if arg.kind.is_pointer_remapped() and (not arg.kind_details.server_access.read_only()):
+        copiesManager.registerCopyOperation(apiCommand->args.hCommandList, opEndMarkerEvent, ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg.get_calculated_array_size('apiCommand->args.')}, ${str(arg.capture_details.replayable_command).lower()});
+%       elif arg.kind.is_pointer_va() and arg.traits.uses_staging_usm_allocation:
+%        if not arg.kind_details.server_access.read_only():
+<%        op_end_marker_event_arg = rpc_func.traits.getOpEndEventArg()%>\
         copiesManager.registerCopyOperation(apiCommand->args.hCommandList, opEndMarkerEvent, ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg.get_calculated_array_size('apiCommand->args.')}, ${str(arg.capture_details.replayable_command).lower()});
 %        endif
+%       endif # arg.kind.is_pointer_va():
 %      endfor
     }
 %     endif # op_end_marker_event_arg

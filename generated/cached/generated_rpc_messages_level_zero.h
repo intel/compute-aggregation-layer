@@ -1602,7 +1602,7 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
         uint32_t chunksCount = {};
         const Cal::Rpc::MemChunk* chunks = {};
         uint32_t* transferDescsCount = {};
-        Cal::Rpc::ShmemTransferDesc* transferDescs = {};
+        Cal::Rpc::TransferDesc* transferDescs = {};
 
         bool shallowCompareEquals(const Args &rhs) const {
             bool equal = true;
@@ -1617,7 +1617,7 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs);
+            static DynamicTraits calculate(uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits chunks = {};          
             DynamicArgTraits transferDescs = {};          
@@ -1633,9 +1633,9 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
             return reinterpret_cast<const Cal::Rpc::MemChunk*>(dynMem + offset);
         }
 
-        Cal::Rpc::ShmemTransferDesc* getTransferDescs() {
+        Cal::Rpc::TransferDesc* getTransferDescs() {
             auto offset = offsetTransferDescs;
-            return reinterpret_cast<Cal::Rpc::ShmemTransferDesc*>(dynMem + offset);
+            return reinterpret_cast<Cal::Rpc::TransferDesc*>(dynMem + offset);
         }
 
 
@@ -1661,7 +1661,7 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
 
     ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM() = default;
 
-    ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM(const Captures::DynamicTraits &dynamicTraits, uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
+    ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM(const Captures::DynamicTraits &dynamicTraits, uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.chunksCount = chunksCount;
@@ -1671,7 +1671,7 @@ struct ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM &message, uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
+    static void fillWithoutCapture(ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM &message, uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         message.header.subtype = messageSubtype;
         message.args.chunksCount = chunksCount;
@@ -13648,7 +13648,7 @@ struct ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM>);
-struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
+struct ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 145;
     static constexpr float latency = 0.0;
@@ -13708,9 +13708,9 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
         return captures.ret;
     }
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM() = default;
+    ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM() = default;
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hCommandList = hCommandList;
@@ -13723,7 +13723,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         message.header.subtype = messageSubtype;
         message.args.hCommandList = hCommandList;
@@ -13742,8 +13742,8 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM {
         }
     }
 };
-static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM>);
-struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM>);
+struct ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 146;
     static constexpr float latency = 0.0;
@@ -13803,9 +13803,9 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
         return captures.ret;
     }
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM() = default;
+    ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM() = default;
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hCommandList = hCommandList;
@@ -13818,7 +13818,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         message.header.subtype = messageSubtype;
         message.args.hCommandList = hCommandList;
@@ -13837,8 +13837,8 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM {
         }
     }
 };
-static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM>);
-struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 147;
     static constexpr float latency = 0.0;
@@ -13898,9 +13898,9 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
         return captures.ret;
     }
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM() = default;
+    ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM() = default;
 
-    ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hCommandList = hCommandList;
@@ -13913,7 +13913,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         message.header.subtype = messageSubtype;
         message.args.hCommandList = hCommandList;
@@ -13932,7 +13932,7 @@ struct ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM {
         }
     }
 };
-static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM>);
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM>);
 struct ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 148;
@@ -15618,9 +15618,9 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Remapped_Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Remapped_Shared"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Remapped_Local"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Remapped_Usm"),
-        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Remapped_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Local_Local"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Local_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Local_Shared"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Usm_Local"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Usm_Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediate_Usm_Shared"),
@@ -15793,9 +15793,9 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Remapped_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Remapped_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Remapped_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Remapped_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM::messageSubtype)),
-        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Remapped_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Local_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Local_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Usm_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediate_Usm_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::messageSubtype)),
@@ -15966,9 +15966,9 @@ static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Shared_Remapped
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Remapped_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Remapped_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::messageSubtype};
-static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Remapped_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM::messageSubtype};
-static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Remapped_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM::messageSubtype};
-static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Remapped_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Local_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Local_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Usm_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediate_Usm_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::messageSubtype};
@@ -16132,9 +16132,9 @@ using zeCommandListAppendMemoryCopyDeferred_Shared_Remapped = ZeCommandListAppen
 using zeCommandListAppendMemoryCopyDeferred_Remapped_Usm = ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM;
 using zeCommandListAppendMemoryCopyDeferred_Remapped_Shared = ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM;
 using zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped = ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM;
-using zeCommandListAppendMemoryCopyImmediate_Remapped_Local = ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM;
-using zeCommandListAppendMemoryCopyImmediate_Remapped_Usm = ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM;
-using zeCommandListAppendMemoryCopyImmediate_Remapped_Shared = ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM;
+using zeCommandListAppendMemoryCopyImmediate_Local_Local = ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM;
+using zeCommandListAppendMemoryCopyImmediate_Local_Usm = ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM;
+using zeCommandListAppendMemoryCopyImmediate_Local_Shared = ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM;
 using zeCommandListAppendMemoryCopyImmediate_Usm_Local = ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM;
 using zeCommandListAppendMemoryCopyImmediate_Usm_Usm = ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM;
 using zeCommandListAppendMemoryCopyImmediate_Usm_Shared = ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM;

@@ -206,7 +206,7 @@ class CommandsChannel {
 
         OffsetT hostptrCopiesRingHead = completionStampsEnd;
         OffsetT hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
-        using ShmemTransferDescT = Cal::Rpc::ShmemTransferDesc;
+        using TransferDescT = Cal::Rpc::TransferDesc;
         OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
         OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
 
@@ -388,7 +388,7 @@ class CommandsChannel {
         this->layout.hostptrCopiesRingHead = layout.hostptrCopiesRingHead;
         this->layout.hostptrCopiesRingTail = layout.hostptrCopiesRingTail;
         this->layout.hostptrCopiesRingStart = layout.hostptrCopiesRingStart;
-        this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::ShmemTransferDescT);
+        this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::TransferDescT);
 
         this->layout.callbacksRingHead = layout.callbacksRingHead;
         this->layout.callbacksRingTail = layout.callbacksRingTail;
@@ -410,7 +410,7 @@ class CommandsChannel {
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
 
-        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::ShmemTransferDesc>(this->layout.hostptrCopiesRingStart),
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::TransferDesc>(this->layout.hostptrCopiesRingStart),
                                                      this->layout.hostptrCopiesRingCapacity,
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
@@ -448,7 +448,7 @@ class CommandsChannel {
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
 
-        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::ShmemTransferDesc>(this->layout.hostptrCopiesRingStart),
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::TransferDesc>(this->layout.hostptrCopiesRingStart),
                                                      this->layout.hostptrCopiesRingCapacity,
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
@@ -507,7 +507,7 @@ class CommandsChannel {
         auto completionStamps = Cal::Utils::AddressRange(el.completionStampsStart, el.completionStampsStart + el.completionStampsCapacity * sizeof(CompletionStampT));
         auto hostptrCopiesRingHead = Cal::Utils::AddressRange(el.hostptrCopiesRingHead, el.hostptrCopiesRingHead + sizeof(Cal::Messages::OffsetWithinChannelT));
         auto hostptrCopiesRingTail = Cal::Utils::AddressRange(el.hostptrCopiesRingTail, el.hostptrCopiesRingTail + sizeof(Cal::Messages::OffsetWithinChannelT));
-        auto hostptrCopiesRing = Cal::Utils::AddressRange(el.hostptrCopiesRingStart, el.hostptrCopiesRingStart + el.hostptrCopiesRingCapacity * sizeof(Cal::Rpc::ShmemTransferDesc));
+        auto hostptrCopiesRing = Cal::Utils::AddressRange(el.hostptrCopiesRingStart, el.hostptrCopiesRingStart + el.hostptrCopiesRingCapacity * sizeof(Cal::Rpc::TransferDesc));
         auto callbacksRingHead = Cal::Utils::AddressRange(el.callbacksRingHead, el.callbacksRingHead + sizeof(Cal::Messages::OffsetWithinChannelT));
         auto callbacksRingTail = Cal::Utils::AddressRange(el.callbacksRingTail, el.callbacksRingTail + sizeof(Cal::Messages::OffsetWithinChannelT));
         auto semClientCallback = Cal::Utils::AddressRange(el.semClientCallback, el.semClientCallback + sizeof(sem_t));
@@ -576,7 +576,7 @@ class CommandsChannel {
     using RingT = TypedRing<RingEntry, OffsetWithinChannelT>;
     RingT ring;
 
-    using HostptrCopiesRingT = TypedRing<Cal::Rpc::ShmemTransferDesc, OffsetWithinChannelT>;
+    using HostptrCopiesRingT = TypedRing<Cal::Rpc::TransferDesc, OffsetWithinChannelT>;
     HostptrCopiesRingT hostptrCopiesRing;
 
     using CallbacksRingT = TypedRing<Cal::Rpc::CallbackIdT, OffsetWithinChannelT>;
@@ -872,12 +872,12 @@ class ChannelClient : public CommandsChannel {
         return usesSharedVaForRpcChannel;
     }
 
-    Cal::Rpc::ShmemTransferDesc acquireHostptrCopiesUpdate() {
+    Cal::Rpc::TransferDesc acquireHostptrCopiesUpdate() {
         if (hostptrCopiesRing.peekEmpty()) {
             return {};
         }
 
-        Cal::Rpc::ShmemTransferDesc locationToUpdate = *this->hostptrCopiesRing.peekHead();
+        Cal::Rpc::TransferDesc locationToUpdate = *this->hostptrCopiesRing.peekHead();
         this->hostptrCopiesRing.pop();
 
         return locationToUpdate;
@@ -1073,7 +1073,7 @@ class ChannelServer : public CommandsChannel {
         return reinterpret_cast<T *>(Cal::Utils::moveByBytes(shmem, reinterpret_cast<uintptr_t>(heapOffset)));
     }
 
-    bool pushHostptrCopyToUpdate(Cal::Rpc::ShmemTransferDesc transferDesc) {
+    bool pushHostptrCopyToUpdate(Cal::Rpc::TransferDesc transferDesc) {
         if (false == hostptrCopiesRing.push(transferDesc, false)) {
             log<Verbosity::critical>("Could not add transferDesc copy update notification to ring");
             return false;

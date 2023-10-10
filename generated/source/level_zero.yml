@@ -1568,7 +1568,7 @@ config:
 
         - name: zesDeviceResetExt
           special_handling:
-            optional: True        
+            optional: True
           latency: 1.0
           ddi_category: Device
           returns:
@@ -1850,23 +1850,23 @@ config:
         #                    type : ze_event_handle_t*
         #                    kind : pointer
         #
-        - name : zeContextSystemBarrier
-          latency : 0.0
-          ddi_category :  Context
-          returns :
-            type : ze_result_t
-            kind : scalar
-            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args :
-            0 :
-              name : hContext
-              type : ze_context_handle_t
-              kind : scalar
+        - name: zeContextSystemBarrier
+          latency: 0.0
+          ddi_category: Context
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
               translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
-            1 :
-              name : hDevice
-              type : ze_device_handle_t
-              kind : scalar
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
               translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
         #        - name : zeCommandGraphExpCreate
         #          ddi_category :  CommandGraphExp
@@ -2251,14 +2251,14 @@ config:
                 server_access: read_write
             3:
               name: transferDescs
-              type: Cal::Rpc::ShmemTransferDesc*
+              type: Cal::Rpc::TransferDesc*
               kind: ptr_array
               kind_details:
                 num_elements: transferDescsCount
                 is_num_elements_ptr_to_capturable_arg: True
                 can_be_null: True
                 element:
-                  type: Cal::Rpc::ShmemTransferDesc
+                  type: Cal::Rpc::TransferDesc
                   kind: scalar
                 server_access: write
 
@@ -2471,7 +2471,7 @@ config:
               type: ze_command_list_handle_t
               kind: scalar
               translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
-              
+
             1:
               name: dstptr
               type: void*
@@ -2487,7 +2487,7 @@ config:
                 - kind: ptr_zero_copy_malloc_shmem_va
                 - kind: ptr_remapped_va
                   capture_details:
-                    replayable_command : True
+                    replayable_command: True
             2:
               name: srcptr
               type: const void*
@@ -2503,7 +2503,7 @@ config:
                 - kind: ptr_zero_copy_malloc_shmem_va
                 - kind: ptr_remapped_va
                   capture_details:
-                    replayable_command : True
+                    replayable_command: True
             3:
               name: size
               type: size_t
@@ -2532,7 +2532,7 @@ config:
                   kind: scalar
                   translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
                 server_access: read
-                
+
         - name: zeCommandListAppendMemoryCopyImmediate
           latency: 0.0
           call_async: true
@@ -2563,9 +2563,11 @@ config:
                   kind: "scalar"
                 server_access: write
               kind_variants:
-                - kind: ptr_remapped_va
+                - kind: ptr_va
                   capture_details:
-                    replayable_command : False
+                    replayable_command: False
+                    mode: staging_usm
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             2:
@@ -2582,7 +2584,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: "hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}))"
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(srcptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             3:

@@ -64,6 +64,15 @@ class MemoryBlocksManagerTestWithThreeNonOverlappingBlocks : public MemoryBlocks
     const size_t thirdChunkSize{2 * pageSize};
 };
 
+class MemoryBlocksManagerTestWithThreeUSMBlocks : public MemoryBlocksManagerTestWithThreeNonOverlappingBlocks {
+  public:
+    void SetUp() override {
+        memoryBlocksManager.registerUSMStaging(firstSrcAddress, firstChunkSize);
+        memoryBlocksManager.registerUSMStaging(secondSrcAddress, secondChunkSize);
+        memoryBlocksManager.registerUSMStaging(thirdSrcAddress, thirdChunkSize);
+    }
+};
+
 namespace Cal::Ult {
 
 TEST_F(MemoryBlockTest, GivenInputChunkWhenConstructingMemoryBlockThenChunkIsAddedAndDescriptionIsValid) {
@@ -356,7 +365,7 @@ TEST_F(MemoryBlockTest, GivenMemoryBlockWhichConsistsOfThreeChunksWhenGettingTwo
     const size_t twoChunksOverlappingSize{3 * pageSize};
 
     const uint32_t transferDescsCount{1};
-    Cal::Rpc::ShmemTransferDesc transferDescs[transferDescsCount] = {};
+    Cal::Rpc::TransferDesc transferDescs[transferDescsCount] = {};
 
     uint32_t appendedTransfersCount{0};
     EXPECT_FALSE(memoryBlock.appendOverlappingChunks(twoChunksOverlappingPtr,
@@ -371,7 +380,7 @@ TEST_F(MemoryBlockTest, GivenMemoryBlockAndNotEnoughOutputSpacePriorToExecutionW
     const size_t singleChunkOverlappingSize{pageSize};
 
     const uint32_t transferDescsCount{1};
-    Cal::Rpc::ShmemTransferDesc transferDescs[transferDescsCount] = {};
+    Cal::Rpc::TransferDesc transferDescs[transferDescsCount] = {};
 
     uint32_t appendedTransfersCount{1};
     EXPECT_FALSE(memoryBlock.appendOverlappingChunks(singleChunkOverlappingPtr,
@@ -392,7 +401,7 @@ TEST_F(MemoryBlockTest, GivenMemoryBlockWhichConsistsOfThreeChunksWhenGettingTwo
     const size_t twoChunksOverlappingSize{2 * chunkSize};
 
     const uint32_t transferDescsCount{2};
-    Cal::Rpc::ShmemTransferDesc transferDescs[transferDescsCount] = {};
+    Cal::Rpc::TransferDesc transferDescs[transferDescsCount] = {};
 
     uint32_t appendedTransfersCount{0};
     EXPECT_TRUE(memoryBlock.appendOverlappingChunks(twoChunksOverlappingPtr,
@@ -404,14 +413,14 @@ TEST_F(MemoryBlockTest, GivenMemoryBlockWhichConsistsOfThreeChunksWhenGettingTwo
     EXPECT_EQ(memoryBlock.chunks[0].shmem.getShmemId(), transferDescs[0].shmemId);
     EXPECT_EQ(memoryBlock.chunks[0].shmem.getMmappedSize(), transferDescs[0].underlyingSize);
     EXPECT_EQ(chunkSize, transferDescs[0].bytesCountToCopy);
-    EXPECT_EQ(pageSize / 2, transferDescs[0].offsetFromMapping);
-    EXPECT_EQ(reinterpret_cast<uintptr_t>(twoChunksOverlappingPtr), transferDescs[0].transferStart);
+    EXPECT_EQ(pageSize / 2, transferDescs[0].offsetFromResourceStart);
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(twoChunksOverlappingPtr), transferDescs[0].clientAddress);
 
     EXPECT_EQ(memoryBlock.chunks[1].shmem.getShmemId(), transferDescs[1].shmemId);
     EXPECT_EQ(memoryBlock.chunks[1].shmem.getMmappedSize(), transferDescs[1].underlyingSize);
     EXPECT_EQ(chunkSize, transferDescs[1].bytesCountToCopy);
-    EXPECT_EQ(0u, transferDescs[1].offsetFromMapping);
-    EXPECT_EQ(memoryBlock.chunks[1].firstPageAddress, transferDescs[1].transferStart);
+    EXPECT_EQ(0u, transferDescs[1].offsetFromResourceStart);
+    EXPECT_EQ(memoryBlock.chunks[1].firstPageAddress, transferDescs[1].clientAddress);
 }
 
 TEST_F(MemoryBlocksManagerTest, DefaultConstructedMemoryBlocksManagerDoesNotContainAnyBlocks) {
@@ -697,14 +706,9 @@ TEST_F(MemoryBlocksManagerTest, GivenMemoryBlockInManagerWhenGettingBlockForChun
     const void *nonOverlappingChunk{reinterpret_cast<const void *>(firstPageAddress + (4 * pageSize))};
     const size_t nonOverlappingChunkSize{pageSize};
 
-    Cal::Mocks::LogCaptureContext logs;
     const auto foundMemoryBlock = memoryBlocksManager.getMemoryBlockWhichIncludesChunk(nonOverlappingChunk, nonOverlappingChunkSize);
-    const auto output = logs.str();
 
     EXPECT_EQ(nullptr, foundMemoryBlock);
-
-    const auto containsExpectedError = output.find("Queried file descriptors of non-registered chunk!") != std::string::npos;
-    EXPECT_TRUE(containsExpectedError) << output;
 }
 
 TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverlappingMemoryBlocksInManagerWhenGettingCountOfRequiredTransfersForChunksThenCorrectCountIsReturned) {
@@ -738,7 +742,7 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     auto &thirdBlock = getBlock(2);
 
     uint32_t transferDescsCount{4};
-    Cal::Rpc::ShmemTransferDesc transferDescs[4] = {};
+    Cal::Rpc::TransferDesc transferDescs[4] = {};
 
     const uint32_t chunksCount{2};
     Cal::Rpc::MemChunk chunks[chunksCount] = {
@@ -757,14 +761,44 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
     EXPECT_EQ(firstBlock.chunks[0].shmem.getShmemId(), transferDescs[0].shmemId);
     EXPECT_EQ(firstBlock.chunks[0].shmem.getMmappedSize(), transferDescs[0].underlyingSize);
     EXPECT_EQ(firstChunkSize, transferDescs[0].bytesCountToCopy);
-    EXPECT_EQ(64u, transferDescs[0].offsetFromMapping);
-    EXPECT_EQ(reinterpret_cast<uintptr_t>(firstSrcAddress), transferDescs[0].transferStart);
+    EXPECT_EQ(64u, transferDescs[0].offsetFromResourceStart);
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(firstSrcAddress), transferDescs[0].clientAddress);
 
     EXPECT_EQ(thirdBlock.chunks[0].shmem.getShmemId(), transferDescs[1].shmemId);
     EXPECT_EQ(thirdBlock.chunks[0].shmem.getMmappedSize(), transferDescs[1].underlyingSize);
     EXPECT_EQ(thirdChunkSize, transferDescs[1].bytesCountToCopy);
-    EXPECT_EQ(0u, transferDescs[1].offsetFromMapping);
-    EXPECT_EQ(reinterpret_cast<uintptr_t>(thirdSrcAddress), transferDescs[1].transferStart);
+    EXPECT_EQ(0u, transferDescs[1].offsetFromResourceStart);
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(thirdSrcAddress), transferDescs[1].clientAddress);
+}
+
+TEST_F(MemoryBlocksManagerTestWithThreeUSMBlocks, GivenThreeUSMPairsInManagerWhenGettingRequiredTransfersThenCorrectTransfersAreReturned) {
+    auto getBlock = [this](int id) -> std::pair<const void *, size_t> & {
+        auto it = std::next(memoryBlocksManager.usmMemoryPairs.begin(), id);
+        return (*it);
+    };
+    auto &firstUSMPair = getBlock(0);
+    [[maybe_unused]] auto &secondUSMPair = getBlock(1);
+    auto &thirdUSMPair = getBlock(2);
+
+    uint32_t transferDescsCount{4};
+    Cal::Rpc::TransferDesc transferDescs[4] = {};
+    const uint32_t chunksCount{2};
+    Cal::Rpc::MemChunk chunks[chunksCount] = {
+        {firstSrcAddress, firstChunkSize},
+        {thirdSrcAddress, thirdChunkSize}};
+
+    const auto enoughSpace = memoryBlocksManager.getRequiredTransferDescs(transferDescsCount, transferDescs, chunksCount, chunks);
+
+    ASSERT_TRUE(enoughSpace);
+
+    ASSERT_EQ(2u, transferDescsCount);
+    EXPECT_EQ(reinterpret_cast<uint64_t>(firstUSMPair.first), transferDescs[0].offsetFromResourceStart);
+    EXPECT_EQ(firstChunkSize, transferDescs[0].bytesCountToCopy);
+    EXPECT_EQ(transferDescs[0].shmemId, -1);
+
+    EXPECT_EQ(reinterpret_cast<uint64_t>(thirdUSMPair.first), transferDescs[1].offsetFromResourceStart);
+    EXPECT_EQ(thirdChunkSize, transferDescs[1].bytesCountToCopy);
+    EXPECT_EQ(transferDescs[1].shmemId, -1);
 }
 
 TEST_F(MemoryBlocksManagerTest, GivenNoMemoryBlocksWhenLookingForOverlappingBlocksBeginThenEndIsReturned) {

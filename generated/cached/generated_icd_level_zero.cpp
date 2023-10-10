@@ -583,7 +583,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     };
     return ret;
 }
-ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::ShmemTransferDesc* transferDescs) {
+ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -787,14 +787,14 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate (ze_command_list_handle_t hCo
     [[maybe_unused]] auto dstptr_pointer_type = globalPlatform->getPointerType(dstptr);
     [[maybe_unused]] auto srcptr_pointer_type = globalPlatform->getPointerType(srcptr);
     
-    if((dstptr_pointer_type == remapped) && (srcptr_pointer_type == local)){
-        return zeCommandListAppendMemoryCopyImmediate_Remapped_Local(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    if((dstptr_pointer_type == local) && (srcptr_pointer_type == local)){
+        return zeCommandListAppendMemoryCopyImmediate_Local_Local(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
-    else if((dstptr_pointer_type == remapped) && (srcptr_pointer_type == usm)){
-        return zeCommandListAppendMemoryCopyImmediate_Remapped_Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    else if((dstptr_pointer_type == local) && (srcptr_pointer_type == usm)){
+        return zeCommandListAppendMemoryCopyImmediate_Local_Usm(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
-    else if((dstptr_pointer_type == remapped) && (srcptr_pointer_type == shared)){
-        return zeCommandListAppendMemoryCopyImmediate_Remapped_Shared(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    else if((dstptr_pointer_type == local) && (srcptr_pointer_type == shared)){
+        return zeCommandListAppendMemoryCopyImmediate_Local_Shared(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     }
     else if((dstptr_pointer_type == usm) && (srcptr_pointer_type == local)){
         return zeCommandListAppendMemoryCopyImmediate_Usm_Local(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -4234,62 +4234,35 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_
 
     return ret;
 }
-ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    [[maybe_unused]] constexpr auto dstptr_kind = remapped;
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
-    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Remapped_Local");
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
-    std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    void *standalone_dstptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dstptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dstptr = standalone_dstptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_dstptr, reinterpret_cast<uintptr_t>(dstptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstptr_alloc));
+    }
+    void *standalone_srcptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_srcptr = standalone_srcptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_srcptr, reinterpret_cast<uintptr_t>(srcptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr_alloc));
+    }
     auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_LocalRpcM;
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    memcpy(standalone_srcptr.get(), srcptr, size);
+    memcpy(Cal::Utils::toAddress(standalone_srcptr), srcptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcptr = standalone_srcptr.get();
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    if(hSignalEvent)
-    {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
-    }
-    if(phWaitEvents)
-    {
-        auto base = command->captures.phWaitEvents;
-        auto baseMutable = mutable_element_cast(base);
-        auto numEntries = dynMemTraits.phWaitEvents.count;
-
-        for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
-        }
-    }
-
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    ze_result_t ret = command->captures.ret;
-
-    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr));
-    return ret;
-}
-ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    [[maybe_unused]] constexpr auto dstptr_kind = remapped;
-    [[maybe_unused]] constexpr auto srcptr_kind = usm;
-    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Remapped_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_UsmRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    command->copyFromCaller(dynMemTraits);
+    command->args.dstptr = standalone_dstptr;
+    command->args.srcptr = standalone_srcptr;
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
     {
@@ -4325,18 +4298,81 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Usm (ze_command_list
 
     return ret;
 }
-ze_result_t zeCommandListAppendMemoryCopyImmediate_Remapped_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    [[maybe_unused]] constexpr auto dstptr_kind = remapped;
-    [[maybe_unused]] constexpr auto srcptr_kind = shared;
-    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Remapped_Shared");
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    [[maybe_unused]] constexpr auto dstptr_kind = local;
+    [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Usm");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
+    void *standalone_dstptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dstptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dstptr = standalone_dstptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_dstptr, reinterpret_cast<uintptr_t>(dstptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstptr_alloc));
+    }
     auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Remapped_SharedRpcM;
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
+    command->args.dstptr = standalone_dstptr;
+    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.phWaitEvents;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+        }
+    }
+
+    if(
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+      }
+
+      if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+      }
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    [[maybe_unused]] constexpr auto dstptr_kind = local;
+    [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Shared");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    void *standalone_dstptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dstptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dstptr = standalone_dstptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_dstptr, reinterpret_cast<uintptr_t>(dstptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dstptr_alloc));
+    }
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.dstptr = standalone_dstptr;
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
     {
@@ -4378,15 +4414,21 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
-    std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    void *standalone_srcptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_srcptr = standalone_srcptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_srcptr, reinterpret_cast<uintptr_t>(srcptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr_alloc));
+    }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    memcpy(standalone_srcptr.get(), srcptr, size);
+    memcpy(Cal::Utils::toAddress(standalone_srcptr), srcptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcptr = standalone_srcptr.get();
+    command->args.srcptr = standalone_srcptr;
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
     {
@@ -4403,17 +4445,23 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     ze_result_t ret = command->captures.ret;
 
-    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr));
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
@@ -4516,15 +4564,21 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Local");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
-    std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+    void *standalone_srcptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_srcptr_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(size), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_srcptr = standalone_srcptr_alloc.get();
+        globalPlatform->getHostptrCopiesReader().addToMap(standalone_srcptr, reinterpret_cast<uintptr_t>(srcptr));
+    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr_alloc));
+    }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
-    memcpy(standalone_srcptr.get(), srcptr, size);
+    memcpy(Cal::Utils::toAddress(standalone_srcptr), srcptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcptr = standalone_srcptr.get();
+    command->args.srcptr = standalone_srcptr;
     command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
     if(hSignalEvent)
     {
@@ -4541,17 +4595,23 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     ze_result_t ret = command->captures.ret;
 
-    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move(standalone_srcptr));
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {

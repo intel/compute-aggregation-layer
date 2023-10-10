@@ -267,20 +267,25 @@ class IcdPlatform {
         return true;
     }
 
-    bool writeRequiredMemory(const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
+    bool writeRequiredMemory(const std::vector<Cal::Rpc::TransferDesc> &transferDescs) {
         for (const auto &transfer : transferDescs) {
-            auto shmem = globalState.getGlobalShmemImporter().open(transfer.shmemId, transfer.underlyingSize, nullptr);
-            if (!shmem.isValid()) {
-                log<Verbosity::error>("Cannot map shared memory to perform transfer from client to service!");
+            if (transfer.shmemId != -1) {
+                auto shmem = globalState.getGlobalShmemImporter().open(transfer.shmemId, transfer.underlyingSize, nullptr);
+                if (!shmem.isValid()) {
+                    log<Verbosity::error>("Cannot map shared memory to perform transfer from client to service!");
+                    return false;
+                }
+
+                const auto destinationAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromResourceStart;
+                const auto source = reinterpret_cast<const void *>(transfer.clientAddress);
+                auto destination = reinterpret_cast<void *>(destinationAddress);
+
+                std::memcpy(destination, source, transfer.bytesCountToCopy);
+                globalState.getGlobalShmemImporter().release(shmem);
+            } else {
+                log<Verbosity::error>("Incorrect shmem file descriptor to perform transfer from client to service!");
                 return false;
             }
-
-            const auto destinationAddress = reinterpret_cast<uintptr_t>(shmem.getMmappedPtr()) + transfer.offsetFromMapping;
-            const auto source = reinterpret_cast<const void *>(transfer.transferStart);
-            auto destination = reinterpret_cast<void *>(destinationAddress);
-
-            std::memcpy(destination, source, transfer.bytesCountToCopy);
-            globalState.getGlobalShmemImporter().release(shmem);
         }
 
         return true;
