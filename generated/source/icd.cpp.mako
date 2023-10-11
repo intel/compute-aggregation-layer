@@ -228,7 +228,10 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %       if ("block" in arg.name) or (arg.kind_details and arg.kind_details.element and arg.kind_details.element.translate_after):
        !${arg.name} &&
 %       endif
-%       if ("hCommandList" in arg.name):
+%       if ("hCommandQueue" in arg.name):
+       static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS &&
+%       endif
+%       if ("hCommandList" in arg.name) and (not "Execute" in func_base.name) :
        !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
 %       endif
 %      endfor
