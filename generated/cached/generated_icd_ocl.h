@@ -95,7 +95,7 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
 void* clGetExtensionFunctionAddressForPlatform (cl_platform_id platform, const char* funcname);
 cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implArgsForClCreateBufferRpcM);
 cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
-cl_mem clCreateSubBuffer (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret);
+cl_mem clCreateSubBufferRpcHelper (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret);
 cl_mem clCreatePipe (cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties* properties, cl_int* errcode_ret);
 cl_int clGetPipeInfo (cl_mem pipe, cl_pipe_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_mem clCreateImage (cl_context context, cl_mem_flags flags, const cl_image_format* image_format, const cl_image_desc* image_desc, void* host_ptr, cl_int* errcode_ret);

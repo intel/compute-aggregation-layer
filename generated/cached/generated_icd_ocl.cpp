@@ -1932,7 +1932,7 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context,
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
     return ret;
 }
-cl_mem clCreateSubBuffer (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret) {
+cl_mem clCreateSubBufferRpcHelper (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clCreateSubBuffer");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();

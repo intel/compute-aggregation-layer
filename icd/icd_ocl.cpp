@@ -320,6 +320,23 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
     return retMem;
 }
 
+cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void *buffer_create_info, cl_int *errcode_ret) {
+    auto retMem = clCreateSubBufferRpcHelper(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+    retMem->asLocalObject()->size = reinterpret_cast<const cl_buffer_region *>(buffer_create_info)->size;
+    /* Inherit some flags if we do not set. */
+    auto parentFlags = buffer->asLocalObject()->flags;
+    if ((flags & (CL_MEM_WRITE_ONLY | CL_MEM_READ_ONLY | CL_MEM_READ_WRITE)) == 0) {
+        flags |= parentFlags & (CL_MEM_WRITE_ONLY | CL_MEM_READ_ONLY | CL_MEM_READ_WRITE);
+    }
+    if ((flags & (CL_MEM_HOST_WRITE_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_HOST_NO_ACCESS)) == 0) {
+        flags |= parentFlags & (CL_MEM_HOST_WRITE_ONLY | CL_MEM_HOST_READ_ONLY |
+                                CL_MEM_HOST_NO_ACCESS);
+    }
+    flags |= parentFlags & (CL_MEM_USE_HOST_PTR | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR);
+    retMem->asLocalObject()->flags = flags;
+    return retMem;
+}
+
 const bool useFastClockGetter = true;
 #define NSEC_PER_SEC (1000000000ULL)
 cl_int clGetHostTimer(cl_device_id device, cl_ulong *host_timestamp) {

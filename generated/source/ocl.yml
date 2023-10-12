@@ -2576,6 +2576,9 @@ config:
                 server_access: write
         - name: clCreateSubBuffer
           latency: 0.0
+          special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper" # Dedicated handling due to shmem management
           returns:
             type: cl_mem
             kind: scalar
