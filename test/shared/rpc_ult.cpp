@@ -417,8 +417,8 @@ TEST(CommandsChannelPartitioUsingDefaultLayoutn, givenCorrectShmemSizeThenPartit
     EXPECT_EQ(layout.completionStampsStart, commandsChannel.layout.completionStampsStart);
     EXPECT_EQ((layout.completionStampsEnd - layout.completionStampsStart) / sizeof(Cal::Rpc::CompletionStampT), commandsChannel.layout.completionStampsCapacity);
 
-    EXPECT_EQ(layout.heapStart, commandsChannel.layout.heapStart);
-    EXPECT_EQ(static_cast<int64_t>(alignedShmemSize), commandsChannel.layout.heapEnd);
+    EXPECT_EQ(layout.clientHeapStart, commandsChannel.layout.clientHeapStart);
+    EXPECT_EQ(static_cast<int64_t>(alignedShmemSize), commandsChannel.layout.clientHeapEnd);
 
     EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(layout.semClient), commandsChannel.semClient);
     EXPECT_EQ(commandsChannel.getAsLocalAddress<sem_t>(layout.semServer), commandsChannel.semServer);
@@ -467,7 +467,7 @@ TEST(CommandsChannelPartitionUsingDefaultLayout, whenInitializationOfControlBloc
 
     EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
     EXPECT_TRUE(commandsChannel.ownsSemaphores);
-    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(0, *ringHead);
     EXPECT_EQ(0, *ringTail);
@@ -523,10 +523,10 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresThenDestroysThemDuringOw
         CommandsChannelWhiteBox commandsChannel;
         EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
-        EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_init.callCount);
     }
 
-    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+    EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
 }
 
 TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemThenEmitsWarning) {
@@ -542,11 +542,11 @@ TEST(CommandsChannelPartition, whenInitializedSempahoresButFailedToDestroyThemTh
         CommandsChannelWhiteBox commandsChannel;
         EXPECT_TRUE(commandsChannel.partition(alignedShmem, alignedShmemSize, true, false));
         EXPECT_TRUE(commandsChannel.ownsSemaphores);
-        EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
+        EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_init.callCount);
         tempSysCallsCtx.apiConfig.sem_destroy.returnValue = -1;
     }
 
-    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
+    EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_destroy.callCount);
     EXPECT_FALSE(logs.empty());
 }
 
@@ -584,7 +584,7 @@ TEST(CommandsChannelPartitionUsingGivenLayout, givenInvalidLayoutThenFailsAndEmi
     auto invalidLayout = validLayout;
 
     Cal::Messages::OffsetWithinChannelT *offsetsToBreak[] = {&invalidLayout.semClient, &invalidLayout.semServer, &invalidLayout.ringHead, &invalidLayout.ringTail,
-                                                             &invalidLayout.ringStart, &invalidLayout.completionStampsStart, &invalidLayout.heapStart, &invalidLayout.heapEnd};
+                                                             &invalidLayout.ringStart, &invalidLayout.completionStampsStart, &invalidLayout.clientHeapStart, &invalidLayout.clientHeapEnd};
 
     size_t *capacitiesToBreak[] = {&invalidLayout.ringCapacity, &invalidLayout.completionStampsCapacity};
 
@@ -666,8 +666,8 @@ TEST(CommandsChannelPartitionUsingGivenLayout, givenValidLayoutThenUsesIt) {
     EXPECT_EQ(commandsChannel.layout.completionStampsStart, commandsChannel2.layout.completionStampsStart);
     EXPECT_EQ(commandsChannel.layout.completionStampsCapacity, commandsChannel2.layout.completionStampsCapacity);
 
-    EXPECT_EQ(commandsChannel.layout.heapStart, commandsChannel2.layout.heapStart);
-    EXPECT_EQ(commandsChannel.layout.heapEnd, commandsChannel2.layout.heapEnd);
+    EXPECT_EQ(commandsChannel.layout.clientHeapStart, commandsChannel2.layout.clientHeapStart);
+    EXPECT_EQ(commandsChannel.layout.clientHeapEnd, commandsChannel2.layout.clientHeapEnd);
 
     EXPECT_EQ(commandsChannel.semClient, commandsChannel2.semClient);
     EXPECT_EQ(commandsChannel.semServer, commandsChannel2.semServer);
@@ -723,7 +723,7 @@ TEST(CommandsChannelPartitionUsingGivenLayout, whenInitializationOfControlBlockI
 
     EXPECT_TRUE(commandsChannel2.partition(alignedShmem, alignedShmemSize, commandsChannel.layout, true));
     EXPECT_TRUE(commandsChannel2.ownsSemaphores);
-    EXPECT_EQ(2u, tempSysCallsCtx.apiConfig.sem_init.callCount);
+    EXPECT_EQ(3u, tempSysCallsCtx.apiConfig.sem_init.callCount);
 
     EXPECT_EQ(0, *ringHead);
     EXPECT_EQ(0, *ringTail);
@@ -982,7 +982,7 @@ TEST(ChannelClientInit, whenInitializationIsSuccesfullThenRingBufferIsLaunchedAn
     EXPECT_EQ(channelClient.getAsLocalAddress(channelClient.layout.completionStampsStart),
               channelClient.completionStamp);
 
-    auto fullHeapRange = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.heapStart), static_cast<size_t>(channelClient.layout.heapEnd - channelClient.layout.heapStart)};
+    auto fullHeapRange = Cal::Utils::AddressRange{channelClient.getAsLocalAddress(channelClient.layout.clientHeapStart), static_cast<size_t>(channelClient.layout.clientHeapEnd - channelClient.layout.clientHeapStart)};
     EXPECT_EQ(fullHeapRange.base(), channelClient.cmdHeap.getRange().base());
     EXPECT_EQ(fullHeapRange.rightBound(), channelClient.standaloneHeap.getRange().rightBound());
     EXPECT_EQ(channelClient.cmdHeap.getRange().rightBound(), channelClient.standaloneHeap.getRange().base());

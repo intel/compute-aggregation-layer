@@ -166,11 +166,11 @@ inline bool operator==(const RespAllocateShmem &lhs, const RespAllocateShmem &rh
 using OffsetWithinChannelT = int64_t;
 constexpr OffsetWithinChannelT invalidOffsetWithinChannel = -1;
 
-//                                          ringStart                   ringStart+ringCapacity / completionStampsStart    hptrRingStart               heapStart                      heapEnd
-// |       HEADER                              |                 RING                  |         COMPLETION_STAMPS          |    HOSTPTR COPIES RING    |        HEAP                    |
-// | semClient , semServer, ringHead, ringTail |           MESSAGE_OFFSETs             |                                    |      MEM_CHUNKS           |  MESSAGES  /  TEMP BUFFERS     |
-//                                                     |                        |                                               |                |
-//                                                 *ringHead               *ringTail                                        *hptrRingHead   *hptrRingTail
+//                                          rpcRingStart                   ringStart+ringCapacity / completionStampsStart  hostptrCopiesRingHead               callbacksRingHead               serviceHeapStart                       clientHeapStart                       heapEnd
+// |       RPC ring HEADER                     |                 RING                  |         COMPLETION_STAMPS          |    HOSTPTR COPIES HEADER AND RING   |    CALLBACKS HEADER AND RING   |         SERVICE HEAP                  |          CLIENT HEAP           |
+// | semClient , semServer, ringHead, ringTail |           MESSAGE_OFFSETs             |                                    |                                     |                                |        UNUSED FOR NOW                 | RPC MESSAGES  /  TEMP BUFFERS  |
+//                                                     |                        |
+//                                                 *ringHead               *ringTail
 struct CommandsChannelLayout {
     // HEADER :
     OffsetWithinChannelT semClient = invalidOffsetWithinChannel;
@@ -188,9 +188,17 @@ struct CommandsChannelLayout {
     OffsetWithinChannelT hostptrCopiesRingTail = invalidOffsetWithinChannel;
     OffsetWithinChannelT hostptrCopiesRingStart = invalidOffsetWithinChannel;
     uint64_t hostptrCopiesRingCapacity = 0U;
+    // CALLBACKS RING :
+    OffsetWithinChannelT callbacksRingHead = invalidOffsetWithinChannel;
+    OffsetWithinChannelT callbacksRingTail = invalidOffsetWithinChannel;
+    OffsetWithinChannelT semClientCallback = invalidOffsetWithinChannel;
+    OffsetWithinChannelT callbacksRingStart = invalidOffsetWithinChannel;
+    uint64_t callbacksRingCapacity = 0U;
     // HEAP :
-    OffsetWithinChannelT heapStart = invalidOffsetWithinChannel;
-    OffsetWithinChannelT heapEnd = invalidOffsetWithinChannel;
+    OffsetWithinChannelT serviceHeapStart = invalidOffsetWithinChannel;
+    OffsetWithinChannelT serviceHeapEnd = invalidOffsetWithinChannel;
+    OffsetWithinChannelT clientHeapStart = invalidOffsetWithinChannel;
+    OffsetWithinChannelT clientHeapEnd = invalidOffsetWithinChannel;
 
     bool isValid() const {
         uint32_t valid = 1;
@@ -210,8 +218,16 @@ struct CommandsChannelLayout {
         valid &= (hostptrCopiesRingStart >= 0) ? 1 : 0;
         valid &= (hostptrCopiesRingCapacity > 0U) ? 1 : 0;
 
-        valid &= (heapStart >= 0) ? 1 : 0;
-        valid &= (heapEnd >= 0) ? 1 : 0;
+        valid &= (callbacksRingHead >= 0) ? 1 : 0;
+        valid &= (callbacksRingTail >= 0) ? 1 : 0;
+        valid &= (semClientCallback >= 0) ? 1 : 0;
+        valid &= (callbacksRingStart >= 0) ? 1 : 0;
+        valid &= (callbacksRingCapacity > 0U) ? 1 : 0;
+
+        valid &= (serviceHeapStart >= 0) ? 1 : 0;
+        valid &= (serviceHeapEnd >= 0) ? 1 : 0;
+        valid &= (clientHeapStart >= 0) ? 1 : 0;
+        valid &= (clientHeapEnd >= 0) ? 1 : 0;
 
         if (0 == valid) {
             log<Verbosity::debug>("Commands channel layout is invalid (invalid offsets).");
@@ -244,8 +260,16 @@ inline bool operator==(const CommandsChannelLayout &lhs, const CommandsChannelLa
     same &= (lhs.hostptrCopiesRingStart == rhs.hostptrCopiesRingStart) ? 1 : 0;
     same &= (lhs.hostptrCopiesRingCapacity == rhs.hostptrCopiesRingCapacity) ? 1 : 0;
 
-    same &= (lhs.heapStart == rhs.heapStart) ? 1 : 0;
-    same &= (lhs.heapEnd == rhs.heapEnd) ? 1 : 0;
+    same &= (lhs.callbacksRingHead == rhs.callbacksRingHead) ? 1 : 0;
+    same &= (lhs.callbacksRingTail == rhs.callbacksRingTail) ? 1 : 0;
+    same &= (lhs.semClientCallback == rhs.semClientCallback) ? 1 : 0;
+    same &= (lhs.callbacksRingStart == rhs.callbacksRingStart) ? 1 : 0;
+    same &= (lhs.callbacksRingCapacity == rhs.callbacksRingCapacity) ? 1 : 0;
+
+    same &= (lhs.serviceHeapStart == rhs.serviceHeapStart) ? 1 : 0;
+    same &= (lhs.serviceHeapEnd == rhs.serviceHeapEnd) ? 1 : 0;
+    same &= (lhs.clientHeapStart == rhs.clientHeapStart) ? 1 : 0;
+    same &= (lhs.clientHeapEnd == rhs.clientHeapEnd) ? 1 : 0;
 
     return same == 1;
 }

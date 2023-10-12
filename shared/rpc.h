@@ -163,6 +163,10 @@ constexpr CompletionStampT CompletionStampNotReady = 0;
 using CompletionStampBufferT = Cal::Allocators::TagAllocator<CompletionStampT>;
 
 using OffsetWithinChannelT = Cal::Messages::OffsetWithinChannelT;
+struct CallbackIdT {
+    uintptr_t fptr;
+    uintptr_t data;
+};
 
 struct RingEntry {
     Cal::Messages::OffsetWithinChannelT messageOffset;
@@ -171,7 +175,7 @@ struct RingEntry {
 
 class CommandsChannel {
   public:
-    // | control block + ring | completion stamps | hostptr copies to update | heap ...
+    // | control block + ring | completion stamps heap | hostptr copies to update ring | callbacks ring | service heap | client heap ...
     struct Layout {
         using OffsetT = Cal::Messages::OffsetWithinChannelT;
 
@@ -182,7 +186,7 @@ class CommandsChannel {
         OffsetT semClient = Cal::Utils::alignUpPow2<sizeof(SemClientT)>(ringHead + sizeof(RingHeadT));
 
         using RingTailT = RingHeadT;
-        OffsetT ringTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClient);
+        OffsetT ringTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClient + sizeof(SemClientT));
 
         using SemServerT = SemClientT;
         OffsetT semServer = Cal::Utils::alignUpPow2<sizeof(SemServerT)>(ringTail + sizeof(RingTailT));
@@ -201,13 +205,24 @@ class CommandsChannel {
         OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
         OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
 
-        OffsetT heapStart = hostptrCopiesRingEnd;
+        OffsetT callbacksRingHead = hostptrCopiesRingEnd;
+        OffsetT callbacksRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(callbacksRingHead + sizeof(RingHeadT));
+        using SemClientCallbackT = ::sem_t;
+        OffsetT semClientCallback = Cal::Utils::alignUpPow2<sizeof(SemClientCallbackT)>(callbacksRingTail + sizeof(RingTailT));
+        using CallbackIdT = Cal::Rpc::CallbackIdT;
+        OffsetT callbacksRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClientCallback + sizeof(SemClientCallbackT));
+        OffsetT callbacksRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(callbacksRingStart + Cal::Utils::pageSize4KB);
+
+        OffsetT serviceHeapStart = callbacksRingEnd;
+        OffsetT serviceHeapEnd = serviceHeapStart + Cal::Utils::pageSize4KB * 4;
+
+        OffsetT clientHeapStart = serviceHeapEnd;
 
         size_t minHeapSize = Cal::Utils::pageSize4KB;
-        size_t minShmemSize = heapStart + minHeapSize;
+        size_t minShmemSize = clientHeapStart + minHeapSize;
 
         bool valid() {
-            return check((ringEnd - ringStart) / sizeof(RingEntryT) >= 2, "Should contain at least 2 entries") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(ringEnd), "Unaligned ring end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(completionStampsEnd), "Unaligned completion stamps end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingEnd), "Unaligned host ptr copies end");
+            return check((ringEnd - ringStart) / sizeof(RingEntryT) >= 2, "Should contain at least 2 entries") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(ringEnd), "Unaligned ring end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(completionStampsEnd), "Unaligned completion stamps end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingEnd), "Unaligned host ptr copies end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(callbacksRingEnd), "Unaligned host ptr copies end") && check(Cal::Utils::isAlignedPow2<Cal::Utils::pageSize4KB>(serviceHeapEnd), "Unaligned host ptr copies end");
         }
 
         void resizeCommandsRing(size_t numberOfPages) {
@@ -227,7 +242,16 @@ class CommandsChannel {
             hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
             hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
 
-            heapStart = hostptrCopiesRingEnd;
+            callbacksRingHead = hostptrCopiesRingEnd;
+            callbacksRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(callbacksRingHead + sizeof(RingHeadT));
+            semClientCallback = Cal::Utils::alignUpPow2<sizeof(SemClientCallbackT)>(callbacksRingTail + sizeof(RingTailT));
+            callbacksRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(semClientCallback + sizeof(SemClientCallbackT));
+            callbacksRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(callbacksRingStart + Cal::Utils::pageSize4KB);
+
+            serviceHeapStart = callbacksRingEnd;
+            serviceHeapEnd = serviceHeapStart + Cal::Utils::pageSize4KB * 4;
+
+            clientHeapStart = serviceHeapEnd;
         }
 
       protected:
@@ -245,6 +269,9 @@ class CommandsChannel {
                 log<Verbosity::error>("Failed to destroy rpc ring client sempahore");
             }
             if (0 != Cal::Sys::sem_destroy(semServer)) {
+                log<Verbosity::error>("Failed to destroy rpc ring service sempahore");
+            }
+            if (0 != Cal::Sys::sem_destroy(semClientCallback)) {
                 log<Verbosity::error>("Failed to destroy rpc ring service sempahore");
             }
         }
@@ -270,6 +297,14 @@ class CommandsChannel {
         return ret == 0;
     }
 
+    bool waitOnClientCallbackSemaphore() {
+        auto ret = Cal::Sys::sem_wait(semClientCallback);
+        if (ret != 0) {
+            log<Verbosity::error>("sem_wait failed (error = %d) for RPC ring client callback semaphore failed", ret);
+        }
+        return ret == 0;
+    }
+
     bool signalServiceSemaphore() {
         auto ret = Cal::Sys::sem_post(semServer);
         if (ret != 0) {
@@ -282,6 +317,14 @@ class CommandsChannel {
         auto ret = Cal::Sys::sem_post(semClient);
         if (ret != 0) {
             log<Verbosity::error>("sem_post failed (error = %d) for RPC ring client semaphore failed", ret);
+        }
+        return ret == 0;
+    }
+
+    bool signalClientCallbacksSemaphore() {
+        auto ret = Cal::Sys::sem_post(semClientCallback);
+        if (ret != 0) {
+            log<Verbosity::error>("sem_post failed (error = %d) for RPC ring client callback semaphore failed", ret);
         }
         return ret == 0;
     }
@@ -339,12 +382,20 @@ class CommandsChannel {
 
         this->layout.hostptrCopiesRingHead = layout.hostptrCopiesRingHead;
         this->layout.hostptrCopiesRingTail = layout.hostptrCopiesRingTail;
-
         this->layout.hostptrCopiesRingStart = layout.hostptrCopiesRingStart;
         this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::ShmemTransferDescT);
 
-        this->layout.heapStart = layout.heapStart;
-        this->layout.heapEnd = shmemSize;
+        this->layout.callbacksRingHead = layout.callbacksRingHead;
+        this->layout.callbacksRingTail = layout.callbacksRingTail;
+        this->layout.semClientCallback = layout.semClientCallback;
+        this->layout.callbacksRingStart = layout.callbacksRingStart;
+        this->layout.callbacksRingCapacity = (layout.callbacksRingEnd - layout.callbacksRingStart) / sizeof(Layout::CallbackIdT);
+
+        this->layout.serviceHeapStart = layout.serviceHeapStart;
+        this->layout.serviceHeapEnd = layout.serviceHeapEnd;
+
+        this->layout.clientHeapStart = layout.clientHeapStart;
+        this->layout.clientHeapEnd = shmemSize;
 
         this->semClient = getAsLocalAddress<sem_t>(this->layout.semClient);
         this->semServer = getAsLocalAddress<sem_t>(this->layout.semServer);
@@ -358,6 +409,13 @@ class CommandsChannel {
                                                      this->layout.hostptrCopiesRingCapacity,
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
+
+        this->callbacksRing = CallbacksRingT(getAsLocalAddress<Cal::Rpc::CallbackIdT>(this->layout.callbacksRingStart),
+                                             this->layout.callbacksRingCapacity,
+                                             getAsLocalAddress<OffsetWithinChannelT>(this->layout.callbacksRingHead),
+                                             getAsLocalAddress<OffsetWithinChannelT>(this->layout.callbacksRingTail));
+
+        this->semClientCallback = getAsLocalAddress<sem_t>(this->layout.semClientCallback);
 
         if (initializeControlBlock) {
             return this->initControlBlock();
@@ -390,6 +448,12 @@ class CommandsChannel {
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
 
+        this->callbacksRing = CallbacksRingT(getAsLocalAddress<Cal::Rpc::CallbackIdT>(this->layout.callbacksRingStart),
+                                             this->layout.callbacksRingCapacity,
+                                             getAsLocalAddress<OffsetWithinChannelT>(this->layout.callbacksRingHead),
+                                             getAsLocalAddress<OffsetWithinChannelT>(this->layout.callbacksRingTail));
+        this->semClientCallback = getAsLocalAddress<sem_t>(this->layout.semClientCallback);
+
         if (initializeControlBlock) {
             return this->initControlBlock();
         } else {
@@ -400,6 +464,7 @@ class CommandsChannel {
     bool initControlBlock() {
         ring.reset();
         hostptrCopiesRing.reset();
+        callbacksRing.reset();
 
         if (0 != Cal::Ipc::initializeSemaphore(semClient)) {
             log<Verbosity::critical>("Failed to initialize client semaphore in commands channel");
@@ -409,6 +474,16 @@ class CommandsChannel {
             log<Verbosity::critical>("Failed to initialize server semaphore in commands channel");
             if (0 != Cal::Sys::sem_destroy(semClient)) {
                 log<Verbosity::error>("Failed to destroy rpc ring client sempahore");
+            }
+            return false;
+        }
+        if (0 != Cal::Ipc::initializeSemaphore(semClientCallback)) {
+            log<Verbosity::critical>("Failed to initialize client callbacks semaphore in commands channel");
+            if (0 != Cal::Sys::sem_destroy(semClient)) {
+                log<Verbosity::error>("Failed to destroy rpc ring client sempahore");
+            }
+            if (0 != Cal::Sys::sem_destroy(semServer)) {
+                log<Verbosity::error>("Failed to destroy rpc ring server sempahore");
             }
             return false;
         }
@@ -427,8 +502,13 @@ class CommandsChannel {
         auto completionStamps = Cal::Utils::AddressRange(el.completionStampsStart, el.completionStampsStart + el.completionStampsCapacity * sizeof(CompletionStampT));
         auto hostptrCopiesRingHead = Cal::Utils::AddressRange(el.hostptrCopiesRingHead, el.hostptrCopiesRingHead + sizeof(Cal::Messages::OffsetWithinChannelT));
         auto hostptrCopiesRingTail = Cal::Utils::AddressRange(el.hostptrCopiesRingTail, el.hostptrCopiesRingTail + sizeof(Cal::Messages::OffsetWithinChannelT));
-        auto hostptrCopiesRing = Cal::Utils::AddressRange(el.hostptrCopiesRingStart, el.hostptrCopiesRingStart + el.hostptrCopiesRingCapacity * sizeof(Cal::Rpc::MemChunk));
-        auto heap = Cal::Utils::AddressRange(static_cast<size_t>(el.heapStart), el.heapEnd);
+        auto hostptrCopiesRing = Cal::Utils::AddressRange(el.hostptrCopiesRingStart, el.hostptrCopiesRingStart + el.hostptrCopiesRingCapacity * sizeof(Cal::Rpc::ShmemTransferDesc));
+        auto callbacksRingHead = Cal::Utils::AddressRange(el.callbacksRingHead, el.callbacksRingHead + sizeof(Cal::Messages::OffsetWithinChannelT));
+        auto callbacksRingTail = Cal::Utils::AddressRange(el.callbacksRingTail, el.callbacksRingTail + sizeof(Cal::Messages::OffsetWithinChannelT));
+        auto semClientCallback = Cal::Utils::AddressRange(el.semClientCallback, el.semClientCallback + sizeof(sem_t));
+        auto callbacksRing = Cal::Utils::AddressRange(el.callbacksRingStart, el.callbacksRingStart + el.callbacksRingCapacity * sizeof(Cal::Rpc::CallbackIdT));
+        auto serviceHeap = Cal::Utils::AddressRange(static_cast<size_t>(el.serviceHeapStart), el.serviceHeapEnd);
+        auto clientHeap = Cal::Utils::AddressRange(static_cast<size_t>(el.clientHeapStart), el.clientHeapEnd);
 
         std::tuple<const char *, Cal::Utils::AddressRange, size_t> ranges[] = {
             {"ringHead", ringHead, sizeof(Cal::Messages::OffsetWithinChannelT)},
@@ -440,7 +520,12 @@ class CommandsChannel {
             {"hostptrCopiesRingHead", hostptrCopiesRingHead, sizeof(Cal::Messages::OffsetWithinChannelT)},
             {"hostptrCopiesRingTail", hostptrCopiesRingTail, sizeof(Cal::Messages::OffsetWithinChannelT)},
             {"hostptrCopiesRing", hostptrCopiesRing, Cal::Utils::cachelineSize},
-            {"heap", heap, Cal::Utils::pageSize4KB},
+            {"callbacksRingHead", callbacksRingHead, sizeof(Cal::Messages::OffsetWithinChannelT)},
+            {"callbacksRingTail", callbacksRingTail, sizeof(Cal::Messages::OffsetWithinChannelT)},
+            {"callbacksRing", callbacksRing, Cal::Utils::cachelineSize},
+            {"semClientCallback", semClientCallback, sizeof(sem_t)},
+            {"serviceHeap", serviceHeap, Cal::Utils::pageSize4KB},
+            {"clientHeap", clientHeap, Cal::Utils::pageSize4KB},
         };
 
         bool valid = true;
@@ -489,11 +574,15 @@ class CommandsChannel {
     using HostptrCopiesRingT = TypedRing<Cal::Rpc::ShmemTransferDesc, OffsetWithinChannelT>;
     HostptrCopiesRingT hostptrCopiesRing;
 
+    using CallbacksRingT = TypedRing<Cal::Rpc::CallbackIdT, OffsetWithinChannelT>;
+    CallbacksRingT callbacksRing;
+
     void *shmem = nullptr;
     size_t shmemSize = 0U;
 
     sem_t *semClient = nullptr;
     sem_t *semServer = nullptr;
+    sem_t *semClientCallback = nullptr;
 
     std::mutex mutex;
     bool ownsSemaphores = false;
@@ -592,10 +681,10 @@ class ChannelClient : public CommandsChannel {
         }
 
         this->completionStamp = getAsLocalAddress<CompletionStampT>(this->layout.completionStampsStart);
-        auto totalHeapSize = this->layout.heapEnd - this->layout.heapStart;
-        auto cmdHeapSize = totalHeapSize / 4;
-        this->cmdHeap = Cal::Allocators::LinearAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart), cmdHeapSize));
-        this->standaloneHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.heapStart + cmdHeapSize), totalHeapSize - cmdHeapSize));
+        auto totalClientHeapSize = this->layout.clientHeapEnd - this->layout.clientHeapStart;
+        auto cmdHeapSize = totalClientHeapSize / 4;
+        this->cmdHeap = Cal::Allocators::LinearAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.clientHeapStart), cmdHeapSize));
+        this->standaloneHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.clientHeapStart + cmdHeapSize), totalClientHeapSize - cmdHeapSize));
         this->useBatchedCalls = Cal::Utils::getCalEnvFlag(calBatchedCalls, this->useBatchedCalls);
 
         return true;
@@ -756,6 +845,16 @@ class ChannelClient : public CommandsChannel {
         }
     }
 
+    bool waitForCallbacks() {
+        log<Verbosity::bloat>("Waiting for completed callbacks - semaphores");
+        this->waitOnClientCallbackSemaphore();
+        if (stopped) {
+            log<Verbosity::debug>("Aborting wait for completed callback");
+            return false;
+        }
+        return false == this->callbacksRing.peekEmpty();
+    }
+
     void stop() {
         stopped = true;
     }
@@ -777,6 +876,17 @@ class ChannelClient : public CommandsChannel {
         this->hostptrCopiesRing.pop();
 
         return locationToUpdate;
+    }
+
+    Cal::Rpc::CallbackIdT popCompletedCallbackId() {
+        if (callbacksRing.peekEmpty()) {
+            return {};
+        }
+
+        auto callbackId = *this->callbacksRing.peekHead();
+        this->callbacksRing.pop();
+
+        return callbackId;
     }
 
     bool isCallAsyncEnabled() {
@@ -908,6 +1018,8 @@ class ChannelServer : public CommandsChannel {
         }
 
         this->ringBufferShmem = ringBufferShmem;
+        auto serviceHeapSize = this->layout.serviceHeapEnd - this->layout.serviceHeapStart;
+        this->serviceHeap = Cal::Allocators::AddressRangeAllocator(Cal::Utils::AddressRange(getAsLocalAddress(this->layout.serviceHeapStart), serviceHeapSize));
         return true;
     }
 
@@ -957,6 +1069,16 @@ class ChannelServer : public CommandsChannel {
         return true;
     }
 
+    bool pushCompletedCallbackId(Cal::Rpc::CallbackIdT callbackId) {
+        if (false == callbacksRing.push(callbackId, false)) {
+            log<Verbosity::critical>("Could not add callbackId notification to ring");
+            return false;
+        }
+        this->signalClientCallbacksSemaphore();
+
+        return true;
+    }
+
   protected:
     CommandPacket activeWait(bool yieldThread) {
         log<Verbosity::bloat>("Waiting for new command packet request - active polling");
@@ -973,7 +1095,7 @@ class ChannelServer : public CommandsChannel {
         RingEntry newRequest = *this->ring.peekHead();
         this->ring.pop();
 
-        return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.heapEnd - newRequest.messageOffset),
+        return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.clientHeapEnd - newRequest.messageOffset),
                              newRequest.completionStampOffset == Cal::Messages::invalidOffsetWithinChannel ? nullptr : getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
     }
 
@@ -991,7 +1113,7 @@ class ChannelServer : public CommandsChannel {
         RingEntry newRequest = *this->ring.peekHead();
         this->ring.pop();
 
-        return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.heapEnd - newRequest.messageOffset),
+        return CommandPacket{getAsLocalAddress(newRequest.messageOffset), static_cast<size_t>(this->layout.clientHeapEnd - newRequest.messageOffset),
                              newRequest.completionStampOffset == Cal::Messages::invalidOffsetWithinChannel ? nullptr : getAsLocalAddress<CompletionStampT>(newRequest.completionStampOffset)};
     }
 
@@ -1000,6 +1122,7 @@ class ChannelServer : public CommandsChannel {
     Cal::Ipc::MmappedShmemAllocationT ringBufferShmem;
     std::atomic_bool stopped = false;
     Cal::Messages::RespLaunchRpcShmemRingBuffer::ServiceSynchronizationMethod serviceSynchronizationMethod = Cal::Messages::RespLaunchRpcShmemRingBuffer::unknown;
+    Cal::Allocators::AddressRangeAllocator serviceHeap;
 };
 
 } // namespace Rpc

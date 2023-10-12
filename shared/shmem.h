@@ -812,7 +812,7 @@ class BasicMemoryBlocksManager {
                                                                       transferDescs.size());
         if (!enoughSpace) {
             log<Verbosity::error>("Client has not provided enough space for transferDescs!");
-            return {};
+            return false;
         }
 
         return true;
