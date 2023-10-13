@@ -8,6 +8,7 @@
 #pragma once
 
 #include "level_zero/ze_api.h"
+#include "shared/utils.h"
 
 #include <cstddef>
 #include <unordered_map>
@@ -36,7 +37,7 @@ class OngoingHostptrCopiesManager {
     void registerCopyOperation(ze_command_list_handle_t commandList, ze_event_handle_t associatedEvent, void *destination, size_t destinationSize, bool canBeResubmitted);
     void freeOperationsOfCommandList(ze_command_list_handle_t commandList, ArtificialEventsManager &eventsManager);
     void resubmitOperationsOfCommandList(ze_command_list_handle_t commandList);
-    void acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<OngoingHostptrCopy> &copies);
+    void acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<Cal::Utils::AddressRange> &copies);
 
   protected:
     mockable ze_result_t queryEventStatus(ze_event_handle_t event);

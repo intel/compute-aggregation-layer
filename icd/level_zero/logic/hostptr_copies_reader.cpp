@@ -18,33 +18,9 @@
 namespace Cal::Icd::LevelZero::Logic {
 
 ze_result_t HostptrCopiesReader::readMemory(Cal::Rpc::ChannelClient &channel, Cal::Ipc::ShmemImporter &shmemImporter) {
-    const auto memoryToRead = getHostptrCopiesToUpdate(channel);
-    if (memoryToRead.empty()) {
+    const auto transferDescs = getHostptrCopiesToUpdate(channel);
+    if (transferDescs.empty()) {
         return ZE_RESULT_SUCCESS;
-    }
-
-    uint32_t transferDescsCount{0};
-    const auto queryCountResult = performNonlockingTransferDescsRequest(channel,
-                                                                        static_cast<uint32_t>(memoryToRead.size()),
-                                                                        memoryToRead.data(),
-                                                                        &transferDescsCount,
-                                                                        nullptr);
-    if (queryCountResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Could not get total count of memory blocks to read from service! Execution of command list would be invalid!");
-        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
-    }
-
-    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
-    transferDescs.resize(transferDescsCount);
-
-    const auto queryTransferDescs = performNonlockingTransferDescsRequest(channel,
-                                                                          static_cast<uint32_t>(memoryToRead.size()),
-                                                                          memoryToRead.data(),
-                                                                          &transferDescsCount,
-                                                                          transferDescs.data());
-    if (queryTransferDescs != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Could not get memory blocks to read from service! Execution of command list would be invalid!");
-        return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
     }
 
     if (false == copyMappedMemory(shmemImporter, transferDescs)) {
@@ -55,12 +31,12 @@ ze_result_t HostptrCopiesReader::readMemory(Cal::Rpc::ChannelClient &channel, Ca
     return ZE_RESULT_SUCCESS;
 }
 
-std::vector<Cal::Rpc::MemChunk> HostptrCopiesReader::getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel) {
-    std::vector<Cal::Rpc::MemChunk> memoryToRead{};
+std::vector<Cal::Rpc::ShmemTransferDesc> HostptrCopiesReader::getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel) {
+    std::vector<Cal::Rpc::ShmemTransferDesc> memoryToRead{};
 
     while (true) {
         auto chunk = channel.acquireHostptrCopiesUpdate();
-        if (chunk.address == nullptr || chunk.size == 0u) {
+        if (chunk.bytesCountToCopy == 0u) {
             break;
         }
 
@@ -68,32 +44,6 @@ std::vector<Cal::Rpc::MemChunk> HostptrCopiesReader::getHostptrCopiesToUpdate(Ca
     }
 
     return memoryToRead;
-}
-
-ze_result_t HostptrCopiesReader::performNonlockingTransferDescsRequest(Cal::Rpc::ChannelClient &channel,
-                                                                       uint32_t chunksCount,
-                                                                       const Cal::Rpc::MemChunk *chunks,
-                                                                       uint32_t *outDescsCount,
-                                                                       Cal::Rpc::ShmemTransferDesc *outDescs) {
-    log<Verbosity::bloat>("Establishing RPC for memory transfer!");
-
-    using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(chunksCount, chunks, outDescsCount, outDescs);
-    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-
-    auto command = new (commandSpace) CommandT(dynMemTraits, chunksCount, chunks, outDescsCount, outDescs);
-    command->copyFromCaller(dynMemTraits);
-
-    if (channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if (false == channel.callSynchronous(command)) {
-        return command->returnValue();
-    }
-
-    command->copyToCaller(dynMemTraits);
-    return command->captures.ret;
 }
 
 bool HostptrCopiesReader::copyMappedMemory(Cal::Ipc::ShmemImporter &shmemImporter,

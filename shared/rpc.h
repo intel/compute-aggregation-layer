@@ -197,8 +197,7 @@ class CommandsChannel {
 
         OffsetT hostptrCopiesRingHead = completionStampsEnd;
         OffsetT hostptrCopiesRingTail = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingHead + sizeof(RingHeadT));
-
-        using MemChunkT = Cal::Rpc::MemChunk;
+        using ShmemTransferDescT = Cal::Rpc::ShmemTransferDesc;
         OffsetT hostptrCopiesRingStart = Cal::Utils::alignUpPow2<Cal::Utils::cachelineSize>(hostptrCopiesRingTail + sizeof(RingTailT));
         OffsetT hostptrCopiesRingEnd = Cal::Utils::alignUpPow2<Cal::Utils::pageSize4KB>(hostptrCopiesRingStart + Cal::Utils::pageSize4KB);
 
@@ -342,7 +341,7 @@ class CommandsChannel {
         this->layout.hostptrCopiesRingTail = layout.hostptrCopiesRingTail;
 
         this->layout.hostptrCopiesRingStart = layout.hostptrCopiesRingStart;
-        this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::MemChunkT);
+        this->layout.hostptrCopiesRingCapacity = (layout.hostptrCopiesRingEnd - layout.hostptrCopiesRingStart) / sizeof(Layout::ShmemTransferDescT);
 
         this->layout.heapStart = layout.heapStart;
         this->layout.heapEnd = shmemSize;
@@ -355,7 +354,7 @@ class CommandsChannel {
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
 
-        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::MemChunk>(this->layout.hostptrCopiesRingStart),
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::ShmemTransferDesc>(this->layout.hostptrCopiesRingStart),
                                                      this->layout.hostptrCopiesRingCapacity,
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
@@ -386,7 +385,7 @@ class CommandsChannel {
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringHead),
                            getAsLocalAddress<OffsetWithinChannelT>(this->layout.ringTail));
 
-        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::MemChunk>(this->layout.hostptrCopiesRingStart),
+        this->hostptrCopiesRing = HostptrCopiesRingT(getAsLocalAddress<Cal::Rpc::ShmemTransferDesc>(this->layout.hostptrCopiesRingStart),
                                                      this->layout.hostptrCopiesRingCapacity,
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingHead),
                                                      getAsLocalAddress<OffsetWithinChannelT>(this->layout.hostptrCopiesRingTail));
@@ -487,7 +486,7 @@ class CommandsChannel {
     using RingT = TypedRing<RingEntry, OffsetWithinChannelT>;
     RingT ring;
 
-    using HostptrCopiesRingT = TypedRing<Cal::Rpc::MemChunk, OffsetWithinChannelT>;
+    using HostptrCopiesRingT = TypedRing<Cal::Rpc::ShmemTransferDesc, OffsetWithinChannelT>;
     HostptrCopiesRingT hostptrCopiesRing;
 
     void *shmem = nullptr;
@@ -769,12 +768,12 @@ class ChannelClient : public CommandsChannel {
         return usesSharedVaForRpcChannel;
     }
 
-    Cal::Rpc::MemChunk acquireHostptrCopiesUpdate() {
+    Cal::Rpc::ShmemTransferDesc acquireHostptrCopiesUpdate() {
         if (hostptrCopiesRing.peekEmpty()) {
-            return {nullptr, 0u};
+            return {};
         }
 
-        Cal::Rpc::MemChunk locationToUpdate = *this->hostptrCopiesRing.peekHead();
+        Cal::Rpc::ShmemTransferDesc locationToUpdate = *this->hostptrCopiesRing.peekHead();
         this->hostptrCopiesRing.pop();
 
         return locationToUpdate;
@@ -949,9 +948,9 @@ class ChannelServer : public CommandsChannel {
         return reinterpret_cast<T *>(Cal::Utils::moveByBytes(shmem, reinterpret_cast<uintptr_t>(heapOffset)));
     }
 
-    bool pushHostptrCopyToUpdate(Cal::Rpc::MemChunk memChunk) {
-        if (false == hostptrCopiesRing.push(memChunk, false)) {
-            log<Verbosity::critical>("Could not add memChunk copy update notification to ring");
+    bool pushHostptrCopyToUpdate(Cal::Rpc::ShmemTransferDesc transferDesc) {
+        if (false == hostptrCopiesRing.push(transferDesc, false)) {
+            log<Verbosity::critical>("Could not add transferDesc copy update notification to ring");
             return false;
         }
 

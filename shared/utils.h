@@ -441,6 +441,8 @@ struct AddressRange {
 };
 
 using OffsetRange = AddressRange;
+static_assert(std::is_standard_layout<AddressRange>());
+static_assert(std::is_standard_layout<OffsetRange>());
 
 inline bool operator==(const AddressRange &lhs, const AddressRange &rhs) {
     return (lhs.start == rhs.start) && (lhs.end == rhs.end);

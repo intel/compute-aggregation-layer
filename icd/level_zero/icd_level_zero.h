@@ -98,7 +98,7 @@ struct IcdL0Context : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Lo
 
 class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_list_handle_t, Logic::IcdL0TypePrinter> {
   protected:
-    using ChunkEntry = Cal::Rpc::MemChunk;
+    using ChunkEntry = Cal::Utils::AddressRange;
 
   public:
     enum class CommandListType {

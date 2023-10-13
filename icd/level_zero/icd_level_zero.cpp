@@ -60,7 +60,7 @@ void IcdL0CommandList::registerMemoryToWrite(const void *srcPtr, size_t srcSize)
 
 void IcdL0CommandList::registerMemoryToContainer(const void *ptr, size_t size, std::vector<ChunkEntry> &memory) {
     const auto overlaps = [ptr, size](const auto &chunk) {
-        return IcdL0CommandList::rangesOverlap(chunk.address, chunk.size, ptr, size);
+        return IcdL0CommandList::rangesOverlap(chunk.base(), chunk.size(), ptr, size);
     };
 
     const auto overlappingCount = std::count_if(std::begin(memory), std::end(memory), overlaps);
@@ -81,7 +81,7 @@ void IcdL0CommandList::registerMemoryToContainer(const void *ptr, size_t size, s
 
     ChunkEntry currentChunk{ptr, size};
     for (auto &chunk : memory) {
-        if (!rangesOverlap(chunk.address, chunk.size, ptr, size)) {
+        if (!rangesOverlap(chunk.base(), chunk.size(), ptr, size)) {
             newChunks.push_back(chunk);
             continue;
         }
@@ -108,11 +108,11 @@ bool IcdL0CommandList::rangesOverlap(const void *srcPtr, size_t srcSize, const v
 }
 
 auto IcdL0CommandList::mergeChunks(const ChunkEntry &first, const ChunkEntry &second) -> ChunkEntry {
-    const auto firstBegin = reinterpret_cast<uintptr_t>(first.address);
-    const auto firstEnd = firstBegin + first.size;
+    const auto firstBegin = reinterpret_cast<uintptr_t>(first.base());
+    const auto firstEnd = firstBegin + first.size();
 
-    const auto secondBegin = reinterpret_cast<uintptr_t>(second.address);
-    const auto secondEnd = secondBegin + second.size;
+    const auto secondBegin = reinterpret_cast<uintptr_t>(second.base());
+    const auto secondEnd = secondBegin + second.size();
 
     const auto mergedBegin = std::min(firstBegin, secondBegin);
     const auto mergedEnd = std::max(firstEnd, secondEnd);
@@ -131,8 +131,13 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
     }
 
     uint32_t transferDescsCount{0};
-    const auto queryCountResult = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
-                                                                                       memoryToWrite.data(),
+    std::vector<Cal::Rpc::MemChunk> chunksToWrite;
+    chunksToWrite.reserve(memoryToWrite.size());
+    for (const auto &mw : memoryToWrite) {
+        chunksToWrite.push_back({mw.base(), mw.size()});
+    }
+    const auto queryCountResult = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(chunksToWrite.size()),
+                                                                                       chunksToWrite.data(),
                                                                                        &transferDescsCount,
                                                                                        nullptr);
     if (queryCountResult != ZE_RESULT_SUCCESS) {
@@ -143,8 +148,8 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
     std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
     transferDescs.resize(transferDescsCount);
 
-    const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(memoryToWrite.size()),
-                                                                                         memoryToWrite.data(),
+    const auto queryTransferDescs = zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper(static_cast<uint32_t>(chunksToWrite.size()),
+                                                                                         chunksToWrite.data(),
                                                                                          &transferDescsCount,
                                                                                          transferDescs.data());
     if (queryTransferDescs != ZE_RESULT_SUCCESS) {

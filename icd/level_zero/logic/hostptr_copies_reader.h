@@ -28,13 +28,8 @@ class HostptrCopiesReader {
     ze_result_t readMemory(Cal::Rpc::ChannelClient &channel, Cal::Ipc::ShmemImporter &shmemImporter);
 
   protected:
-    mockable std::vector<Cal::Rpc::MemChunk> getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel);
+    mockable std::vector<Cal::Rpc::ShmemTransferDesc> getHostptrCopiesToUpdate(Cal::Rpc::ChannelClient &channel);
     mockable bool copyMappedMemory(Cal::Ipc::ShmemImporter &shmemImporter, const std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs);
-    mockable ze_result_t performNonlockingTransferDescsRequest(Cal::Rpc::ChannelClient &channel,
-                                                               uint32_t chunksCount,
-                                                               const Cal::Rpc::MemChunk *chunks,
-                                                               uint32_t *outDescsCount,
-                                                               Cal::Rpc::ShmemTransferDesc *outDescs);
 };
 
 } // namespace Cal::Icd::LevelZero::Logic

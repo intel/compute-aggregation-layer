@@ -29,109 +29,108 @@ class IcdL0CommandListTest : public ::testing::Test {
     IcdL0CommandListTest() = default;
 
   protected:
-    size_t chunkSize{4};
-    std::byte bytes[16]{};
+    size_t chunkSize = 4;
+    uint8_t *testAddress = reinterpret_cast<uint8_t *>(0xffff00);
     Cal::Mocks::MockIcdL0CommandList mockCommandList{};
 };
 
 TEST_F(IcdL0CommandListTest, GivenNonOverlappingRangesOfTheSameSizeWhenOverlappingIsCheckedThenTheyDoNotOverlap) {
-    EXPECT_FALSE(IcdL0CommandList::rangesOverlap(&bytes[0], &bytes[chunkSize + 1], chunkSize));
+    EXPECT_FALSE(IcdL0CommandList::rangesOverlap(&testAddress[0], &testAddress[chunkSize + 1], chunkSize));
 }
 
 TEST_F(IcdL0CommandListTest, GivenOverlappingRangesOfTheSameSizeWhenOverlappingIsCheckedThenTheyOverlap) {
-    EXPECT_TRUE(IcdL0CommandList::rangesOverlap(&bytes[0], &bytes[chunkSize - 1], chunkSize));
+    EXPECT_TRUE(IcdL0CommandList::rangesOverlap(&testAddress[0], &testAddress[chunkSize - 1], chunkSize));
 }
 
 TEST_F(IcdL0CommandListTest, GivenConsecutiveRangesWhenOverlappingIsCheckedThenTheyDoNotOverlap) {
-    EXPECT_FALSE(IcdL0CommandList::rangesOverlap(&bytes[0], &bytes[chunkSize], chunkSize));
+    EXPECT_FALSE(IcdL0CommandList::rangesOverlap(&testAddress[0], &testAddress[chunkSize], chunkSize));
 }
 
 TEST_F(IcdL0CommandListTest, GivenLongRangeWhichIncludesShortRangeWhenOverlappingIsCheckedThenTheyOverlap) {
     constexpr size_t longBufferSize{16};
     constexpr size_t shortBufferSize{4};
 
-    EXPECT_TRUE(IcdL0CommandList::rangesOverlap(&bytes[0], longBufferSize, &bytes[chunkSize], shortBufferSize));
+    EXPECT_TRUE(IcdL0CommandList::rangesOverlap(&testAddress[0], longBufferSize, &testAddress[chunkSize], shortBufferSize));
 }
 
 TEST_F(IcdL0CommandListTest, GivenOverlappingChunksWhenMergingThemThenCorrectChunkIsReturned) {
-    ChunkEntry first{&bytes[0], chunkSize};
-    ChunkEntry second{&bytes[chunkSize - 1], chunkSize};
+    ChunkEntry first{testAddress, chunkSize};
+    ChunkEntry second{testAddress + chunkSize - 1, chunkSize};
 
-    const auto [mergedChunkAddress, mergedChunkSize] = mockCommandList.mergeChunks(first, second);
-    EXPECT_EQ(&bytes[0], mergedChunkAddress);
+    const auto mergedChunk = mockCommandList.mergeChunks(first, second);
+    EXPECT_EQ(testAddress, mergedChunk.base());
 
-    const size_t expectedSize{(2 * chunkSize) - 1};
-    EXPECT_EQ(expectedSize, mergedChunkSize);
+    EXPECT_EQ((2 * chunkSize) - 1, mergedChunk.size());
 }
 
 TEST_F(IcdL0CommandListTest, GivenLongChunkWhichIncludesShortChunkWhenMergingThemThenLongChunkIsReturned) {
-    constexpr size_t longBufferSize{12};
-    constexpr size_t shortBufferSize{4};
+    constexpr size_t longBufferSize = 12;
+    constexpr size_t shortBufferSize = 4;
 
-    ChunkEntry first{&bytes[0], longBufferSize};
-    ChunkEntry second{&bytes[4], shortBufferSize};
+    ChunkEntry first{testAddress, longBufferSize};
+    ChunkEntry second{testAddress + 4, shortBufferSize};
 
-    const auto [mergedChunkAddress, mergedChunkSize] = mockCommandList.mergeChunks(first, second);
-    EXPECT_EQ(&bytes[0], mergedChunkAddress);
-    EXPECT_EQ(longBufferSize, mergedChunkSize);
+    const auto mergedChunk = mockCommandList.mergeChunks(first, second);
+    EXPECT_EQ(testAddress, mergedChunk.base());
+    EXPECT_EQ(longBufferSize, mergedChunk.size());
 }
 
 TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksWhenRegisteringThemToWriteThenTheyAreRegisteredAndNoneOfChunksIsMerged) {
-    mockCommandList.registerMemoryToWrite(&bytes[0], chunkSize);
-    mockCommandList.registerMemoryToWrite(&bytes[chunkSize], chunkSize);
-    mockCommandList.registerMemoryToWrite(&bytes[(2 * chunkSize) + 2], 2);
+    mockCommandList.registerMemoryToWrite(testAddress, chunkSize);
+    mockCommandList.registerMemoryToWrite(&testAddress[chunkSize], chunkSize);
+    mockCommandList.registerMemoryToWrite(&testAddress[(2 * chunkSize) + 2], 2);
 
     ASSERT_EQ(3u, mockCommandList.memoryToWrite.size());
 
-    const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
-    EXPECT_EQ(&bytes[0], firstAddress);
-    EXPECT_EQ(chunkSize, firstSize);
+    const auto first = mockCommandList.memoryToWrite[0];
+    EXPECT_EQ(testAddress, first.base());
+    EXPECT_EQ(chunkSize, first.size());
 
-    const auto &[secondAddress, secondSize] = mockCommandList.memoryToWrite[1];
-    EXPECT_EQ(&bytes[chunkSize], secondAddress);
-    EXPECT_EQ(chunkSize, secondSize);
+    const auto second = mockCommandList.memoryToWrite[1];
+    EXPECT_EQ(&testAddress[chunkSize], second.base());
+    EXPECT_EQ(chunkSize, second.size());
 
-    const auto &[thirdAddress, thirdSize] = mockCommandList.memoryToWrite[2];
-    EXPECT_EQ(&bytes[(2 * chunkSize) + 2], thirdAddress);
-    EXPECT_EQ(2u, thirdSize);
+    const auto third = mockCommandList.memoryToWrite[2];
+    EXPECT_EQ(&testAddress[(2 * chunkSize) + 2], third.base());
+    EXPECT_EQ(2u, third.size());
 }
 
 TEST_F(IcdL0CommandListTest, GivenTwoOverlappingChunksWhenRegisteringThemToWriteThenTheyAreMerged) {
-    mockCommandList.registerMemoryToWrite(&bytes[0], chunkSize);
-    mockCommandList.registerMemoryToWrite(&bytes[chunkSize - 2], chunkSize);
+    mockCommandList.registerMemoryToWrite(testAddress, chunkSize);
+    mockCommandList.registerMemoryToWrite(testAddress + chunkSize - 2, chunkSize);
 
     ASSERT_EQ(1u, mockCommandList.memoryToWrite.size());
 
-    const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
-    EXPECT_EQ(&bytes[0], firstAddress);
-    EXPECT_EQ(6u, firstSize);
+    const auto first = mockCommandList.memoryToWrite[0];
+    EXPECT_EQ(&testAddress[0], first.base());
+    EXPECT_EQ(6u, first.size());
 }
 
 TEST_F(IcdL0CommandListTest, GivenNonOverlappingChunksAndOneWhichOverlapsTheRestWhenRegisteringThemToWriteThenLongChunkReplacesSmallerOnes) {
     // Register unrelated chunk.
-    std::byte otherBytes[12] = {};
-    mockCommandList.registerMemoryToWrite(&otherBytes[0], 8);
+    uint8_t *otherTestAdress = testAddress + 4096U * 117;
+    mockCommandList.registerMemoryToWrite(otherTestAdress, 8);
 
     // Register partitioned memory chunks.
-    mockCommandList.registerMemoryToWrite(&bytes[0], chunkSize);
-    mockCommandList.registerMemoryToWrite(&bytes[chunkSize], chunkSize);
-    mockCommandList.registerMemoryToWrite(&bytes[(2 * chunkSize) + 2], 2);
+    mockCommandList.registerMemoryToWrite(testAddress, chunkSize);
+    mockCommandList.registerMemoryToWrite(testAddress + chunkSize, chunkSize);
+    mockCommandList.registerMemoryToWrite(testAddress + (2 * chunkSize) + 2, 2);
 
     // Register additional chunk, which includes partitioned chunks.
-    mockCommandList.registerMemoryToWrite(&bytes[0], 16);
+    mockCommandList.registerMemoryToWrite(testAddress, 16);
 
     // Validate registered blocks.
     ASSERT_EQ(2u, mockCommandList.memoryToWrite.size());
 
     // Unrelated chunk.
-    const auto &[firstAddress, firstSize] = mockCommandList.memoryToWrite[0];
-    EXPECT_EQ(&otherBytes[0], firstAddress);
-    EXPECT_EQ(8u, firstSize);
+    const auto first = mockCommandList.memoryToWrite[0];
+    EXPECT_EQ(&otherTestAdress[0], first.base());
+    EXPECT_EQ(8u, first.size());
 
     // Long chunk, which contains partitioned ones.
-    const auto &[secondAddress, secondSize] = mockCommandList.memoryToWrite[1];
-    EXPECT_EQ(&bytes[0], secondAddress);
-    EXPECT_EQ(16u, secondSize);
+    const auto second = mockCommandList.memoryToWrite[1];
+    EXPECT_EQ(testAddress, second.base());
+    EXPECT_EQ(16u, second.size());
 }
 
 class ImportedHostPointersManagerTest : public ::testing::Test {

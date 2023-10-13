@@ -91,16 +91,16 @@ TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesThatCanBeR
     eventsManagerMock.callBaseResetObtainedEvent = false;
     eventsManagerMock.callBaseReturnObtainedEvent = false;
 
-    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedEvents;
-    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedEvents);
+    std::vector<Cal::Utils::AddressRange> finishedCopies;
+    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedCopies);
 
     // 2. Then.
     EXPECT_EQ(1u, eventsManagerMock.resetObtainedEventCallsCount);
     EXPECT_EQ(0u, eventsManagerMock.returnObtainedEventCallsCount);
 
-    ASSERT_EQ(1u, finishedEvents.size());
-    EXPECT_EQ(firstDestination, finishedEvents[0].destination);
-    EXPECT_EQ(firstDestinationSize, finishedEvents[0].destinationSize);
+    ASSERT_EQ(1u, finishedCopies.size());
+    EXPECT_EQ(firstDestination, finishedCopies[0].base());
+    EXPECT_EQ(firstDestinationSize, finishedCopies[0].size());
 
     ASSERT_EQ(1u, copiesManager.ongoingOperations.size());
     EXPECT_EQ(secondDestination, copiesManager.ongoingOperations[0].destination);
@@ -155,16 +155,16 @@ TEST(OngoingHostptrCopiesManagerTest, GivenManagerWithRegisteredCopiesThatCannot
     eventsManagerMock.callBaseResetObtainedEvent = false;
     eventsManagerMock.callBaseReturnObtainedEvent = false;
 
-    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedEvents;
-    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedEvents);
+    std::vector<Cal::Utils::AddressRange> finishedCopies;
+    copiesManager.acquireFinishedCopies(eventsManagerMock, finishedCopies);
 
     // 2. Then.
     EXPECT_EQ(0u, eventsManagerMock.resetObtainedEventCallsCount);
     EXPECT_EQ(1u, eventsManagerMock.returnObtainedEventCallsCount);
 
-    ASSERT_EQ(1u, finishedEvents.size());
-    EXPECT_EQ(firstDestination, finishedEvents[0].destination);
-    EXPECT_EQ(firstDestinationSize, finishedEvents[0].destinationSize);
+    ASSERT_EQ(1u, finishedCopies.size());
+    EXPECT_EQ(firstDestination, finishedCopies[0].base());
+    EXPECT_EQ(firstDestinationSize, finishedCopies[0].size());
 
     ASSERT_EQ(1u, copiesManager.ongoingOperations.size());
     EXPECT_EQ(secondDestination, copiesManager.ongoingOperations[0].destination);

@@ -73,7 +73,7 @@ void OngoingHostptrCopiesManager::freeOperationsOfCommandList(ze_command_list_ha
     }
 }
 
-void OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<OngoingHostptrCopy> &copies) {
+void OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager &eventsManager, std::vector<Cal::Utils::AddressRange> &copies) {
     for (auto &operation : ongoingOperations) {
         if (!operation.isFinished) {
             auto status = queryEventStatus(operation.associatedEvent);
@@ -91,9 +91,7 @@ void OngoingHostptrCopiesManager::acquireFinishedCopies(ArtificialEventsManager 
             eventsManager.returnObtainedEvent(operation.associatedEvent);
         }
 
-        auto &emplaced = copies.emplace_back();
-        emplaced.destination = operation.destination;
-        emplaced.destinationSize = operation.destinationSize;
+        copies.push_back({operation.destination, operation.destinationSize});
     }
 
     const auto firstToEraseIt = std::remove_if(ongoingOperations.begin(), ongoingOperations.end(), [](const auto &other) { return other.isFinished; });

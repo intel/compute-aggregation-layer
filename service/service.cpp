@@ -536,10 +536,15 @@ namespace LevelZero {
 
 bool updateHostptrCopies(Cal::Rpc::ChannelServer &channel, ClientContext &ctx) {
     auto &copiesManager = ctx.getOngoingHostptrCopiesManager();
-    std::vector<Cal::Service::LevelZero::OngoingHostptrCopiesManager::OngoingHostptrCopy> finishedCopies;
+    std::vector<Cal::Utils::AddressRange> finishedCopies;
     copiesManager.acquireFinishedCopies(ctx.getArtificialEventsManager(), finishedCopies);
-    for (const auto &copyDescription : finishedCopies) {
-        if (false == channel.pushHostptrCopyToUpdate({copyDescription.destination, copyDescription.destinationSize})) {
+    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    transferDescs.reserve(finishedCopies.size());
+    for (const auto &fc : finishedCopies) {
+        ctx.getMemoryBlocksManager().getRequiredTransferDescs(fc, transferDescs);
+    }
+    for (const auto &copyDescription : transferDescs) {
+        if (false == channel.pushHostptrCopyToUpdate(copyDescription)) {
             log<Verbosity::error>("Could not notify client about update of hostptr copies!");
             return false;
         }
@@ -886,14 +891,18 @@ bool addRelay(ze_result_t &status, ze_event_handle_t action, ze_event_handle_t t
     return ZE_RESULT_SUCCESS == status;
 }
 
-bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, void *ptr, size_t size) {
+bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, void *ptr, size_t size) {
     if (status != ZE_RESULT_SUCCESS) {
         return false;
     }
     status = Cal::Service::Apis::LevelZero::Standard::zeEventHostSynchronize(event, -1);
-    if (false == channel.pushHostptrCopyToUpdate({ptr, size})) {
-        log<Verbosity::error>("Could not notify client about required memory update!");
-        return false;
+    std::vector<Cal::Rpc::ShmemTransferDesc> transferDescs;
+    ctx.getMemoryBlocksManager().getRequiredTransferDescs({ptr, size}, transferDescs);
+    for (const auto &td : transferDescs) {
+        if (false == channel.pushHostptrCopyToUpdate(td)) {
+            log<Verbosity::error>("Could not notify client about required memory update!");
+            return false;
+        }
     }
     return true;
 }

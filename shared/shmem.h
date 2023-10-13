@@ -787,6 +787,37 @@ class BasicMemoryBlocksManager {
         return true;
     }
 
+    bool getRequiredTransferDescs(Cal::Utils::AddressRange range, std::vector<Cal::Rpc::ShmemTransferDesc> &transferDescs) {
+        auto memoryBlock = getMemoryBlockWhichIncludesChunk(range.base(), range.size());
+        if (!memoryBlock) {
+            log<Verbosity::error>("Could not retrieve memory block, which includes given range!");
+            return false;
+        }
+
+        uint32_t newTransferDescsCount = memoryBlock->getCountOfOverlappingChunks(range.base(), range.size());
+
+        uint32_t prevTransferDescsCount = static_cast<uint32_t>(transferDescs.size());
+        transferDescs.resize(prevTransferDescsCount + newTransferDescsCount);
+        uint32_t appendedTransfersCount = prevTransferDescsCount;
+
+        if (!memoryBlock) {
+            log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
+            return false;
+        }
+
+        const auto enoughSpace = memoryBlock->appendOverlappingChunks(range.base(),
+                                                                      range.size(),
+                                                                      appendedTransfersCount,
+                                                                      transferDescs.data(),
+                                                                      transferDescs.size());
+        if (!enoughSpace) {
+            log<Verbosity::error>("Client has not provided enough space for transferDescs!");
+            return {};
+        }
+
+        return true;
+    }
+
   protected:
     BasicMemoryBlockT *getMemoryBlockWhichIncludesChunk(const void *srcptr, size_t size) {
         const auto overlappingBegin = getOverlappingBlocksBegin(srcptr, size);
