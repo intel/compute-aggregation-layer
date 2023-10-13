@@ -5384,6 +5384,66 @@ config:
                   type: size_t
                   kind: scalar
                 server_access: write
+        ################### cl_khr_suggested_local_work_size EXTENSION
+        - name: clGetKernelSuggestedLocalWorkSizeKHR
+          latency: 0.0
+          special_handling:
+            extension_name: "cl_khr_suggested_local_work_size"
+            icd:
+              in_get_extension_function_address: True
+              not_in_dispatch_table: True
+          returns:
+            type: cl_int
+            kind: scalar
+            default: "CL_DEVICE_NOT_AVAILABLE"
+          args:
+            0:
+              name: command_queue
+              type: cl_command_queue
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+            1:
+              name: kernel
+              type: cl_kernel
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+            2:
+              name: work_dim
+              type: cl_uint
+              kind: scalar
+            3:
+              name: global_work_offset
+              type: "const size_t*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "work_dim"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read
+            4:
+              name: global_work_size
+              type: "const size_t*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "work_dim"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read
+            5:
+              name: suggested_local_work_size
+              type: "size_t *"
+              kind: ptr_array
+              kind_details:
+                num_elements: "work_dim"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: write
         ################### cl_khr_create_command_queue EXTENSION
         - name: clCreateCommandQueueWithPropertiesKHR
           latency: 1.0

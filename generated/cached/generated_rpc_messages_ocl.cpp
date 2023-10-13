@@ -1725,6 +1725,40 @@ size_t ClGetKernelSubGroupInfoKHRRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ClGetKernelSuggestedLocalWorkSizeKHRRpcM::Captures::DynamicTraits ClGetKernelSuggestedLocalWorkSizeKHRRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) {
+    DynamicTraits ret = {};
+    ret.global_work_offset.count = work_dim;
+    ret.global_work_offset.size = ret.global_work_offset.count * sizeof(size_t);
+
+    ret.global_work_size.offset = alignUpPow2<8>(ret.global_work_offset.offset + ret.global_work_offset.size);
+    ret.global_work_size.count = work_dim;
+    ret.global_work_size.size = ret.global_work_size.count * sizeof(size_t);
+
+    ret.suggested_local_work_size.offset = alignUpPow2<8>(ret.global_work_size.offset + ret.global_work_size.size);
+    ret.suggested_local_work_size.count = work_dim;
+    ret.suggested_local_work_size.size = ret.suggested_local_work_size.count * sizeof(size_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.suggested_local_work_size.offset + ret.suggested_local_work_size.size);
+
+
+    return ret;
+}
+
+size_t ClGetKernelSuggestedLocalWorkSizeKHRRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetSuggested_local_work_size;
+     const auto lastMemberArraySize = this->countSuggested_local_work_size * sizeof(size_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ClGetKernelSuggestedLocalWorkSizeKHRRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetSuggested_local_work_size;
+     const auto lastMemberArraySize = this->countSuggested_local_work_size * sizeof(size_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::DynamicTraits ClCreateCommandQueueWithPropertiesKHRRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
     DynamicTraits ret = {};
     ret.properties.count = Cal::Utils::countNullterminatedKey(properties);

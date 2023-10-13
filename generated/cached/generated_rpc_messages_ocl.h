@@ -10061,9 +10061,134 @@ struct ClGetKernelSubGroupInfoKHRRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClGetKernelSubGroupInfoKHRRpcM>);
-struct ClCreateCommandQueueWithPropertiesKHRRpcM {
+struct ClGetKernelSuggestedLocalWorkSizeKHRRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 109;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = cl_int;
+
+    struct Args {
+        cl_command_queue command_queue = {};
+        cl_kernel kernel = {};
+        cl_uint work_dim = {};
+        const size_t* global_work_offset = {};
+        const size_t* global_work_size = {};
+        size_t * suggested_local_work_size = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->command_queue == rhs.command_queue;
+            equal &= this->kernel == rhs.kernel;
+            equal &= this->work_dim == rhs.work_dim;
+            equal &= this->global_work_offset == rhs.global_work_offset;
+            equal &= this->global_work_size == rhs.global_work_size;
+            equal &= this->suggested_local_work_size == rhs.suggested_local_work_size;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits global_work_offset = {};          
+            DynamicArgTraits global_work_size = {};          
+            DynamicArgTraits suggested_local_work_size = {};          
+        };
+
+        cl_int ret = CL_DEVICE_NOT_AVAILABLE;
+        uint32_t offsetGlobal_work_size = 0;
+        uint32_t offsetSuggested_local_work_size = 0;
+        uint32_t countGlobal_work_offset = 0;
+        uint32_t countGlobal_work_size = 0;
+        uint32_t countSuggested_local_work_size = 0;
+        const size_t* getGlobal_work_offset() {
+            auto offset = 0;
+            return reinterpret_cast<const size_t*>(dynMem + offset);
+        }
+
+        const size_t* getGlobal_work_size() {
+            auto offset = offsetGlobal_work_size;
+            return reinterpret_cast<const size_t*>(dynMem + offset);
+        }
+
+        size_t * getSuggested_local_work_size() {
+            auto offset = offsetSuggested_local_work_size;
+            return reinterpret_cast<size_t *>(dynMem + offset);
+        }
+
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        offsetGlobal_work_size = dynamicTraits.global_work_size.offset;
+        offsetSuggested_local_work_size = dynamicTraits.suggested_local_work_size.offset;
+        countGlobal_work_offset = dynamicTraits.global_work_offset.count;
+        countGlobal_work_size = dynamicTraits.global_work_size.count;
+        countSuggested_local_work_size = dynamicTraits.suggested_local_work_size.count;
+        }
+        
+        alignas(8) char dynMem[];
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    cl_int returnValue(){
+        return captures.ret;
+    }
+
+    ClGetKernelSuggestedLocalWorkSizeKHRRpcM() = default;
+
+    ClGetKernelSuggestedLocalWorkSizeKHRRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        header.subtype = messageSubtype;
+        args.command_queue = command_queue;
+        args.kernel = kernel;
+        args.work_dim = work_dim;
+        args.global_work_offset = global_work_offset;
+        args.global_work_size = global_work_size;
+        args.suggested_local_work_size = suggested_local_work_size;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ClGetKernelSuggestedLocalWorkSizeKHRRpcM &message, cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
+        message.header.subtype = messageSubtype;
+        message.args.command_queue = command_queue;
+        message.args.kernel = kernel;
+        message.args.work_dim = work_dim;
+        message.args.global_work_offset = global_work_offset;
+        message.args.global_work_size = global_work_size;
+        message.args.suggested_local_work_size = suggested_local_work_size;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.global_work_offset){
+            memcpy(asMemcpyDstT(captures.getGlobal_work_offset()), args.global_work_offset, dynMemTraits.global_work_offset.size);
+        }
+        if(args.global_work_size){
+            memcpy(asMemcpyDstT(captures.getGlobal_work_size()), args.global_work_size, dynMemTraits.global_work_size.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.suggested_local_work_size){
+            memcpy(args.suggested_local_work_size, captures.getSuggested_local_work_size(), dynMemTraits.suggested_local_work_size.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ClGetKernelSuggestedLocalWorkSizeKHRRpcM>);
+struct ClCreateCommandQueueWithPropertiesKHRRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 110;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10153,7 +10278,7 @@ struct ClCreateCommandQueueWithPropertiesKHRRpcM {
 static_assert(std::is_standard_layout_v<ClCreateCommandQueueWithPropertiesKHRRpcM>);
 struct ClEnqueueMemFillINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 110;
+    static constexpr uint16_t messageSubtype = 111;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10277,7 +10402,7 @@ struct ClEnqueueMemFillINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemFillINTELRpcM>);
 struct ClEnqueueMemcpyINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 111;
+    static constexpr uint16_t messageSubtype = 112;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -10383,7 +10508,7 @@ struct ClEnqueueMemcpyINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTELRpcM>);
 struct ClSetKernelArgMemPointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 112;
+    static constexpr uint16_t messageSubtype = 113;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10443,7 +10568,7 @@ struct ClSetKernelArgMemPointerINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSetKernelArgMemPointerINTELRpcM>);
 struct ClGetMemAllocInfoINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 113;
+    static constexpr uint16_t messageSubtype = 114;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10538,7 +10663,7 @@ struct ClGetMemAllocInfoINTELRpcM {
 static_assert(std::is_standard_layout_v<ClGetMemAllocInfoINTELRpcM>);
 struct ClDeviceMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 114;
+    static constexpr uint16_t messageSubtype = 115;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10642,7 +10767,7 @@ struct ClHostMemAllocINTELRpcMImplicitArgs {
 
 struct ClHostMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 115;
+    static constexpr uint16_t messageSubtype = 116;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10746,7 +10871,7 @@ struct ClSharedMemAllocINTELRpcMImplicitArgs {
 
 struct ClSharedMemAllocINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 116;
+    static constexpr uint16_t messageSubtype = 117;
     static constexpr float latency = 1.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10848,7 +10973,7 @@ struct ClSharedMemAllocINTELRpcM {
 static_assert(std::is_standard_layout_v<ClSharedMemAllocINTELRpcM>);
 struct ClMemFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 117;
+    static constexpr uint16_t messageSubtype = 118;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10904,7 +11029,7 @@ struct ClMemFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemFreeINTELRpcM>);
 struct ClMemBlockingFreeINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 118;
+    static constexpr uint16_t messageSubtype = 119;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -10960,7 +11085,7 @@ struct ClMemBlockingFreeINTELRpcM {
 static_assert(std::is_standard_layout_v<ClMemBlockingFreeINTELRpcM>);
 struct ClEnqueueMigrateMemINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 119;
+    static constexpr uint16_t messageSubtype = 120;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11062,7 +11187,7 @@ struct ClEnqueueMigrateMemINTELRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMigrateMemINTELRpcM>);
 struct ClGetDeviceGlobalVariablePointerINTELRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 120;
+    static constexpr uint16_t messageSubtype = 121;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Other;
 
@@ -11160,7 +11285,7 @@ struct ClGetDeviceGlobalVariablePointerINTELRpcM {
 static_assert(std::is_standard_layout_v<ClGetDeviceGlobalVariablePointerINTELRpcM>);
 struct ClEnqueueWriteBuffer_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 121;
+    static constexpr uint16_t messageSubtype = 122;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11270,7 +11395,7 @@ struct ClEnqueueWriteBuffer_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBuffer_LocalRpcM>);
 struct ClEnqueueWriteBuffer_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 122;
+    static constexpr uint16_t messageSubtype = 123;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11380,7 +11505,7 @@ struct ClEnqueueWriteBuffer_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBuffer_UsmRpcM>);
 struct ClEnqueueWriteBuffer_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 123;
+    static constexpr uint16_t messageSubtype = 124;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11490,7 +11615,7 @@ struct ClEnqueueWriteBuffer_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBuffer_SharedRpcM>);
 struct ClEnqueueWriteBufferRect_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 124;
+    static constexpr uint16_t messageSubtype = 125;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11632,7 +11757,7 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBufferRect_LocalRpcM>);
 struct ClEnqueueWriteBufferRect_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 125;
+    static constexpr uint16_t messageSubtype = 126;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11774,7 +11899,7 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBufferRect_UsmRpcM>);
 struct ClEnqueueWriteBufferRect_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 126;
+    static constexpr uint16_t messageSubtype = 127;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -11916,7 +12041,7 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueWriteBufferRect_SharedRpcM>);
 struct ClEnqueueReadBuffer_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 127;
+    static constexpr uint16_t messageSubtype = 128;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12026,7 +12151,7 @@ struct ClEnqueueReadBuffer_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_LocalRpcM>);
 struct ClEnqueueReadBuffer_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 128;
+    static constexpr uint16_t messageSubtype = 129;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12136,7 +12261,7 @@ struct ClEnqueueReadBuffer_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_UsmRpcM>);
 struct ClEnqueueReadBuffer_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 129;
+    static constexpr uint16_t messageSubtype = 130;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12246,7 +12371,7 @@ struct ClEnqueueReadBuffer_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBuffer_SharedRpcM>);
 struct ClEnqueueReadBufferRect_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 130;
+    static constexpr uint16_t messageSubtype = 131;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12388,7 +12513,7 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRect_LocalRpcM>);
 struct ClEnqueueReadBufferRect_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 131;
+    static constexpr uint16_t messageSubtype = 132;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12530,7 +12655,7 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRect_UsmRpcM>);
 struct ClEnqueueReadBufferRect_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 132;
+    static constexpr uint16_t messageSubtype = 133;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12672,7 +12797,7 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueReadBufferRect_SharedRpcM>);
 struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 133;
+    static constexpr uint16_t messageSubtype = 134;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12778,7 +12903,7 @@ struct ClEnqueueSVMMemcpy_Local_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 134;
+    static constexpr uint16_t messageSubtype = 135;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12884,7 +13009,7 @@ struct ClEnqueueSVMMemcpy_Local_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 135;
+    static constexpr uint16_t messageSubtype = 136;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -12990,7 +13115,7 @@ struct ClEnqueueSVMMemcpy_Local_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Local_SharedRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 136;
+    static constexpr uint16_t messageSubtype = 137;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13096,7 +13221,7 @@ struct ClEnqueueSVMMemcpy_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 137;
+    static constexpr uint16_t messageSubtype = 138;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13202,7 +13327,7 @@ struct ClEnqueueSVMMemcpy_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 138;
+    static constexpr uint16_t messageSubtype = 139;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13308,7 +13433,7 @@ struct ClEnqueueSVMMemcpy_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Usm_SharedRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 139;
+    static constexpr uint16_t messageSubtype = 140;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13414,7 +13539,7 @@ struct ClEnqueueSVMMemcpy_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_LocalRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 140;
+    static constexpr uint16_t messageSubtype = 141;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13520,7 +13645,7 @@ struct ClEnqueueSVMMemcpy_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_UsmRpcM>);
 struct ClEnqueueSVMMemcpy_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 141;
+    static constexpr uint16_t messageSubtype = 142;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13626,7 +13751,7 @@ struct ClEnqueueSVMMemcpy_Shared_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueSVMMemcpy_Shared_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 142;
+    static constexpr uint16_t messageSubtype = 143;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13732,7 +13857,7 @@ struct ClEnqueueMemcpyINTEL_Local_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 143;
+    static constexpr uint16_t messageSubtype = 144;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13838,7 +13963,7 @@ struct ClEnqueueMemcpyINTEL_Local_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Local_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 144;
+    static constexpr uint16_t messageSubtype = 145;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -13944,7 +14069,7 @@ struct ClEnqueueMemcpyINTEL_Local_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Local_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 145;
+    static constexpr uint16_t messageSubtype = 146;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14050,7 +14175,7 @@ struct ClEnqueueMemcpyINTEL_Usm_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 146;
+    static constexpr uint16_t messageSubtype = 147;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14156,7 +14281,7 @@ struct ClEnqueueMemcpyINTEL_Usm_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Usm_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 147;
+    static constexpr uint16_t messageSubtype = 148;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14262,7 +14387,7 @@ struct ClEnqueueMemcpyINTEL_Usm_SharedRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Usm_SharedRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_LocalRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 148;
+    static constexpr uint16_t messageSubtype = 149;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14368,7 +14493,7 @@ struct ClEnqueueMemcpyINTEL_Shared_LocalRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_LocalRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_UsmRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 149;
+    static constexpr uint16_t messageSubtype = 150;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14474,7 +14599,7 @@ struct ClEnqueueMemcpyINTEL_Shared_UsmRpcM {
 static_assert(std::is_standard_layout_v<ClEnqueueMemcpyINTEL_Shared_UsmRpcM>);
 struct ClEnqueueMemcpyINTEL_Shared_SharedRpcM {
     Cal::Rpc::RpcMessageHeader header;
-    static constexpr uint16_t messageSubtype = 150;
+    static constexpr uint16_t messageSubtype = 151;
     static constexpr float latency = 0.0;
     static constexpr CallCategory category = CallCategory::Copy;
 
@@ -14690,6 +14815,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype).id, "clReleaseDeviceEXT"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype).id, "clRetainDeviceEXT"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype).id, "clGetKernelSubGroupInfoKHR"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSuggestedLocalWorkSizeKHRRpcM::messageSubtype).id, "clGetKernelSuggestedLocalWorkSizeKHR"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateCommandQueueWithPropertiesKHRRpcM::messageSubtype).id, "clCreateCommandQueueWithPropertiesKHR"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype).id, "clEnqueueMemFillINTEL"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype).id, "clEnqueueMemcpyINTEL"),
@@ -14853,6 +14979,7 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("clReleaseDeviceEXT", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clRetainDeviceEXT", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clGetKernelSubGroupInfoKHR", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("clGetKernelSuggestedLocalWorkSizeKHR", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSuggestedLocalWorkSizeKHRRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clCreateCommandQueueWithPropertiesKHR", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateCommandQueueWithPropertiesKHRRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMemFillINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype)),
         std::pair<std::string, RetT>("clEnqueueMemcpyINTEL", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype)),
@@ -15014,6 +15141,7 @@ static constexpr RpcCallId clCreateSubDevicesEXT = {Cal::Rpc::RpcMessageHeader::
 static constexpr RpcCallId clReleaseDeviceEXT = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClReleaseDeviceEXTRpcM::messageSubtype};
 static constexpr RpcCallId clRetainDeviceEXT = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClRetainDeviceEXTRpcM::messageSubtype};
 static constexpr RpcCallId clGetKernelSubGroupInfoKHR = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSubGroupInfoKHRRpcM::messageSubtype};
+static constexpr RpcCallId clGetKernelSuggestedLocalWorkSizeKHR = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClGetKernelSuggestedLocalWorkSizeKHRRpcM::messageSubtype};
 static constexpr RpcCallId clCreateCommandQueueWithPropertiesKHR = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClCreateCommandQueueWithPropertiesKHRRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMemFillINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemFillINTELRpcM::messageSubtype};
 static constexpr RpcCallId clEnqueueMemcpyINTEL = {Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl, ClEnqueueMemcpyINTELRpcM::messageSubtype};
@@ -15168,6 +15296,7 @@ using clCreateSubDevicesEXT = ClCreateSubDevicesEXTRpcM;
 using clReleaseDeviceEXT = ClReleaseDeviceEXTRpcM;
 using clRetainDeviceEXT = ClRetainDeviceEXTRpcM;
 using clGetKernelSubGroupInfoKHR = ClGetKernelSubGroupInfoKHRRpcM;
+using clGetKernelSuggestedLocalWorkSizeKHR = ClGetKernelSuggestedLocalWorkSizeKHRRpcM;
 using clCreateCommandQueueWithPropertiesKHR = ClCreateCommandQueueWithPropertiesKHRRpcM;
 using clEnqueueMemFillINTEL = ClEnqueueMemFillINTELRpcM;
 using clEnqueueMemcpyINTEL = ClEnqueueMemcpyINTELRpcM;

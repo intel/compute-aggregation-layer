@@ -143,6 +143,7 @@ extern cl_int (*clCreateSubDevicesEXT)(cl_device_id in_device, const cl_device_p
 extern cl_int (*clReleaseDeviceEXT)(cl_device_id device);
 extern cl_int (*clRetainDeviceEXT)(cl_device_id device);
 extern cl_int (*clGetKernelSubGroupInfoKHR)(cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+extern cl_int (*clGetKernelSuggestedLocalWorkSizeKHR)(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size);
 extern cl_int (*clEnqueueMemFillINTEL)(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueMemcpyINTEL)(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clSetKernelArgMemPointerINTEL)(cl_kernel kernel, cl_uint argIndex, const void* argValue);
@@ -1425,6 +1426,19 @@ inline bool clGetKernelSubGroupInfoKHRHandler(Provider &service, Cal::Rpc::Chann
                                                 );
     return true;
 }
+inline bool clGetKernelSuggestedLocalWorkSizeKHRHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clGetKernelSuggestedLocalWorkSizeKHR");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelSuggestedLocalWorkSizeKHRRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetKernelSuggestedLocalWorkSizeKHR(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.kernel, 
+                                                apiCommand->args.work_dim, 
+                                                apiCommand->args.global_work_offset ? apiCommand->captures.getGlobal_work_offset() : nullptr, 
+                                                apiCommand->args.global_work_size ? apiCommand->captures.getGlobal_work_size() : nullptr, 
+                                                apiCommand->args.suggested_local_work_size ? apiCommand->captures.getSuggested_local_work_size() : nullptr
+                                                );
+    return true;
+}
 inline bool clEnqueueMemFillINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemFillINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM*>(command);
@@ -2333,6 +2347,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClReleaseDeviceEXTRpcM::messageSubtype] = clReleaseDeviceEXTHandler;
     outHandlers[ClRetainDeviceEXTRpcM::messageSubtype] = clRetainDeviceEXTHandler;
     outHandlers[ClGetKernelSubGroupInfoKHRRpcM::messageSubtype] = clGetKernelSubGroupInfoKHRHandler;
+    outHandlers[ClGetKernelSuggestedLocalWorkSizeKHRRpcM::messageSubtype] = clGetKernelSuggestedLocalWorkSizeKHRHandler;
     outHandlers[ClEnqueueMemFillINTELRpcM::messageSubtype] = clEnqueueMemFillINTELHandler;
     outHandlers[ClEnqueueMemcpyINTELRpcM::messageSubtype] = clEnqueueMemcpyINTELHandler;
     outHandlers[ClSetKernelArgMemPointerINTELRpcM::messageSubtype] = clSetKernelArgMemPointerINTELHandler;
@@ -3330,6 +3345,16 @@ inline void callDirectly(Cal::Rpc::Ocl::ClGetKernelSubGroupInfoKHRRpcM &apiComma
                                                 apiCommand.args.param_value_size_ret
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClGetKernelSuggestedLocalWorkSizeKHRRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetKernelSuggestedLocalWorkSizeKHR(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.kernel, 
+                                                apiCommand.args.work_dim, 
+                                                apiCommand.args.global_work_offset, 
+                                                apiCommand.args.global_work_size, 
+                                                apiCommand.args.suggested_local_work_size
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemFillINTEL(
                                                 apiCommand.args.command_queue, 
@@ -3954,6 +3979,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetKernelSubGroupInfoKHRRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelSubGroupInfoKHRRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClGetKernelSuggestedLocalWorkSizeKHRRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetKernelSuggestedLocalWorkSizeKHRRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemFillINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetKernelArgMemPointerINTELRpcM*>(command)); break;

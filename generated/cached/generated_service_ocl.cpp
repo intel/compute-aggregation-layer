@@ -950,6 +950,17 @@ cl_int clGetKernelSubGroupInfoKHRLoad(cl_kernel kernel, cl_device_id device, cl_
     Cal::Service::Apis::Ocl::Extensions::clGetKernelSubGroupInfoKHR = extAddr;
     return extAddr(kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
 }
+cl_int clGetKernelSuggestedLocalWorkSizeKHRLoad(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size){
+    using ExtFuncT = decltype(clGetKernelSuggestedLocalWorkSizeKHRLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clGetKernelSuggestedLocalWorkSizeKHR"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : clGetKernelSuggestedLocalWorkSizeKHR");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::Ocl::Extensions::clGetKernelSuggestedLocalWorkSizeKHR = extAddr;
+    return extAddr(command_queue, kernel, work_dim, global_work_offset, global_work_size, suggested_local_work_size);
+}
 cl_int clEnqueueMemFillINTELLoad(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
     using ExtFuncT = decltype(clEnqueueMemFillINTELLoad);
     static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clEnqueueMemFillINTEL"));
@@ -1076,6 +1087,7 @@ cl_int (*clCreateSubDevicesEXT)(cl_device_id in_device, const cl_device_partitio
 cl_int (*clReleaseDeviceEXT)(cl_device_id device) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clReleaseDeviceEXTLoad;
 cl_int (*clRetainDeviceEXT)(cl_device_id device) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clRetainDeviceEXTLoad;
 cl_int (*clGetKernelSubGroupInfoKHR)(cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clGetKernelSubGroupInfoKHRLoad;
+cl_int (*clGetKernelSuggestedLocalWorkSizeKHR)(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clGetKernelSuggestedLocalWorkSizeKHRLoad;
 cl_int (*clEnqueueMemFillINTEL)(cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMemFillINTELLoad;
 cl_int (*clEnqueueMemcpyINTEL)(cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMemcpyINTELLoad;
 cl_int (*clSetKernelArgMemPointerINTEL)(cl_kernel kernel, cl_uint argIndex, const void* argValue) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clSetKernelArgMemPointerINTELLoad;

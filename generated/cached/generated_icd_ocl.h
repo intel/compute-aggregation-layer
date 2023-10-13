@@ -144,6 +144,7 @@ cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_
 cl_int clReleaseDeviceEXT (cl_device_id device);
 cl_int clRetainDeviceEXT (cl_device_id device);
 cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+cl_int clGetKernelSuggestedLocalWorkSizeKHR (cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size);
 cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret);
 cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueMemcpyINTEL (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);

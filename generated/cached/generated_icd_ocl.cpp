@@ -3393,6 +3393,32 @@ cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_ker
 
     return ret;
 }
+cl_int clGetKernelSuggestedLocalWorkSizeKHR (cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) {
+    log<Verbosity::bloat>("Establishing RPC for clGetKernelSuggestedLocalWorkSizeKHR");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClGetKernelSuggestedLocalWorkSizeKHRRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, kernel, work_dim, global_work_offset, global_work_size, suggested_local_work_size);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, kernel, work_dim, global_work_offset, global_work_size, suggested_local_work_size);
+    command->copyFromCaller(dynMemTraits);
+    command->args.command_queue = static_cast<IcdOclCommandQueue*>(command_queue)->asRemoteObject();
+    command->args.kernel = static_cast<IcdOclKernel*>(kernel)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
 cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clCreateCommandQueueWithPropertiesKHR");
     return Cal::Icd::Ocl::clCreateCommandQueueWithProperties(context, device, properties, errcode_ret);
@@ -5271,6 +5297,9 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("clGetKernelSubGroupInfoKHR", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clGetKernelSubGroupInfoKHR);
     }
+    if(0 == strcmp("clGetKernelSuggestedLocalWorkSizeKHR", funcName)) {
+        return reinterpret_cast<void*>(Cal::Icd::Ocl::clGetKernelSuggestedLocalWorkSizeKHR);
+    }
     if(0 == strcmp("clCreateCommandQueueWithPropertiesKHR", funcName)) {
         return reinterpret_cast<void*>(Cal::Icd::Ocl::clCreateCommandQueueWithPropertiesKHR);
     }
@@ -5651,6 +5680,9 @@ cl_int clRetainDeviceEXT (cl_device_id device) {
 }
 cl_int clGetKernelSubGroupInfoKHR (cl_kernel kernel, cl_device_id device, cl_kernel_sub_group_info param_name, size_t input_value_size, const void* input_value, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     return Cal::Icd::Ocl::clGetKernelSubGroupInfoKHR(kernel, device, param_name, input_value_size, input_value, param_value_size, param_value, param_value_size_ret);
+}
+cl_int clGetKernelSuggestedLocalWorkSizeKHR (cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, size_t * suggested_local_work_size) {
+    return Cal::Icd::Ocl::clGetKernelSuggestedLocalWorkSizeKHR(command_queue, kernel, work_dim, global_work_offset, global_work_size, suggested_local_work_size);
 }
 cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_device_id device, const cl_queue_properties* properties, cl_int* errcode_ret) {
     return Cal::Icd::Ocl::clCreateCommandQueueWithPropertiesKHR(context, device, properties, errcode_ret);
