@@ -1322,6 +1322,22 @@ inline void invalidateKernelArgCache() {
     }
 }
 
+inline bool isCacheable(cl_uint param_name) {
+    switch (param_name) {
+    default:
+        return true;
+    case CL_DEVICE_REFERENCE_COUNT:
+    case CL_CONTEXT_REFERENCE_COUNT:
+    case CL_QUEUE_REFERENCE_COUNT:
+    case CL_MEM_REFERENCE_COUNT:
+    case CL_SAMPLER_REFERENCE_COUNT:
+    case CL_PROGRAM_REFERENCE_COUNT:
+    case CL_KERNEL_REFERENCE_COUNT:
+    case CL_EVENT_REFERENCE_COUNT:
+        return false;
+    }
+}
+
 } // namespace Ocl
 } // namespace Icd
 } // namespace Cal
