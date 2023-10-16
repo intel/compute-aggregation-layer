@@ -438,6 +438,19 @@ bool appendLaunchMultipleKernelsIndirect(ze_command_list_handle_t cmdList, uint3
     return true;
 }
 
+bool appendQueryKernelTimestamps(ze_command_list_handle_t cmdList, uint32_t numEvents, ze_event_handle_t *events, void *dstptr, const size_t *pOffsets) {
+    const auto zeCommandListAppendQueryKernelTimestampsResult = zeCommandListAppendQueryKernelTimestamps(
+        cmdList, numEvents, events, dstptr, pOffsets, nullptr, 0, nullptr);
+    if (zeCommandListAppendQueryKernelTimestampsResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendQueryKernelTimestamps() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListAppendQueryKernelTimestampsResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Query kernel timestamps operation appended successfully!");
+    return true;
+}
+
 bool setGlobalOffset(ze_kernel_handle_t kernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     const auto zeKernelSetGlobalOffsetExpResult = zeKernelSetGlobalOffsetExp(kernel, offsetX, offsetY, offsetZ);
     if (zeKernelSetGlobalOffsetExpResult != ZE_RESULT_SUCCESS) {
@@ -633,6 +646,13 @@ int main(int argc, const char *argv[]) {
     launchArgs.groupCountZ = zSize / suggestedGroupSizeZ;
 
     RUN_REQUIRED_STEP(appendLaunchKernel(cmdList, copyBufferKernel, launchArgs, copyBufferFinishedEvent));
+
+    struct TimestampResult {
+        uint8_t otherData[8];
+        ze_kernel_timestamp_result_t timestampResult;
+    } timestampResultStruct;
+    const size_t timestampResultOffsets[] = {offsetof(TimestampResult, timestampResult)};
+    RUN_REQUIRED_STEP(appendQueryKernelTimestamps(cmdList, 1, &copyBufferFinishedEvent, &timestampResultStruct, timestampResultOffsets));
 
     void *sourceDoubleVals{nullptr};
     void *destinationDoubleVals{nullptr};

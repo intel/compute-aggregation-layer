@@ -89,6 +89,7 @@ ze_result_t (*zeEventQueryStatus)(ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeCommandListAppendEventReset)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeEventHostReset)(ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeEventQueryKernelTimestamp)(ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr) = nullptr;
+ze_result_t (*zeCommandListAppendQueryKernelTimestamps)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeFenceCreate)(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) = nullptr;
 ze_result_t (*zeFenceDestroy)(ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t timeout) = nullptr;
@@ -574,6 +575,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeCommandListAppendQueryKernelTimestamps = reinterpret_cast<decltype(zeCommandListAppendQueryKernelTimestamps)>(dlsym(libraryHandle, "zeCommandListAppendQueryKernelTimestamps"));
+    if(nullptr == zeCommandListAppendQueryKernelTimestamps){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendQueryKernelTimestamps in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeFenceCreate = reinterpret_cast<decltype(zeFenceCreate)>(dlsym(libraryHandle, "zeFenceCreate"));
     if(nullptr == zeFenceCreate){
         log<Verbosity::error>("Missing symbol zeFenceCreate in %s", loadPath.c_str());
@@ -989,6 +996,7 @@ void unloadLevelZeroLibrary() {
     zeCommandListAppendEventReset = nullptr;
     zeEventHostReset = nullptr;
     zeEventQueryKernelTimestamp = nullptr;
+    zeCommandListAppendQueryKernelTimestamps = nullptr;
     zeFenceCreate = nullptr;
     zeFenceDestroy = nullptr;
     zeFenceHostSynchronize = nullptr;

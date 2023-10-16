@@ -148,4 +148,32 @@ ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, 
     return ZE_RESULT_SUCCESS;
 }
 
+ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hCommandList,
+                                                     uint32_t numEvents,
+                                                     ze_event_handle_t *phEvents,
+                                                     void *dstptr,
+                                                     const size_t *pOffsets,
+                                                     ze_event_handle_t hSignalEvent,
+                                                     uint32_t numWaitEvents,
+                                                     ze_event_handle_t *phWaitEvents) {
+
+    if (dstptr == nullptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
+    }
+
+    if (pOffsets == nullptr) {
+        return zeCommandListAppendQueryKernelTimestampsRpcHelper(hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
+    } else {
+        auto results = std::make_unique<ze_kernel_timestamp_result_t[]>(numEvents);
+
+        ze_result_t ret = zeCommandListAppendQueryKernelTimestampsRpcHelper(hCommandList, numEvents, phEvents, results.get(), nullptr, hSignalEvent, numWaitEvents, phWaitEvents);
+
+        for (uint32_t i = 0; i < numEvents; i++) {
+            *reinterpret_cast<ze_kernel_timestamp_result_t *>(reinterpret_cast<char *>(dstptr) + pOffsets[i]) = results[i];
+        }
+
+        return ret;
+    }
+}
+
 } // namespace Cal::Icd::LevelZero

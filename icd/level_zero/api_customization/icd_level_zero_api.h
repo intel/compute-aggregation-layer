@@ -50,7 +50,14 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
                                           ze_event_handle_t *phWaitEvents);
 
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence);
-
+ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hCommandList,
+                                                     uint32_t numEvents,
+                                                     ze_event_handle_t *phEvents,
+                                                     void *dstptr,
+                                                     const size_t *pOffsets,
+                                                     ze_event_handle_t hSignalEvent,
+                                                     uint32_t numWaitEvents,
+                                                     ze_event_handle_t *phWaitEvents);
 ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t *phIpc);
 ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t *phEventPool);
 

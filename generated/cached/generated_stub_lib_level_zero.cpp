@@ -287,6 +287,10 @@ ze_result_t zeEventQueryKernelTimestamp(ze_event_handle_t hEvent, ze_kernel_time
    return {};
 }
 
+ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 ze_result_t zeFenceCreate(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence){
    return {};
 }
