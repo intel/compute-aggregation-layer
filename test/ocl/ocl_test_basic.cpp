@@ -86,6 +86,20 @@ bool testCreateCommandQueueWithProperties(cl_context context, cl_device_id dev) 
     return true;
 }
 
+struct CallbackMessage {
+    bool wasCalled = false;
+    cl_event ev = nullptr;
+    cl_int eventCommandStatus = -1;
+    void *userData = nullptr;
+};
+
+void CL_CALLBACK callback(cl_event event, cl_int eventCommandStatus, void *userData) {
+    auto message = reinterpret_cast<CallbackMessage *>(userData);
+    message->wasCalled = true;
+    message->eventCommandStatus = eventCommandStatus;
+    message->userData = userData;
+}
+
 bool testEventProfiling(cl_context context, cl_device_id dev) {
     log<Verbosity::info>("Creating cl_command_queue object with profiling enabled ");
     cl_int cl_err = CL_SUCCESS;
@@ -108,6 +122,13 @@ bool testEventProfiling(cl_context context, cl_device_id dev) {
         return false;
     }
 
+    CallbackMessage message;
+    if (CL_SUCCESS != clSetEventCallback(ev, CL_COMPLETE, callback, &message)) {
+        log<Verbosity::error>("Failed to set callback");
+        return false;
+    }
+    log<Verbosity::info>("Succesfully set-up callback");
+
     cl_ulong info = std::numeric_limits<cl_ulong>::max();
     cl_err = clGetEventProfilingInfo(ev, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &info, nullptr);
     if (CL_SUCCESS != cl_err) {
@@ -119,6 +140,11 @@ bool testEventProfiling(cl_context context, cl_device_id dev) {
         return false;
     }
     log<Verbosity::info>("Event profiling info, CL_PROFILING_COMMAND_QUEUED : %lu", info);
+
+    if ((false == message.wasCalled) || (ev == message.ev) || (CL_COMPLETE != message.eventCommandStatus) || (&message != message.userData)) {
+        log<Verbosity::error>("Callback was unsuccessful");
+        return false;
+    }
 
     if (CL_SUCCESS != clReleaseEvent(ev)) {
         log<Verbosity::error>("Failed to release event");
@@ -189,8 +215,10 @@ int main(int argc, const char *argv[]) {
         return -1;
     }
     if (imageSupport) {
-        log<Verbosity::error>("CAL support for images should be disabled.");
-        return -1;
+        if (-1 == platformOrd) {
+            log<Verbosity::error>("CAL support for images should be disabled.");
+            return -1;
+        }
     }
 
     auto context = createContext(platform, devices, deviceIndex);

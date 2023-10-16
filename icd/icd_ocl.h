@@ -20,6 +20,7 @@
 
 #include <atomic>
 #include <cstdlib>
+#include <future>
 #include <limits>
 #include <mutex>
 #include <unordered_map>
@@ -814,6 +815,10 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
     }
 
+    ~IcdOclPlatform() {
+        terminateCallbacksHandler();
+    }
+
     void *translateMappedPointer(cl_mem buffer, void *ptr, size_t offset);
 
     IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_device_id parentDevice, bool isSubDevice) {
@@ -1085,8 +1090,13 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
         return true;
     }
 
+    static void handleCallbacks(IcdOclPlatform *platform);
+    void enableCallbacksHandler();
+    void terminateCallbacksHandler();
+
   protected:
     cl_platform_id calPlatformId{};
+    std::future<void> callbacksHandler;
 
     struct Mappings {
         template <typename CalT, typename ClientT>

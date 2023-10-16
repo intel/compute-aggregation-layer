@@ -166,6 +166,8 @@ using OffsetWithinChannelT = Cal::Messages::OffsetWithinChannelT;
 struct CallbackIdT {
     uintptr_t fptr;
     uintptr_t data;
+    uintptr_t event;
+    uint64_t notificationFlags;
 };
 
 struct RingEntry {
@@ -887,6 +889,14 @@ class ChannelClient : public CommandsChannel {
         this->callbacksRing.pop();
 
         return callbackId;
+    }
+
+    Cal::Rpc::CallbackIdT peekCompletedCallbackId() {
+        if (callbacksRing.peekEmpty()) {
+            return {};
+        }
+
+        return *this->callbacksRing.peekHead();
     }
 
     bool isCallAsyncEnabled() {

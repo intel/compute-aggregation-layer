@@ -4672,7 +4672,9 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              unsupported: True
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_int
             kind: scalar

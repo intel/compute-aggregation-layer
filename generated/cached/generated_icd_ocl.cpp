@@ -2960,6 +2960,8 @@ cl_int clSetUserEventStatus (cl_event event, cl_int execution_status) {
     return ret;
 }
 cl_int clSetEventCallback (cl_event event, cl_int command_exec_callback_type, void (CL_CALLBACK* pfn_notify)(cl_event event, cl_int event_command_status, void *user_data), void* user_data) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();
+
     log<Verbosity::bloat>("Establishing RPC for clSetEventCallback");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2968,7 +2970,18 @@ cl_int clSetEventCallback (cl_event event, cl_int command_exec_callback_type, vo
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(event, command_exec_callback_type, pfn_notify, user_data);
     command->args.event = static_cast<IcdOclEvent*>(event)->asRemoteObject();
-    return command->returnValue();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    cl_int ret = command->captures.ret;
+
+    return ret;
 }
 cl_int clGetDeviceAndHostTimer (cl_device_id device, cl_ulong* device_timestamp, cl_ulong* host_timestamp) {
     log<Verbosity::bloat>("Establishing RPC for clGetDeviceAndHostTimer");

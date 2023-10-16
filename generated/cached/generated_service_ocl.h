@@ -1285,17 +1285,7 @@ inline bool clSetUserEventStatusHandler(Provider &service, Cal::Rpc::ChannelServ
                                                 );
     return true;
 }
-inline bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clSetEventCallback");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetEventCallbackRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetEventCallback(
-                                                apiCommand->args.event, 
-                                                apiCommand->args.command_exec_callback_type, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data
-                                                );
-    return true;
-}
+bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clGetDeviceAndHostTimerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceAndHostTimer");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceAndHostTimerRpcM*>(command);

@@ -433,8 +433,45 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
     if (globalState.getMallocShmemExporter().isRegionSharable(ptr, 4)) {
         return reinterpret_cast<char *>(buffer->asLocalObject()->apiHostPtr) + offset;
     }
-
     return nullptr;
+}
+
+void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
+    auto &channel = platform->getRpcChannel();
+    while (true) {
+        auto status = channel.waitForCallbacks();
+        auto callbackId = channel.peekCompletedCallbackId();
+        if (false == (status && (0 != callbackId.fptr))) {
+            log<Verbosity::debug>("Terminating callbacks handler");
+            break;
+        }
+
+        while (true) {
+            callbackId = channel.popCompletedCallbackId();
+            if (0 == callbackId.fptr) {
+                break;
+            }
+            auto event = reinterpret_cast<cl_event>(callbackId.event);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_event event, cl_int event_command_status, void *user_data)>(callbackId.fptr);
+            auto commandExecCallbackType = static_cast<cl_int>(callbackId.notificationFlags);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            fptr(event, commandExecCallbackType, userData);
+        }
+    }
+}
+
+void IcdOclPlatform::enableCallbacksHandler() {
+    static std::once_flag initialized = {};
+
+    std::call_once(initialized, [this]() {
+        log<Verbosity::debug>("Enabling callbacks handler");
+        log<Verbosity::performance>("Enabling callbacks handler");
+        this->callbacksHandler = std::async(std::launch::async, IcdOclPlatform::handleCallbacks, this);
+    });
+}
+
+void IcdOclPlatform::terminateCallbacksHandler() {
+    callbacksHandler.wait();
 }
 
 IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReference &&parent,
