@@ -13,6 +13,7 @@
 #include "shared/usm.h"
 
 #include <array>
+#include <boost/container/small_vector.hpp>
 
 namespace Cal::Icd::LevelZero {
 
@@ -164,9 +165,9 @@ ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hC
     if (pOffsets == nullptr) {
         return zeCommandListAppendQueryKernelTimestampsRpcHelper(hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
     } else {
-        auto results = std::make_unique<ze_kernel_timestamp_result_t[]>(numEvents);
+        boost::container::small_vector<ze_kernel_timestamp_result_t, 8> results{numEvents};
 
-        ze_result_t ret = zeCommandListAppendQueryKernelTimestampsRpcHelper(hCommandList, numEvents, phEvents, results.get(), nullptr, hSignalEvent, numWaitEvents, phWaitEvents);
+        ze_result_t ret = zeCommandListAppendQueryKernelTimestampsRpcHelper(hCommandList, numEvents, phEvents, results.data(), nullptr, hSignalEvent, numWaitEvents, phWaitEvents);
 
         for (uint32_t i = 0; i < numEvents; i++) {
             *reinterpret_cast<ze_kernel_timestamp_result_t *>(reinterpret_cast<char *>(dstptr) + pOffsets[i]) = results[i];
