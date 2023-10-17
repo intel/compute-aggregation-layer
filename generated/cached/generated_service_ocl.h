@@ -325,19 +325,7 @@ inline bool clCreateProgramWithBuiltInKernelsHandler(Provider &service, Cal::Rpc
                                                 );
     return true;
 }
-inline bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clBuildProgram");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClBuildProgramRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clBuildProgram(
-                                                apiCommand->args.program, 
-                                                apiCommand->args.num_devices, 
-                                                apiCommand->args.device_list ? apiCommand->captures.getDevice_list() : nullptr, 
-                                                apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data
-                                                );
-    return true;
-}
+bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCompileProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCompileProgram");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCompileProgramRpcM*>(command);

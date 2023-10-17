@@ -558,6 +558,31 @@ inline bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer
     return true;
 }
 
+void CL_CALLBACK clBuildProgramCallbackWrapper(cl_program program, void *user_data) {
+    auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
+    Cal::Rpc::ChannelServer &channel = cctx->channel;
+    Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
+    delete cctx;
+
+    channel.pushCompletedCallbackId(callbackId);
+}
+
+inline bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clBuildProgram");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClBuildProgramRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clBuildProgram(
+        apiCommand->args.program,
+        apiCommand->args.num_devices,
+        apiCommand->args.device_list ? apiCommand->captures.getDevice_list() : nullptr,
+        apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr,
+        clBuildProgramCallbackWrapper,
+        new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.program),
+                                                      1}});
+    return true;
+}
+
 } // namespace Ocl
 
 namespace LevelZero {
