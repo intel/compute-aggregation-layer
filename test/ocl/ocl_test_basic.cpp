@@ -154,7 +154,7 @@ bool testEventProfiling(cl_context context, cl_device_id dev) {
             {
                 auto lock = std::unique_lock<std::mutex>(message.lock);
                 if (false == message.wasCalled) {
-                    lock.release();
+                    lock.unlock();
                     using namespace std::chrono_literals;
                     std::this_thread::sleep_for(1s);
                     log<Verbosity::info>("Checking for callback on event : %p (retry #%d)", ev, i + 1);
