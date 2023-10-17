@@ -38,6 +38,10 @@ static_assert(sizeof(RpcMessageHeader) == sizeof(RpcMessageHeader::MessageUnique
 static_assert(std::is_standard_layout_v<RpcMessageHeader>);
 
 struct RpcCallId {
+    constexpr RpcCallId(RpcMessageHeader header)
+        : unused(0), type(header.type), subtype(header.subtype) {
+    }
+
     constexpr RpcCallId(RpcMessageHeader::MessageTypeT type, RpcMessageHeader::MessageSubTypeT subtype)
         : unused(0), type(type), subtype(subtype) {
     }

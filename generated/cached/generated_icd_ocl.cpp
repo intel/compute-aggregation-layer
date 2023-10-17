@@ -555,7 +555,7 @@ cl_int clUnloadPlatformCompiler (cl_platform_id platform) {
     return {};
 }
 cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_id* device_list, const char* options, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data) {
-    Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();
+    if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
 
     log<Verbosity::bloat>("Establishing RPC for clBuildProgram");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();

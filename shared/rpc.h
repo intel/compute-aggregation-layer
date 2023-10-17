@@ -165,10 +165,13 @@ using CompletionStampBufferT = Cal::Allocators::TagAllocator<CompletionStampT>;
 using OffsetWithinChannelT = Cal::Messages::OffsetWithinChannelT;
 struct CallbackIdT {
     uintptr_t fptr;
+    uintptr_t handle;
     uintptr_t data;
-    uintptr_t event;
-    uint64_t notificationFlags;
+    RpcCallId src;
+    uint32_t notificationFlags;
 };
+static_assert(std::is_standard_layout<CallbackIdT>());
+static_assert(0 == (sizeof(CallbackIdT) % 8));
 
 struct RingEntry {
     Cal::Messages::OffsetWithinChannelT messageOffset;

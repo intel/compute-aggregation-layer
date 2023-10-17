@@ -535,7 +535,7 @@ struct CallbackContext {
     Cal::Rpc::CallbackIdT callbackId;
 };
 
-void CL_CALLBACK callbackWrapper(cl_event event, cl_int event_command_status, void *user_data) {
+void CL_CALLBACK clSetEventCallbackCallbackWrapper(cl_event event, cl_int event_command_status, void *user_data) {
     auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
     Cal::Rpc::ChannelServer &channel = cctx->channel;
     Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
@@ -550,11 +550,12 @@ inline bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetEventCallback(
         apiCommand->args.event,
         apiCommand->args.command_exec_callback_type,
-        callbackWrapper,
+        clSetEventCallbackCallbackWrapper,
         new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
-                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
                                                       reinterpret_cast<uintptr_t>(apiCommand->args.event),
-                                                      static_cast<uint64_t>(apiCommand->args.command_exec_callback_type)}});
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                      apiCommand->header,
+                                                      static_cast<uint32_t>(apiCommand->args.command_exec_callback_type)}});
     return true;
 }
 
@@ -577,9 +578,10 @@ inline bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr,
         clBuildProgramCallbackWrapper,
         new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
-                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
                                                       reinterpret_cast<uintptr_t>(apiCommand->args.program),
-                                                      1}});
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                      apiCommand->header,
+                                                      0}});
     return true;
 }
 

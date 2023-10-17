@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <string_view>
 #include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 #include <vector>
 
@@ -91,13 +92,16 @@ struct CallbackMessage {
     cl_event ev = nullptr;
     cl_int eventCommandStatus = -1;
     void *userData = nullptr;
+    std::mutex lock;
 };
 
 void CL_CALLBACK callback(cl_event event, cl_int eventCommandStatus, void *userData) {
     auto message = reinterpret_cast<CallbackMessage *>(userData);
+    auto lock = std::lock_guard<std::mutex>(message->lock);
     message->wasCalled = true;
     message->eventCommandStatus = eventCommandStatus;
     message->userData = userData;
+    message->ev = event;
 }
 
 bool testEventProfiling(cl_context context, cl_device_id dev) {
@@ -129,6 +133,8 @@ bool testEventProfiling(cl_context context, cl_device_id dev) {
     }
     log<Verbosity::info>("Succesfully set-up callback");
 
+    clWaitForEvents(1, &ev);
+
     cl_ulong info = std::numeric_limits<cl_ulong>::max();
     cl_err = clGetEventProfilingInfo(ev, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &info, nullptr);
     if (CL_SUCCESS != cl_err) {
@@ -141,9 +147,33 @@ bool testEventProfiling(cl_context context, cl_device_id dev) {
     }
     log<Verbosity::info>("Event profiling info, CL_PROFILING_COMMAND_QUEUED : %lu", info);
 
-    if ((false == message.wasCalled) || (ev == message.ev) || (CL_COMPLETE != message.eventCommandStatus) || (&message != message.userData)) {
-        log<Verbosity::error>("Callback was unsuccessful");
-        return false;
+    {
+        log<Verbosity::info>("Checking for callback on event : %p", ev);
+        bool callbackReceived = false;
+        for (int i = 0; i < 5; ++i) {
+            {
+                auto lock = std::unique_lock<std::mutex>(message.lock);
+                if (false == message.wasCalled) {
+                    lock.release();
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for(1s);
+                    log<Verbosity::info>("Checking for callback on event : %p (retry #%d)", ev, i + 1);
+                    continue; // retry
+                }
+            }
+            log<Verbosity::info>("Callback received for event : %p", ev);
+            if ((ev != message.ev) || (CL_COMPLETE != message.eventCommandStatus) || (&message != message.userData)) {
+                log<Verbosity::error>("Callback payload is invalid");
+                return false;
+            }
+
+            log<Verbosity::info>("Callback was successful after %ds", i);
+            callbackReceived = true;
+        }
+        if (false == callbackReceived) {
+            log<Verbosity::error>("Failed to receive callback");
+            return false;
+        }
     }
 
     if (CL_SUCCESS != clReleaseEvent(ev)) {
