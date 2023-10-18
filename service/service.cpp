@@ -541,6 +541,7 @@ void CL_CALLBACK clSetEventCallbackCallbackWrapper(cl_event event, cl_int event_
     Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
     delete cctx;
 
+    log<Verbosity::debug>("Pushed callback notification from clSetEventCallback to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
     channel.pushCompletedCallbackId(callbackId);
 }
 
@@ -565,6 +566,7 @@ void CL_CALLBACK clBuildProgramCallbackWrapper(cl_program program, void *user_da
     Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
     delete cctx;
 
+    log<Verbosity::debug>("Pushed callback notification from clBuildProgramCallback to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
     channel.pushCompletedCallbackId(callbackId);
 }
 
@@ -576,12 +578,13 @@ inline bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &ch
         apiCommand->args.num_devices,
         apiCommand->args.device_list ? apiCommand->captures.getDevice_list() : nullptr,
         apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr,
-        clBuildProgramCallbackWrapper,
-        new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
-                                                      reinterpret_cast<uintptr_t>(apiCommand->args.program),
-                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
-                                                      apiCommand->header,
-                                                      0}});
+        apiCommand->args.pfn_notify ? clBuildProgramCallbackWrapper : nullptr,
+        apiCommand->args.user_data ? new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
+                                                                                   reinterpret_cast<uintptr_t>(apiCommand->args.program),
+                                                                                   reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                                                   apiCommand->header,
+                                                                                   0}}
+                                   : nullptr);
     return true;
 }
 

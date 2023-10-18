@@ -442,13 +442,14 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
         auto status = channel.waitForCallbacks();
         auto callbackId = channel.peekCompletedCallbackId();
         if (false == (status && (0 != callbackId.fptr))) {
-            log<Verbosity::debug>("Terminating callbacks handler");
+            log<Verbosity::debug>("Terminating callbacks handler - status : %d, fptr : 0x%llx, handle : 0x%llx, subType : %d", status, callbackId.fptr, callbackId.handle, callbackId.src.subtype);
             break;
         }
 
         while (true) {
             callbackId = channel.popCompletedCallbackId();
             if (0 == callbackId.fptr) {
+                log<Verbosity::debug>("Received null callback notification for message subType : %d", callbackId.src.subtype);
                 break;
             }
             switch (callbackId.src.subtype) {
@@ -456,6 +457,7 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
                 log<Verbosity::error>("Unknown callback signature for message subType : %d", callbackId.src.subtype);
                 break;
             case Cal::Rpc::Ocl::ClSetEventCallbackRpcM::messageSubtype: {
+                log<Verbosity::debug>("Received callback notification from clSetEventCallback for message subType : %d", callbackId.src.subtype);
                 auto event = reinterpret_cast<cl_event>(callbackId.handle);
                 platform->translateRemoteObjectToLocalObject(event);
                 auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_event event, cl_int event_command_status, void *user_data)>(callbackId.fptr);
@@ -465,6 +467,7 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
                 break;
             }
             case Cal::Rpc::Ocl::ClBuildProgramRpcM::messageSubtype: {
+                log<Verbosity::debug>("Received callback notification from clBuildProgram for message subType : %d", callbackId.src.subtype);
                 auto program = reinterpret_cast<cl_program>(callbackId.handle);
                 platform->translateRemoteObjectToLocalObject(program);
                 auto userData = reinterpret_cast<void *>(callbackId.data);
