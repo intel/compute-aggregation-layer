@@ -498,6 +498,7 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
                 break;
             }
             case Cal::Rpc::Ocl::ClBuildProgramRpcM::messageSubtype:
+            case Cal::Rpc::Ocl::ClCompileProgramRpcM::messageSubtype:
             case Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM::messageSubtype: {
                 log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
                 auto program = reinterpret_cast<cl_program>(callbackId.handle);

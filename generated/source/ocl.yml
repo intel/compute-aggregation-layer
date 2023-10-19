@@ -947,6 +947,11 @@ config:
               ignore: True
         - name: clCompileProgram
           latency: 2.0
+          special_handling:
+            icd:
+              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_int
             kind: scalar
