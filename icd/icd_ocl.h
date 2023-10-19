@@ -195,6 +195,7 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
 cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue);
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clReleaseMemObject(cl_mem memobj);
+cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list);
 
 size_t getTexelSizeBytes(const cl_image_format *imageFormat);
 
@@ -1093,10 +1094,12 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
     static void handleCallbacks(IcdOclPlatform *platform);
     void enableCallbacksHandler();
     void terminateCallbacksHandler();
+    bool hasCallbacksHandler();
 
   protected:
     cl_platform_id calPlatformId{};
     std::future<void> callbacksHandler;
+    std::atomic<bool> hasCallbacksFlag{false};
 
     struct Mappings {
         template <typename CalT, typename ClientT>

@@ -4523,6 +4523,9 @@ config:
                 server_access: write
         - name: clWaitForEvents
           latency: 2.0
+          special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
           returns:
             type: cl_int
             kind: scalar

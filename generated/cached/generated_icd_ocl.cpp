@@ -2825,7 +2825,7 @@ cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const v
     command_queue->asLocalObject()->enqueue();
     return ret;
 }
-cl_int clWaitForEvents (cl_uint num_events, const cl_event* event_list) {
+cl_int clWaitForEventsRpcHelper (cl_uint num_events, const cl_event* event_list) {
     log<Verbosity::bloat>("Establishing RPC for clWaitForEvents");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();

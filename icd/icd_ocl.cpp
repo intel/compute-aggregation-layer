@@ -372,6 +372,35 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
     return ret;
 }
 
+cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
+    if (!Cal::Icd::icdGlobalState.getOclPlatform()->hasCallbacksHandler()) {
+        log<Verbosity::debug>("clWaitForEvents - callbacks handler is not enabled");
+        return Cal::Icd::Ocl::clWaitForEventsRpcHelper(num_events, event_list);
+    } else {
+        log<Verbosity::debug>("clWaitForEvents - callbacks handler is enabled, will poll event status with clGetEventInfo");
+        log<Verbosity::performance>("clWaitForEvents - will use busy polling with clGetEventInfo for callbacks support");
+        while (true) {
+            for (cl_uint i = 0; i < num_events; i++) {
+                cl_int eventStatus = CL_COMPLETE;
+                cl_int ret = Cal::Icd::Ocl::clGetEventInfo(event_list[i], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(eventStatus), &eventStatus, nullptr);
+                if (ret != CL_SUCCESS) {
+                    log<Verbosity::error>("Failed to get event[%d] status with clGetEventInfo : err=%d", i, ret);
+                    return ret;
+                }
+                if (eventStatus != CL_COMPLETE) {
+                    log<Verbosity::bloat>("clGetEventInfo - event[%d] is not complete", i);
+                    break;
+                }
+                log<Verbosity::bloat>("clGetEventInfo - event[%d] is complete", i);
+                if (i == num_events - 1) {
+                    log<Verbosity::bloat>("clGetEventInfo - all events are complete", i);
+                    return CL_SUCCESS;
+                }
+            }
+        }
+    }
+}
+
 cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const void *argValue) {
     log<Verbosity::bloat>("Establishing RPC for clSetKernelArgMemPointerINTEL");
     auto oclKernel = static_cast<IcdOclKernel *>(kernel);
@@ -437,8 +466,10 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
 }
 
 void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
+    log<Verbosity::debug>("Starting callbacks handler");
     auto &channel = platform->getRpcChannel();
     while (true) {
+        log<Verbosity::debug>("Waiting for callbacks");
         auto status = channel.waitForCallbacks();
         auto callbackId = channel.peekCompletedCallbackId();
         if (false == (status && (0 != callbackId.fptr))) {
@@ -478,6 +509,7 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
             }
         }
     }
+    log<Verbosity::debug>("Finished callbacks handler");
 }
 
 void IcdOclPlatform::enableCallbacksHandler() {
@@ -486,12 +518,19 @@ void IcdOclPlatform::enableCallbacksHandler() {
     std::call_once(initialized, [this]() {
         log<Verbosity::debug>("Enabling callbacks handler");
         log<Verbosity::performance>("Enabling callbacks handler");
+        this->hasCallbacksFlag.store(true);
         this->callbacksHandler = std::async(std::launch::async, IcdOclPlatform::handleCallbacks, this);
     });
 }
 
 void IcdOclPlatform::terminateCallbacksHandler() {
+    log<Verbosity::debug>("Terminating callbacks handler");
     callbacksHandler.wait();
+    this->hasCallbacksFlag.store(false);
+}
+
+bool IcdOclPlatform::hasCallbacksHandler() {
+    return hasCallbacksFlag.load();
 }
 
 IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReference &&parent,
