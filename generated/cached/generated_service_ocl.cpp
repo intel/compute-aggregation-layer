@@ -42,6 +42,7 @@ cl_int (*clBuildProgram)(cl_program program, cl_uint num_devices, const cl_devic
 cl_int (*clCompileProgram)(cl_program program, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_headers, const cl_program* input_headers, const char** header_include_names, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data) = nullptr;
 cl_program (*clLinkProgram)(cl_context context, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_programs, const cl_program* input_programs, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data, cl_int* errcode_ret) = nullptr;
 cl_int (*clGetProgramBuildInfo)(cl_program program, cl_device_id device, cl_program_build_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) = nullptr;
+cl_int (*clSetProgramReleaseCallback)(cl_program program, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data) = nullptr;
 cl_kernel (*clCreateKernel)(cl_program program, const char* kernel_name, cl_int* errcode_ret) = nullptr;
 cl_kernel (*clCloneKernel)(cl_kernel source_kernel, cl_int* errcode_ret) = nullptr;
 cl_int (*clCreateKernelsInProgram)(cl_program program, cl_uint num_kernels, cl_kernel* kernels, cl_uint* num_kernels_ret) = nullptr;
@@ -278,6 +279,10 @@ bool loadOclLibrary(std::optional<std::string> path) {
         log<Verbosity::error>("Missing symbol clGetProgramBuildInfo in %s", loadPath.c_str());
         unloadOclLibrary();
         return false;
+    }
+    clSetProgramReleaseCallback = reinterpret_cast<decltype(clSetProgramReleaseCallback)>(dlsym(libraryHandle, "clSetProgramReleaseCallback"));
+    if(nullptr == clSetProgramReleaseCallback){
+        log<Verbosity::debug>("Missing symbol clSetProgramReleaseCallback in %s", loadPath.c_str());
     }
     clCreateKernel = reinterpret_cast<decltype(clCreateKernel)>(dlsym(libraryHandle, "clCreateKernel"));
     if(nullptr == clCreateKernel){
@@ -807,6 +812,7 @@ void unloadOclLibrary() {
     clCompileProgram = nullptr;
     clLinkProgram = nullptr;
     clGetProgramBuildInfo = nullptr;
+    clSetProgramReleaseCallback = nullptr;
     clCreateKernel = nullptr;
     clCloneKernel = nullptr;
     clCreateKernelsInProgram = nullptr;

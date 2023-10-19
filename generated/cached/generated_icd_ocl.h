@@ -52,6 +52,7 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
 cl_int clCompileProgram (cl_program program, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_headers, const cl_program* input_headers, const char** header_include_names, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data);
 cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_programs, const cl_program* input_programs, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data, cl_int* errcode_ret);
 cl_int clGetProgramBuildInfo (cl_program program, cl_device_id device, cl_program_build_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+cl_int clSetProgramReleaseCallback (cl_program program, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data);
 cl_kernel clCreateKernelRpcHelper (cl_program program, const char* kernel_name, cl_int* errcode_ret);
 cl_kernel clCloneKernel (cl_kernel source_kernel, cl_int* errcode_ret);
 cl_int clCreateKernelsInProgramRpcHelper (cl_program program, cl_uint num_kernels, cl_kernel* kernels, cl_uint* num_kernels_ret);
@@ -329,10 +330,6 @@ inline void clEnqueueNativeKernelUnimpl() {
     log<Verbosity::critical>("Function clEnqueueNativeKernel is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void clSetProgramReleaseCallbackUnimpl() {
-    log<Verbosity::critical>("Function clSetProgramReleaseCallback is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void clSetContextDestructorCallbackUnimpl() {
     log<Verbosity::critical>("Function clSetContextDestructorCallback is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -366,6 +363,7 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clCompileProgram = Cal::Icd::Ocl::clCompileProgram;
     dt.clLinkProgram = Cal::Icd::Ocl::clLinkProgram;
     dt.clGetProgramBuildInfo = Cal::Icd::Ocl::clGetProgramBuildInfo;
+    dt.clSetProgramReleaseCallback = Cal::Icd::Ocl::clSetProgramReleaseCallback;
     dt.clCreateKernel = Cal::Icd::Ocl::clCreateKernel;
     dt.clCloneKernel = Cal::Icd::Ocl::clCloneKernel;
     dt.clCreateKernelsInProgram = Cal::Icd::Ocl::clCreateKernelsInProgram;
@@ -491,7 +489,6 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clEnqueueMapImage = reinterpret_cast<decltype(dt.clEnqueueMapImage)>(Cal::Icd::Ocl::Unimplemented::clEnqueueMapImageUnimpl);
     dt.clEnqueueSVMFree = reinterpret_cast<decltype(dt.clEnqueueSVMFree)>(Cal::Icd::Ocl::Unimplemented::clEnqueueSVMFreeUnimpl);
     dt.clEnqueueNativeKernel = reinterpret_cast<decltype(dt.clEnqueueNativeKernel)>(Cal::Icd::Ocl::Unimplemented::clEnqueueNativeKernelUnimpl);
-    dt.clSetProgramReleaseCallback = reinterpret_cast<decltype(dt.clSetProgramReleaseCallback)>(Cal::Icd::Ocl::Unimplemented::clSetProgramReleaseCallbackUnimpl);
     dt.clSetContextDestructorCallback = reinterpret_cast<decltype(dt.clSetContextDestructorCallback)>(Cal::Icd::Ocl::Unimplemented::clSetContextDestructorCallbackUnimpl);
     dt.clSetMemObjectDestructorCallback = reinterpret_cast<decltype(dt.clSetMemObjectDestructorCallback)>(Cal::Icd::Ocl::Unimplemented::clSetMemObjectDestructorCallbackUnimpl);
 }

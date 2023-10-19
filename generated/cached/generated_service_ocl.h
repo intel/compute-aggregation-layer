@@ -51,6 +51,7 @@ extern cl_int (*clBuildProgram)(cl_program program, cl_uint num_devices, const c
 extern cl_int (*clCompileProgram)(cl_program program, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_headers, const cl_program* input_headers, const char** header_include_names, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data);
 extern cl_program (*clLinkProgram)(cl_context context, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_programs, const cl_program* input_programs, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data, cl_int* errcode_ret);
 extern cl_int (*clGetProgramBuildInfo)(cl_program program, cl_device_id device, cl_program_build_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+extern cl_int (*clSetProgramReleaseCallback)(cl_program program, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data);
 extern cl_kernel (*clCreateKernel)(cl_program program, const char* kernel_name, cl_int* errcode_ret);
 extern cl_kernel (*clCloneKernel)(cl_kernel source_kernel, cl_int* errcode_ret);
 extern cl_int (*clCreateKernelsInProgram)(cl_program program, cl_uint num_kernels, cl_kernel* kernels, cl_uint* num_kernels_ret);
@@ -371,6 +372,7 @@ inline bool clGetProgramBuildInfoHandler(Provider &service, Cal::Rpc::ChannelSer
                                                 );
     return true;
 }
+bool clSetProgramReleaseCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCreateKernelHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateKernel");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelRpcM*>(command);
@@ -2235,6 +2237,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClCompileProgramRpcM::messageSubtype] = clCompileProgramHandler;
     outHandlers[ClLinkProgramRpcM::messageSubtype] = clLinkProgramHandler;
     outHandlers[ClGetProgramBuildInfoRpcM::messageSubtype] = clGetProgramBuildInfoHandler;
+    outHandlers[ClSetProgramReleaseCallbackRpcM::messageSubtype] = clSetProgramReleaseCallbackHandler;
     outHandlers[ClCreateKernelRpcM::messageSubtype] = clCreateKernelHandler;
     outHandlers[ClCloneKernelRpcM::messageSubtype] = clCloneKernelHandler;
     outHandlers[ClCreateKernelsInProgramRpcM::messageSubtype] = clCreateKernelsInProgramHandler;
@@ -2537,6 +2540,13 @@ inline void callDirectly(Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM &apiCommand) {
                                                 apiCommand.args.param_value_size, 
                                                 apiCommand.args.param_value, 
                                                 apiCommand.args.param_value_size_ret
+                                                );
+}
+inline void callDirectly(Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clSetProgramReleaseCallback(
+                                                apiCommand.args.program, 
+                                                apiCommand.args.pfn_notify, 
+                                                apiCommand.args.user_data
                                                 );
 }
 inline void callDirectly(Cal::Rpc::Ocl::ClCreateKernelRpcM &apiCommand) {
@@ -3869,6 +3879,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClCompileProgramRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCompileProgramRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClLinkProgramRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClLinkProgramRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCloneKernelRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCloneKernelRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateKernelsInProgramRpcM*>(command)); break;

@@ -78,7 +78,6 @@ config:
           # Callbacks, intentionally left for later
           clEnqueueSVMFree,
           clEnqueueNativeKernel,
-          clSetProgramReleaseCallback,
           clSetContextDestructorCallback,
           clSetMemObjectDestructorCallback,
         ]
@@ -1155,6 +1154,36 @@ config:
                   type: size_t
                   kind: scalar
                 server_access: write
+        - name: clSetProgramReleaseCallback
+          latency: 0.0
+          special_handling:
+            optional: True # OCL 3.0
+            icd:
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+            rpc:
+              custom_handler: True
+          returns:
+            type: cl_int
+            kind: scalar
+            default: "CL_DEVICE_NOT_AVAILABLE"
+          args:
+            0:
+              name: program
+              type: cl_program
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+            1:
+              name: pfn_notify
+              type: "void (CL_CALLBACK*)(cl_program program, void* user_data)"
+              kind: ptr_func
+              kind_details:
+                variable_generator: "void (CL_CALLBACK* {arg})(cl_program program, void* user_data)"
+              ignore: True
+            2:
+              name: user_data
+              type: "void*"
+              kind: ptr_va
+              ignore: True
         - name: clCreateKernel
           latency: 0.5
           special_handling:

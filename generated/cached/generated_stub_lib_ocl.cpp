@@ -103,6 +103,10 @@ cl_int clGetProgramBuildInfo(cl_program program, cl_device_id device, cl_program
    return {};
 }
 
+cl_int clSetProgramReleaseCallback(cl_program program, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data){
+   return {};
+}
+
 cl_kernel clCreateKernel(cl_program program, const char* kernel_name, cl_int* errcode_ret){
    return {};
 }
