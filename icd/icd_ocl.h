@@ -138,6 +138,12 @@ struct IcdOclTypePrinter {
     }
 };
 
+struct UserDataLinkProgram {
+    UserDataLinkProgram(cl_context context, void *userData) : parentContext(context), originalUserData(userData) {}
+    cl_context parentContext;
+    void *originalUserData;
+};
+
 template <typename OclObjectType>
 auto asLocalObjectOrNull(OclObjectType *obj) {
     return obj ? obj->asLocalObject() : nullptr;

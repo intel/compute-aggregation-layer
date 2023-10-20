@@ -328,22 +328,7 @@ inline bool clCreateProgramWithBuiltInKernelsHandler(Provider &service, Cal::Rpc
 }
 bool clBuildProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 bool clCompileProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool clLinkProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clLinkProgram");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClLinkProgramRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clLinkProgram(
-                                                apiCommand->args.context, 
-                                                apiCommand->args.num_devices, 
-                                                apiCommand->args.device_list ? apiCommand->captures.getDevice_list() : nullptr, 
-                                                apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr, 
-                                                apiCommand->args.num_input_programs, 
-                                                apiCommand->args.input_programs ? apiCommand->captures.getInput_programs() : nullptr, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data, 
-                                                apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
-                                                );
-    return true;
-}
+bool clLinkProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clGetProgramBuildInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetProgramBuildInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetProgramBuildInfoRpcM*>(command);

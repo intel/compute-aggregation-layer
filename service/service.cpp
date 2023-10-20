@@ -619,6 +619,38 @@ bool clCompileProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     return true;
 }
 
+void CL_CALLBACK clLinkProgramCallbackWrapper(cl_program program, void *user_data) {
+    auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
+    Cal::Rpc::ChannelServer &channel = cctx->channel;
+    Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
+    callbackId.handle = reinterpret_cast<uintptr_t>(program);
+    delete cctx;
+
+    log<Verbosity::debug>("Pushed callback notification from clCompileProgramCallback to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
+    channel.pushCompletedCallbackId(callbackId);
+}
+
+bool clLinkProgramHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clLinkProgram");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClLinkProgramRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clLinkProgram(
+        apiCommand->args.context,
+        apiCommand->args.num_devices,
+        apiCommand->args.device_list ? apiCommand->captures.getDevice_list() : nullptr,
+        apiCommand->args.options ? apiCommand->captures.getOptions() : nullptr,
+        apiCommand->args.num_input_programs,
+        apiCommand->args.input_programs ? apiCommand->captures.getInput_programs() : nullptr,
+        apiCommand->args.pfn_notify ? clLinkProgramCallbackWrapper : nullptr,
+        apiCommand->args.user_data ? new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
+                                                                                   0,
+                                                                                   reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                                                   apiCommand->header,
+                                                                                   0}}
+                                   : nullptr,
+        apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
+    return true;
+}
+
 void CL_CALLBACK clSetProgramReleaseCallbackWrapper(cl_program program, void *user_data) {
     auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
     Cal::Rpc::ChannelServer &channel = cctx->channel;

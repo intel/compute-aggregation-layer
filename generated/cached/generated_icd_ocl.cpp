@@ -637,6 +637,8 @@ cl_int clCompileProgram (cl_program program, cl_uint num_devices, const cl_devic
     return ret;
 }
 cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_device_id* device_list, const char* options, cl_uint num_input_programs, const cl_program* input_programs, void (CL_CALLBACK* pfn_notify)(cl_program program, void* user_data), void* user_data, cl_int* errcode_ret) {
+    if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
+
     log<Verbosity::bloat>("Establishing RPC for clLinkProgram");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -667,6 +669,7 @@ cl_program clLinkProgram (cl_context context, cl_uint num_devices, const cl_devi
             baseMutable[i] = static_cast<IcdOclProgram*>(baseMutable[i])->asRemoteObject();
         }
     }
+    command->args.user_data = user_data ? new UserDataLinkProgram(context, user_data) : nullptr;
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

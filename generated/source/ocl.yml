@@ -1035,6 +1035,11 @@ config:
               ignore: True
         - name: clLinkProgram
           latency: 2.0
+          special_handling:
+            icd:
+              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_program
             kind: scalar
@@ -1099,6 +1104,7 @@ config:
               name: user_data
               type: "void*"
               kind: ptr_va
+              translate_before: "{dst} = {arg} ? new UserDataLinkProgram(context, user_data) : nullptr"
               ignore: True
             8:
               name: errcode_ret
