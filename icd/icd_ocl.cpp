@@ -507,6 +507,7 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
                 delete wrappedData;
                 auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_program program, void *user_data)>(callbackId.fptr);
                 fptr(program, originalUserData);
+                break;
             }
             case Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM::messageSubtype: {
                 log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
