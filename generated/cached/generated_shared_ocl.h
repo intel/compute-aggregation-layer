@@ -53,7 +53,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("clEnqueueMapImage");
     ret.push_back("clEnqueueSVMFree");
     ret.push_back("clEnqueueNativeKernel");
-    ret.push_back("clSetContextDestructorCallback");
     ret.push_back("clSetMemObjectDestructorCallback");
     return ret;
 }

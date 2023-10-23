@@ -28,6 +28,7 @@ cl_int (*clGetDeviceInfo)(cl_device_id device, cl_device_info param_name, size_t
 cl_context (*clCreateContext)(const cl_context_properties* properties, cl_uint num_devices, const cl_device_id* devices, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret) = nullptr;
 cl_context (*clCreateContextFromType)(const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret) = nullptr;
 cl_int (*clGetContextInfo)(cl_context context, cl_context_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) = nullptr;
+cl_int (*clSetContextDestructorCallback)(cl_context context, void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data), void* user_data) = nullptr;
 cl_int (*clCreateSubDevices)(cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret) = nullptr;
 cl_command_queue (*clCreateCommandQueue)(cl_context context, cl_device_id device, cl_command_queue_properties  properties, cl_int* errcode_ret) = nullptr;
 cl_int (*clSetDefaultDeviceCommandQueue)(cl_context context, cl_device_id device, cl_command_queue command_queue) = nullptr;
@@ -195,6 +196,10 @@ bool loadOclLibrary(std::optional<std::string> path) {
         log<Verbosity::error>("Missing symbol clGetContextInfo in %s", loadPath.c_str());
         unloadOclLibrary();
         return false;
+    }
+    clSetContextDestructorCallback = reinterpret_cast<decltype(clSetContextDestructorCallback)>(dlsym(libraryHandle, "clSetContextDestructorCallback"));
+    if(nullptr == clSetContextDestructorCallback){
+        log<Verbosity::debug>("Missing symbol clSetContextDestructorCallback in %s", loadPath.c_str());
     }
     clCreateSubDevices = reinterpret_cast<decltype(clCreateSubDevices)>(dlsym(libraryHandle, "clCreateSubDevices"));
     if(nullptr == clCreateSubDevices){
@@ -798,6 +803,7 @@ void unloadOclLibrary() {
     clCreateContext = nullptr;
     clCreateContextFromType = nullptr;
     clGetContextInfo = nullptr;
+    clSetContextDestructorCallback = nullptr;
     clCreateSubDevices = nullptr;
     clCreateCommandQueue = nullptr;
     clSetDefaultDeviceCommandQueue = nullptr;

@@ -560,6 +560,30 @@ inline bool clSetEventCallbackHandler(Provider &service, Cal::Rpc::ChannelServer
     return true;
 }
 
+void CL_CALLBACK clSetContextDestructorCallbackWrapper(cl_context context, void *user_data) {
+    auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
+    Cal::Rpc::ChannelServer &channel = cctx->channel;
+    Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
+    delete cctx;
+
+    log<Verbosity::debug>("Pushed callback notification from clSetContextDestructorCallback to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
+    channel.pushCompletedCallbackId(callbackId);
+}
+
+inline bool clSetContextDestructorCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clSetContextDestructorCallback");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clSetContextDestructorCallback(
+        apiCommand->args.context,
+        clSetContextDestructorCallbackWrapper,
+        new CallbackContext{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify),
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.context),
+                                                      reinterpret_cast<uintptr_t>(apiCommand->args.user_data),
+                                                      apiCommand->header,
+                                                      0}});
+    return true;
+}
+
 void CL_CALLBACK clBuildProgramCallbackWrapper(cl_program program, void *user_data) {
     auto *cctx = reinterpret_cast<CallbackContext *>(user_data);
     Cal::Rpc::ChannelServer &channel = cctx->channel;
