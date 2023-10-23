@@ -51,6 +51,10 @@ cl_int clSetContextDestructorCallback(cl_context context, void (CL_CALLBACK* pfn
    return {};
 }
 
+cl_int clSetMemObjectDestructorCallback(cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data){
+   return {};
+}
+
 cl_int clCreateSubDevices(cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret){
    return {};
 }

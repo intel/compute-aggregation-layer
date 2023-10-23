@@ -78,7 +78,6 @@ config:
           # Callbacks, intentionally left for later
           clEnqueueSVMFree,
           clEnqueueNativeKernel,
-          clSetMemObjectDestructorCallback,
         ]
 
   functions:
@@ -504,6 +503,35 @@ config:
               type: "void*"
               kind: ptr_va
               ignore: True
+        - name: clSetMemObjectDestructorCallback
+          latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+            rpc:
+              custom_handler: True
+          returns:
+            type: cl_int
+            kind: scalar
+            default: "CL_DEVICE_NOT_AVAILABLE"
+          args:
+            0:
+              name: memobj
+              type: cl_mem
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pfn_notify
+              type: "void (CL_CALLBACK*)(cl_mem memobj, void* user_data)"
+              kind: ptr_func
+              kind_details:
+                variable_generator: "void (CL_CALLBACK* {arg})(cl_mem memobj, void* user_data)"
+              ignore: True
+            2:
+              name: user_data
+              type: "void*"
+              kind: ptr_va
+              ignore: True              
         - name: clCreateSubDevices
           latency: 0.0
           returns:

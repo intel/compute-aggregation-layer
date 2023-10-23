@@ -516,6 +516,14 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
                 fptr(context, userData);
                 break;
             }
+            case Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM::messageSubtype: {
+                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+                auto memobj = reinterpret_cast<cl_mem>(callbackId.handle);
+                auto userData = reinterpret_cast<void *>(callbackId.data);
+                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_mem memobj, void *user_data)>(callbackId.fptr);
+                fptr(memobj, userData);
+                break;
+            }
             case Cal::Rpc::Ocl::ClBuildProgramRpcM::messageSubtype:
             case Cal::Rpc::Ocl::ClCompileProgramRpcM::messageSubtype:
             case Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM::messageSubtype: {

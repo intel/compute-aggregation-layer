@@ -38,6 +38,7 @@ extern cl_context (*clCreateContext)(const cl_context_properties* properties, cl
 extern cl_context (*clCreateContextFromType)(const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret);
 extern cl_int (*clGetContextInfo)(cl_context context, cl_context_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 extern cl_int (*clSetContextDestructorCallback)(cl_context context, void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data), void* user_data);
+extern cl_int (*clSetMemObjectDestructorCallback)(cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data);
 extern cl_int (*clCreateSubDevices)(cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret);
 extern cl_command_queue (*clCreateCommandQueue)(cl_context context, cl_device_id device, cl_command_queue_properties  properties, cl_int* errcode_ret);
 extern cl_int (*clSetDefaultDeviceCommandQueue)(cl_context context, cl_device_id device, cl_command_queue command_queue);
@@ -235,6 +236,7 @@ inline bool clGetContextInfoHandler(Provider &service, Cal::Rpc::ChannelServer &
     return true;
 }
 bool clSetContextDestructorCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clSetMemObjectDestructorCallbackHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCreateSubDevicesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubDevices");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesRpcM*>(command);
@@ -2198,6 +2200,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClCreateContextFromTypeRpcM::messageSubtype] = clCreateContextFromTypeHandler;
     outHandlers[ClGetContextInfoRpcM::messageSubtype] = clGetContextInfoHandler;
     outHandlers[ClSetContextDestructorCallbackRpcM::messageSubtype] = clSetContextDestructorCallbackHandler;
+    outHandlers[ClSetMemObjectDestructorCallbackRpcM::messageSubtype] = clSetMemObjectDestructorCallbackHandler;
     outHandlers[ClCreateSubDevicesRpcM::messageSubtype] = clCreateSubDevicesHandler;
     outHandlers[ClCreateCommandQueueRpcM::messageSubtype] = clCreateCommandQueueHandler;
     outHandlers[ClSetDefaultDeviceCommandQueueRpcM::messageSubtype] = clSetDefaultDeviceCommandQueueHandler;
@@ -2403,6 +2406,13 @@ inline void callDirectly(Cal::Rpc::Ocl::ClGetContextInfoRpcM &apiCommand) {
 inline void callDirectly(Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clSetContextDestructorCallback(
                                                 apiCommand.args.context, 
+                                                apiCommand.args.pfn_notify, 
+                                                apiCommand.args.user_data
+                                                );
+}
+inline void callDirectly(Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clSetMemObjectDestructorCallback(
+                                                apiCommand.args.memobj, 
                                                 apiCommand.args.pfn_notify, 
                                                 apiCommand.args.user_data
                                                 );
@@ -3848,6 +3858,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetContextInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetContextInfoRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateSubDevicesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateCommandQueueRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateCommandQueueRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClSetDefaultDeviceCommandQueueRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClSetDefaultDeviceCommandQueueRpcM*>(command)); break;

@@ -39,6 +39,7 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
 cl_context clCreateContextFromType (const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret);
 cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clSetContextDestructorCallback (cl_context context, void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data), void* user_data);
+cl_int clSetMemObjectDestructorCallback (cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data);
 cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret);
 cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device, cl_command_queue_properties  properties, cl_int* errcode_ret);
 cl_int clSetDefaultDeviceCommandQueue (cl_context context, cl_device_id device, cl_command_queue command_queue);
@@ -331,10 +332,6 @@ inline void clEnqueueNativeKernelUnimpl() {
     log<Verbosity::critical>("Function clEnqueueNativeKernel is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void clSetMemObjectDestructorCallbackUnimpl() {
-    log<Verbosity::critical>("Function clSetMemObjectDestructorCallback is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 } // Unimplemented
 
 inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
@@ -347,6 +344,7 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clCreateContextFromType = Cal::Icd::Ocl::clCreateContextFromType;
     dt.clGetContextInfo = Cal::Icd::Ocl::clGetContextInfo;
     dt.clSetContextDestructorCallback = Cal::Icd::Ocl::clSetContextDestructorCallback;
+    dt.clSetMemObjectDestructorCallback = Cal::Icd::Ocl::clSetMemObjectDestructorCallback;
     dt.clCreateSubDevices = Cal::Icd::Ocl::clCreateSubDevices;
     dt.clCreateCommandQueue = Cal::Icd::Ocl::clCreateCommandQueue;
     dt.clSetDefaultDeviceCommandQueue = Cal::Icd::Ocl::clSetDefaultDeviceCommandQueue;
@@ -487,7 +485,6 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clEnqueueMapImage = reinterpret_cast<decltype(dt.clEnqueueMapImage)>(Cal::Icd::Ocl::Unimplemented::clEnqueueMapImageUnimpl);
     dt.clEnqueueSVMFree = reinterpret_cast<decltype(dt.clEnqueueSVMFree)>(Cal::Icd::Ocl::Unimplemented::clEnqueueSVMFreeUnimpl);
     dt.clEnqueueNativeKernel = reinterpret_cast<decltype(dt.clEnqueueNativeKernel)>(Cal::Icd::Ocl::Unimplemented::clEnqueueNativeKernelUnimpl);
-    dt.clSetMemObjectDestructorCallback = reinterpret_cast<decltype(dt.clSetMemObjectDestructorCallback)>(Cal::Icd::Ocl::Unimplemented::clSetMemObjectDestructorCallbackUnimpl);
 }
 
 void *getOclExtensionFuncionAddressRpcHelper(const char *funcName);

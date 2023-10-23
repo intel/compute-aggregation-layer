@@ -318,6 +318,30 @@ cl_int clSetContextDestructorCallback (cl_context context, void (CL_CALLBACK* pf
 
     return ret;
 }
+cl_int clSetMemObjectDestructorCallback (cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data) {
+    Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();
+
+    log<Verbosity::bloat>("Establishing RPC for clSetMemObjectDestructorCallback");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(memobj, pfn_notify, user_data);
+    command->args.memobj = memobj->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
 cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret) {
     log<Verbosity::bloat>("Establishing RPC for clCreateSubDevices");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
@@ -5630,6 +5654,9 @@ cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t 
 }
 cl_int clSetContextDestructorCallback (cl_context context, void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data), void* user_data) {
     return Cal::Icd::Ocl::clSetContextDestructorCallback(context, pfn_notify, user_data);
+}
+cl_int clSetMemObjectDestructorCallback (cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data) {
+    return Cal::Icd::Ocl::clSetMemObjectDestructorCallback(memobj, pfn_notify, user_data);
 }
 cl_int clCreateSubDevices (cl_device_id in_device, const cl_device_partition_property* properties, cl_uint num_devices, cl_device_id* out_devices, cl_uint* num_devices_ret) {
     return Cal::Icd::Ocl::clCreateSubDevices(in_device, properties, num_devices, out_devices, num_devices_ret);
