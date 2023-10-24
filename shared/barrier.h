@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -163,7 +163,7 @@ class Barrier {
 
     Cal::Utils::CountingSemaphore entry;
     Cal::Utils::CountingSemaphore exit;
-    std::vector<BarrierUserT *> *expectedBarrierUsers;
+    std::vector<BarrierUserT *> *expectedBarrierUsers = nullptr;
     std::atomic_uint32_t usersInBarrier;
     std::atomic_bool barrierIsBroken;
 };

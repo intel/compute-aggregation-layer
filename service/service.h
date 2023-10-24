@@ -470,7 +470,7 @@ class Provider {
         }
 
         void store(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t *desc, size_t nativeSize, uint8_t *pNativeBinary) {
-            if (desc->pNext) {
+            if (desc == nullptr || desc->pNext) {
                 return;
             }
             auto &entry = cache.emplace_back();

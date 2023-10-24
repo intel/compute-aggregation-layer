@@ -1922,7 +1922,7 @@ config:
             rpc:
               handler_prologue: "service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
             icd:
-              handler_epilogue: "if (hContext != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
+              handler_epilogue: "if (hContext != nullptr && phCommandList != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -1970,7 +1970,7 @@ config:
             rpc:
               handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->args.altdesc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->captures.altdesc : nullptr, ctx);"
             icd:
-              handler_epilogue: "phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();"
+              handler_epilogue: "if (hContext != nullptr && phCommandList != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t

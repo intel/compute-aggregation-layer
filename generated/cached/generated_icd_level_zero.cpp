@@ -338,7 +338,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (hContext != nullptr) {
+    if (hContext != nullptr && phCommandList != nullptr) {
         phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
     }
     return ret;
@@ -375,7 +375,9 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
+    if (hContext != nullptr && phCommandList != nullptr) {
+        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
+    }
     return ret;
 }
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {

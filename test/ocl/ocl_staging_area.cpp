@@ -132,6 +132,7 @@ bool enqueueImage(cl_context context, cl_command_queue queue) {
     auto image = clCreateImage(context, CL_MEM_READ_WRITE, &imageFormat, &imageDescriptor, nullptr, &cl_err);
     if (image == nullptr || cl_err != CL_SUCCESS) {
         log<Verbosity::critical>("clCreateImage failed: %d", cl_err);
+        return false;
     }
     log<Verbosity::info>("Successfully created image");
 
