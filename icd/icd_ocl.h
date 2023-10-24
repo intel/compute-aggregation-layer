@@ -44,10 +44,12 @@ struct cl_icd_base_mapped : cl_icd_base {
     }
 
     void ensureIsLocalObjet() {
+#ifndef NDEBUG
         if (this->isRemote()) {
             log<Verbosity::critical>("Attempted to use remote object as local object");
             std::abort();
         }
+#endif
     }
 
     bool isLocal() const {

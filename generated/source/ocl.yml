@@ -149,7 +149,7 @@ config:
               name: platform
               type: cl_platform_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclPlatform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_platform_info
@@ -229,7 +229,7 @@ config:
               name: platform
               type: cl_platform_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclPlatform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device_type
               type: cl_device_type
@@ -266,8 +266,8 @@ config:
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper" # Dedicated handling for get device info to report no image support in CAL
-              handler_prologue: "if (isCacheable(param_name) && static_cast<IcdOclDevice*>(device)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "if (isCacheable(param_name)) {\n        static_cast<IcdOclDevice*>(device)->cache.store(param_name, param_value, captured_size);\n    }"
+              handler_prologue: "if (isCacheable(param_name) && device->asLocalObject()->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "if (isCacheable(param_name)) {\n        device->asLocalObject()->cache.store(param_name, param_value, captured_size);\n    }"
               handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
             rpc:
               emit_copy_assignment: True
@@ -280,7 +280,7 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_device_info
@@ -333,7 +333,7 @@ config:
                 element:
                   type: "cl_context_properties"
                   kind: "scalar"
-                  translate_before: "{dst} = (({index} >= 1) && (CL_CONTEXT_PLATFORM == *(&{arg}-1))) ? reinterpret_cast<cl_context_properties>(static_cast<IcdOclPlatform*>(reinterpret_cast<cl_platform_id>({arg}))->asRemoteObject()) : {arg}"
+                  translate_before: "{dst} = (({index} >= 1) && (CL_CONTEXT_PLATFORM == *(&{arg}-1))) ? reinterpret_cast<cl_context_properties>(reinterpret_cast<cl_platform_id>({arg})->asLocalObject()->asRemoteObject()) : {arg}"
                 server_access: read
             1:
               name: num_devices
@@ -348,7 +348,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: pfn_notify
@@ -391,7 +391,7 @@ config:
                 element:
                   type: "cl_context_properties"
                   kind: "scalar"
-                  translate_before: "{dst} = (({index} >= 1) && (CL_CONTEXT_PLATFORM == *(&{arg}-1))) ? reinterpret_cast<cl_context_properties>(static_cast<IcdOclPlatform*>(reinterpret_cast<cl_platform_id>({arg}))->asRemoteObject()) : {arg}"
+                  translate_before: "{dst} = (({index} >= 1) && (CL_CONTEXT_PLATFORM == *(&{arg}-1))) ? reinterpret_cast<cl_context_properties>(reinterpret_cast<cl_platform_id>({arg})->asLocalObject()->asRemoteObject()) : {arg}"
                 server_access: read
             1:
               name: device_type
@@ -425,8 +425,8 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (isCacheable(param_name) && static_cast<IcdOclContext*>(context)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "if (isCacheable(param_name)) {\n        static_cast<IcdOclContext*>(context)->cache.store(param_name, param_value, captured_size);\n    }"
+              handler_prologue: "if (isCacheable(param_name) && context->asLocalObject()->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "if (isCacheable(param_name)) {\n        context->asLocalObject()->cache.store(param_name, param_value, captured_size);\n    }"
               handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
             rpc:
               emit_copy_assignment: True
@@ -439,7 +439,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_context_info
@@ -490,7 +490,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->inc()"
             1:
               name: pfn_notify
@@ -545,7 +545,7 @@ config:
               name: in_device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: properties
               type: "const cl_device_partition_property*"
@@ -588,7 +588,7 @@ config:
           latency: 1.0
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_command_queue
             kind: scalar
@@ -598,12 +598,12 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: properties
               type: "cl_command_queue_properties "
@@ -632,22 +632,22 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "if ({arg}) {dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "if ({arg}) {dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: clCreateCommandQueueWithProperties
           latency: 1.0
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_command_queue
             kind: scalar
@@ -657,12 +657,12 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: properties
               type: "const cl_queue_properties*"
@@ -691,7 +691,7 @@ config:
           latency: 0.5
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_program
             kind: scalar
@@ -701,7 +701,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: count
               type: cl_uint
@@ -749,7 +749,7 @@ config:
           latency: 0.5
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_program
             kind: scalar
@@ -759,7 +759,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: il
               type: "const void*"
@@ -790,7 +790,7 @@ config:
         - name: clCreateProgramWithBinary
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           latency: 1.0
           returns:
             type: cl_program
@@ -801,7 +801,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_devices
               type: cl_uint
@@ -816,7 +816,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: lengths
@@ -872,7 +872,7 @@ config:
           latency: 1.0
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclProgram *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_program
             kind: scalar
@@ -882,7 +882,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_devices
               type: cl_uint
@@ -897,7 +897,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: kernel_names
@@ -944,7 +944,7 @@ config:
               name: platform
               type: cl_platform_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclPlatform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
           returns:
             type: cl_int
             kind: scalar
@@ -964,7 +964,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_devices
               type: cl_uint
@@ -979,7 +979,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: options
@@ -1020,7 +1020,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_devices
               type: cl_uint
@@ -1035,7 +1035,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: options
@@ -1062,7 +1062,7 @@ config:
                 element:
                   type: "cl_program"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             6:
               name: header_include_names
@@ -1108,7 +1108,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_devices
               type: cl_uint
@@ -1123,7 +1123,7 @@ config:
                 element:
                   type: "cl_device_id"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: options
@@ -1150,7 +1150,7 @@ config:
                 element:
                   type: "cl_program"
                   kind: "scalar"
-                  translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             6:
               name: pfn_notify
@@ -1188,12 +1188,12 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: param_name
               type: cl_program_build_info
@@ -1241,7 +1241,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pfn_notify
               type: "void (CL_CALLBACK*)(cl_program program, void* user_data)"
@@ -1268,7 +1268,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: kernel_name
               type: "const char*"
@@ -1297,13 +1297,13 @@ config:
           returns:
             type: cl_kernel
             kind: scalar
-            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, static_cast<IcdOclKernel*>(source_kernel))"
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, source_kernel->asLocalObject())"
           args:
             0:
               name: source_kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: errcode_ret
               type: "cl_int*"
@@ -1330,7 +1330,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_kernels
               type: cl_uint
@@ -1363,8 +1363,8 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (isCacheable(param_name) && static_cast<IcdOclCommandQueue*>(command_queue)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "if (isCacheable(param_name)) {\n        static_cast<IcdOclCommandQueue*>(command_queue)->cache.store(param_name, param_value, captured_size);\n    }"
+              handler_prologue: "if (isCacheable(param_name) && command_queue->asLocalObject()->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "if (isCacheable(param_name)) {\n        command_queue->asLocalObject()->cache.store(param_name, param_value, captured_size);\n    }"
               handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
           returns:
             type: cl_int
@@ -1375,7 +1375,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_command_queue_info
@@ -1488,7 +1488,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_program_info
@@ -1540,7 +1540,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: total_binaries_size
               type: size_t
@@ -1718,8 +1718,8 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (isCacheable(param_name) && static_cast<IcdOclKernel*>(kernel)->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
-              handler_epilogue: "if (isCacheable(param_name)) {\n        static_cast<IcdOclKernel*>(kernel)->cache.store(param_name, param_value, captured_size);\n    }"
+              handler_prologue: "if (isCacheable(param_name) && kernel->asLocalObject()->cache.find(param_name,param_value,param_value_size_ret)) {\n        return CL_SUCCESS;\n    }"
+              handler_epilogue: "if (isCacheable(param_name)) {\n        kernel->asLocalObject()->cache.store(param_name, param_value, captured_size);\n    }"
               handler_epilogue_data: "auto captured_size = command->captures.param_value_size_ret;"
           returns:
             type: cl_int
@@ -1730,7 +1730,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_kernel_info
@@ -1774,12 +1774,12 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: param_name
               type: cl_kernel_work_group_info
@@ -1821,7 +1821,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: arg_indx
               type: cl_uint
@@ -1867,12 +1867,12 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: param_name
               type: cl_kernel_sub_group_info
@@ -1923,7 +1923,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdOclCommandQueue *>(command_queue)->beforeReleaseCallback();"
+              handler_prologue: "command_queue->asLocalObject()->beforeReleaseCallback();"
           returns:
             type: cl_int
             kind: scalar
@@ -1933,7 +1933,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseContext
           latency: 0.0
@@ -1950,7 +1950,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseDevice
           latency: 0.0
@@ -1963,8 +1963,8 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
-              translate_after: "if(static_cast<IcdOclDevice*>({arg})->isSubDevice){{{arg}->asLocalObject()->dec();}}"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "if({arg}->asLocalObject()->isSubDevice){{{arg}->asLocalObject()->dec();}}"
         - name: clReleaseKernel
           latency: 0.0
           returns:
@@ -1976,7 +1976,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseSampler
           latency: 0.0
@@ -1995,7 +1995,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (static_cast<IcdOclProgram *>(program)->context) {\n        static_cast<IcdOclProgram *>(program)->context->asLocalObject()->beforeReleaseCallback();\n    }"
+              handler_prologue: "if (program->asLocalObject()->context) {\n        program->asLocalObject()->context->asLocalObject()->beforeReleaseCallback();\n    }"
           returns:
             type: cl_int
             kind: scalar
@@ -2027,7 +2027,7 @@ config:
               name: memobj
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseEvent
           latency: 0.0
@@ -2041,7 +2041,7 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clRetainCommandQueue
           latency: 0.0
@@ -2054,8 +2054,8 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclCommandQueue*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clRetainContext
           latency: 0.0
           returns:
@@ -2067,8 +2067,8 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclContext*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clRetainDevice
           latency: 0.0
           returns:
@@ -2093,8 +2093,8 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclProgram*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clRetainMemObject
           latency: 0.0
           returns:
@@ -2106,8 +2106,8 @@ config:
               name: memobj
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclMem*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clRetainSampler
           latency: 0.0
           returns:
@@ -2132,8 +2132,8 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclKernel*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clRetainEvent
           latency: 0.0
           returns:
@@ -2145,8 +2145,8 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
-              translate_after: "static_cast<IcdOclEvent*>({arg})->inc()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
         - name: clFlush
           latency: 0.0
           call_async: true
@@ -2159,7 +2159,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: clFinish
           latency: 2.0
           special_handling:
@@ -2175,13 +2175,13 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: clEnqueueNDRangeKernel
           latency: 0.0
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdOclKernel*>(kernel)->moveArgsToGpu();\n"
+              handler_prologue: "kernel->asLocalObject()->moveArgsToGpu();\n"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -2192,12 +2192,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: work_dim
               type: cl_uint
@@ -2249,7 +2249,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -2277,12 +2277,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: num_events_in_wait_list
               type: cl_uint
@@ -2297,7 +2297,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             4:
               name: event
@@ -2325,7 +2325,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_events_in_wait_list
               type: cl_uint
@@ -2340,7 +2340,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: event
@@ -2368,7 +2368,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: event
               type: "cl_event*"
@@ -2395,7 +2395,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_events_in_wait_list
               type: cl_uint
@@ -2410,7 +2410,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: event
@@ -2438,7 +2438,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: clEnqueueWaitForEvents
           latency: 0.0
           special_handling:
@@ -2453,7 +2453,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_events
               type: cl_uint
@@ -2468,7 +2468,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: clEnqueueMigrateMemObjects
           latency: 0.0
@@ -2484,7 +2484,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_mem_objects
               type: cl_uint
@@ -2499,7 +2499,7 @@ config:
                 element:
                   type: cl_mem
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: flags
@@ -2519,7 +2519,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             6:
               name: event
@@ -2549,7 +2549,7 @@ config:
               name: platform
               type: cl_platform_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclPlatform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: funcname
               type: "const char*"
@@ -2577,7 +2577,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: cl_mem_flags
@@ -2646,7 +2646,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: cl_mem_flags
@@ -2736,7 +2736,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: cl_mem_flags
@@ -2784,7 +2784,7 @@ config:
               name: pipe
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_pipe_info
@@ -3279,7 +3279,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: arg_index
               type: cl_uint
@@ -3292,7 +3292,7 @@ config:
               name: arg_value
               type: "const void*"
               kind: ptr_array
-              translate_before: "static_cast<IcdOclKernel*>(kernel)->convertClMemArgIfNeeded(arg_index, arg_size, {dst_mem})"
+              translate_before: "kernel->asLocalObject()->convertClMemArgIfNeeded(arg_index, arg_size, {dst_mem})"
               kind_details:
                 num_elements: "arg_size"
                 can_be_null: True
@@ -3313,7 +3313,7 @@ config:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: spec_id
               type: cl_uint
@@ -3350,12 +3350,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_write
               type: cl_bool
@@ -3399,7 +3399,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -3430,12 +3430,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_write
               type: cl_bool
@@ -3520,7 +3520,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             13:
               name: event
@@ -3551,12 +3551,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_read
               type: cl_bool
@@ -3601,7 +3601,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -3632,12 +3632,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_read
               type: cl_bool
@@ -3722,7 +3722,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             13:
               name: event
@@ -3750,17 +3750,17 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: src_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: dst_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             3:
               name: src_offset
               type: size_t
@@ -3787,7 +3787,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -3815,17 +3815,17 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: src_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: dst_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             3:
               name: src_origin
               type: "const size_t*"
@@ -3889,7 +3889,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             12:
               name: event
@@ -3917,12 +3917,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_read
               type: cl_bool
@@ -3986,7 +3986,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             10:
               name: event
@@ -4014,12 +4014,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_write
               type: cl_bool
@@ -4082,7 +4082,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             10:
               name: event
@@ -4110,17 +4110,17 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: src_image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: dst_image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             3:
               name: src_origin
               type: "const size_t*"
@@ -4168,7 +4168,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -4196,17 +4196,17 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: src_image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: dst_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             3:
               name: src_origin
               type: "const size_t*"
@@ -4247,7 +4247,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -4275,17 +4275,17 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: src_buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: dst_image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             3:
               name: src_offset
               type: size_t
@@ -4326,7 +4326,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -4354,12 +4354,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: buffer
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: blocking_map
               type: cl_bool
@@ -4390,7 +4390,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -4430,12 +4430,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: memobj
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: mapped_ptr
               type: "void*"
@@ -4454,7 +4454,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             5:
               name: event
@@ -4482,12 +4482,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: memobj
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: pattern
               type: "const void*"
@@ -4525,7 +4525,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             8:
               name: event
@@ -4553,12 +4553,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: image
               type: cl_mem
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclMem*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: fill_color
               type: "const void*"
@@ -4606,7 +4606,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -4644,7 +4644,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: clGetEventInfo
           latency: 0.0
@@ -4657,7 +4657,7 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_event_info
@@ -4703,7 +4703,7 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_profiling_info
@@ -4746,7 +4746,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: errcode_ret
               type: "cl_int*"
@@ -4770,7 +4770,7 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: execution_status
               type: cl_int
@@ -4791,7 +4791,7 @@ config:
               name: event
               type: cl_event
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: command_exec_callback_type
               type: cl_int
@@ -4819,7 +4819,7 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device_timestamp
               type: "cl_ulong*"
@@ -4856,7 +4856,7 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: host_timestamp
               type: "cl_ulong*"
@@ -4883,7 +4883,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: cl_svm_mem_flags
@@ -4927,7 +4927,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -4951,7 +4951,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: blocking_map
               type: cl_bool
@@ -4982,7 +4982,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5012,7 +5012,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: svm_ptr
               type: "void*"
@@ -5031,7 +5031,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             4:
               name: event
@@ -5060,7 +5060,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: argIndex
               type: cl_uint
@@ -5076,7 +5076,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdOclKernel*>(kernel)->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
+              handler_epilogue: "kernel->asLocalObject()->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
           returns:
             type: cl_int
             kind: scalar
@@ -5086,7 +5086,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: param_name
               type: cl_kernel_exec_info
@@ -5120,7 +5120,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: svm_ptr
               type: void*
@@ -5160,7 +5160,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5190,7 +5190,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: num_svm_pointers
               type: cl_uint
@@ -5235,7 +5235,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5266,7 +5266,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: blocking
               type: cl_bool
@@ -5323,7 +5323,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5353,7 +5353,7 @@ config:
               name: in_device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: properties
               type: "const cl_device_partition_property_ext*"
@@ -5407,7 +5407,7 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
         - name: clRetainDeviceEXT
           latency: 0.0
@@ -5442,12 +5442,12 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: param_name
               type: cl_kernel_sub_group_info
@@ -5510,12 +5510,12 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: work_dim
               type: cl_uint
@@ -5562,7 +5562,7 @@ config:
               in_get_extension_function_address: True
               alias_to: clCreateCommandQueueWithProperties
               not_in_dispatch_table: True
-              handler_epilogue: "static_cast<IcdOclCommandQueue *>(ret)->context = static_cast<IcdOclContext *>(context);"
+              handler_epilogue: "ret->asLocalObject()->context = context->asLocalObject();"
           returns:
             type: cl_command_queue
             kind: scalar
@@ -5572,12 +5572,12 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: properties
               type: "const cl_queue_properties*"
@@ -5620,7 +5620,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstPtr
               type: void*
@@ -5660,7 +5660,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5694,7 +5694,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: blocking
               type: cl_bool
@@ -5751,7 +5751,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             7:
               name: event
@@ -5783,7 +5783,7 @@ config:
               name: kernel
               type: cl_kernel
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclKernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: argIndex
               type: cl_uint
@@ -5810,7 +5810,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: "const void*"
@@ -5862,12 +5862,12 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: properties
               type: "const cl_mem_properties_intel*"
@@ -5917,7 +5917,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: properties
               type: "const cl_mem_properties_intel*"
@@ -5983,12 +5983,12 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: properties
               type: "const cl_mem_properties_intel*"
@@ -6055,7 +6055,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -6082,7 +6082,7 @@ config:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -6107,7 +6107,7 @@ config:
               name: command_queue
               type: cl_command_queue
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclCommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6136,7 +6136,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdOclEvent*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             6:
               name: event
@@ -6167,12 +6167,12 @@ config:
               name: device
               type: cl_device_id
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclDevice*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: program
               type: cl_program
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdOclProgram*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: globalVariableName
               type: "const char*"

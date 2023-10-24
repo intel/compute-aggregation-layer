@@ -291,8 +291,8 @@ ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_hand
     using CommandT = Cal::Rpc::LevelZero::ZeContextSystemBarrierRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = (hContext)->asLocalObject()->asRemoteObject();
+    command->args.hDevice = (hDevice)->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -315,8 +315,8 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, desc, phCommandList);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
         ensureNull("zeCommandListCreate: desc->pNext", desc->pNext);
@@ -339,7 +339,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
 
     channelLock.unlock();
     if (hContext != nullptr) {
-        static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);
+        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
     }
     return ret;
 }
@@ -352,8 +352,8 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, altdesc, phCommandList);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(altdesc)
     {
         ensureNull("zeCommandListCreateImmediate: altdesc->pNext", altdesc->pNext);
@@ -375,7 +375,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);
+    phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
     return ret;
 }
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
@@ -386,7 +386,7 @@ ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -411,7 +411,7 @@ ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCloseRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -433,7 +433,7 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListResetRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -449,7 +449,7 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;
+    hCommandList->asLocalObject()->sharedIndirectAccessSet = false;
     return ret;
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
@@ -462,7 +462,7 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hC
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -486,8 +486,8 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, desc, phCommandQueue);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
         ensureNull("zeCommandQueueCreate: desc->pNext", desc->pNext);
@@ -518,7 +518,7 @@ ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandQueue);
-    command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
+    command->args.hCommandQueue = hCommandQueue->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -545,7 +545,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandQueue, numCommandLists, phCommandLists, hFence);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
+    command->args.hCommandQueue = hCommandQueue->asLocalObject()->asRemoteObject();
     if(phCommandLists)
     {
         auto base = command->captures.phCommandLists;
@@ -553,12 +553,12 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
         auto numEntries = dynMemTraits.phCommandLists.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0CommandList*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
     if(hFence)
     {
-        command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
+        command->args.hFence = hFence->asLocalObject()->asRemoteObject();
     }
 
     if(
@@ -578,7 +578,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     }
     ze_result_t ret = command->captures.ret;
 
-    if (ret == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
+    if (ret == ZE_RESULT_SUCCESS && hCommandQueue->asLocalObject()->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
         ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     return ret;
@@ -615,7 +615,7 @@ ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, 
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandQueue, timeout);
-    command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
+    command->args.hCommandQueue = hCommandQueue->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -642,7 +642,7 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, desc, phContext);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -671,7 +671,7 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, desc, numDevices, phDevices, phContext);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
     if(phDevices)
     {
         auto base = command->captures.getPhDevices();
@@ -679,7 +679,7 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
         auto numEntries = dynMemTraits.phDevices.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Device*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -709,7 +709,7 @@ ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     using CommandT = Cal::Rpc::LevelZero::ZeContextDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -734,7 +734,7 @@ ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
     using CommandT = Cal::Rpc::LevelZero::ZeContextGetStatusRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -859,10 +859,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -871,7 +871,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -897,10 +897,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_ha
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -909,7 +909,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -935,10 +935,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -947,7 +947,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -973,10 +973,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -985,7 +985,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -1009,7 +1009,7 @@ ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommand
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList, ptr, size);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1034,7 +1034,7 @@ ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, 
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, pCount, phDevices);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1069,7 +1069,7 @@ ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phSubdevices);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1104,7 +1104,7 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pDeviceProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1117,7 +1117,7 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
     command->copyToCaller(dynMemTraits);
     if(pDeviceProperties)
     {
-        command->captures.ret = static_cast<IcdL0Device*>(hDevice)->patchDeviceName(*pDeviceProperties) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST;
+        command->captures.ret = hDevice->asLocalObject()->patchDeviceName(*pDeviceProperties) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST;
     }
     ze_result_t ret = command->captures.ret;
 
@@ -1132,7 +1132,7 @@ ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, z
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pComputeProperties);
     command->copyFromCaller();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pComputeProperties)
     {
         ensureNull("zeDeviceGetComputeProperties: pComputeProperties->pNext", pComputeProperties->pNext);
@@ -1161,7 +1161,7 @@ ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pModuleProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1186,7 +1186,7 @@ ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t 
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, pCommandQueueGroupProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pCommandQueueGroupProperties)
     {
         auto base = command->captures.pCommandQueueGroupProperties;
@@ -1221,7 +1221,7 @@ ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ui
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, pMemProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1245,7 +1245,7 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pMemAccessProperties);
     command->copyFromCaller();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pMemAccessProperties)
     {
         ensureNull("zeDeviceGetMemoryAccessProperties: pMemAccessProperties->pNext", pMemAccessProperties->pNext);
@@ -1274,7 +1274,7 @@ ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uin
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, pCacheProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1298,7 +1298,7 @@ ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pImageProperties);
     command->copyFromCaller();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pImageProperties)
     {
         ensureNull("zeDeviceGetImageProperties: pImageProperties->pNext", pImageProperties->pNext);
@@ -1326,7 +1326,7 @@ ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDe
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pExternalMemoryProperties);
     command->copyFromCaller();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pExternalMemoryProperties)
     {
         ensureNull("zeDeviceGetExternalMemoryProperties: pExternalMemoryProperties->pNext", pExternalMemoryProperties->pNext);
@@ -1355,8 +1355,8 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, hPeerDevice, pP2PProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+    command->args.hPeerDevice = hPeerDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1379,8 +1379,8 @@ ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, hPeerDevice, value);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
-    command->args.hPeerDevice = static_cast<IcdL0Device*>(hPeerDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+    command->args.hPeerDevice = hPeerDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1403,7 +1403,7 @@ ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1425,7 +1425,7 @@ ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* h
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, hostTimestamp, deviceTimestamp);
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1514,7 +1514,7 @@ ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t*
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetApiVersionRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, version);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1538,7 +1538,7 @@ ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_drive
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, pDriverProperties);
     command->copyFromCaller();
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
     if(pDriverProperties)
     {
         ensureNull("zeDriverGetProperties: pDriverProperties->pNext", pDriverProperties->pNext);
@@ -1566,7 +1566,7 @@ ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_dr
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, pIpcProperties);
     command->copyFromCaller();
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
     if(pIpcProperties)
     {
         ensureNull("zeDriverGetIpcProperties: pIpcProperties->pNext", pIpcProperties->pNext);
@@ -1595,7 +1595,7 @@ ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver,
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, pCount, pExtensionProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1621,7 +1621,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, desc, numDevices, phDevices, phEventPool);
     command->copyFromCaller(dynMemTraits);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
     if(desc)
     {
         enforceNullWithWarning("zeEventPoolCreate: desc->pNext", command->captures.desc.pNext);
@@ -1633,7 +1633,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
         auto numEntries = dynMemTraits.phDevices.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Device*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -1662,7 +1662,7 @@ ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEventPool);
-    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+    command->args.hEventPool = hEventPool->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1688,7 +1688,7 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEventPool, desc, phEvent);
     command->copyFromCaller();
-    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+    command->args.hEventPool = hEventPool->asLocalObject()->asRemoteObject();
     if(desc)
     {
         ensureNull("zeEventCreate: desc->pNext", desc->pNext);
@@ -1719,7 +1719,7 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1744,7 +1744,7 @@ ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool,
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolGetIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEventPool, phIpc);
-    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+    command->args.hEventPool = hEventPool->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1767,7 +1767,7 @@ ze_result_t zeEventPoolOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolOpenIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hIpc, phEventPool);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1794,7 +1794,7 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolCloseIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEventPool);
-    command->args.hEventPool = static_cast<IcdL0EventPool*>(hEventPool)->asRemoteObject();
+    command->args.hEventPool = hEventPool->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1812,9 +1812,9 @@ ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     return ret;
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    if(hSignalEvent){static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);}
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList);}
     for (uint32_t i = 0; i < numWaitEvents; ++i) {
-        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -1825,10 +1825,10 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -1837,7 +1837,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -1861,7 +1861,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     return ret;
 }
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
-    static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);
+    hEvent->asLocalObject()->setAllowIcdState(hCommandList);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -1869,10 +1869,10 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList, hEvent);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hEvent)
     {
-        command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+        command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
     }
 
     if(
@@ -1896,7 +1896,7 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
 }
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
     for (uint32_t i = 0; i < numEvents; ++i) {
-        static_cast<IcdL0Event*>(phEvents[i])->setAllowIcdState(hCommandList);
+        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWaitOnEvents");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -1907,7 +1907,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, numEvents, phEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(phEvents)
     {
         auto base = command->captures.phEvents;
@@ -1915,7 +1915,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
         auto numEntries = dynMemTraits.phEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -1946,7 +1946,7 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostSignalRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1961,7 +1961,7 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
     return ret;
 }
 ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) {
-    if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {
+    if (hEvent->asLocalObject()->isSignaled()) {
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventHostSynchronize");
@@ -1971,7 +1971,7 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent, timeout);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1988,12 +1988,12 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
     };
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
-        static_cast<IcdL0Event*>(hEvent)->signal();
+        hEvent->asLocalObject()->signal();
     }
     return ret;
 }
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
-    if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {
+    if (hEvent->asLocalObject()->isSignaled()) {
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryStatus");
@@ -2003,7 +2003,7 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2020,16 +2020,16 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     };
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
-        static_cast<IcdL0Event*>(hEvent)->signal();
+        hEvent->asLocalObject()->signal();
     }
     return ret;
 }
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
-    static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);
-    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {
+    hEvent->asLocalObject()->setAllowIcdState(hCommandList);
+    if (hEvent->asLocalObject()->isCleared()) {
         return ZE_RESULT_SUCCESS;
     }
-    static_cast<IcdL0Event*>(hEvent)->clear();
+    hEvent->asLocalObject()->clear();
 
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendEventReset");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -2038,8 +2038,8 @@ ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList, hEvent);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2054,10 +2054,10 @@ ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList
     return ret;
 }
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
-    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {
+    if (hEvent->asLocalObject()->isCleared()) {
         return ZE_RESULT_SUCCESS;
     }
-    static_cast<IcdL0Event*>(hEvent)->clear();
+    hEvent->asLocalObject()->clear();
     log<Verbosity::bloat>("Establishing RPC for zeEventHostReset");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2065,7 +2065,7 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostResetRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
@@ -2086,8 +2086,8 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     return ret;
 }
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr) {
-    if (static_cast<IcdL0Event*>(hEvent)->isTimestamp()) {
-        static_cast<IcdL0Event*>(hEvent)->getTimestamp(dstptr);
+    if (hEvent->asLocalObject()->isTimestamp()) {
+        hEvent->asLocalObject()->getTimestamp(dstptr);
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryKernelTimestamp");
@@ -2097,7 +2097,7 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hEvent, dstptr);
-    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hEvent = hEvent->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2112,7 +2112,7 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
 
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
-        static_cast<IcdL0Event*>(hEvent)->storeTimestamp(dstptr);
+        hEvent->asLocalObject()->storeTimestamp(dstptr);
     }
     return ret;
 }
@@ -2126,7 +2126,7 @@ ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_h
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(phEvents)
     {
         auto base = command->captures.getPhEvents();
@@ -2134,12 +2134,12 @@ ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_h
         auto numEntries = dynMemTraits.phEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -2148,7 +2148,7 @@ ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_h
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -2174,7 +2174,7 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandQueue, desc, phFence);
     command->copyFromCaller();
-    command->args.hCommandQueue = static_cast<IcdL0CommandQueue*>(hCommandQueue)->asRemoteObject();
+    command->args.hCommandQueue = hCommandQueue->asLocalObject()->asRemoteObject();
     if(desc)
     {
         ensureNull("zeFenceCreate: desc->pNext", desc->pNext);
@@ -2205,7 +2205,7 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
     using CommandT = Cal::Rpc::LevelZero::ZeFenceDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hFence);
-    command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
+    command->args.hFence = hFence->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2230,7 +2230,7 @@ ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) 
     using CommandT = Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hFence, timeout);
-    command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
+    command->args.hFence = hFence->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2255,7 +2255,7 @@ ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     using CommandT = Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hFence);
-    command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
+    command->args.hFence = hFence->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2280,7 +2280,7 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
     using CommandT = Cal::Rpc::LevelZero::ZeFenceResetRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hFence);
-    command->args.hFence = static_cast<IcdL0Fence*>(hFence)->asRemoteObject();
+    command->args.hFence = hFence->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2302,7 +2302,7 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, offsetX, offsetY, offsetZ);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2327,7 +2327,7 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, desc, pImageProperties);
     command->copyFromCaller(dynMemTraits);
     command->captures.reassembleNestedStructs();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
         translateRequiredPNextExtensions(command->captures.desc.pNext);
@@ -2361,8 +2361,8 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, hDevice, desc, phImage);
     command->copyFromCaller(dynMemTraits);
     command->captures.reassembleNestedStructs();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
         translateRequiredPNextExtensions(command->captures.desc.pNext);
@@ -2393,7 +2393,7 @@ ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
     using CommandT = Cal::Rpc::LevelZero::ZeImageDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hImage);
-    command->args.hImage = static_cast<IcdL0Image*>(hImage)->asRemoteObject();
+    command->args.hImage = hImage->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2419,7 +2419,7 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, pHint);
     command->copyFromCaller();
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
     if(pHint)
     {
         ensureNull("zeKernelSchedulingHintExp: pHint->pNext", pHint->pNext);
@@ -2448,14 +2448,14 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
     command->copyFromCaller(dynMemTraits, implArgsForZeMemAllocSharedRpcM);
     command->captures.reassembleNestedStructs();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
     if(device_desc)
     {
         translateRequiredPNextExtensions(command->captures.device_desc.pNext);
     }
     if(hDevice)
     {
-        command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+        command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     }
 
 
@@ -2482,12 +2482,12 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, device_desc, size, alignment, hDevice, pptr);
     command->copyFromCaller(dynMemTraits);
     command->captures.reassembleNestedStructs();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
     if(device_desc)
     {
         translateRequiredPNextExtensions(command->captures.device_desc.pNext);
     }
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2516,7 +2516,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, host_desc, size, alignment, pptr);
     command->copyFromCaller(dynMemTraits, implArgsForZeMemAllocHostRpcM);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2534,7 +2534,7 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
     Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);
     Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
-    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();
+    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2542,7 +2542,7 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
     using CommandT = Cal::Rpc::LevelZero::ZeMemFreeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
     globalPlatform->destroyUsmDescriptor(ptr);
 
 
@@ -2567,7 +2567,7 @@ ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, cons
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, ptr, pMemAllocProperties, phDevice);
     command->copyFromCaller(dynMemTraits);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2594,7 +2594,7 @@ ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr,
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, pBase, pSize);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2621,7 +2621,7 @@ ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, pIpcHandle);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2644,8 +2644,8 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
     using CommandT = Cal::Rpc::LevelZero::ZeMemOpenIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, handle, flags, pptr);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2672,7 +2672,7 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
     using CommandT = Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2699,7 +2699,7 @@ ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const vo
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, ptr, numIpcHandles, pIpcHandles);
     command->copyFromCaller(dynMemTraits);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2724,8 +2724,8 @@ ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_devi
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
     command->copyFromCaller(dynMemTraits);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2754,8 +2754,8 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hContext, hDevice, desc, phModule, phBuildLog);
     command->copyFromCaller(dynMemTraits);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2786,7 +2786,7 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     using CommandT = Cal::Rpc::LevelZero::ZeModuleDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hModule);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2823,7 +2823,7 @@ ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModu
         auto numEntries = dynMemTraits.phModules.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Module*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -2852,7 +2852,7 @@ ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLo
     using CommandT = Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hModuleBuildLog);
-    command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
+    command->args.hModuleBuildLog = hModuleBuildLog->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2879,7 +2879,7 @@ ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuild
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModuleBuildLog, pSize, pBuildLog);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModuleBuildLog = static_cast<IcdL0ModuleBuildLog*>(hModuleBuildLog)->asRemoteObject();
+    command->args.hModuleBuildLog = hModuleBuildLog->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2904,7 +2904,7 @@ ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, 
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModule, pSize, pModuleNativeBinary);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2929,7 +2929,7 @@ ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pG
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModule, pGlobalName, pSize, pptr);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2959,7 +2959,7 @@ ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModule, totalLength, namesBuffer);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -2983,7 +2983,7 @@ ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_modul
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hModule, pModuleProperties);
     command->copyFromCaller();
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
     if(pModuleProperties)
     {
         ensureNull("zeModuleGetProperties: pModuleProperties->pNext", pModuleProperties->pNext);
@@ -3012,7 +3012,7 @@ ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* 
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModule, desc, phKernel);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
     if(desc)
     {
         ensureNull("zeKernelCreate: desc->pNext", desc->pNext);
@@ -3043,7 +3043,7 @@ ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
     using CommandT = Cal::Rpc::LevelZero::ZeKernelDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3070,7 +3070,7 @@ ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* 
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hModule, pFunctionName, pfnFunction);
     command->copyFromCaller(dynMemTraits);
-    command->args.hModule = static_cast<IcdL0Module*>(hModule)->asRemoteObject();
+    command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3093,7 +3093,7 @@ ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t 
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGroupSizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, groupSizeX, groupSizeY, groupSizeZ);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
@@ -3121,7 +3121,7 @@ ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint3
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestGroupSizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3144,7 +3144,7 @@ ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel,
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestMaxCooperativeGroupCountRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, totalGroupCount);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3169,7 +3169,7 @@ ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint3
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hKernel, argIndex, argSize, pArgValue);
     command->copyFromCaller(dynMemTraits);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
@@ -3197,7 +3197,7 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetIndirectAccessRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, flags);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
     if(
        channel.isCallAsyncEnabled()){
@@ -3216,7 +3216,7 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
+    hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
     return ret;
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
@@ -3227,7 +3227,7 @@ ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetIndirectAccessRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, pFlags);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3250,7 +3250,7 @@ ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetCacheConfigRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hKernel, flags);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3274,7 +3274,7 @@ ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kerne
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hKernel, pKernelProperties);
     command->copyFromCaller(dynMemTraits);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3299,7 +3299,7 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hKernel, pSize, pName);
     command->copyFromCaller(dynMemTraits);
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3315,8 +3315,8 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;
-    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));
+    hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
+    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernel");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3326,11 +3326,11 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3339,7 +3339,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3361,7 +3361,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
+    if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
@@ -3374,11 +3374,11 @@ ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3387,7 +3387,7 @@ ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3404,8 +3404,8 @@ ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;
-    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));
+    hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
+    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernelIndirect");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3415,11 +3415,11 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
-    command->args.hKernel = static_cast<IcdL0Kernel*>(hKernel)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3428,7 +3428,7 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3443,13 +3443,13 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
+    if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     for (uint32_t i = 0; i < numKernels; i++) {
-        static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(phKernels[i])->sharedIndirectAccessSet;
-        static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(phKernels[i]));
+        hCommandList->asLocalObject()->sharedIndirectAccessSet |= phKernels[i]->asLocalObject()->sharedIndirectAccessSet;
+        hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchMultipleKernelsIndirect");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -3460,7 +3460,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, numKernels, phKernels, pCountBuffer, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(phKernels)
     {
         auto base = command->captures.getPhKernels();
@@ -3468,12 +3468,12 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
         auto numEntries = dynMemTraits.phKernels.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Kernel*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3482,7 +3482,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3497,7 +3497,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };
+    if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
@@ -3508,7 +3508,7 @@ ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList,
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList, timeout);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3531,7 +3531,7 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pPciProperties);
     command->copyFromCaller();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pPciProperties)
     {
         ensureNull("zeDevicePciGetPropertiesExt: pPciProperties->pNext", pPciProperties->pNext);
@@ -3558,8 +3558,8 @@ ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device
     using CommandT = Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, ptr, size);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3581,8 +3581,8 @@ ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle
     using CommandT = Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, ptr, size);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3604,7 +3604,7 @@ ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStar
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemReserveRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, pStart, size, pptr);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3627,7 +3627,7 @@ ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, siz
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemFreeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, size);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3650,8 +3650,8 @@ ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_h
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, size, pagesize);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3675,8 +3675,8 @@ ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hDevice, desc, phPhysicalMemory);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
-    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3699,7 +3699,7 @@ ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_
     using CommandT = Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, hPhysicalMemory);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3721,7 +3721,7 @@ ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, size, hPhysicalMemory, offset, access);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3743,7 +3743,7 @@ ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, si
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, size);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3765,7 +3765,7 @@ ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const 
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, size, access);
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3788,7 +3788,7 @@ ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const 
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr, size, access, outSize);
     command->copyFromCaller();
-    command->args.hContext = static_cast<IcdL0Context*>(hContext)->asRemoteObject();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3811,7 +3811,7 @@ ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver,
     using CommandT = Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, ptr, size);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3833,7 +3833,7 @@ ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver
     using CommandT = Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, ptr);
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3856,7 +3856,7 @@ ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDri
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDriver, ptr, baseAddress);
     command->copyFromCaller();
-    command->args.hDriver = static_cast<IcdL0Platform*>(hDriver)->asRemoteObject();
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3883,10 +3883,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handl
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3895,7 +3895,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handl
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3923,10 +3923,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_ha
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3935,7 +3935,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -3964,10 +3964,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -3976,7 +3976,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4004,10 +4004,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_ha
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4016,7 +4016,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4044,10 +4044,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4056,7 +4056,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4085,10 +4085,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_li
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4097,7 +4097,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_li
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4125,10 +4125,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4137,7 +4137,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4165,10 +4165,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_li
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4177,7 +4177,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_li
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4206,10 +4206,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4218,7 +4218,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4263,10 +4263,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_
     command->copyFromCaller(dynMemTraits);
     command->args.dstptr = standalone_dstptr;
     command->args.srcptr = standalone_srcptr;
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4275,7 +4275,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4318,10 +4318,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_ha
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.dstptr = standalone_dstptr;
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4330,7 +4330,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4373,10 +4373,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.dstptr = standalone_dstptr;
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4385,7 +4385,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4429,10 +4429,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
     memcpy(Cal::Utils::toAddress(standalone_srcptr), srcptr, size);
     command->copyFromCaller(dynMemTraits);
     command->args.srcptr = standalone_srcptr;
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4441,7 +4441,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4476,10 +4476,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_hand
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4488,7 +4488,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_hand
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4523,10 +4523,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4535,7 +4535,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4579,10 +4579,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
     memcpy(Cal::Utils::toAddress(standalone_srcptr), srcptr, size);
     command->copyFromCaller(dynMemTraits);
     command->args.srcptr = standalone_srcptr;
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4591,7 +4591,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4626,10 +4626,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4638,7 +4638,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4673,10 +4673,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4685,7 +4685,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4720,10 +4720,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_co
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4732,7 +4732,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_co
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4768,10 +4768,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_comm
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4780,7 +4780,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_comm
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4816,10 +4816,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4828,7 +4828,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4864,10 +4864,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_comm
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4876,7 +4876,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_comm
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4911,10 +4911,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_comman
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4923,7 +4923,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_comman
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -4958,10 +4958,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -4970,7 +4970,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -5005,10 +5005,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -5017,7 +5017,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -5052,10 +5052,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -5064,7 +5064,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 
@@ -5099,10 +5099,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
-    command->args.hCommandList = static_cast<IcdL0CommandList*>(hCommandList)->asRemoteObject();
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
     if(hSignalEvent)
     {
-        command->args.hSignalEvent = static_cast<IcdL0Event*>(hSignalEvent)->asRemoteObject();
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
     }
     if(phWaitEvents)
     {
@@ -5111,7 +5111,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
         auto numEntries = dynMemTraits.phWaitEvents.count;
 
         for(size_t i = 0; i < numEntries; ++i){
-            baseMutable[i] = static_cast<IcdL0Event*>(baseMutable[i])->asRemoteObject();
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
         }
     }
 

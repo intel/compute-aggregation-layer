@@ -1850,24 +1850,24 @@ config:
         #                    type : ze_event_handle_t*
         #                    kind : pointer
         #
-        - name: zeContextSystemBarrier
-          latency: 0.0
-          ddi_category: Context
-          returns:
-            type: ze_result_t
-            kind: scalar
-            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args:
-            0:
-              name: hContext
-              type: ze_context_handle_t
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
-            1:
-              name: hDevice
-              type: ze_device_handle_t
-              kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+        - name : zeContextSystemBarrier
+          latency : 0.0
+          ddi_category :  Context
+          returns :
+            type : ze_result_t
+            kind : scalar
+            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hContext
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = ({arg})->asLocalObject()->asRemoteObject()"
+            1 :
+              name : hDevice
+              type : ze_device_handle_t
+              kind : scalar
+              translate_before: "{dst} = ({arg})->asLocalObject()->asRemoteObject()"
         #        - name : zeCommandGraphExpCreate
         #          ddi_category :  CommandGraphExp
         #          returns :
@@ -1922,7 +1922,7 @@ config:
             rpc:
               handler_prologue: "service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
             icd:
-              handler_epilogue: "if (hContext != nullptr) {\n        static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);\n    }"
+              handler_epilogue: "if (hContext != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -1933,12 +1933,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: desc
               type: const ze_command_list_desc_t*
@@ -1970,7 +1970,7 @@ config:
             rpc:
               handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->args.altdesc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM*>(command)->captures.altdesc : nullptr, ctx);"
             icd:
-              handler_epilogue: "static_cast<IcdL0CommandList *>(phCommandList[0])->context = static_cast<IcdL0Context*>(hContext);"
+              handler_epilogue: "phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -1981,12 +1981,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: altdesc
               type: const ze_command_queue_desc_t*
@@ -2027,7 +2027,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getCommandListToContextTracker().deregisterCommandListMapping({arg})"
 
@@ -2043,7 +2043,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
 
         - name: zeCommandListReset
           latency: 0.0
@@ -2051,7 +2051,7 @@ config:
             rpc:
               custom_handler: True
             icd:
-              handler_epilogue: "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false;"
+              handler_epilogue: "hCommandList->asLocalObject()->sharedIndirectAccessSet = false;"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -2062,7 +2062,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->clearRequiredMemoryTransfers()"
 
         - name: zeCommandListAppendWriteGlobalTimestamp
@@ -2076,7 +2076,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstptr
               type: uint64_t*
@@ -2116,12 +2116,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: desc
               type: const ze_command_queue_desc_t*
@@ -2159,7 +2159,7 @@ config:
               name: hCommandQueue
               type: ze_command_queue_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
@@ -2176,13 +2176,13 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && static_cast<IcdL0CommandQueue*>(hCommandQueue)->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && hCommandQueue->asLocalObject()->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandQueue
               type: ze_command_queue_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: numCommandLists
               type: uint32_t
@@ -2197,7 +2197,7 @@ config:
                 element:
                   type: ze_command_list_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: hFence
@@ -2205,7 +2205,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
 
         - name: zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper
           latency: 0.0
@@ -2278,7 +2278,7 @@ config:
               name: hCommandQueue
               type: ze_command_queue_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: timeout
               type: uint64_t
@@ -2296,7 +2296,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_context_desc_t*
@@ -2334,7 +2334,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_context_desc_t*
@@ -2360,7 +2360,7 @@ config:
                 element:
                   type: ze_device_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             4:
               name: phContext
@@ -2393,7 +2393,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
 
@@ -2409,7 +2409,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
 
         - name: zeCommandListAppendMemoryCopy
           latency: 0.0
@@ -2470,8 +2470,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
-
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstptr
               type: void*
@@ -2515,7 +2514,7 @@ config:
               kind_details:
                 can_be_null: True
                 op_end_event: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             5:
               name: numWaitEvents
               type: uint32_t
@@ -2530,7 +2529,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryCopyImmediate
@@ -2551,7 +2550,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstptr
               type: void*
@@ -2598,7 +2597,7 @@ config:
               kind_details:
                 can_be_null: True
                 op_end_event: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             5:
               name: numWaitEvents
               type: uint32_t
@@ -2613,7 +2612,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryCopyImmediateSynchronous
@@ -2634,7 +2633,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstptr
               type: void*
@@ -2674,7 +2673,7 @@ config:
               kind_details:
                 can_be_null: True
                 op_end_event: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             5:
               name: numWaitEvents
               type: uint32_t
@@ -2689,7 +2688,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryFill
@@ -2755,7 +2754,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -2778,7 +2777,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -2793,7 +2792,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryFillRpcHelperUsm2Malloc
@@ -2815,7 +2814,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -2838,7 +2837,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -2853,7 +2852,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryFillRpcHelperMalloc2Usm
@@ -2873,7 +2872,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -2903,7 +2902,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -2918,7 +2917,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         - name: zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc
@@ -2940,7 +2939,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -2970,7 +2969,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -2985,7 +2984,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
 
         #        - name : zeCommandListAppendMemoryCopyRegion
@@ -3240,7 +3239,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -3266,12 +3265,12 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: ptr
               type: const void*
@@ -3300,7 +3299,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3341,7 +3340,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3382,7 +3381,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pDeviceProperties
               type: ze_device_properties_t*
@@ -3394,7 +3393,7 @@ config:
                   type: ze_device_properties_t
                   kind: struct
                 server_access: read_write
-              translate_after: "command->captures.ret = static_cast<IcdL0Device*>(hDevice)->patchDeviceName(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST"
+              translate_after: "command->captures.ret = hDevice->asLocalObject()->patchDeviceName(*{arg}) ? command->captures.ret : ZE_RESULT_ERROR_DEVICE_LOST"
 
         - name: zeDeviceGetComputeProperties
           latency: 0.0
@@ -3411,7 +3410,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pComputeProperties
               type: ze_device_compute_properties_t*
@@ -3439,7 +3438,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pModuleProperties
               type: ze_device_module_properties_t*
@@ -3469,7 +3468,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3509,7 +3508,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3549,7 +3548,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pMemAccessProperties
               type: ze_device_memory_access_properties_t*
@@ -3577,7 +3576,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3617,7 +3616,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pImageProperties
               type: ze_device_image_properties_t*
@@ -3645,7 +3644,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pExternalMemoryProperties
               type: ze_device_external_memory_properties_t*
@@ -3668,12 +3667,12 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hPeerDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: pP2PProperties
               type: ze_device_p2p_properties_t*
@@ -3697,12 +3696,12 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hPeerDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: value
               type: ze_bool_t*
@@ -3726,7 +3725,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeDeviceGetGlobalTimestamps
           latency: 0.0
           ddi_category: Device
@@ -3739,7 +3738,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hostTimestamp
               type: uint64_t*
@@ -3852,7 +3851,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: version
               type: ze_api_version_t*
@@ -3879,7 +3878,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pDriverProperties
               type: ze_driver_properties_t*
@@ -3906,7 +3905,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pIpcProperties
               type: ze_driver_ipc_properties_t*
@@ -3933,7 +3932,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
@@ -3974,7 +3973,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: name
               type: const char*
@@ -4009,7 +4008,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_event_pool_desc_t*
@@ -4035,7 +4034,7 @@ config:
                 element:
                   type: ze_device_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             4:
               name: phEventPool
@@ -4062,7 +4061,7 @@ config:
               name: hEventPool
               type: ze_event_pool_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeEventCreate
@@ -4077,7 +4076,7 @@ config:
               name: hEventPool
               type: ze_event_pool_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_event_desc_t*
@@ -4114,7 +4113,7 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeEventPoolGetIpcHandle
@@ -4132,7 +4131,7 @@ config:
               name: hEventPool
               type: ze_event_pool_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: phIpc
               type: ze_ipc_event_pool_handle_t*
@@ -4159,7 +4158,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hIpc
               type: ze_ipc_event_pool_handle_t
@@ -4189,7 +4188,7 @@ config:
               name: hEventPool
               type: ze_event_pool_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0EventPool*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeCommandListAppendBarrier
@@ -4197,7 +4196,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "if(hSignalEvent){static_cast<IcdL0Event*>(hSignalEvent)->setAllowIcdState(hCommandList);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        static_cast<IcdL0Event*>(phWaitEvents[i])->setAllowIcdState(hCommandList);\n    }"
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -4208,14 +4207,14 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hSignalEvent
               type: ze_event_handle_t
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: numWaitEvents
               type: uint32_t
@@ -4230,14 +4229,14 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListAppendSignalEvent
           latency: 0.0
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);"
+              handler_prologue: "hEvent->asLocalObject()->setAllowIcdState(hCommandList);"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -4248,20 +4247,20 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeCommandListAppendWaitOnEvents
           latency: 0.0
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        static_cast<IcdL0Event*>(phEvents[i])->setAllowIcdState(hCommandList);\n    }"
+              handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -4272,7 +4271,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: numEvents
               type: uint32_t
@@ -4287,7 +4286,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeEventHostSignal
           ddi_category: Event
@@ -4300,13 +4299,13 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeEventHostSynchronize
           latency: 2.0
           special_handling:
             icd:
-              handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
-              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
+              handler_prologue: "if (hEvent->asLocalObject()->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
+              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        hEvent->asLocalObject()->signal();\n    }"
             rpc:
               custom_handler: True
           ddi_category: Event
@@ -4320,7 +4319,7 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: timeout
               type: uint64_t
@@ -4329,8 +4328,8 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
-              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->signal();\n    }"
+              handler_prologue: "if (hEvent->asLocalObject()->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
+              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        hEvent->asLocalObject()->signal();\n    }"
             rpc:
               custom_handler: True
           ddi_category: Event
@@ -4344,11 +4343,11 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeCommandListAppendEventReset
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdL0Event*>(hEvent)->setAllowIcdState(hCommandList);\n    if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    static_cast<IcdL0Event*>(hEvent)->clear();\n"
+              handler_prologue: "hEvent->asLocalObject()->setAllowIcdState(hCommandList);\n    if (hEvent->asLocalObject()->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    hEvent->asLocalObject()->clear();\n"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -4359,18 +4358,18 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeEventHostReset
           latency: 0.0
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    static_cast<IcdL0Event*>(hEvent)->clear();"
+              handler_prologue: "if (hEvent->asLocalObject()->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    hEvent->asLocalObject()->clear();"
           ddi_category: Event
           returns:
             type: ze_result_t
@@ -4381,13 +4380,13 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeEventQueryKernelTimestamp
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (static_cast<IcdL0Event*>(hEvent)->isTimestamp()) {\n        static_cast<IcdL0Event*>(hEvent)->getTimestamp(dstptr);\n        return ZE_RESULT_SUCCESS;\n    }"
-              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        static_cast<IcdL0Event*>(hEvent)->storeTimestamp(dstptr);\n    }"
+              handler_prologue: "if (hEvent->asLocalObject()->isTimestamp()) {\n        hEvent->asLocalObject()->getTimestamp(dstptr);\n        return ZE_RESULT_SUCCESS;\n    }"
+              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        hEvent->asLocalObject()->storeTimestamp(dstptr);\n    }"
           ddi_category: Event
           returns:
             type: ze_result_t
@@ -4398,7 +4397,7 @@ config:
               name: hEvent
               type: ze_event_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: dstptr
               type: ze_kernel_timestamp_result_t*
@@ -4425,7 +4424,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: numEvents
               type: uint32_t
@@ -4440,7 +4439,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: dstptr
@@ -4466,7 +4465,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -4481,7 +4480,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         #
         #        - name : zeEventQueryTimestampsExp
@@ -4667,7 +4666,7 @@ config:
             0:
               name: hCommandQueue
               type: ze_command_queue_handle_t
-              translate_before: "{dst} = static_cast<IcdL0CommandQueue*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_fence_desc_t*
@@ -4704,7 +4703,7 @@ config:
               name: hFence
               type: ze_fence_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeFenceHostSynchronize
@@ -4723,7 +4722,7 @@ config:
               name: hFence
               type: ze_fence_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: timeout
               type: uint64_t
@@ -4744,7 +4743,7 @@ config:
               name: hFence
               type: ze_fence_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeFenceReset
           latency: 0.0
           ddi_category: Fence
@@ -4757,7 +4756,7 @@ config:
               name: hFence
               type: ze_fence_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Fence*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zeKernelSetGlobalOffsetExp
           latency: 0.0
           ddi_category: KernelExp
@@ -4770,7 +4769,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: offsetX
               type: uint32_t
@@ -4794,7 +4793,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_image_desc_t*
@@ -4829,12 +4828,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: desc
               type: const ze_image_desc_t*
@@ -4871,7 +4870,7 @@ config:
               name: hImage
               type: ze_image_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Image*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         #
@@ -5039,7 +5038,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pHint
               type: ze_scheduling_hint_exp_desc_t*
@@ -5092,7 +5091,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device_desc
               type: const ze_device_mem_alloc_desc_t*
@@ -5129,7 +5128,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: pptr
               type: void**
@@ -5169,7 +5168,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: device_desc
               type: const ze_device_mem_alloc_desc_t*
@@ -5193,7 +5192,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             5:
               name: pptr
               type: void**
@@ -5223,7 +5222,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: host_desc
               type: const ze_host_mem_alloc_desc_t*
@@ -5274,7 +5273,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    static_cast<IcdL0Context*>(hContext)->allocPropertiesCache.invalidateAllocPropertiesCache();"
+              handler_prologue: "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();"
             rpc:
               custom_handler: True
           ddi_category: Mem
@@ -5287,7 +5286,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -5308,7 +5307,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -5348,7 +5347,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -5391,7 +5390,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -5422,12 +5421,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: handle
               type: ze_ipc_mem_handle_t
@@ -5460,7 +5459,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -5483,7 +5482,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -5528,12 +5527,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: numIpcHandles
               type: uint32_t
@@ -5600,12 +5599,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: desc
               type: const ze_module_desc_t*
@@ -5655,7 +5654,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "const auto prevRefCount = {arg}->asLocalObject()->dec();\n        if (prevRefCount == 1u) {{\n            globalPlatform->removeGlobalPointers(hModule);\n        }}"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeModuleDynamicLink
@@ -5680,7 +5679,7 @@ config:
                 element:
                   type: ze_module_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             2:
               name: phLinkLog
@@ -5707,7 +5706,7 @@ config:
               name: hModuleBuildLog
               type: ze_module_build_log_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0ModuleBuildLog*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeModuleBuildLogGetString
@@ -5722,7 +5721,7 @@ config:
               name: hModuleBuildLog
               type: ze_module_build_log_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0ModuleBuildLog*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pSize
               type: size_t*
@@ -5758,7 +5757,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pSize
               type: size_t*
@@ -5794,7 +5793,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pGlobalName
               type: const char*
@@ -5874,7 +5873,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: totalLength
               type: uint32_t*
@@ -5913,7 +5912,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pModuleProperties
               type: ze_module_properties_t*
@@ -5940,7 +5939,7 @@ config:
               name: hModule
               type: ze_module_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: desc
               type: const ze_kernel_desc_t*
@@ -5977,7 +5976,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
         - name: zeModuleGetFunctionPointer
@@ -5991,7 +5990,7 @@ config:
             0:
               name: hModule
               type: ze_module_handle_t
-              translate_before: "{dst} = static_cast<IcdL0Module*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pFunctionName
               type: const char*
@@ -6030,7 +6029,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: groupSizeX
               type: uint32_t
@@ -6058,7 +6057,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: globalSizeX
               type: uint32_t
@@ -6116,7 +6115,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: totalGroupCount
               type: uint32_t*
@@ -6144,7 +6143,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: argIndex
               type: uint32_t
@@ -6170,7 +6169,7 @@ config:
           ddi_category: Kernel
           special_handling:
             icd:
-              handler_epilogue: "static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);"
+              handler_epilogue: "hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);"
           returns:
             type: ze_result_t
             kind: scalar
@@ -6180,7 +6179,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: ze_kernel_indirect_access_flags_t
@@ -6197,7 +6196,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pFlags
               type: ze_kernel_indirect_access_flags_t*
@@ -6241,7 +6240,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: ze_cache_config_flags_t
@@ -6261,7 +6260,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pKernelProperties
               type: ze_kernel_properties_t*
@@ -6285,7 +6284,7 @@ config:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pSize
               type: size_t*
@@ -6314,8 +6313,8 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"
-              handler_epilogue: "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
+              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -6326,12 +6325,12 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: pLaunchFuncArgs
               type: const ze_group_count_t*
@@ -6349,7 +6348,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             4:
               name: numWaitEvents
               type: uint32_t
@@ -6364,7 +6363,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListAppendLaunchCooperativeKernel
           latency: 0.0
@@ -6378,12 +6377,12 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: pLaunchFuncArgs
               type: const ze_group_count_t*
@@ -6401,7 +6400,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             4:
               name: numWaitEvents
               type: uint32_t
@@ -6416,14 +6415,14 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListAppendLaunchKernelIndirect
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(hKernel)->sharedIndirectAccessSet;\n    static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(hKernel));"
-              handler_epilogue: "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
+              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -6434,12 +6433,12 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hKernel
               type: ze_kernel_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: pLaunchArgumentsBuffer
               type: const ze_group_count_t*
@@ -6450,7 +6449,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             4:
               name: numWaitEvents
               type: uint32_t
@@ -6465,14 +6464,14 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListAppendLaunchMultipleKernelsIndirect
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "for (uint32_t i = 0; i < numKernels; i++) {\n        static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet |= static_cast<IcdL0Kernel*>(phKernels[i])->sharedIndirectAccessSet;\n        static_cast<IcdL0CommandList*>(hCommandList)->moveKernelArgsToGpu(static_cast<IcdL0Kernel*>(phKernels[i]));\n    }"
-              handler_epilogue: "if (static_cast<IcdL0CommandList*>(hCommandList)->isImmediate()) { static_cast<IcdL0CommandList*>(hCommandList)->sharedIndirectAccessSet = false; };"
+              handler_prologue: "for (uint32_t i = 0; i < numKernels; i++) {\n        hCommandList->asLocalObject()->sharedIndirectAccessSet |= phKernels[i]->asLocalObject()->sharedIndirectAccessSet;\n        hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());\n    }"
+              handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -6483,7 +6482,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: numKernels
               type: uint32_t
@@ -6498,7 +6497,7 @@ config:
                 element:
                   type: ze_kernel_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Kernel*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
             3:
               name: pCountBuffer
@@ -6516,7 +6515,7 @@ config:
               kind: scalar
               kind_details:
                 can_be_null: True
-              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             6:
               name: numWaitEvents
               type: uint32_t
@@ -6531,7 +6530,7 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                  translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListHostSynchronize
           latency: 0.0
@@ -6545,7 +6544,7 @@ config:
               name: hCommandList
               type: ze_command_list_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0CommandList*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: timeout
               type: uint64_t
@@ -6563,7 +6562,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pPciProperties
               type: ze_pci_ext_properties_t*
@@ -6588,12 +6587,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: ptr
               type: void*
@@ -6615,12 +6614,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: ptr
               type: void*
@@ -6717,7 +6716,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pStart
               type: const void*
@@ -6749,7 +6748,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6770,12 +6769,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: size
               type: size_t
@@ -6803,12 +6802,12 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: desc
               type: ze_physical_mem_desc_t*
@@ -6843,7 +6842,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: hPhysicalMemory
               type: ze_physical_mem_handle_t
@@ -6860,7 +6859,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6893,7 +6892,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6914,7 +6913,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6939,7 +6938,7 @@ config:
               name: hContext
               type: ze_context_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Context*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: const void*
@@ -6988,7 +6987,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -7015,7 +7014,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
@@ -7038,7 +7037,7 @@ config:
               name: hDriver
               type: ze_driver_handle_t
               kind: scalar
-              translate_before: "{dst} = static_cast<IcdL0Platform*>({arg})->asRemoteObject()"
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*
