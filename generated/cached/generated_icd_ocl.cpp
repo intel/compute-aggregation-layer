@@ -314,6 +314,9 @@ cl_int clSetContextDestructorCallback (cl_context context, void (CL_CALLBACK* pf
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
+    {
+        context->asLocalObject()->inc();
+    }
     cl_int ret = command->captures.ret;
 
     return ret;
@@ -337,6 +340,9 @@ cl_int clSetMemObjectDestructorCallback (cl_mem memobj, void (CL_CALLBACK* pfn_n
 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
+    }
+    {
+        memobj->asLocalObject()->inc();
     }
     cl_int ret = command->captures.ret;
 

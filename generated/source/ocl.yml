@@ -491,6 +491,7 @@ config:
               type: cl_context
               kind: scalar
               translate_before: "{dst} = static_cast<IcdOclContext*>({arg})->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
             1:
               name: pfn_notify
               type: "void (CL_CALLBACK*)(cl_context context, void* user_data)"
@@ -520,6 +521,7 @@ config:
               type: cl_mem
               kind: scalar
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->inc()"
             1:
               name: pfn_notify
               type: "void (CL_CALLBACK*)(cl_mem memobj, void* user_data)"
