@@ -12,6 +12,7 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_command_queue.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_driver.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_event_pool.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api.h
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_kernel.cpp

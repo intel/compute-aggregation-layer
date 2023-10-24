@@ -1400,6 +1400,26 @@ bool zeCommandQueueExecuteCommandListsHandler(Provider &service, Cal::Rpc::Chann
     return updateHostptrCopies(channel, ctx);
 }
 
+bool zeEventQueryKernelTimestampsExtRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeEventQueryKernelTimestampsExtRpcHelper");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampsExtRpcHelperRpcM *>(command);
+
+    ze_event_query_kernel_timestamps_results_ext_properties_t tsProperties{};
+    tsProperties.pNext = nullptr;
+    tsProperties.stype = ZE_STRUCTURE_TYPE_EVENT_QUERY_KERNEL_TIMESTAMPS_RESULTS_EXT_PROPERTIES;
+    tsProperties.pKernelTimestampsBuffer = apiCommand->args.pResultsTimestamps ? apiCommand->captures.getPResultsTimestamps() : nullptr;
+    tsProperties.pSynchronizedTimestampsBuffer = apiCommand->args.pResultsSynchronizedTimestamps ? apiCommand->captures.getPResultsSynchronizedTimestamps() : nullptr;
+
+    ze_event_query_kernel_timestamps_results_ext_properties_t *tsPropertiesPtr = apiCommand->args.pResultsTimestamps ? &tsProperties : nullptr;
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeEventQueryKernelTimestampsExt(
+        apiCommand->args.hEvent,
+        apiCommand->args.hDevice,
+        apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr,
+        tsPropertiesPtr);
+    return true;
+}
+
 } // namespace LevelZero
 } // namespace Apis
 

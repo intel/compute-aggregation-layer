@@ -797,6 +797,56 @@ size_t ZeCommandListAppendQueryKernelTimestampsRpcM::Captures::getCaptureDynMemS
      return size;
 }
 
+ZeEventQueryTimestampsExpRpcM::Captures::DynamicTraits ZeEventQueryTimestampsExpRpcM::Captures::DynamicTraits::calculate(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
+    DynamicTraits ret = {};
+    ret.pTimestamps.count = (pCount ? *pCount : 0);
+    ret.pTimestamps.size = ret.pTimestamps.count * sizeof(ze_kernel_timestamp_result_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pTimestamps.offset + ret.pTimestamps.size);
+
+
+    return ret;
+}
+
+size_t ZeEventQueryTimestampsExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pTimestamps) + Cal::Utils::alignUpPow2<8>(this->countPTimestamps * sizeof(ze_kernel_timestamp_result_t));
+     return size;
+}
+
+size_t ZeEventQueryTimestampsExpRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPTimestamps * sizeof(ze_kernel_timestamp_result_t));
+     return size;
+}
+
+ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::DynamicTraits ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::DynamicTraits::calculate(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps) {
+    DynamicTraits ret = {};
+    ret.pResultsTimestamps.count = (pCount ? *pCount : 0);
+    ret.pResultsTimestamps.size = ret.pResultsTimestamps.count * sizeof(ze_kernel_timestamp_result_t);
+
+    ret.pResultsSynchronizedTimestamps.offset = alignUpPow2<8>(ret.pResultsTimestamps.offset + ret.pResultsTimestamps.size);
+    ret.pResultsSynchronizedTimestamps.count = (pCount ? *pCount : 0);
+    ret.pResultsSynchronizedTimestamps.size = ret.pResultsSynchronizedTimestamps.count * sizeof(ze_synchronized_timestamp_result_ext_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pResultsSynchronizedTimestamps.offset + ret.pResultsSynchronizedTimestamps.size);
+
+
+    return ret;
+}
+
+size_t ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPResultsSynchronizedTimestamps;
+     const auto lastMemberArraySize = this->countPResultsSynchronizedTimestamps * sizeof(ze_synchronized_timestamp_result_ext_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPResultsSynchronizedTimestamps;
+     const auto lastMemberArraySize = this->countPResultsSynchronizedTimestamps * sizeof(ze_synchronized_timestamp_result_ext_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ZeImageGetPropertiesRpcM::Captures::DynamicTraits ZeImageGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
     DynamicTraits ret = {};
 

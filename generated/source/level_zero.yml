@@ -1376,7 +1376,6 @@ config:
           CommandList.zeCommandListAppendImageCopyRegion,
           CommandList.zeCommandListAppendImageCopyToMemory,
           CommandList.zeCommandListAppendImageCopyFromMemory,
-          EventExp.zeEventQueryTimestampsExp,
           FabricVertexExp.zeFabricVertexGetExp,
           FabricVertexExp.zeFabricVertexGetSubVerticesExp,
           FabricVertexExp.zeFabricVertexGetPropertiesExp,
@@ -4482,30 +4481,153 @@ config:
                   kind: scalar
                   translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
-        #
-        #        - name : zeEventQueryTimestampsExp
-        #          ddi_category :  EventExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hEvent
-        #                    type : ze_event_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : hDevice
-        #                    type : ze_device_handle_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : pCount
-        #                    type : uint32_t*
-        #                    kind : pointer
-        #                 3 :
-        #                    name : pTimestamps
-        #                    type : ze_kernel_timestamp_result_t*
-        #                    kind : pointer
+        - name: zeEventQueryTimestampsExp
+          latency: 0.0
+          ddi_category: EventExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hEvent
+              type: ze_event_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+            2:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            3:
+              name: pTimestamps
+              type: ze_kernel_timestamp_result_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_kernel_timestamp_result_t
+                  kind: scalar
+                server_access: write
+        - name: zeEventQueryKernelTimestampsExt
+          latency: 0.0
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_message: True
+          ddi_category: Event
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hEvent
+              type: ze_event_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+            2:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            3:
+              name: pResults
+              type: ze_event_query_kernel_timestamps_results_ext_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_event_query_kernel_timestamps_results_ext_properties_t
+                  kind: struct
+                server_access: write
+        - name: zeEventQueryKernelTimestampsExtRpcHelper
+          latency: 0.0
+          special_handling:
+            variant_of: "zeEventQueryKernelTimestampsExt"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+            rpc:
+              custom_handler: True
+              dont_generate_call_directly: True
+          ddi_category: Event
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hEvent
+              type: ze_event_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Event*>({arg})->asRemoteObject()"
+            1:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = static_cast<IcdL0Device*>({arg})->asRemoteObject()"
+            2:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            3:
+              name: pResultsTimestamps
+              type: ze_kernel_timestamp_result_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_kernel_timestamp_result_t
+                  kind: scalar
+                server_access: write
+            4:
+              name: pResultsSynchronizedTimestamps
+              type: ze_synchronized_timestamp_result_ext_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_synchronized_timestamp_result_ext_t
+                  kind: scalar
+                server_access: write
         #
         #        - name : zeFabricVertexGetExp
         #          ddi_category :  FabricVertexExp

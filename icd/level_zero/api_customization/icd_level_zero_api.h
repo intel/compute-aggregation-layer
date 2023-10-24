@@ -83,6 +83,7 @@ ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
 ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properties_t *pModuleProperties);
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue);
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties);
+ze_result_t zeEventQueryKernelTimestampsExt(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t *pCount, ze_event_query_kernel_timestamps_results_ext_properties_t *pResults);
 
 ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size);
 ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr);

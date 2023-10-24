@@ -540,6 +540,76 @@ bool queryKernelTimestamp(ze_event_handle_t event, ze_device_handle_t device) {
     return true;
 }
 
+bool queryTimestampsExp(ze_event_handle_t event, ze_device_handle_t device) {
+    uint32_t count = 0;
+    auto zeEventQueryTimestampsExpResult = zeEventQueryTimestampsExp(event, device, &count, nullptr);
+    if (zeEventQueryTimestampsExpResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventQueryTimestampsExp() call has failed! Error code = %d",
+                              static_cast<int>(zeEventQueryTimestampsExpResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeEventQueryTimestampsExp() call was successful, count = %d", count);
+
+    if (count == 0) {
+        return true;
+    }
+
+    auto timestamps = std::make_unique<ze_kernel_timestamp_result_t[]>(count);
+    zeEventQueryTimestampsExpResult = zeEventQueryTimestampsExp(event, device, &count, timestamps.get());
+    if (zeEventQueryTimestampsExpResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventQueryTimestampsExp() call has failed! Error code = %d",
+                              static_cast<int>(zeEventQueryTimestampsExpResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeEventQueryTimestampsExp() call was successful");
+    return true;
+}
+
+bool queryKernelTimestampsExt(ze_event_handle_t event, ze_device_handle_t device) {
+    bool ret = false;
+    uint32_t count = 0;
+    auto zeEventQueryKernelTimestampsExtResult = zeEventQueryKernelTimestampsExt(event, device, &count, nullptr);
+    if (zeEventQueryKernelTimestampsExtResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventQueryKernelTimestampsExt() call has failed! Error code = %d",
+                              static_cast<int>(zeEventQueryKernelTimestampsExtResult));
+        return ret;
+    }
+
+    log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful, count = %d", count);
+    if (count == 0) {
+        return true;
+    }
+
+    constexpr size_t MAX_COUNT = 8;
+
+    if (count > MAX_COUNT) {
+        log<Verbosity::error>("count is %d, which is greater than MAX_COUNT of %d", count, MAX_COUNT);
+        return false;
+    }
+
+    std::array<ze_kernel_timestamp_result_t, MAX_COUNT> tsBuffer;
+    std::array<ze_synchronized_timestamp_result_ext_t, MAX_COUNT> synchronizedTsBuffer;
+    ze_event_query_kernel_timestamps_results_ext_properties_t timestampsProperties{};
+    timestampsProperties.pNext = nullptr;
+    timestampsProperties.stype = ZE_STRUCTURE_TYPE_EVENT_QUERY_KERNEL_TIMESTAMPS_RESULTS_EXT_PROPERTIES;
+    timestampsProperties.pKernelTimestampsBuffer = tsBuffer.data();
+    timestampsProperties.pSynchronizedTimestampsBuffer = synchronizedTsBuffer.data();
+
+    zeEventQueryKernelTimestampsExtResult = zeEventQueryKernelTimestampsExt(event, device, &count, &timestampsProperties);
+    if (zeEventQueryKernelTimestampsExtResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeEventQueryKernelTimestampsExt() call has failed! Error code = %d",
+                              static_cast<int>(zeEventQueryKernelTimestampsExtResult));
+        ret = false;
+    } else {
+        log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful");
+        ret = true;
+    }
+    log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful");
+    return ret;
+}
+
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
@@ -653,6 +723,9 @@ int main(int argc, const char *argv[]) {
     } timestampResultStruct;
     const size_t timestampResultOffsets[] = {offsetof(TimestampResult, timestampResult)};
     RUN_REQUIRED_STEP(appendQueryKernelTimestamps(cmdList, 1, &copyBufferFinishedEvent, &timestampResultStruct, timestampResultOffsets));
+
+    RUN_REQUIRED_STEP(queryTimestampsExp(copyBufferFinishedEvent, devices[0]));
+    RUN_REQUIRED_STEP(queryKernelTimestampsExt(copyBufferFinishedEvent, devices[0]));
 
     void *sourceDoubleVals{nullptr};
     void *destinationDoubleVals{nullptr};

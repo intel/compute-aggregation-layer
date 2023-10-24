@@ -2167,6 +2167,59 @@ ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_h
 
     return ret;
 }
+ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
+    log<Verbosity::bloat>("Establishing RPC for zeEventQueryTimestampsExp");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeEventQueryTimestampsExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hEvent, hDevice, pCount, pTimestamps);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hEvent, hDevice, pCount, pTimestamps);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ // zeEventQueryKernelTimestampsExt ignored in generator - based on dont_generate_handler flag
+ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps) {
+    log<Verbosity::bloat>("Establishing RPC for zeEventQueryKernelTimestampsExtRpcHelper");
+    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampsExtRpcHelperRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hEvent, hDevice, pCount, pResultsTimestamps, pResultsSynchronizedTimestamps);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hEvent, hDevice, pCount, pResultsTimestamps, pResultsSynchronizedTimestamps);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hEvent = static_cast<IcdL0Event*>(hEvent)->asRemoteObject();
+    command->args.hDevice = static_cast<IcdL0Device*>(hDevice)->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceCreate");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
@@ -5371,6 +5424,12 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
 }
 ze_result_t zeCommandListAppendQueryKernelTimestamps (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     return Cal::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps(hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
+}
+ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
+    return Cal::Icd::LevelZero::zeEventQueryTimestampsExp(hEvent, hDevice, pCount, pTimestamps);
+}
+ze_result_t zeEventQueryKernelTimestampsExt (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults) {
+    return Cal::Icd::LevelZero::zeEventQueryKernelTimestampsExt(hEvent, hDevice, pCount, pResults);
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     return Cal::Icd::LevelZero::zeFenceCreate(hCommandQueue, desc, phFence);
