@@ -168,7 +168,9 @@ cl_int clGetDeviceInfoRpcHelper (cl_device_id device, cl_device_info param_name,
     }
     return ret;
 }
-cl_context clCreateContext (const cl_context_properties* properties, cl_uint num_devices, const cl_device_id* devices, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret) {
+cl_context clCreateContextRpcHelper (const cl_context_properties* properties, cl_uint num_devices, const cl_device_id* devices, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs &implArgsForClCreateContextRpcM) {
+    if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
+
     log<Verbosity::bloat>("Establishing RPC for clCreateContext");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -177,7 +179,9 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
-    command->copyFromCaller(dynMemTraits);
+    auto standalone_error_info = channel.getStandaloneSpace(256 * sizeof(char));
+    command->copyFromCaller(dynMemTraits, implArgsForClCreateContextRpcM);
+    command->implicitArgs.error_info = reinterpret_cast<char*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_error_info)));
     if(properties)
     {
         auto base = command->captures.getProperties();
@@ -206,7 +210,7 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller(dynMemTraits);
+    command->copyToCaller(dynMemTraits, implArgsForClCreateContextRpcM);
     cl_context ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret);
@@ -214,9 +218,13 @@ cl_context clCreateContext (const cl_context_properties* properties, cl_uint num
     if (ret != nullptr) {
         ret->asLocalObject()->setDevicesList(num_devices, devices);
     }
+    if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}
+
     return ret;
 }
-cl_context clCreateContextFromType (const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret) {
+cl_context clCreateContextFromTypeRpcHelper (const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs &implArgsForClCreateContextFromTypeRpcM) {
+    if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
+
     log<Verbosity::bloat>("Establishing RPC for clCreateContextFromType");
     auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -225,7 +233,9 @@ cl_context clCreateContextFromType (const cl_context_properties* properties, cl_
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(properties, device_type, pfn_notify, user_data, errcode_ret);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, properties, device_type, pfn_notify, user_data, errcode_ret);
-    command->copyFromCaller(dynMemTraits);
+    auto standalone_error_info = channel.getStandaloneSpace(256 * sizeof(char));
+    command->copyFromCaller(dynMemTraits, implArgsForClCreateContextFromTypeRpcM);
+    command->implicitArgs.error_info = reinterpret_cast<char*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_error_info)));
     if(properties)
     {
         auto base = command->captures.properties;
@@ -245,10 +255,13 @@ cl_context clCreateContextFromType (const cl_context_properties* properties, cl_
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller(dynMemTraits);
+    command->copyToCaller(dynMemTraits, implArgsForClCreateContextFromTypeRpcM);
     cl_context ret = command->captures.ret;
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret);
+    channelLock.unlock();
+    if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}
+
     return ret;
 }
 cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
@@ -4558,7 +4571,7 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     memcpy(Cal::Utils::toAddress(standalone_src_ptr), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr));
+    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
     command->args.src_ptr = standalone_src_ptr;
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
@@ -4614,7 +4627,7 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr));
+    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -4669,7 +4682,7 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr));
+    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {

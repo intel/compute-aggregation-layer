@@ -25,9 +25,17 @@ class ServerAccess:
     def write_only(self) -> bool:
         return self.str == "write"
 
+    def none(self) -> bool:
+        return self.str == "none"
+
     def read_write(self) -> bool:
         return self.str == "read_write"
 
+    def can_read(self) -> bool:
+        return not (self.write_only() or self.none())
+
+    def can_write(self) -> bool:
+        return not (self.read_only() or self.none())
 
 class Translate:
     def __init__(self, src: str):
@@ -236,7 +244,7 @@ class CaptureDetails:
         self.replayable_command = src.get("replayable_command", False)
 
 class ArgTraits:
-    def __init__(self, arg, parent_function):
+    def __init__(self, arg, parent_function, is_implicit_arg):
         self.arg = arg
         self.uses_standalone_allocation = arg.capture_details.mode.is_standalone_mode()
         self.uses_staging_usm_allocation = arg.capture_details.mode.is_staging_usm_mode()
@@ -245,6 +253,7 @@ class ArgTraits:
         self.uses_inline_dynamic_mem = arg.kind.is_pointer_to_array() and (not arg.kind_details.num_elements.is_constant()) and (not self.uses_standalone_allocation) and (not self.uses_staging_usm_allocation)
         self.uses_dynamic_arg_getter = parent_function.traits.uses_dynamic_arg_getters and self.uses_inline_dynamic_mem
         self.uses_nested_capture = arg.kind.is_pointer_to_array() and arg.kind_details.element.kind.is_pointer_to_array()
+        self.is_implicit_arg = is_implicit_arg
 
 class Arg:
     def __init__(self, arg_id, src: dict):
@@ -300,8 +309,8 @@ class Arg:
             count = self.get_calculated_elements_count(arg_prefix)
         return f"{count}{mul}"
 
-    def create_traits(self, parent_function) -> None:
-        self.traits = ArgTraits(self, parent_function)
+    def create_traits(self, parent_function, is_implicit_arg) -> None:
+        self.traits = ArgTraits(self, parent_function, is_implicit_arg)
 
     def is_always_queried(self) -> bool:
         return self.is_kind_complex() and self.kind_details.always_queried
@@ -524,16 +533,16 @@ class FunctionTraits:
         return total_count
 
     def get_standalone_args(self):
-        return [arg for arg in self.function.args if arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()]
+        return [arg for arg in self.function.args+self.function.implicit_args if arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()]
 
     def get_remapped_pointer_args(self):
-        return [arg for arg in self.function.args if arg.kind.is_pointer_remapped()]
+        return [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_remapped()]
 
     def get_ptr_array_args(self):
-        return [arg for arg in self.function.args if arg.kind.is_pointer_to_array()]
+        return [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_to_array()]
 
     def get_inline_dyn_ptr_array_args(self):
-        dyn_ptr_array_args = [arg for arg in self.function.args if arg.kind.is_pointer_to_array()
+        dyn_ptr_array_args = [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_to_array()
                              and (not arg.kind_details.num_elements.is_constant()) and not (arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode())]
 
         def is_costly(arg):
@@ -1272,9 +1281,9 @@ class Function:
         self.message_name = f"{self.name[0].upper()}{self.name[1:]}RpcM"
         self.traits = FunctionTraits(self)
         for arg in self.args:
-            arg.create_traits(self)
+            arg.create_traits(self, False)
         for iarg in self.implicit_args:
-            iarg.create_traits(self)
+            iarg.create_traits(self, True)
         self.capture_layout = FunctionCaptureLayout(structures, self)
 
 

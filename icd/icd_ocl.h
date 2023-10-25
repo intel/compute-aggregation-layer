@@ -185,6 +185,8 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 void *clGetExtensionFunctionAddress(const char *funcname);
+cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret);
+cl_context clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret);
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret);
 cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret);
 void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment);
@@ -675,6 +677,7 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
     InfoCache cache;
     cl_command_queue implicitQueue = nullptr;
     bool skipTransferOnHostPtrMatch = false;
+    std::unique_ptr<void, std::function<void(void *)>> notifyErrInfoMem;
 
   private:
     StagingAreaManager<std::function<void *(size_t)>,

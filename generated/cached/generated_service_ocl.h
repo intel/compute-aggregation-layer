@@ -198,31 +198,8 @@ inline bool clGetDeviceInfoHandler(Provider &service, Cal::Rpc::ChannelServer &c
                                                 );
     return true;
 }
-inline bool clCreateContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clCreateContext");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContext(
-                                                apiCommand->args.properties ? apiCommand->captures.getProperties() : nullptr, 
-                                                apiCommand->args.num_devices, 
-                                                apiCommand->args.devices ? apiCommand->captures.getDevices() : nullptr, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data, 
-                                                apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
-                                                );
-    return true;
-}
-inline bool clCreateContextFromTypeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clCreateContextFromType");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContextFromType(
-                                                apiCommand->args.properties ? apiCommand->captures.properties : nullptr, 
-                                                apiCommand->args.device_type, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data, 
-                                                apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
-                                                );
-    return true;
-}
+bool clCreateContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+bool clCreateContextFromTypeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clGetContextInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetContextInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetContextInfoRpcM*>(command);

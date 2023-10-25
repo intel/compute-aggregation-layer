@@ -90,6 +90,12 @@ namespace Ocl {
 extern cl_platform_id globalOclPlatform;
 std::vector<std::string> getListOfUnimplementedFunctionNames();
 
+struct OclCallbackContextForContextNotify {
+    Cal::Rpc::ChannelServer &channel;
+    Cal::Rpc::CallbackIdT callbackId;
+    char *errorInfo;
+};
+
 class OclSharedObjects {
   public:
     bool init();
@@ -257,6 +263,10 @@ class ClientContext {
         return spectacleAssignment;
     }
 
+    void assignToCallbackContextForContextNotify(std::unique_ptr<Apis::Ocl::OclCallbackContextForContextNotify> notify) {
+        oclCallbackContextForContextNotify = std::move(notify);
+    }
+
     Cal::Ipc::MemoryBlocksManager &getMemoryBlocksManager() {
         return memoryBlocksManager;
     }
@@ -374,6 +384,8 @@ class ClientContext {
     std::vector<std::pair<std::future<void>, std::unique_ptr<Cal::Rpc::ChannelServer>>> rpcChannels;
 
     IMember *spectacleAssignment = nullptr;
+
+    std::unique_ptr<Apis::Ocl::OclCallbackContextForContextNotify> oclCallbackContextForContextNotify;
 
     std::unordered_set<ze_context_handle_t> l0ContextsTracking{};
     std::unordered_set<ze_command_queue_handle_t> l0CommandQueuesTracking{};

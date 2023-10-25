@@ -161,7 +161,7 @@ ${func.capture_layout.generate_h()}
 
     void copyFromCaller(${', '.join(get_copy_from_caller_args(func))}){
 %     for arg in [arg for arg in get_ptr_array_args(func) if not (arg.traits.uses_standalone_allocation or arg.traits.uses_staging_usm_allocation)] :
-%      if not arg.kind_details.server_access.write_only():
+%      if arg.kind_details.server_access.can_read():
 %       if arg.kind_details.can_be_null:
         if(args.${arg.name}){
 %       endif #arg.kind_details.can_be_null
@@ -183,12 +183,12 @@ ${func.capture_layout.generate_h()}
 %       if arg.kind_details.can_be_null:
         }
 %       endif #arg.kind_details.can_be_null
-%      endif # kind_details.server_access.write_only()
+%      endif # arg.kind_details.server_access.can_read
 %     endfor # ${get_ptr_array_args(func)}
 %     for iarg in func.implicit_args:
-%      if not iarg.server_access.write_only():
+%      if iarg.server_access.can_read():
          this->implicitArgs.${iarg.name} = implicitArgs.${iarg.name};
-%      endif # iarg.server_access.write_only()
+%      endif # iarg.server_access.can_read()
 %     endfor # func.implicit_args
 \
 %     if get_struct_members_layouts(func):
@@ -221,7 +221,7 @@ ${member_layout.create_copy_from_caller("currentOffset", member_layout_formatter
 
     void copyToCaller(${', '.join(get_copy_to_caller_args(func))}){
 %     for arg in [arg for arg in get_ptr_array_args(func) if not arg.traits.uses_standalone_allocation] :
-%      if not arg.kind_details.server_access.read_only():
+%      if arg.kind_details.server_access.can_write():
 %       if arg.kind_details.can_be_null:
         if(args.${arg.name}){
 %       endif # arg.kind_details.can_be_null
@@ -236,12 +236,12 @@ ${member_layout.create_copy_from_caller("currentOffset", member_layout_formatter
 %       if arg.kind_details.can_be_null:
         }
 %       endif # arg.kind_details.can_be_null
-%      endif # not arg.kind_details.server_access.read_only()
+%      endif # arg.kind_details.server_access.can_write()
 %     endfor # ${get_ptr_array_args(func)}
 %     for iarg in func.implicit_args:
-%      if not iarg.server_access.read_only():
+%      if iarg.server_access.can_write():
          implicitArgs.${iarg.name} = this->implicitArgs.${iarg.name};
-%      endif # not iarg.server_access.read_only():
+%      endif # iarg.server_access.can_write
 %     endfor # func.implicit_args
 \
 %     if func.traits.is_copy_to_caller_required_for_any_of_struct_fields():

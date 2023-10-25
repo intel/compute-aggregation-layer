@@ -187,6 +187,16 @@ void *clGetExtensionFunctionAddressForPlatform(cl_platform_id platform, const ch
     return Cal::Icd::Ocl::clGetExtensionFunctionAddress(funcname);
 }
 
+cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret) {
+    Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs implicitArgs = {};
+    return Cal::Icd::Ocl::clCreateContextRpcHelper(properties, num_devices, devices, pfn_notify, user_data, errcode_ret, implicitArgs);
+}
+
+cl_context clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret) {
+    Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs implicitArgs = {};
+    return Cal::Icd::Ocl::clCreateContextFromTypeRpcHelper(properties, device_type, pfn_notify, user_data, errcode_ret, implicitArgs);
+}
+
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret) {
     auto kernel = clCreateKernelRpcHelper(program, kernel_name, errcode_ret);
     if (nullptr == kernel) {
@@ -487,6 +497,18 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
             default:
                 log<Verbosity::error>("Unknown callback signature for message subType : %d", callbackId.src.subtype);
                 break;
+            case Cal::Rpc::Ocl::ClCreateContextRpcM::messageSubtype:
+            case Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM::messageSubtype: {
+                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+                auto context = reinterpret_cast<cl_context>(callbackId.handle);
+                platform->translateRemoteObjectToLocalObject(context);
+                auto userData = reinterpret_cast<void *>(callbackId.data);
+                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(const char *errinfo, const void *private_info, size_t cb, void *user_data)>(callbackId.fptr);
+                auto oclContext = static_cast<IcdOclContext *>(context);
+                auto errorInfo = reinterpret_cast<const char *>(oclContext->notifyErrInfoMem.get());
+                fptr(errorInfo, nullptr, 0, userData);
+                break;
+            }
             case Cal::Rpc::Ocl::ClSetEventCallbackRpcM::messageSubtype: {
                 log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
                 auto event = reinterpret_cast<cl_event>(callbackId.handle);

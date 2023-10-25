@@ -451,6 +451,10 @@ struct ClGetDeviceInfoRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ClGetDeviceInfoRpcM>);
+struct ClCreateContextRpcMImplicitArgs {
+    char* error_info = {};
+};
+
 struct ClCreateContextRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 4;
@@ -480,6 +484,7 @@ struct ClCreateContextRpcM {
         }
     }args;
 
+    ClCreateContextRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -551,20 +556,26 @@ struct ClCreateContextRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs &implicitArgs){
         if(args.properties){
             memcpy(asMemcpyDstT(captures.getProperties()), args.properties, dynMemTraits.properties.size);
         }
         memcpy(asMemcpyDstT(captures.getDevices()), args.devices, dynMemTraits.devices.size);
+         this->implicitArgs.error_info = implicitArgs.error_info;
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs &implicitArgs){
         if(args.errcode_ret){
             *args.errcode_ret = captures.errcode_ret;
         }
+         implicitArgs.error_info = this->implicitArgs.error_info;
     }
 };
 static_assert(std::is_standard_layout_v<ClCreateContextRpcM>);
+struct ClCreateContextFromTypeRpcMImplicitArgs {
+    char* error_info = {};
+};
+
 struct ClCreateContextFromTypeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 5;
@@ -592,6 +603,7 @@ struct ClCreateContextFromTypeRpcM {
         }
     }args;
 
+    ClCreateContextFromTypeRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         struct DynamicTraits {
@@ -646,16 +658,18 @@ struct ClCreateContextFromTypeRpcM {
     }
     
 
-    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits, const Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs &implicitArgs){
         if(args.properties){
             memcpy(asMemcpyDstT(captures.properties), args.properties, dynMemTraits.properties.size);
         }
+         this->implicitArgs.error_info = implicitArgs.error_info;
     }
 
-    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits, Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs &implicitArgs){
         if(args.errcode_ret){
             *args.errcode_ret = captures.errcode_ret;
         }
+         implicitArgs.error_info = this->implicitArgs.error_info;
     }
 };
 static_assert(std::is_standard_layout_v<ClCreateContextFromTypeRpcM>);

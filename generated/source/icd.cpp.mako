@@ -105,9 +105,9 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %     endfor # prologue(f)
 %     if f.traits.requires_pointer_remapping:
 %      for arg in func_base.traits.get_remapped_pointer_args():
-%       if not arg.kind_details.server_access.write_only():
+%       if arg.kind_details.server_access.can_read():
     hCommandList->asLocalObject()->registerMemoryToWrite(${arg.name}, ${arg.get_calculated_array_size()});
-%       endif # not arg.kind_details.server_access.write_only():
+%       endif # arg.kind_details.server_access.can_read():
 %      endfor # in func_base.traits.get_remapped_pointer_args
 %     endif # f.traits.requires_pointer_remapping
     log<Verbosity::bloat>("Establishing RPC for ${f.name}");
@@ -154,16 +154,16 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %        if arg.capture_details.mode.is_standalone_mode():
     auto standalone_${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
 %        endif
-%       if not arg.kind_details.server_access.write_only():
+%       if arg.kind_details.server_access.can_read():
     memcpy(Cal::Utils::toAddress(standalone_${arg.name}), ${arg.name}, ${arg.get_calculated_array_size()});
-%       endif # not arg.kind_details.server_access.write_only()
+%       endif # arg.kind_details.server_access.can_read()
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_copy_from_caller:
     command->copyFromCaller(${get_copy_from_caller_call_params_list_str(func_base)});
 %      endif # func_base.traits.emit_copy_from_caller:
 %      for arg in func_base.traits.get_standalone_args():
 %        if arg.capture_details.mode.is_standalone_mode():
-    command->args.${arg.name} = channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_${arg.name}));
+    command->${"args" if not arg.traits.is_implicit_arg else "implicitArgs"}.${arg.name} = reinterpret_cast<${arg.type.str}>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_${arg.name})));
 %        elif arg.capture_details.mode.is_staging_usm_mode():
     command->args.${arg.name} = standalone_${arg.name};
 %        endif
@@ -286,9 +286,9 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     command->copyToCaller(${get_copy_to_caller_call_params_list_str(func_base)});
 %       endif # func_base.traits.emit_copy_to_caller
 %       for arg in func_base.traits.get_standalone_args():
-%        if not arg.kind_details.server_access.read_only() and config.api_name == "ocl" and arg.capture_details.mode.is_staging_usm_mode():
+%        if arg.kind_details.server_access.can_write() and config.api_name == "ocl" and arg.capture_details.mode.is_staging_usm_mode():
     memcpy(${arg.name}, standalone_${arg.name}, ${arg.get_calculated_array_size()});
-%        endif # not arg.kind_details.server_access.write_only()
+%        endif # arg.kind_details.server_access.can_write()
 %       endfor # arg in func_base.traits.get_standalone_args():
 %       for arg in get_args_requiring_translation_after(func_base):
 %        if can_be_null(arg):

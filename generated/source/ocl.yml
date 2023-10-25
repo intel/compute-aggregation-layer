@@ -317,7 +317,11 @@ config:
           latency: 1.0
           special_handling:
             icd:
-              handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n    }"
+              handler_only_suffix: "RpcHelper"
+              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n    }\n    if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}\n"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_context
             kind: scalar
@@ -374,8 +378,29 @@ config:
                   kind: scalar
                   default: "CL_DEVICE_NOT_AVAILABLE"
                 server_access: write
+          implicit_args:
+            0:
+              name: error_info
+              type: "char*"
+              kind: ptr_array
+              capture_details:
+                mode: standalone
+              kind_details:
+                num_elements: 256
+                can_be_null: True
+                element:
+                  type: "char"
+                  kind: "scalar"
+                server_access: none
         - name: clCreateContextFromType
           latency: 1.0
+          special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
+              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_epilogue: "if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}\n"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_context
             kind: scalar
@@ -421,6 +446,20 @@ config:
                   kind: scalar
                   default: "CL_DEVICE_NOT_AVAILABLE"
                 server_access: write
+          implicit_args:
+            0:
+              name: error_info
+              type: "char*"
+              kind: ptr_array
+              capture_details:
+                mode: standalone
+              kind_details:
+                num_elements: 256
+                can_be_null: True
+                element:
+                  type: "char"
+                  kind: "scalar"
+                server_access: none
         - name: clGetContextInfo
           latency: 0.0
           special_handling:

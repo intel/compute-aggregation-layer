@@ -530,6 +530,63 @@ inline bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer
     return true;
 }
 
+void CL_CALLBACK clCreateContextCallbackWrapper(const char *errinfo, const void *private_info, size_t cb, void *user_data) {
+    auto *cctx = reinterpret_cast<Apis::Ocl::OclCallbackContextForContextNotify *>(user_data);
+    Cal::Rpc::ChannelServer &channel = cctx->channel;
+    Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
+    std::strncpy(cctx->errorInfo, errinfo, 256);
+
+    log<Verbosity::debug>("Pushed callback notification from clCreateContext to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
+    channel.pushCompletedCallbackId(callbackId);
+}
+
+bool clCreateContextHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clCreateContext");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextRpcM *>(command);
+
+    std::unique_ptr<Apis::Ocl::OclCallbackContextForContextNotify> notify;
+    if (apiCommand->args.pfn_notify) {
+        notify.reset(new Apis::Ocl::OclCallbackContextForContextNotify{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify), 0, reinterpret_cast<uintptr_t>(apiCommand->args.user_data), apiCommand->header, 0},
+                                                                       channel.decodeLocalPtrFromHeapOffset(apiCommand->implicitArgs.error_info)});
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContext(
+        apiCommand->args.properties ? apiCommand->captures.getProperties() : nullptr,
+        apiCommand->args.num_devices,
+        apiCommand->args.devices ? apiCommand->captures.getDevices() : nullptr,
+        notify ? clCreateContextCallbackWrapper : nullptr,
+        notify.get(),
+        apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
+    if (notify) {
+        notify->callbackId.handle = reinterpret_cast<uintptr_t>(apiCommand->captures.ret);
+    }
+    ctx.assignToCallbackContextForContextNotify(std::move(notify));
+
+    return true;
+}
+
+bool clCreateContextFromTypeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clCreateContextFromType");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM *>(command);
+
+    std::unique_ptr<Apis::Ocl::OclCallbackContextForContextNotify> notify;
+    if (apiCommand->args.pfn_notify) {
+        notify.reset(new Apis::Ocl::OclCallbackContextForContextNotify{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify), 0, reinterpret_cast<uintptr_t>(apiCommand->args.user_data), apiCommand->header, 0},
+                                                                       channel.decodeLocalPtrFromHeapOffset(apiCommand->implicitArgs.error_info)});
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateContextFromType(
+        apiCommand->args.properties ? apiCommand->captures.properties : nullptr,
+        apiCommand->args.device_type,
+        notify ? clCreateContextCallbackWrapper : nullptr,
+        notify.get(),
+        apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr);
+    if (notify) {
+        notify->callbackId.handle = reinterpret_cast<uintptr_t>(apiCommand->captures.ret);
+    }
+    ctx.assignToCallbackContextForContextNotify(std::move(notify));
+
+    return true;
+}
+
 struct CallbackContext {
     Cal::Rpc::ChannelServer &channel;
     Cal::Rpc::CallbackIdT callbackId;

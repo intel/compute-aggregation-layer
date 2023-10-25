@@ -17,6 +17,8 @@ namespace Cal {
 namespace Rpc {
 namespace Ocl {
 
+struct ClCreateContextRpcMImplicitArgs;
+struct ClCreateContextFromTypeRpcMImplicitArgs;
 struct ClCreateBufferRpcMImplicitArgs;
 struct ClSVMAllocRpcMImplicitArgs;
 struct ClHostMemAllocINTELRpcMImplicitArgs;
@@ -35,8 +37,8 @@ cl_int clGetPlatformInfoRpcHelper (cl_platform_id platform, cl_platform_info par
 void* clGetExtensionFunctionAddress (const char* funcname);
 cl_int clGetDeviceIDs (cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id* devices, cl_uint* num_devices);
 cl_int clGetDeviceInfoRpcHelper (cl_device_id device, cl_device_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
-cl_context clCreateContext (const cl_context_properties* properties, cl_uint num_devices, const cl_device_id* devices, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret);
-cl_context clCreateContextFromType (const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret);
+cl_context clCreateContextRpcHelper (const cl_context_properties* properties, cl_uint num_devices, const cl_device_id* devices, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs &implArgsForClCreateContextRpcM);
+cl_context clCreateContextFromTypeRpcHelper (const cl_context_properties* properties, cl_device_type device_type, void (CL_CALLBACK* pfn_notify)(const char* errinfo, const void* private_info, size_t cb, void* user_data), void* user_data, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs &implArgsForClCreateContextFromTypeRpcM);
 cl_int clGetContextInfo (cl_context context, cl_context_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clSetContextDestructorCallback (cl_context context, void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data), void* user_data);
 cl_int clSetMemObjectDestructorCallback (cl_mem memobj, void (CL_CALLBACK* pfn_notify)(cl_mem memobj, void* user_data), void* user_data);
