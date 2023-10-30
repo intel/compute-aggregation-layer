@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "icd/level_zero/icd_level_zero.h"
+#include "client/icd/level_zero/icd_level_zero.h"
 
 namespace Cal::Mocks {
 

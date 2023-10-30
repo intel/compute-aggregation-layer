@@ -5,8 +5,8 @@
  *
  */
 
+#include "client/icd/icd_ocl.h"
 #include "gtest/gtest.h"
-#include "icd/icd_ocl.h"
 #include "test/mocks/log_mock.h"
 #include "test/utils/cli_utils.h"
 #include "test/utils/custom_event_listener.h"

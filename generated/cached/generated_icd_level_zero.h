@@ -10,8 +10,8 @@
 
 #include "shared/log.h"
 #include "shared/shmem_transfer_desc.h"
-#include "icd/level_zero/api_customization/icd_level_zero_api.h"
-#include "icd/level_zero/api_customization/icd_level_zero_api_sysman.h"
+#include "client/icd/level_zero/api_customization/icd_level_zero_api.h"
+#include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"

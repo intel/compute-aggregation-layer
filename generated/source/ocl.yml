@@ -26,11 +26,11 @@ config:
       - '#   include "shared/ocl_fat_def.h"'
       - "#endif"
     rpc_messages_cpp:
-      - '#include "icd/icd_ocl.h"'
+      - '#include "client/icd/icd_ocl.h"'
     icd_h:
-      - '#include "icd/icd_ocl.h"'
+      - '#include "client/icd/icd_ocl.h"'
     icd_cpp:
-      - '#include "icd/icd_page_fault_manager.h"'
+      - '#include "client/icd/icd_page_fault_manager.h"'
     api:
       - "#define CL_TARGET_OPENCL_VERSION 300"
       - "#include <CL/cl.h>"

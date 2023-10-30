@@ -48,9 +48,9 @@ add_executable(ocl_test_ult_icd
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/sys.cpp
 
-               ${cal_source_root_dir}/icd/icd_global_state.cpp
-               ${cal_source_root_dir}/icd/icd_malloc_override.cpp
-               ${cal_source_root_dir}/icd/icd_ocl.cpp
+               ${cal_source_root_dir}/client/icd/icd_global_state.cpp
+               ${cal_source_root_dir}/client/client_malloc_override.cpp
+               ${cal_source_root_dir}/client/icd/icd_ocl.cpp
 
                ${cal_source_root_dir}/shared/allocators.cpp
                ${cal_source_root_dir}/shared/callstack.cpp

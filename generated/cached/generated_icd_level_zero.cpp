@@ -7,12 +7,12 @@
 
 // #### Generated code -- begin ####
 
-#include "icd/icd_global_state.h"
+#include "client/icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
 
-#include "icd/level_zero/icd_level_zero.h"
-#include "icd/icd_page_fault_manager.h"
+#include "client/icd/level_zero/icd_level_zero.h"
+#include "client/icd/icd_page_fault_manager.h"
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 

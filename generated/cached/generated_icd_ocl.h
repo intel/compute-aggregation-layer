@@ -8,7 +8,7 @@
 #pragma once
 // #### Generated code -- begin ####
 
-#include "icd/icd_ocl.h"
+#include "client/icd/icd_ocl.h"
 
 #include <cstdlib>
 

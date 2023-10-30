@@ -38,8 +38,8 @@ config:
     icd_h:
       - '#include "shared/log.h"'
       - '#include "shared/shmem_transfer_desc.h"'
-      - '#include "icd/level_zero/api_customization/icd_level_zero_api.h"'
-      - '#include "icd/level_zero/api_customization/icd_level_zero_api_sysman.h"'
+      - '#include "client/icd/level_zero/api_customization/icd_level_zero_api.h"'
+      - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
       - '#include "level_zero/zes_api.h"'
@@ -47,8 +47,8 @@ config:
       - '#include "level_zero/zet_api.h"'
       - '#include "level_zero/zet_ddi.h"'
     icd_cpp:
-      - '#include "icd/level_zero/icd_level_zero.h"'
-      - '#include "icd/icd_page_fault_manager.h"'
+      - '#include "client/icd/level_zero/icd_level_zero.h"'
+      - '#include "client/icd/icd_page_fault_manager.h"'
     api:
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/zes_api.h"'

@@ -5,7 +5,7 @@
 ##
 // #### Generated code -- begin ####
 
-#include "icd/icd_global_state.h"
+#include "client/icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
 
