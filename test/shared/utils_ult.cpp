@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -89,8 +89,8 @@ TEST(alignUpPow2, givenNumberThenAlignsItToGivenPowerOf2) {
         {8U, 8U},
         {12U, 9U},
     };
-    for (auto testValue : testValues) {
-        auto [expected, tested] = testValue;
+    for (const auto &testValue : testValues) {
+        const auto &[expected, tested] = testValue;
         EXPECT_EQ(expected, Cal::Utils::alignUpPow2<4>(tested));
         EXPECT_EQ(reinterpret_cast<void *>(expected), reinterpret_cast<void *>(Cal::Utils::alignUpPow2<4>(tested)));
     }
@@ -109,8 +109,8 @@ TEST(alignUp, givenNumberThenAlignsItToGivenPowerOf2) {
         {9U, 8U},
         {9U, 9U},
     };
-    for (auto testValue : testValues) {
-        auto [expected, tested] = testValue;
+    for (const auto &testValue : testValues) {
+        const auto &[expected, tested] = testValue;
         EXPECT_EQ(expected, Cal::Utils::alignUp<3>(tested));
         EXPECT_EQ(reinterpret_cast<void *>(expected), reinterpret_cast<void *>(Cal::Utils::alignUp<3>(tested)));
     }
@@ -422,7 +422,7 @@ TEST(PartitionedAddressRange, givenTwoNonAdjacentSubrangesThenMergeDoesNothing) 
     Cal::Utils::PartitionedAddressRange partitionedRange({});
 
     Cal::Utils::AddressRange sortedSubranges[] = {{0U, 1024U}, {2048U, 4096U}};
-    for (auto subRange : sortedSubranges) {
+    for (const auto &subRange : sortedSubranges) {
         partitionedRange.insertSubRange(subRange);
     }
 
@@ -459,7 +459,7 @@ TEST(PartitionedAddressRange, givenMultipleSubrangesThenMergeCreatesBoundingRang
     Cal::Utils::PartitionedAddressRange partitionedRange({});
 
     Cal::Utils::AddressRange sortedSubranges[] = {{0U, 1024U}, {2048U, 4096U}, {4096U, 8192U}, {8192U, 20480U}, {20481U, 20487U}, {20487U, 20489U}, {20490U, 20491U}};
-    for (auto subRange : sortedSubranges) {
+    for (const auto &subRange : sortedSubranges) {
         partitionedRange.insertSubRange(subRange);
     }
 
@@ -656,7 +656,7 @@ TEST(PartitionedAddressRange, whenDestroyingSpanOfSubrangesThenAffectAllInRange)
     Cal::Utils::PartitionedAddressRange partitionedRange({});
     uintptr_t pageSize = 4096U;
     Cal::Utils::AddressRange ranges[4] = {{static_cast<uintptr_t>(0U), pageSize * 2}, {pageSize * 2, pageSize * 3}, {pageSize * 4, pageSize * 5}, {pageSize * 5, pageSize * 7}};
-    for (auto range : ranges) {
+    for (const auto &range : ranges) {
         partitionedRange.insertSubRange(range);
     }
 

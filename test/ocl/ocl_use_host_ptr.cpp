@@ -95,7 +95,6 @@ int main(int argc, const char *argv[]) {
         log<Verbosity::error>("Failed to released cl_mem : %p", mem);
         return 1;
     }
-    return 1;
     log<Verbosity::info>("Succesfully released cl_mem : %p", mem);
     mem = nullptr;
 

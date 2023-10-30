@@ -145,7 +145,7 @@ class CCustomEventListener : public ::testing::TestEventListener {
             timeElapsed,
             paddingE.c_str());
 
-        for (auto failure : testFailures)
+        for (const auto &failure : testFailures)
             fprintf(
                 stdout,
                 "[  FAILED  ][ %s ][ %u ] %s\n", hardwarePrefix.c_str(), failure.second, failure.first.c_str());

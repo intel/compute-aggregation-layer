@@ -33,7 +33,7 @@ class TestStagingAreaManager {
 
     StagingAreaManager<std::function<void *(size_t)>, std::function<void(void *)>> stagingAreaManager;
     int testAllocatorCalled = 0;
-    int *deallocationCounter;
+    int *deallocationCounter = nullptr;
 };
 
 TEST(StagingAreaManager, givenStagingAreaManagerWhenAllocatingMemoryThenMemoryIsCorrectlyAllocatedAndDeallocated) {

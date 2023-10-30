@@ -81,9 +81,7 @@ std::string getLibraryPath(void *libHandle) {
 
 Regex::Regex(const char *regexStr) {
     const auto result = regcomp(&regex, regexStr, REG_EXTENDED);
-    if (result != 0) {
-        throw std::runtime_error{"Compilation of regex has failed! Error code = " + std::to_string(result)};
-    }
+    isCompiled = result == 0;
 }
 
 Regex::~Regex() {
@@ -91,6 +89,10 @@ Regex::~Regex() {
 }
 
 bool Regex::matches(const char *text, std::vector<Smatch> &matches) {
+    if (!isCompiled) {
+        return false;
+    }
+
     std::vector<regmatch_t> regmatches{};
     regmatches.resize(matches.size());
 

@@ -179,6 +179,7 @@ int main(int argc, const char *argv[]) {
                 return -1;
             }
             forkNum = atoi(argv[i + 1]);
+            forkNum = forkNum > 128 ? 128 : forkNum;
             i++;
         }
     }

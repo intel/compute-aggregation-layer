@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -374,7 +374,7 @@ struct PlatformInfo : Infos<PlatfomInfoC, CL_PLATFORM_PROFILE, CL_PLATFORM_VERSI
     }
 
     bool read(cl_platform_id platform) {
-        auto readSize = [=](cl_platform_info param_name) { size_t ret; clGetPlatformInfo(platform, param_name, 0, nullptr, &ret); return ret; };
+        auto readSize = [=](cl_platform_info param_name) { size_t ret; return CL_SUCCESS == clGetPlatformInfo(platform, param_name, 0, nullptr, &ret) ? ret : 0ul; };
         auto readVal = [=](cl_platform_info param_name, void *dst, size_t dstSize) { return CL_SUCCESS == clGetPlatformInfo(platform, param_name, dstSize, dst, nullptr); };
         return this->readImpl(readSize, readVal);
     }

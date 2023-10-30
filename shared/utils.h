@@ -357,6 +357,7 @@ class Regex {
 
   private:
     regex_t regex;
+    bool isCompiled = false;
 };
 
 inline size_t getBufferRectSizeInBytes(const size_t region[3], size_t rowPitch, size_t slicePitch) {

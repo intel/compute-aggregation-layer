@@ -419,11 +419,7 @@ struct ReqImportAddressSpace {
     }
 
     bool isInvalid() const {
-        uint32_t invalid = 0;
-        if (0 != invalid) {
-            log<Verbosity::error>("Message ReqImportAddressSpace is not valid");
-        }
-        return 0 != invalid;
+        return false;
     }
 
     char mallocShmemResourcePath[PATH_MAX] = {};
@@ -447,7 +443,7 @@ struct RespImportAddressSpace {
     }
 
     bool successfullyImported = false;
-    uintptr_t serviceBaseAddressForClientAddressSpace;
+    uintptr_t serviceBaseAddressForClientAddressSpace{};
 };
 static_assert(std::is_standard_layout<RespImportAddressSpace>::value);
 

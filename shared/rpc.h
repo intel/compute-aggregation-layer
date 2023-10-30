@@ -999,7 +999,7 @@ class ChannelClient : public CommandsChannel {
 
     bool useAsyncCalls = false;
     bool useBatchedCalls = false;
-    CompletionStampT *completionStamp;
+    CompletionStampT *completionStamp = nullptr;
     Cal::Allocators::LinearAllocator cmdHeap;
     Cal::Allocators::AddressRangeAllocator standaloneHeap;
 
