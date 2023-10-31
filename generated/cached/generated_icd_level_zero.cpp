@@ -2800,6 +2800,40 @@ ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_devi
 
     return ret;
 }
+ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) {
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
+    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();
+    log<Verbosity::bloat>("Establishing RPC for zeMemFreeExt");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeMemFreeExtRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hContext, pMemFreeDesc, ptr);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hContext, pMemFreeDesc, ptr);
+    command->copyFromCaller(dynMemTraits);
+    command->captures.reassembleNestedStructs();
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+    if(pMemFreeDesc)
+    {
+        translateRequiredPNextExtensions(command->captures.pMemFreeDesc.pNext);
+    }
+    globalPlatform->destroyUsmDescriptor(ptr);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleCreate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -5495,6 +5529,9 @@ ze_result_t zexMemGetIpcHandles (ze_context_handle_t hContext, const void* ptr, 
 }
 ze_result_t zexMemOpenIpcHandles (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) {
     return Cal::Client::Icd::LevelZero::zexMemOpenIpcHandles(hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
+}
+ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) {
+    return Cal::Client::Icd::LevelZero::zeMemFreeExt(hContext, pMemFreeDesc, ptr);
 }
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     return Cal::Client::Icd::LevelZero::zeModuleCreate(hContext, hDevice, desc, phModule, phBuildLog);

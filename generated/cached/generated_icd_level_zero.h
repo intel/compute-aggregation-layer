@@ -139,6 +139,7 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr);
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
 ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
+ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
 ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
@@ -292,10 +293,6 @@ inline void zeImageViewCreateExpUnimpl() {
 }
 inline void zeModuleInspectLinkageExtUnimpl() {
     log<Verbosity::critical>("Function Module.zeModuleInspectLinkageExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeMemFreeExtUnimpl() {
-    log<Verbosity::critical>("Function Mem.zeMemFreeExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeKernelGetSourceAttributesUnimpl() {
@@ -938,6 +935,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Mem.pfnGetIpcHandle = Cal::Client::Icd::LevelZero::zeMemGetIpcHandle;
     dt.Mem.pfnOpenIpcHandle = Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle;
     dt.Mem.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle;
+    dt.Mem.pfnFreeExt = Cal::Client::Icd::LevelZero::zeMemFreeExt;
     dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate;
     dt.Module.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleDestroy;
     dt.Module.pfnDynamicLink = Cal::Client::Icd::LevelZero::zeModuleDynamicLink;
@@ -998,7 +996,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Image.pfnGetAllocPropertiesExt = reinterpret_cast<decltype(dt.Image.pfnGetAllocPropertiesExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetAllocPropertiesExtUnimpl);
     dt.ImageExp.pfnViewCreateExp = reinterpret_cast<decltype(dt.ImageExp.pfnViewCreateExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageViewCreateExpUnimpl);
     dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
-    dt.Mem.pfnFreeExt = reinterpret_cast<decltype(dt.Mem.pfnFreeExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeMemFreeExtUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Client::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
     dt.Context.pfnMakeImageResident = reinterpret_cast<decltype(dt.Context.pfnMakeImageResident)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextMakeImageResidentUnimpl);
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);

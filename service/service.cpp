@@ -970,6 +970,22 @@ bool zeMemFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, Clien
     return true;
 }
 
+bool zeMemFreeExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeMemFreeExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemFreeExtRpcM *>(command);
+    apiCommand->captures.reassembleNestedStructs();
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemFreeExt(
+        apiCommand->args.hContext,
+        apiCommand->args.pMemFreeDesc ? &apiCommand->captures.pMemFreeDesc : nullptr,
+        apiCommand->args.ptr);
+    if (service.getCpuInfo().isAccessibleByApplication(apiCommand->args.ptr)) {
+        auto ctxLock = ctx.lock();
+        ctx.reapUsmSharedHostAlloc(apiCommand->args.ptr, false);
+    }
+
+    return true;
+}
+
 bool zeModuleGetKernelNamesRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleGetKernelNamesRpcHelper");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleGetKernelNamesRpcHelperRpcM *>(command);

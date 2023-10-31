@@ -857,6 +857,27 @@ config:
           type: uint64_t
           kind: scalar
 
+    - name: ze_memory_free_ext_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: const void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+            requires_opaque_elements_translation_before: True
+          translate_before: "translateRequiredPNextExtensions({dst_captures})"
+        2:
+          name: freePolicy
+          type: ze_driver_memory_free_policy_ext_flags_t
+          kind: scalar
+
+
     - name: ze_module_properties_t
       members:
         0:
@@ -1390,7 +1411,6 @@ config:
           Image.zeImageGetAllocPropertiesExt,
           ImageExp.zeImageViewCreateExp,
           Module.zeModuleInspectLinkageExt,
-          Mem.zeMemFreeExt,
           Kernel.zeKernelGetSourceAttributes,
           Context.zeContextMakeImageResident,
           Context.zeContextEvictImage,
@@ -5686,26 +5706,40 @@ config:
                   kind: scalar
                   translate_after: "{dst} = globalPlatform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
                 server_access: write
-        #        - name : zeMemFreeExt
-        #          ddi_category :  Mem
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hContext
-        #                    type : ze_context_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pMemFreeDesc
-        #                    type : const ze_memory_free_ext_desc_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : ptr
-        #                    type : void*
-        #                    kind : pointer
-        #
+        - name : zeMemFreeExt
+          latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Client::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();"
+            rpc:
+              custom_handler: True
+          ddi_category : Mem
+          returns :
+            type : ze_result_t
+            kind : scalar
+            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hContext
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1 :
+              name : pMemFreeDesc
+              type : const ze_memory_free_ext_desc_t*
+              kind : ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_memory_free_ext_desc_t
+                  kind: struct
+                server_access: read
+            2 :
+                name : ptr
+                type : void*
+                kind : pointer
+                translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
         - name: zeModuleCreate
           latency: 2.0
           special_handling:

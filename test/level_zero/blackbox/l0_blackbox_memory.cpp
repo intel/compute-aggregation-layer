@@ -261,6 +261,20 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(freeMemory(context, usmSharedBuffer));
     RUN_REQUIRED_STEP(freeMemory(context, usmHostBuffer));
 
+    {
+        void *usmHostBuffer{nullptr};
+        RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer, nullptr));
+        RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
+        RUN_REQUIRED_STEP(freeMemoryExt(context, usmHostBuffer, ZE_DRIVER_MEMORY_FREE_POLICY_EXT_FLAG_BLOCKING_FREE, "BLOCKING"));
+    }
+
+    {
+        void *usmHostBuffer{nullptr};
+        RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer, nullptr));
+        RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
+        RUN_REQUIRED_STEP(freeMemoryExt(context, usmHostBuffer, ZE_DRIVER_MEMORY_FREE_POLICY_EXT_FLAG_DEFER_FREE, "DEFER"));
+    }
+
     RUN_REQUIRED_STEP(destroyContext(context));
 
     return 0;

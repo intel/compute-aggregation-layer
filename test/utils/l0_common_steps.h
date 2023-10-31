@@ -65,6 +65,7 @@ bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t
 bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
                           void *&usmDeviceBuffer, const void *descPNext = nullptr);
 bool freeMemory(ze_context_handle_t context, void *&buffer);
+bool freeMemoryExt(ze_context_handle_t context, void *&buffer, ze_driver_memory_free_policy_ext_flags_t policyFlag, const char *policyLabel);
 bool closeMemIpcHandle(ze_context_handle_t context, void *ptr);
 
 bool createEventPool(ze_context_handle_t context, uint32_t eventsCount, ze_device_handle_t *devices, uint32_t devicesCount, ze_event_pool_handle_t &eventPool);

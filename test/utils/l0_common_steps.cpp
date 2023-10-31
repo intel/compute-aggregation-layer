@@ -440,6 +440,24 @@ bool freeMemory(ze_context_handle_t context, void *&buffer) {
     return true;
 }
 
+bool freeMemoryExt(ze_context_handle_t context, void *&buffer, ze_driver_memory_free_policy_ext_flags_t policyFlag, const char *policyLabel) {
+    ze_memory_free_ext_desc_t freeExtDesc = {
+        ZE_STRUCTURE_TYPE_MEMORY_FREE_EXT_DESC, // .stype
+        nullptr,                                // .pNext
+        policyFlag                              // .freePolicy
+    };
+
+    if (const auto result = zeMemFreeExt(context, &freeExtDesc, buffer); result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeMemFreeExt() call with policy = %s has failed! Error code: %d", policyLabel, static_cast<int>(result));
+        return false;
+    }
+
+    buffer = nullptr;
+    log<Verbosity::info>("zeMemFreeExt() with policy = %s has succeeded!", policyLabel);
+
+    return true;
+}
+
 bool closeMemIpcHandle(ze_context_handle_t context, void *ptr) {
     const auto zeMemCloseIpcHandleResult = zeMemCloseIpcHandle(context, ptr);
     if (zeMemCloseIpcHandleResult != ZE_RESULT_SUCCESS) {

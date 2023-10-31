@@ -111,6 +111,7 @@ ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const void* pt
 ze_result_t (*zeMemGetIpcHandle)(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) = nullptr;
 ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) = nullptr;
 ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr) = nullptr;
+ze_result_t (*zeMemFreeExt)(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
 ze_result_t (*zeModuleDynamicLink)(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) = nullptr;
@@ -709,6 +710,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeMemFreeExt = reinterpret_cast<decltype(zeMemFreeExt)>(dlsym(libraryHandle, "zeMemFreeExt"));
+    if(nullptr == zeMemFreeExt){
+        log<Verbosity::error>("Missing symbol zeMemFreeExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeModuleCreate = reinterpret_cast<decltype(zeModuleCreate)>(dlsym(libraryHandle, "zeModuleCreate"));
     if(nullptr == zeModuleCreate){
         log<Verbosity::error>("Missing symbol zeModuleCreate in %s", loadPath.c_str());
@@ -1032,6 +1039,7 @@ void unloadLevelZeroLibrary() {
     zeMemGetIpcHandle = nullptr;
     zeMemOpenIpcHandle = nullptr;
     zeMemCloseIpcHandle = nullptr;
+    zeMemFreeExt = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;
     zeModuleDynamicLink = nullptr;
