@@ -20,3 +20,27 @@ void compileProgram(cl_program program, cl_device_id device);
 cl_program linkProgram(cl_context context, cl_device_id device, cl_program program);
 void buildProgram(cl_program program, cl_device_id device);
 cl_kernel createKernel(cl_program program, const char *kernelName);
+
+class MemObject {
+  public:
+    MemObject() = delete;
+    MemObject(cl_mem mem) : allocation(mem) {}
+    MemObject(const MemObject &other) = delete;
+    MemObject(MemObject &&other) {
+        allocation = other.allocation;
+        other.allocation = 0;
+    }
+
+    ~MemObject() {
+        if (allocation) {
+            clReleaseMemObject(allocation);
+        }
+    }
+
+    cl_mem get() const {
+        return allocation;
+    }
+
+  protected:
+    cl_mem allocation{};
+};
