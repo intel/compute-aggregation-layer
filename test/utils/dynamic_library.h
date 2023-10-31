@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -58,13 +58,13 @@ class DynamicLibrary final {
 
     template <typename FunctionT>
     auto getFunction(const std::string &symbol) {
-        static_assert(std::is_function_v<FunctionT>, "Passed type is not a function!");
+        static_assert(std::is_function_v<std::remove_pointer_t<FunctionT>>, "Passed type is not a function!");
 
         if (!libHandle) {
-            return static_cast<std::add_pointer_t<FunctionT>>(nullptr);
+            return static_cast<FunctionT>(nullptr);
         }
 
-        return reinterpret_cast<std::add_pointer_t<FunctionT>>(dlsym(libHandle, symbol.c_str()));
+        return reinterpret_cast<FunctionT>(dlsym(libHandle, symbol.c_str()));
     }
 
   private:

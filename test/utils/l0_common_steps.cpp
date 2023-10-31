@@ -708,17 +708,17 @@ bool generateSpirv(std::vector<uint8_t> &spirv, const char *source) {
         return false;
     }
 
-    using OclocInvokeFunT = int(unsigned int, const char *[], const uint32_t, const uint8_t **, const uint64_t *,
-                                const char **, const uint32_t, const uint8_t **, const uint64_t *, const char **,
-                                uint32_t *, uint8_t ***, uint64_t **, char ***);
+    using OclocInvokeFunT = int (*)(unsigned int, const char *[], const uint32_t, const uint8_t **, const uint64_t *,
+                                    const char **, const uint32_t, const uint8_t **, const uint64_t *, const char **,
+                                    uint32_t *, uint8_t ***, uint64_t **, char ***);
 
-    auto *oclocInvoke = oclocLib.getFunction<OclocInvokeFunT>("oclocInvoke");
+    auto oclocInvoke = oclocLib.getFunction<OclocInvokeFunT>("oclocInvoke");
     if (!oclocInvoke) {
         log<Verbosity::error>("Cannot find oclocInvoke() function inside libocloc.so!");
         return false;
     }
 
-    using OclocFreeOutputFunT = int(uint32_t *, uint8_t ***, uint64_t **, char ***);
+    using OclocFreeOutputFunT = int (*)(uint32_t *, uint8_t ***, uint64_t **, char ***);
 
     auto *oclocFreeOutput = oclocLib.getFunction<OclocFreeOutputFunT>("oclocFreeOutput");
     if (!oclocFreeOutput) {
