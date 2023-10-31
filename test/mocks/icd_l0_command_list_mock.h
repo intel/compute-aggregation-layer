@@ -11,7 +11,7 @@
 
 namespace Cal::Mocks {
 
-class MockIcdL0CommandList : public Cal::Icd::LevelZero::IcdL0CommandList {
+class MockIcdL0CommandList : public Cal::Client::Icd::LevelZero::IcdL0CommandList {
   public:
     using IcdL0CommandList::ChunkEntry;
     using IcdL0CommandList::memoryToWrite;

@@ -15,7 +15,7 @@
 #include <dlfcn.h>
 #include <mutex>
 
-namespace Cal::Icd::MallocOverride {
+namespace Cal::Client::MallocOverride {
 
 enum class MallocOverrideMode {
     Disabled,
@@ -46,9 +46,9 @@ class MallocShmemExporter {
     MallocShmemExporter &operator=(const MallocShmemExporter &) = delete;
 
     bool isAllowed() const {
-        bool available = (Cal::Icd::MallocOverride::MallocOverrideMode::CalMallocAsShmem == Cal::Icd::MallocOverride::getMode());
+        bool available = (Cal::Client::MallocOverride::MallocOverrideMode::CalMallocAsShmem == Cal::Client::MallocOverride::getMode());
         if ((false == available) && enabled) {
-            log<Verbosity::debug>("CAL malloc override not available because : %s", Cal::Icd::MallocOverride::getCalMallocOverrideInitError());
+            log<Verbosity::debug>("CAL malloc override not available because : %s", Cal::Client::MallocOverride::getCalMallocOverrideInitError());
         }
         return available && enabled;
     }
@@ -83,19 +83,19 @@ class MallocShmemExporter {
     }
 
     const char *getResourcePath() const {
-        return Cal::Icd::MallocOverride::readMallocShmemState().resourcePath;
+        return Cal::Client::MallocOverride::readMallocShmemState().resourcePath;
     }
 
     size_t getHeapSize() const {
-        return Cal::Icd::MallocOverride::readMallocShmemState().size;
+        return Cal::Client::MallocOverride::readMallocShmemState().size;
     }
 
     size_t getHeapCapacity() const {
-        return Cal::Icd::MallocOverride::readMallocShmemState().capacity;
+        return Cal::Client::MallocOverride::readMallocShmemState().capacity;
     }
 
     void *getHeapBaseAddress() const {
-        return Cal::Icd::MallocOverride::readMallocShmemState().baseAddress;
+        return Cal::Client::MallocOverride::readMallocShmemState().baseAddress;
     }
 
     uintptr_t getRemoteHeapBaseAddress() {
@@ -113,4 +113,4 @@ class MallocShmemExporter {
     uintptr_t remoteHeapBase = std::numeric_limits<uintptr_t>::max();
 };
 
-} // namespace Cal::Icd::MallocOverride
+} // namespace Cal::Client::MallocOverride

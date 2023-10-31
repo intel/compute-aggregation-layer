@@ -5,7 +5,7 @@
 config:
   api_name: ocl
   loader_lib_names: ["libOpenCL.so", "libOpenCL.so.1"]
-  icd_namespace: "Cal::Icd::Ocl"
+  icd_namespace: "Cal::Client::Icd::Ocl"
   rpc_namespace: "Cal::Rpc::Ocl"
   daemon_namespace: "Cal::Service::Apis::Ocl"
   icd_dispatch_table_type:
@@ -13,7 +13,7 @@ config:
 
   icd_init_dispatch_table_func_name_format: "initOclIcdDispatchTable"
   icd_get_extenion_func_addr_func_name: getOclExtensionFuncionAddressRpcHelper
-  icd_acquire_global_object: "auto *globalPlatform = Cal::Icd::icdGlobalState.getOclPlatform()"
+  icd_acquire_global_object: "auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform()"
   icd_acquire_channel: "globalPlatform->getRpcChannel()"
   result_type: cl_int
   result_success: CL_SUCCESS
@@ -318,7 +318,7 @@ config:
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
-              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
               handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n    }\n    if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}\n"
             rpc:
               custom_handler: True
@@ -397,7 +397,7 @@ config:
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
-              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
               handler_epilogue: "if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}\n"
             rpc:
               custom_handler: True
@@ -517,7 +517,7 @@ config:
           special_handling:
             optional: True # OCL 3.0
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
             rpc:
               custom_handler: True
           returns:
@@ -547,7 +547,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
             rpc:
               custom_handler: True
           returns:
@@ -756,7 +756,7 @@ config:
                   type: "const char*"
                   kind: "ptr_array"
                   kind_details:
-                    num_elements: "Cal::Icd::Ocl::getSingleSourceLengthForClCreateProgramWithSource({name}, {index}, lengths)"
+                    num_elements: "Cal::Client::Icd::Ocl::getSingleSourceLengthForClCreateProgramWithSource({name}, {index}, lengths)"
                     element:
                       type: "char"
                       kind: "scalar"
@@ -991,7 +991,7 @@ config:
           latency: 2.0
           special_handling:
             icd:
-              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
             rpc:
               custom_handler: True
           returns:
@@ -1047,7 +1047,7 @@ config:
           latency: 2.0
           special_handling:
             icd:
-              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
             rpc:
               custom_handler: True
           returns:
@@ -1135,7 +1135,7 @@ config:
           latency: 2.0
           special_handling:
             icd:
-              handler_prologue: "if(pfn_notify){Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+              handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
             rpc:
               custom_handler: True
           returns:
@@ -1268,7 +1268,7 @@ config:
           special_handling:
             optional: True # OCL 3.0
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
             rpc:
               custom_handler: True
           returns:
@@ -2621,7 +2621,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: size
               type: size_t
@@ -2736,7 +2736,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: buffer_create_type
               type: cl_buffer_create_type
@@ -2746,7 +2746,7 @@ config:
               type: "const void*"
               kind: ptr_array
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getSubBufferCreateInfoSize(buffer_create_type)"
+                num_elements: "Cal::Client::Icd::Ocl::getSubBufferCreateInfoSize(buffer_create_type)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -2780,7 +2780,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: pipe_packet_size
               type: cl_uint
@@ -2871,7 +2871,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: image_format
               type: "const cl_image_format*"
@@ -2899,7 +2899,7 @@ config:
               type: void*
               kind: ptr_array
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -2933,7 +2933,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: image_format
               type: "const cl_image_format*"
@@ -2962,7 +2962,7 @@ config:
               type: void*
               kind: ptr_array
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, 0, image_row_pitch, 0, 0, host_ptr)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, 0, image_row_pitch, 0, 0, host_ptr)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -2996,7 +2996,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: image_format
               type: "const cl_image_format*"
@@ -3033,7 +3033,7 @@ config:
               type: void*
               kind: ptr_array
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, 0, host_ptr)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, 0, host_ptr)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -3153,7 +3153,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             3:
               name: image_format
               type: "const cl_image_format*"
@@ -3181,7 +3181,7 @@ config:
               type: "void*"
               kind: ptr_array
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -3228,7 +3228,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             3:
               name: size
               type: size_t
@@ -3272,7 +3272,7 @@ config:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Icd::Ocl::translateUseHostPtr({arg})"
+              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: image_type
               type: cl_mem_object_type
@@ -3378,7 +3378,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -3458,7 +3458,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -3579,7 +3579,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -3600,7 +3600,7 @@ config:
               name: blocking_read
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: offset
               type: size_t
@@ -3660,7 +3660,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(ptr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -3966,7 +3966,7 @@ config:
               name: blocking_read
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Icd::Ocl::warnIfNonBlockingRead({dst})"
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: src_origin
               type: "const size_t*"
@@ -4005,7 +4005,7 @@ config:
                 reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
               kind: ptr_va
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}src_origin, {arg_prefix}region, {arg_prefix}row_pitch, {arg_prefix}slice_pitch)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}src_origin, {arg_prefix}region, {arg_prefix}row_pitch, {arg_prefix}slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -4101,7 +4101,7 @@ config:
                 reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
               kind: ptr_va
               kind_details:
-                num_elements: "Cal::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}origin, {arg_prefix}region, {arg_prefix}input_row_pitch, {arg_prefix}input_slice_pitch)"
+                num_elements: "Cal::Client::Icd::Ocl::getImageReadWriteHostMemorySize({arg_prefix}image, {arg_prefix}origin, {arg_prefix}region, {arg_prefix}input_row_pitch, {arg_prefix}input_slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -4732,7 +4732,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if(Cal::Icd::icdGlobalState.getOclPlatform()->overrideEventProfilingInfo(event, param_name, param_value_size, param_value, param_value_size_ret)) { return CL_SUCCESS; }"
+              handler_prologue: "if(Cal::Client::Icd::icdGlobalState.getOclPlatform()->overrideEventProfilingInfo(event, param_name, param_value_size, param_value, param_value_size_ret)) { return CL_SUCCESS; }"
           returns:
             type: cl_int
             kind: scalar
@@ -4818,7 +4818,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();\n"
             rpc:
               custom_handler: True
           returns:
@@ -5294,7 +5294,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -5722,7 +5722,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -5895,7 +5895,7 @@ config:
           returns:
             type: void*
             kind: ptr_usm_va
-            translate_after: "{dst} = Cal::Icd::icdGlobalState.getOclPlatform()->validateNewUsmDevicePointer({arg}, size)"
+            translate_after: "{dst} = Cal::Client::Icd::icdGlobalState.getOclPlatform()->validateNewUsmDevicePointer({arg}, size)"
           args:
             0:
               name: context
@@ -6082,7 +6082,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_prologue: "Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
             rpc:
               custom_handler: True
           returns:

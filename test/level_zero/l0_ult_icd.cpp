@@ -17,9 +17,9 @@
 
 #include <cstddef>
 
-using Cal::Icd::LevelZero::Logic::ImportedHostPointersManager;
+using Cal::Client::Icd::LevelZero::Logic::ImportedHostPointersManager;
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 class IcdL0CommandListTest : public ::testing::Test {
   protected:
@@ -245,7 +245,7 @@ TEST_F(ImportedHostPointersManagerTest, GivenEmptyManagerWhenPointerIsImportedAn
     EXPECT_EQ(nullptr, baseAddress);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

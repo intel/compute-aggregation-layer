@@ -12,7 +12,7 @@
 namespace Cal {
 namespace Mocks {
 
-class PageFaultManagerMock : public Cal::Icd::PageFaultManager {
+class PageFaultManagerMock : public Cal::Client::Icd::PageFaultManager {
   public:
     using PageFaultManager::findSharedAlloc;
     using PageFaultManager::PageFaultManager;

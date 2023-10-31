@@ -262,7 +262,7 @@ ZE_DLLEXPORT ze_result_t ZE_APICALL zelGetTracerApiProcAddrTable(ze_api_version_
     return getAddressTable(version, pDdiTable, l0TracingDdi.Tracer);
 }
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 // Global constuctor idiom to initialize required symbols.
 struct GlobalL0DdiConstructor {
@@ -273,4 +273,4 @@ struct GlobalL0DdiConstructor {
     }
 } globalL0DdiConstructor;
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

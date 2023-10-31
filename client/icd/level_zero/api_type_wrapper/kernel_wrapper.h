@@ -16,7 +16,7 @@
 
 #include <vector>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logic::IcdL0TypePrinter> {
   public:
@@ -68,4 +68,4 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logi
     }
 };
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

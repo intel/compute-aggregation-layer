@@ -23,6 +23,7 @@ using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
 
 namespace Cal {
+namespace Client {
 namespace Icd {
 namespace LevelZero {
 template<typename T>
@@ -41,7 +42,7 @@ auto mutable_element_cast(const T **el) {
 
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceReset");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceResetRpcM;
@@ -62,7 +63,7 @@ ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
 }
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceResetExt");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM;
@@ -83,7 +84,7 @@ ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties
 }
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceGetState");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM;
@@ -105,7 +106,7 @@ ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* 
 }
 ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceProcessesGetState");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM;
@@ -129,7 +130,7 @@ ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* p
 }
 ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesDevicePciGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM;
@@ -151,7 +152,7 @@ ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_prop
 }
 ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* pState) {
     log<Verbosity::bloat>("Establishing RPC for zesDevicePciGetState");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetStateRpcM;
@@ -173,7 +174,7 @@ ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* 
 }
 ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesDevicePciGetBars");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetBarsRpcM;
@@ -195,7 +196,7 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
 }
 ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* pStats) {
     log<Verbosity::bloat>("Establishing RPC for zesDevicePciGetStats");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetStatsRpcM;
@@ -217,7 +218,7 @@ ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* 
 }
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM;
@@ -240,7 +241,7 @@ ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_de
 }
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumMemoryModules");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM;
@@ -264,7 +265,7 @@ ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* p
 }
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeInit");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeInitRpcM;
@@ -285,7 +286,7 @@ ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
 }
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice) {
     log<Verbosity::bloat>("Establishing RPC for zeContextSystemBarrier");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextSystemBarrierRpcM;
@@ -308,7 +309,7 @@ ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_hand
 }
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCreateRpcM;
@@ -345,7 +346,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
 }
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListCreateImmediate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCreateImmediateRpcM;
@@ -382,7 +383,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
 }
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM;
@@ -407,7 +408,7 @@ ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
 }
 ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListClose");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListCloseRpcM;
@@ -429,7 +430,7 @@ ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
 }
 ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListReset");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListResetRpcM;
@@ -456,7 +457,7 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWriteGlobalTimestamp");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM;
@@ -481,7 +482,7 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hC
 }
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM;
@@ -514,7 +515,7 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
 }
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueDestroyRpcM;
@@ -539,7 +540,7 @@ ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
 }
 ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueExecuteCommandLists");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM;
@@ -581,13 +582,13 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS && hCommandQueue->asLocalObject()->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     return ret;
 }
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM;
@@ -611,7 +612,7 @@ ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunk
 }
 ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueSynchronize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM;
@@ -630,13 +631,13 @@ ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, 
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     return ret;
 }
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
     log<Verbosity::bloat>("Establishing RPC for zeContextCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextCreateRpcM;
@@ -665,7 +666,7 @@ ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t
 }
 ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
     log<Verbosity::bloat>("Establishing RPC for zeContextCreateEx");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextCreateExRpcM;
@@ -705,7 +706,7 @@ ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc
 ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
     hContext->asLocalObject()->beforeReleaseCallback();
     log<Verbosity::bloat>("Establishing RPC for zeContextDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextDestroyRpcM;
@@ -730,7 +731,7 @@ ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
 }
 ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
     log<Verbosity::bloat>("Establishing RPC for zeContextGetStatus");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextGetStatusRpcM;
@@ -752,7 +753,7 @@ ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
 }
  // zeCommandListAppendMemoryCopy ignored in generator - based on dont_generate_handler flag
 ze_result_t zeCommandListAppendMemoryCopyDeferred (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     [[maybe_unused]] auto dstptr_pointer_type = globalPlatform->getPointerType(dstptr);
     [[maybe_unused]] auto srcptr_pointer_type = globalPlatform->getPointerType(srcptr);
     
@@ -785,7 +786,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred (ze_command_list_handle_t hCom
     }
 }
 ze_result_t zeCommandListAppendMemoryCopyImmediate (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     [[maybe_unused]] auto dstptr_pointer_type = globalPlatform->getPointerType(dstptr);
     [[maybe_unused]] auto srcptr_pointer_type = globalPlatform->getPointerType(srcptr);
     
@@ -818,7 +819,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate (ze_command_list_handle_t hCo
     }
 }
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     [[maybe_unused]] auto dstptr_pointer_type = globalPlatform->getPointerType(dstptr);
     [[maybe_unused]] auto srcptr_pointer_type = globalPlatform->getPointerType(srcptr);
     
@@ -853,7 +854,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous (ze_command_list_h
  // zeCommandListAppendMemoryFill ignored in generator - based on dont_generate_handler flag
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperUsm2Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM;
@@ -891,7 +892,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperUsm2Malloc");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM;
@@ -929,7 +930,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_ha
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperMalloc2Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM;
@@ -967,7 +968,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM;
@@ -1005,7 +1006,7 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list
 }
 ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryPrefetch");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryPrefetchRpcM;
@@ -1028,7 +1029,7 @@ ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommand
  // zeCommandListAppendMemAdvise ignored in generator - based on dont_generate_handler flag
 ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGet");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetRpcM;
@@ -1063,7 +1064,7 @@ ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, 
 }
 ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetSubDevices");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetSubDevicesRpcM;
@@ -1098,7 +1099,7 @@ ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t
 }
 ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetPropertiesRpcM;
@@ -1127,7 +1128,7 @@ ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_devic
 }
 ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetComputeProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetComputePropertiesRpcM;
@@ -1155,7 +1156,7 @@ ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, z
 }
 ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetModuleProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetModulePropertiesRpcM;
@@ -1180,7 +1181,7 @@ ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze
 }
 ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetCommandQueueGroupProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetCommandQueueGroupPropertiesRpcM;
@@ -1215,7 +1216,7 @@ ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t 
 }
 ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetMemoryProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryPropertiesRpcM;
@@ -1240,7 +1241,7 @@ ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ui
 }
 ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetMemoryAccessProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetMemoryAccessPropertiesRpcM;
@@ -1268,7 +1269,7 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
 }
 ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetCacheProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetCachePropertiesRpcM;
@@ -1293,7 +1294,7 @@ ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uin
 }
 ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetImageProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetImagePropertiesRpcM;
@@ -1321,7 +1322,7 @@ ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_
 }
 ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetExternalMemoryProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetExternalMemoryPropertiesRpcM;
@@ -1349,7 +1350,7 @@ ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDe
 }
 ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetP2PProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetP2PPropertiesRpcM;
@@ -1375,7 +1376,7 @@ ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_hand
 }
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceCanAccessPeer");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceCanAccessPeerRpcM;
@@ -1399,7 +1400,7 @@ ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_
 }
 ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetStatus");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetStatusRpcM;
@@ -1421,7 +1422,7 @@ ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
 }
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceGetGlobalTimestamps");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetGlobalTimestampsRpcM;
@@ -1444,7 +1445,7 @@ ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* h
 }
 ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceReserveCacheExt");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM;
@@ -1465,7 +1466,7 @@ ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLev
 }
 ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion) {
     log<Verbosity::bloat>("Establishing RPC for zeDeviceSetCacheAdviceExt");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM;
@@ -1486,7 +1487,7 @@ ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, si
 }
 ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDrivers) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGet");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetRpcM;
@@ -1510,7 +1511,7 @@ ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDriver
 }
 ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t* version) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetApiVersion");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetApiVersionRpcM;
@@ -1533,7 +1534,7 @@ ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t*
 }
 ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM;
@@ -1561,7 +1562,7 @@ ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_drive
 }
 ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetIpcProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetIpcPropertiesRpcM;
@@ -1589,7 +1590,7 @@ ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_dr
 }
 ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDriverGetExtensionProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDriverGetExtensionPropertiesRpcM;
@@ -1615,7 +1616,7 @@ ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver,
  // zeDriverGetExtensionFunctionAddress ignored in generator - based on dont_generate_handler flag
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM;
@@ -1658,7 +1659,7 @@ ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool
 }
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM;
@@ -1683,7 +1684,7 @@ ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
 }
 ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) {
     log<Verbosity::bloat>("Establishing RPC for zeEventCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventCreateRpcM;
@@ -1715,7 +1716,7 @@ ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_des
 }
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
     log<Verbosity::bloat>("Establishing RPC for zeEventDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventDestroyRpcM;
@@ -1740,7 +1741,7 @@ ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
 }
 ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolGetIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolGetIpcHandleRpcM;
@@ -1763,7 +1764,7 @@ ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool,
 }
 ze_result_t zeEventPoolOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolOpenIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolOpenIpcHandleRpcM;
@@ -1790,7 +1791,7 @@ ze_result_t zeEventPoolOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_
 }
 ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolCloseIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventPoolCloseIpcHandleRpcM;
@@ -1819,7 +1820,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
         phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendBarrierRpcM;
@@ -1865,7 +1866,7 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
     hEvent->asLocalObject()->setAllowIcdState(hCommandList);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendSignalEventRpcM;
@@ -1901,7 +1902,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
         phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWaitOnEvents");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendWaitOnEventsRpcM;
@@ -1942,7 +1943,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
 }
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
     log<Verbosity::bloat>("Establishing RPC for zeEventHostSignal");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostSignalRpcM;
@@ -1967,7 +1968,7 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventHostSynchronize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostSynchronizeRpcM;
@@ -1986,7 +1987,7 @@ ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) 
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
@@ -1999,7 +2000,7 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryStatus");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryStatusRpcM;
@@ -2018,7 +2019,7 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     channelLock.unlock();
     if (ret == ZE_RESULT_SUCCESS) {
@@ -2034,7 +2035,7 @@ ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList
     hEvent->asLocalObject()->clear();
 
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendEventReset");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendEventResetRpcM;
@@ -2061,7 +2062,7 @@ ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
     }
     hEvent->asLocalObject()->clear();
     log<Verbosity::bloat>("Establishing RPC for zeEventHostReset");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventHostResetRpcM;
@@ -2093,7 +2094,7 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
         return ZE_RESULT_SUCCESS;
     }
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryKernelTimestamp");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampRpcM;
@@ -2120,7 +2121,7 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
 }
 ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendQueryKernelTimestamps");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendQueryKernelTimestampsRpcM;
@@ -2169,7 +2170,7 @@ ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_h
 }
 ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryTimestampsExp");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryTimestampsExpRpcM;
@@ -2196,7 +2197,7 @@ ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handl
  // zeEventQueryKernelTimestampsExt ignored in generator - based on dont_generate_handler flag
 ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps) {
     log<Verbosity::bloat>("Establishing RPC for zeEventQueryKernelTimestampsExtRpcHelper");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeEventQueryKernelTimestampsExtRpcHelperRpcM;
@@ -2222,7 +2223,7 @@ ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, 
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceCreateRpcM;
@@ -2254,7 +2255,7 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
 }
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceDestroyRpcM;
@@ -2279,7 +2280,7 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
 }
 ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceHostSynchronize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM;
@@ -2298,13 +2299,13 @@ ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) 
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     return ret;
 }
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceQueryStatus");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceQueryStatusRpcM;
@@ -2323,13 +2324,13 @@ ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
     ze_result_t ret = command->captures.ret;
 
     if (ret == ZE_RESULT_SUCCESS) {
-        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
     };
     return ret;
 }
 ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceReset");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeFenceResetRpcM;
@@ -2351,7 +2352,7 @@ ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
 }
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetGlobalOffsetExp");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGlobalOffsetExpRpcM;
@@ -2373,7 +2374,7 @@ ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t off
 }
 ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeImageGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeImageGetPropertiesRpcM;
@@ -2407,7 +2408,7 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
 }
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
     log<Verbosity::bloat>("Establishing RPC for zeImageCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeImageCreateRpcM;
@@ -2442,7 +2443,7 @@ ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDev
 }
 ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
     log<Verbosity::bloat>("Establishing RPC for zeImageDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeImageDestroyRpcM;
@@ -2467,7 +2468,7 @@ ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
 }
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSchedulingHintExp");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSchedulingHintExpRpcM;
@@ -2494,7 +2495,7 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
 }
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocShared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM;
@@ -2528,7 +2529,7 @@ ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_de
 }
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocDevice");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM;
@@ -2563,7 +2564,7 @@ ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_
 }
 ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implArgsForZeMemAllocHostRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocHost");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemAllocHostRpcM;
@@ -2587,11 +2588,11 @@ ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host
     return ret;
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
-    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);
-    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();
     hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();
     log<Verbosity::bloat>("Establishing RPC for zeMemFree");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemFreeRpcM;
@@ -2614,7 +2615,7 @@ ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
 }
 ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
     log<Verbosity::bloat>("Establishing RPC for zeMemGetAllocProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAllocPropertiesRpcM;
@@ -2643,7 +2644,7 @@ ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, cons
 }
 ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) {
     log<Verbosity::bloat>("Establishing RPC for zeMemGetAddressRange");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetAddressRangeRpcM;
@@ -2665,12 +2666,12 @@ ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr,
     return ret;
 }
 ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) {
-    if (!Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {
+    if (!Cal::Client::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {
         return ZE_RESULT_ERROR_INVALID_ARGUMENT;
     }
 
     log<Verbosity::bloat>("Establishing RPC for zeMemGetIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemGetIpcHandleRpcM;
@@ -2693,7 +2694,7 @@ ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void
 }
 ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zeMemOpenIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemOpenIpcHandleRpcM;
@@ -2721,7 +2722,7 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
 }
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) {
     log<Verbosity::bloat>("Establishing RPC for zeMemCloseIpcHandle");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM;
@@ -2746,7 +2747,7 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
 }
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     log<Verbosity::bloat>("Establishing RPC for zexMemGetIpcHandles");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZexMemGetIpcHandlesRpcM;
@@ -2771,7 +2772,7 @@ ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const vo
 }
 ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zexMemOpenIpcHandles");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZexMemOpenIpcHandlesRpcM;
@@ -2801,7 +2802,7 @@ ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_devi
 }
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleCreateRpcM;
@@ -2835,7 +2836,7 @@ ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDe
 }
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleDestroyRpcM;
@@ -2863,7 +2864,7 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
 }
 ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleDynamicLink");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM;
@@ -2901,7 +2902,7 @@ ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModu
 }
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleBuildLogDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleBuildLogDestroyRpcM;
@@ -2926,7 +2927,7 @@ ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLo
 }
 ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleBuildLogGetString");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleBuildLogGetStringRpcM;
@@ -2951,7 +2952,7 @@ ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuild
 }
 ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetNativeBinary");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetNativeBinaryRpcM;
@@ -2976,7 +2977,7 @@ ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, 
 }
 ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetGlobalPointer");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetGlobalPointerRpcM;
@@ -3006,7 +3007,7 @@ ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pG
  // zeModuleGetKernelNames ignored in generator - based on dont_generate_handler flag
 ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_t* totalLength, char* namesBuffer) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetKernelNamesRpcHelper");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetKernelNamesRpcHelperRpcM;
@@ -3031,7 +3032,7 @@ ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_
 }
 ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetPropertiesRpcM;
@@ -3059,7 +3060,7 @@ ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_modul
 }
 ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* desc, ze_kernel_handle_t* phKernel) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelCreateRpcM;
@@ -3092,7 +3093,7 @@ ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* 
 }
 ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelDestroyRpcM;
@@ -3117,7 +3118,7 @@ ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
 }
 ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction) {
     log<Verbosity::bloat>("Establishing RPC for zeModuleGetFunctionPointer");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeModuleGetFunctionPointerRpcM;
@@ -3142,7 +3143,7 @@ ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* 
 }
 ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetGroupSize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetGroupSizeRpcM;
@@ -3170,7 +3171,7 @@ ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t 
 }
 ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSuggestGroupSize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestGroupSizeRpcM;
@@ -3193,7 +3194,7 @@ ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint3
 }
 ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel, uint32_t* totalGroupCount) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSuggestMaxCooperativeGroupCount");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSuggestMaxCooperativeGroupCountRpcM;
@@ -3216,7 +3217,7 @@ ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel,
 }
 ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetArgumentValue");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetArgumentValueRpcM;
@@ -3246,7 +3247,7 @@ ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint3
 }
 ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetIndirectAccess");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetIndirectAccessRpcM;
@@ -3276,7 +3277,7 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelGetIndirectAccess");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetIndirectAccessRpcM;
@@ -3299,7 +3300,7 @@ ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 }
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetCacheConfig");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelSetCacheConfigRpcM;
@@ -3321,7 +3322,7 @@ ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_
 }
 ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelGetProperties");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetPropertiesRpcM;
@@ -3346,7 +3347,7 @@ ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kerne
 }
 ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pName) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelGetName");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeKernelGetNameRpcM;
@@ -3373,7 +3374,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
     hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernel");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelRpcM;
@@ -3421,7 +3422,7 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
 }
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchCooperativeKernel");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchCooperativeKernelRpcM;
@@ -3462,7 +3463,7 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
     hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernelIndirect");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchKernelIndirectRpcM;
@@ -3507,7 +3508,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
         hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchMultipleKernelsIndirect");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM;
@@ -3557,7 +3558,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
 }
 ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListHostSynchronize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM;
@@ -3579,7 +3580,7 @@ ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList,
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
     log<Verbosity::bloat>("Establishing RPC for zeDevicePciGetPropertiesExt");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM;
@@ -3607,7 +3608,7 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
 }
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zeContextMakeMemoryResident");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextMakeMemoryResidentRpcM;
@@ -3630,7 +3631,7 @@ ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device
 }
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zeContextEvictMemory");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeContextEvictMemoryRpcM;
@@ -3653,7 +3654,7 @@ ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle
 }
 ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemReserve");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemReserveRpcM;
@@ -3676,7 +3677,7 @@ ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStar
 }
 ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemFree");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemFreeRpcM;
@@ -3698,7 +3699,7 @@ ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, siz
 }
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemQueryPageSize");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemQueryPageSizeRpcM;
@@ -3723,7 +3724,7 @@ ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_h
 }
 ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
     log<Verbosity::bloat>("Establishing RPC for zePhysicalMemCreate");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZePhysicalMemCreateRpcM;
@@ -3748,7 +3749,7 @@ ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_
 }
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
     log<Verbosity::bloat>("Establishing RPC for zePhysicalMemDestroy");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZePhysicalMemDestroyRpcM;
@@ -3770,7 +3771,7 @@ ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_
 }
 ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemMap");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemMapRpcM;
@@ -3792,7 +3793,7 @@ ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size
 }
 ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemUnmap");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemUnmapRpcM;
@@ -3814,7 +3815,7 @@ ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, si
 }
 ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemSetAccessAttribute");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemSetAccessAttributeRpcM;
@@ -3836,7 +3837,7 @@ ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const 
 }
 ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
     log<Verbosity::bloat>("Establishing RPC for zeVirtualMemGetAccessAttribute");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeVirtualMemGetAccessAttributeRpcM;
@@ -3860,7 +3861,7 @@ ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const 
 }
 ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr, size_t size) {
     log<Verbosity::bloat>("Establishing RPC for zexDriverImportExternalPointer");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM;
@@ -3882,7 +3883,7 @@ ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver,
 }
 ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr) {
     log<Verbosity::bloat>("Establishing RPC for zexDriverReleaseImportedPointer");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM;
@@ -3904,7 +3905,7 @@ ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver
 }
 ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
     log<Verbosity::bloat>("Establishing RPC for zexDriverGetHostPointerBaseAddress");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM;
@@ -3930,7 +3931,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handl
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM;
@@ -3970,7 +3971,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_ha
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM;
@@ -4011,7 +4012,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Remapped");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM;
@@ -4051,7 +4052,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_ha
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM;
@@ -4091,7 +4092,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM;
@@ -4132,7 +4133,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_li
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Remapped");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM;
@@ -4172,7 +4173,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM;
@@ -4212,7 +4213,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_li
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM;
@@ -4253,7 +4254,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM;
@@ -4293,7 +4294,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     void *standalone_dstptr{};
     {
@@ -4357,7 +4358,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_ha
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     void *standalone_dstptr{};
     {
@@ -4412,7 +4413,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     void *standalone_dstptr{};
     {
@@ -4467,7 +4468,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     void *standalone_srcptr{};
     {
@@ -4523,7 +4524,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_hand
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM;
@@ -4570,7 +4571,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM;
@@ -4617,7 +4618,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     void *standalone_srcptr{};
     {
@@ -4673,7 +4674,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM;
@@ -4720,7 +4721,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM;
@@ -4767,7 +4768,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_co
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM;
@@ -4815,7 +4816,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_comm
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM;
@@ -4863,7 +4864,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM;
@@ -4911,7 +4912,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_comm
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM;
@@ -4958,7 +4959,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_comman
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM;
@@ -5005,7 +5006,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM;
@@ -5052,7 +5053,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM;
@@ -5099,7 +5100,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM;
@@ -5146,7 +5147,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared");
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM;
@@ -5192,430 +5193,431 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
 
 void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("zexMemGetIpcHandles", funcName)) {
-        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexMemGetIpcHandles);
+        return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexMemGetIpcHandles);
     }
     if(0 == strcmp("zexMemOpenIpcHandles", funcName)) {
-        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexMemOpenIpcHandles);
+        return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexMemOpenIpcHandles);
     }
     if(0 == strcmp("zexDriverImportExternalPointer", funcName)) {
-        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverImportExternalPointer);
+        return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexDriverImportExternalPointer);
     }
     if(0 == strcmp("zexDriverReleaseImportedPointer", funcName)) {
-        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverReleaseImportedPointer);
+        return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexDriverReleaseImportedPointer);
     }
     if(0 == strcmp("zexDriverGetHostPointerBaseAddress", funcName)) {
-        return reinterpret_cast<void*>(Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
+        return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
     }
     return nullptr;
 }
 
 } // namespace LevelZero
 } // namespace Icd
+} // namespace Client
 } // namespace Cal
 
 
 extern "C" {
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
-    return Cal::Icd::LevelZero::zesDeviceReset(hDevice, force);
+    return Cal::Client::Icd::LevelZero::zesDeviceReset(hDevice, force);
 }
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) {
-    return Cal::Icd::LevelZero::zesDeviceResetExt(hDevice, pProperties);
+    return Cal::Client::Icd::LevelZero::zesDeviceResetExt(hDevice, pProperties);
 }
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
-    return Cal::Icd::LevelZero::zesDeviceGetState(hDevice, pState);
+    return Cal::Client::Icd::LevelZero::zesDeviceGetState(hDevice, pState);
 }
 ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
-    return Cal::Icd::LevelZero::zesDeviceProcessesGetState(hDevice, pCount, pProcesses);
+    return Cal::Client::Icd::LevelZero::zesDeviceProcessesGetState(hDevice, pCount, pProcesses);
 }
 ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties) {
-    return Cal::Icd::LevelZero::zesDevicePciGetProperties(hDevice, pProperties);
+    return Cal::Client::Icd::LevelZero::zesDevicePciGetProperties(hDevice, pProperties);
 }
 ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* pState) {
-    return Cal::Icd::LevelZero::zesDevicePciGetState(hDevice, pState);
+    return Cal::Client::Icd::LevelZero::zesDevicePciGetState(hDevice, pState);
 }
 ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
-    return Cal::Icd::LevelZero::zesDevicePciGetBars(hDevice, pCount, pProperties);
+    return Cal::Client::Icd::LevelZero::zesDevicePciGetBars(hDevice, pCount, pProperties);
 }
 ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* pStats) {
-    return Cal::Icd::LevelZero::zesDevicePciGetStats(hDevice, pStats);
+    return Cal::Client::Icd::LevelZero::zesDevicePciGetStats(hDevice, pStats);
 }
 ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_properties_t* pProperties) {
-    return Cal::Icd::LevelZero::zesDeviceGetProperties(hDevice, pProperties);
+    return Cal::Client::Icd::LevelZero::zesDeviceGetProperties(hDevice, pProperties);
 }
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
-    return Cal::Icd::LevelZero::zesDeviceEnumMemoryModules(hDevice, pCount, phMemory);
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumMemoryModules(hDevice, pCount, phMemory);
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
-    return Cal::Icd::LevelZero::zeInit(flags);
+    return Cal::Client::Icd::LevelZero::zeInit(flags);
 }
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice) {
-    return Cal::Icd::LevelZero::zeContextSystemBarrier(hContext, hDevice);
+    return Cal::Client::Icd::LevelZero::zeContextSystemBarrier(hContext, hDevice);
 }
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) {
-    return Cal::Icd::LevelZero::zeCommandListCreate(hContext, hDevice, desc, phCommandList);
+    return Cal::Client::Icd::LevelZero::zeCommandListCreate(hContext, hDevice, desc, phCommandList);
 }
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) {
-    return Cal::Icd::LevelZero::zeCommandListCreateImmediate(hContext, hDevice, altdesc, phCommandList);
+    return Cal::Client::Icd::LevelZero::zeCommandListCreateImmediate(hContext, hDevice, altdesc, phCommandList);
 }
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
-    return Cal::Icd::LevelZero::zeCommandListDestroy(hCommandList);
+    return Cal::Client::Icd::LevelZero::zeCommandListDestroy(hCommandList);
 }
 ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList) {
-    return Cal::Icd::LevelZero::zeCommandListClose(hCommandList);
+    return Cal::Client::Icd::LevelZero::zeCommandListClose(hCommandList);
 }
 ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList) {
-    return Cal::Icd::LevelZero::zeCommandListReset(hCommandList);
+    return Cal::Client::Icd::LevelZero::zeCommandListReset(hCommandList);
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
-    return Cal::Icd::LevelZero::zeCommandQueueCreate(hContext, hDevice, desc, phCommandQueue);
+    return Cal::Client::Icd::LevelZero::zeCommandQueueCreate(hContext, hDevice, desc, phCommandQueue);
 }
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue) {
-    return Cal::Icd::LevelZero::zeCommandQueueDestroy(hCommandQueue);
+    return Cal::Client::Icd::LevelZero::zeCommandQueueDestroy(hCommandQueue);
 }
 ze_result_t zeCommandQueueExecuteCommandLists (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
-    return Cal::Icd::LevelZero::zeCommandQueueExecuteCommandLists(hCommandQueue, numCommandLists, phCommandLists, hFence);
+    return Cal::Client::Icd::LevelZero::zeCommandQueueExecuteCommandLists(hCommandQueue, numCommandLists, phCommandLists, hFence);
 }
 ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
-    return Cal::Icd::LevelZero::zeCommandQueueSynchronize(hCommandQueue, timeout);
+    return Cal::Client::Icd::LevelZero::zeCommandQueueSynchronize(hCommandQueue, timeout);
 }
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
-    return Cal::Icd::LevelZero::zeContextCreate(hDriver, desc, phContext);
+    return Cal::Client::Icd::LevelZero::zeContextCreate(hDriver, desc, phContext);
 }
 ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
-    return Cal::Icd::LevelZero::zeContextCreateEx(hDriver, desc, numDevices, phDevices, phContext);
+    return Cal::Client::Icd::LevelZero::zeContextCreateEx(hDriver, desc, numDevices, phDevices, phContext);
 }
 ze_result_t zeContextDestroy (ze_context_handle_t hContext) {
-    return Cal::Icd::LevelZero::zeContextDestroy(hContext);
+    return Cal::Client::Icd::LevelZero::zeContextDestroy(hContext);
 }
 ze_result_t zeContextGetStatus (ze_context_handle_t hContext) {
-    return Cal::Icd::LevelZero::zeContextGetStatus(hContext);
+    return Cal::Client::Icd::LevelZero::zeContextGetStatus(hContext);
 }
 ze_result_t zeCommandListAppendMemoryCopy (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendMemoryCopy(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopy(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendMemoryFill (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendMemoryFill(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill(hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zeCommandListAppendMemoryPrefetch(hCommandList, ptr, size);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch(hCommandList, ptr, size);
 }
 ze_result_t zeCommandListAppendMemAdvise (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) {
-    return Cal::Icd::LevelZero::zeCommandListAppendMemAdvise(hCommandList, hDevice, ptr, size, advice);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendMemAdvise(hCommandList, hDevice, ptr, size, advice);
 }
 ze_result_t zeDeviceGet (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) {
-    return Cal::Icd::LevelZero::zeDeviceGet(hDriver, pCount, phDevices);
+    return Cal::Client::Icd::LevelZero::zeDeviceGet(hDriver, pCount, phDevices);
 }
 ze_result_t zeDeviceGetSubDevices (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices) {
-    return Cal::Icd::LevelZero::zeDeviceGetSubDevices(hDevice, pCount, phSubdevices);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetSubDevices(hDevice, pCount, phSubdevices);
 }
 ze_result_t zeDeviceGetProperties (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetProperties(hDevice, pDeviceProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetProperties(hDevice, pDeviceProperties);
 }
 ze_result_t zeDeviceGetComputeProperties (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetComputeProperties(hDevice, pComputeProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetComputeProperties(hDevice, pComputeProperties);
 }
 ze_result_t zeDeviceGetModuleProperties (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetModuleProperties(hDevice, pModuleProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetModuleProperties(hDevice, pModuleProperties);
 }
 ze_result_t zeDeviceGetCommandQueueGroupProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties(hDevice, pCount, pCommandQueueGroupProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties(hDevice, pCount, pCommandQueueGroupProperties);
 }
 ze_result_t zeDeviceGetMemoryProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetMemoryProperties(hDevice, pCount, pMemProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetMemoryProperties(hDevice, pCount, pMemProperties);
 }
 ze_result_t zeDeviceGetMemoryAccessProperties (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetMemoryAccessProperties(hDevice, pMemAccessProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetMemoryAccessProperties(hDevice, pMemAccessProperties);
 }
 ze_result_t zeDeviceGetCacheProperties (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetCacheProperties(hDevice, pCount, pCacheProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetCacheProperties(hDevice, pCount, pCacheProperties);
 }
 ze_result_t zeDeviceGetImageProperties (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetImageProperties(hDevice, pImageProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetImageProperties(hDevice, pImageProperties);
 }
 ze_result_t zeDeviceGetExternalMemoryProperties (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetExternalMemoryProperties(hDevice, pExternalMemoryProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetExternalMemoryProperties(hDevice, pExternalMemoryProperties);
 }
 ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
-    return Cal::Icd::LevelZero::zeDeviceGetP2PProperties(hDevice, hPeerDevice, pP2PProperties);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetP2PProperties(hDevice, hPeerDevice, pP2PProperties);
 }
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) {
-    return Cal::Icd::LevelZero::zeDeviceCanAccessPeer(hDevice, hPeerDevice, value);
+    return Cal::Client::Icd::LevelZero::zeDeviceCanAccessPeer(hDevice, hPeerDevice, value);
 }
 ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice) {
-    return Cal::Icd::LevelZero::zeDeviceGetStatus(hDevice);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetStatus(hDevice);
 }
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp) {
-    return Cal::Icd::LevelZero::zeDeviceGetGlobalTimestamps(hDevice, hostTimestamp, deviceTimestamp);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetGlobalTimestamps(hDevice, hostTimestamp, deviceTimestamp);
 }
 ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize) {
-    return Cal::Icd::LevelZero::zeDeviceReserveCacheExt(hDevice, cacheLevel, cacheReservationSize);
+    return Cal::Client::Icd::LevelZero::zeDeviceReserveCacheExt(hDevice, cacheLevel, cacheReservationSize);
 }
 ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion) {
-    return Cal::Icd::LevelZero::zeDeviceSetCacheAdviceExt(hDevice, ptr, regionSize, cacheRegion);
+    return Cal::Client::Icd::LevelZero::zeDeviceSetCacheAdviceExt(hDevice, ptr, regionSize, cacheRegion);
 }
 ze_result_t zeDriverGet (uint32_t* pCount, ze_driver_handle_t* phDrivers) {
-    return Cal::Icd::LevelZero::zeDriverGet(pCount, phDrivers);
+    return Cal::Client::Icd::LevelZero::zeDriverGet(pCount, phDrivers);
 }
 ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t* version) {
-    return Cal::Icd::LevelZero::zeDriverGetApiVersion(hDriver, version);
+    return Cal::Client::Icd::LevelZero::zeDriverGetApiVersion(hDriver, version);
 }
 ze_result_t zeDriverGetProperties (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) {
-    return Cal::Icd::LevelZero::zeDriverGetProperties(hDriver, pDriverProperties);
+    return Cal::Client::Icd::LevelZero::zeDriverGetProperties(hDriver, pDriverProperties);
 }
 ze_result_t zeDriverGetIpcProperties (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) {
-    return Cal::Icd::LevelZero::zeDriverGetIpcProperties(hDriver, pIpcProperties);
+    return Cal::Client::Icd::LevelZero::zeDriverGetIpcProperties(hDriver, pIpcProperties);
 }
 ze_result_t zeDriverGetExtensionProperties (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
-    return Cal::Icd::LevelZero::zeDriverGetExtensionProperties(hDriver, pCount, pExtensionProperties);
+    return Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties(hDriver, pCount, pExtensionProperties);
 }
 ze_result_t zeDriverGetExtensionFunctionAddress (ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress) {
-    return Cal::Icd::LevelZero::zeDriverGetExtensionFunctionAddress(hDriver, name, ppFunctionAddress);
+    return Cal::Client::Icd::LevelZero::zeDriverGetExtensionFunctionAddress(hDriver, name, ppFunctionAddress);
 }
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
-    return Cal::Icd::LevelZero::zeEventPoolCreate(hContext, desc, numDevices, phDevices, phEventPool);
+    return Cal::Client::Icd::LevelZero::zeEventPoolCreate(hContext, desc, numDevices, phDevices, phEventPool);
 }
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool) {
-    return Cal::Icd::LevelZero::zeEventPoolDestroy(hEventPool);
+    return Cal::Client::Icd::LevelZero::zeEventPoolDestroy(hEventPool);
 }
 ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) {
-    return Cal::Icd::LevelZero::zeEventCreate(hEventPool, desc, phEvent);
+    return Cal::Client::Icd::LevelZero::zeEventCreate(hEventPool, desc, phEvent);
 }
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeEventDestroy(hEvent);
+    return Cal::Client::Icd::LevelZero::zeEventDestroy(hEvent);
 }
 ze_result_t zeEventPoolGetIpcHandle (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
-    return Cal::Icd::LevelZero::zeEventPoolGetIpcHandle(hEventPool, phIpc);
+    return Cal::Client::Icd::LevelZero::zeEventPoolGetIpcHandle(hEventPool, phIpc);
 }
 ze_result_t zeEventPoolOpenIpcHandle (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) {
-    return Cal::Icd::LevelZero::zeEventPoolOpenIpcHandle(hContext, hIpc, phEventPool);
+    return Cal::Client::Icd::LevelZero::zeEventPoolOpenIpcHandle(hContext, hIpc, phEventPool);
 }
 ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool) {
-    return Cal::Icd::LevelZero::zeEventPoolCloseIpcHandle(hEventPool);
+    return Cal::Client::Icd::LevelZero::zeEventPoolCloseIpcHandle(hEventPool);
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendBarrier(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendBarrier(hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeCommandListAppendSignalEvent(hCommandList, hEvent);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendSignalEvent(hCommandList, hEvent);
 }
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendWaitOnEvents(hCommandList, numEvents, phEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendWaitOnEvents(hCommandList, numEvents, phEvents);
 }
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeEventHostSignal(hEvent);
+    return Cal::Client::Icd::LevelZero::zeEventHostSignal(hEvent);
 }
 ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) {
-    return Cal::Icd::LevelZero::zeEventHostSynchronize(hEvent, timeout);
+    return Cal::Client::Icd::LevelZero::zeEventHostSynchronize(hEvent, timeout);
 }
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeEventQueryStatus(hEvent);
+    return Cal::Client::Icd::LevelZero::zeEventQueryStatus(hEvent);
 }
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeCommandListAppendEventReset(hCommandList, hEvent);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendEventReset(hCommandList, hEvent);
 }
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent) {
-    return Cal::Icd::LevelZero::zeEventHostReset(hEvent);
+    return Cal::Client::Icd::LevelZero::zeEventHostReset(hEvent);
 }
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr) {
-    return Cal::Icd::LevelZero::zeEventQueryKernelTimestamp(hEvent, dstptr);
+    return Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestamp(hEvent, dstptr);
 }
 ze_result_t zeCommandListAppendQueryKernelTimestamps (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps(hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps(hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
-    return Cal::Icd::LevelZero::zeEventQueryTimestampsExp(hEvent, hDevice, pCount, pTimestamps);
+    return Cal::Client::Icd::LevelZero::zeEventQueryTimestampsExp(hEvent, hDevice, pCount, pTimestamps);
 }
 ze_result_t zeEventQueryKernelTimestampsExt (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults) {
-    return Cal::Icd::LevelZero::zeEventQueryKernelTimestampsExt(hEvent, hDevice, pCount, pResults);
+    return Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestampsExt(hEvent, hDevice, pCount, pResults);
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
-    return Cal::Icd::LevelZero::zeFenceCreate(hCommandQueue, desc, phFence);
+    return Cal::Client::Icd::LevelZero::zeFenceCreate(hCommandQueue, desc, phFence);
 }
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
-    return Cal::Icd::LevelZero::zeFenceDestroy(hFence);
+    return Cal::Client::Icd::LevelZero::zeFenceDestroy(hFence);
 }
 ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) {
-    return Cal::Icd::LevelZero::zeFenceHostSynchronize(hFence, timeout);
+    return Cal::Client::Icd::LevelZero::zeFenceHostSynchronize(hFence, timeout);
 }
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence) {
-    return Cal::Icd::LevelZero::zeFenceQueryStatus(hFence);
+    return Cal::Client::Icd::LevelZero::zeFenceQueryStatus(hFence);
 }
 ze_result_t zeFenceReset (ze_fence_handle_t hFence) {
-    return Cal::Icd::LevelZero::zeFenceReset(hFence);
+    return Cal::Client::Icd::LevelZero::zeFenceReset(hFence);
 }
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ) {
-    return Cal::Icd::LevelZero::zeKernelSetGlobalOffsetExp(hKernel, offsetX, offsetY, offsetZ);
+    return Cal::Client::Icd::LevelZero::zeKernelSetGlobalOffsetExp(hKernel, offsetX, offsetY, offsetZ);
 }
 ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
-    return Cal::Icd::LevelZero::zeImageGetProperties(hDevice, desc, pImageProperties);
+    return Cal::Client::Icd::LevelZero::zeImageGetProperties(hDevice, desc, pImageProperties);
 }
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
-    return Cal::Icd::LevelZero::zeImageCreate(hContext, hDevice, desc, phImage);
+    return Cal::Client::Icd::LevelZero::zeImageCreate(hContext, hDevice, desc, phImage);
 }
 ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
-    return Cal::Icd::LevelZero::zeImageDestroy(hImage);
+    return Cal::Client::Icd::LevelZero::zeImageDestroy(hImage);
 }
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
-    return Cal::Icd::LevelZero::zeKernelSchedulingHintExp(hKernel, pHint);
+    return Cal::Client::Icd::LevelZero::zeKernelSchedulingHintExp(hKernel, pHint);
 }
 ze_result_t zeMemAllocShared (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
-    return Cal::Icd::LevelZero::zeMemAllocShared(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
+    return Cal::Client::Icd::LevelZero::zeMemAllocShared(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
 }
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
-    return Cal::Icd::LevelZero::zeMemAllocDevice(hContext, device_desc, size, alignment, hDevice, pptr);
+    return Cal::Client::Icd::LevelZero::zeMemAllocDevice(hContext, device_desc, size, alignment, hDevice, pptr);
 }
 ze_result_t zeMemAllocHost (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) {
-    return Cal::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
+    return Cal::Client::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
 }
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr) {
-    return Cal::Icd::LevelZero::zeMemFree(hContext, ptr);
+    return Cal::Client::Icd::LevelZero::zeMemFree(hContext, ptr);
 }
 ze_result_t zeMemGetAllocProperties (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
-    return Cal::Icd::LevelZero::zeMemGetAllocProperties(hContext, ptr, pMemAllocProperties, phDevice);
+    return Cal::Client::Icd::LevelZero::zeMemGetAllocProperties(hContext, ptr, pMemAllocProperties, phDevice);
 }
 ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) {
-    return Cal::Icd::LevelZero::zeMemGetAddressRange(hContext, ptr, pBase, pSize);
+    return Cal::Client::Icd::LevelZero::zeMemGetAddressRange(hContext, ptr, pBase, pSize);
 }
 ze_result_t zeMemGetIpcHandle (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) {
-    return Cal::Icd::LevelZero::zeMemGetIpcHandle(hContext, ptr, pIpcHandle);
+    return Cal::Client::Icd::LevelZero::zeMemGetIpcHandle(hContext, ptr, pIpcHandle);
 }
 ze_result_t zeMemOpenIpcHandle (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) {
-    return Cal::Icd::LevelZero::zeMemOpenIpcHandle(hContext, hDevice, handle, flags, pptr);
+    return Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle(hContext, hDevice, handle, flags, pptr);
 }
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) {
-    return Cal::Icd::LevelZero::zeMemCloseIpcHandle(hContext, ptr);
+    return Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle(hContext, ptr);
 }
 ze_result_t zexMemGetIpcHandles (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
-    return Cal::Icd::LevelZero::zexMemGetIpcHandles(hContext, ptr, numIpcHandles, pIpcHandles);
+    return Cal::Client::Icd::LevelZero::zexMemGetIpcHandles(hContext, ptr, numIpcHandles, pIpcHandles);
 }
 ze_result_t zexMemOpenIpcHandles (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) {
-    return Cal::Icd::LevelZero::zexMemOpenIpcHandles(hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
+    return Cal::Client::Icd::LevelZero::zexMemOpenIpcHandles(hContext, hDevice, numIpcHandles, pIpcHandles, flags, pptr);
 }
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
-    return Cal::Icd::LevelZero::zeModuleCreate(hContext, hDevice, desc, phModule, phBuildLog);
+    return Cal::Client::Icd::LevelZero::zeModuleCreate(hContext, hDevice, desc, phModule, phBuildLog);
 }
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
-    return Cal::Icd::LevelZero::zeModuleDestroy(hModule);
+    return Cal::Client::Icd::LevelZero::zeModuleDestroy(hModule);
 }
 ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
-    return Cal::Icd::LevelZero::zeModuleDynamicLink(numModules, phModules, phLinkLog);
+    return Cal::Client::Icd::LevelZero::zeModuleDynamicLink(numModules, phModules, phLinkLog);
 }
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog) {
-    return Cal::Icd::LevelZero::zeModuleBuildLogDestroy(hModuleBuildLog);
+    return Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy(hModuleBuildLog);
 }
 ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
-    return Cal::Icd::LevelZero::zeModuleBuildLogGetString(hModuleBuildLog, pSize, pBuildLog);
+    return Cal::Client::Icd::LevelZero::zeModuleBuildLogGetString(hModuleBuildLog, pSize, pBuildLog);
 }
 ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
-    return Cal::Icd::LevelZero::zeModuleGetNativeBinary(hModule, pSize, pModuleNativeBinary);
+    return Cal::Client::Icd::LevelZero::zeModuleGetNativeBinary(hModule, pSize, pModuleNativeBinary);
 }
 ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
-    return Cal::Icd::LevelZero::zeModuleGetGlobalPointer(hModule, pGlobalName, pSize, pptr);
+    return Cal::Client::Icd::LevelZero::zeModuleGetGlobalPointer(hModule, pGlobalName, pSize, pptr);
 }
 ze_result_t zeModuleGetKernelNames (ze_module_handle_t hModule, uint32_t* pCount, const char** pNames) {
-    return Cal::Icd::LevelZero::zeModuleGetKernelNames(hModule, pCount, pNames);
+    return Cal::Client::Icd::LevelZero::zeModuleGetKernelNames(hModule, pCount, pNames);
 }
 ze_result_t zeModuleGetProperties (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) {
-    return Cal::Icd::LevelZero::zeModuleGetProperties(hModule, pModuleProperties);
+    return Cal::Client::Icd::LevelZero::zeModuleGetProperties(hModule, pModuleProperties);
 }
 ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* desc, ze_kernel_handle_t* phKernel) {
-    return Cal::Icd::LevelZero::zeKernelCreate(hModule, desc, phKernel);
+    return Cal::Client::Icd::LevelZero::zeKernelCreate(hModule, desc, phKernel);
 }
 ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel) {
-    return Cal::Icd::LevelZero::zeKernelDestroy(hKernel);
+    return Cal::Client::Icd::LevelZero::zeKernelDestroy(hKernel);
 }
 ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction) {
-    return Cal::Icd::LevelZero::zeModuleGetFunctionPointer(hModule, pFunctionName, pfnFunction);
+    return Cal::Client::Icd::LevelZero::zeModuleGetFunctionPointer(hModule, pFunctionName, pfnFunction);
 }
 ze_result_t zeKernelSetGroupSize (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
-    return Cal::Icd::LevelZero::zeKernelSetGroupSize(hKernel, groupSizeX, groupSizeY, groupSizeZ);
+    return Cal::Client::Icd::LevelZero::zeKernelSetGroupSize(hKernel, groupSizeX, groupSizeY, groupSizeZ);
 }
 ze_result_t zeKernelSuggestGroupSize (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ) {
-    return Cal::Icd::LevelZero::zeKernelSuggestGroupSize(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
+    return Cal::Client::Icd::LevelZero::zeKernelSuggestGroupSize(hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
 }
 ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel, uint32_t* totalGroupCount) {
-    return Cal::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount(hKernel, totalGroupCount);
+    return Cal::Client::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount(hKernel, totalGroupCount);
 }
 ze_result_t zeKernelSetArgumentValue (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
-    return Cal::Icd::LevelZero::zeKernelSetArgumentValue(hKernel, argIndex, argSize, pArgValue);
+    return Cal::Client::Icd::LevelZero::zeKernelSetArgumentValue(hKernel, argIndex, argSize, pArgValue);
 }
 ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags) {
-    return Cal::Icd::LevelZero::zeKernelSetIndirectAccess(hKernel, flags);
+    return Cal::Client::Icd::LevelZero::zeKernelSetIndirectAccess(hKernel, flags);
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
-    return Cal::Icd::LevelZero::zeKernelGetIndirectAccess(hKernel, pFlags);
+    return Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess(hKernel, pFlags);
 }
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
-    return Cal::Icd::LevelZero::zeKernelSetCacheConfig(hKernel, flags);
+    return Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig(hKernel, flags);
 }
 ze_result_t zeKernelGetProperties (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
-    return Cal::Icd::LevelZero::zeKernelGetProperties(hKernel, pKernelProperties);
+    return Cal::Client::Icd::LevelZero::zeKernelGetProperties(hKernel, pKernelProperties);
 }
 ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pName) {
-    return Cal::Icd::LevelZero::zeKernelGetName(hKernel, pSize, pName);
+    return Cal::Client::Icd::LevelZero::zeKernelGetName(hKernel, pSize, pName);
 }
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendLaunchKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel(hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect(hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect(hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    return Cal::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect(hCommandList, numKernels, phKernels, pCountBuffer, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect(hCommandList, numKernels, phKernels, pCountBuffer, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
-    return Cal::Icd::LevelZero::zeCommandListHostSynchronize(hCommandList, timeout);
+    return Cal::Client::Icd::LevelZero::zeCommandListHostSynchronize(hCommandList, timeout);
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {
-    return Cal::Icd::LevelZero::zeDevicePciGetPropertiesExt(hDevice, pPciProperties);
+    return Cal::Client::Icd::LevelZero::zeDevicePciGetPropertiesExt(hDevice, pPciProperties);
 }
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zeContextMakeMemoryResident(hContext, hDevice, ptr, size);
+    return Cal::Client::Icd::LevelZero::zeContextMakeMemoryResident(hContext, hDevice, ptr, size);
 }
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zeContextEvictMemory(hContext, hDevice, ptr, size);
+    return Cal::Client::Icd::LevelZero::zeContextEvictMemory(hContext, hDevice, ptr, size);
 }
 ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) {
-    return Cal::Icd::LevelZero::zeVirtualMemReserve(hContext, pStart, size, pptr);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemReserve(hContext, pStart, size, pptr);
 }
 ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zeVirtualMemFree(hContext, ptr, size);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemFree(hContext, ptr, size);
 }
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
-    return Cal::Icd::LevelZero::zeVirtualMemQueryPageSize(hContext, hDevice, size, pagesize);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemQueryPageSize(hContext, hDevice, size, pagesize);
 }
 ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
-    return Cal::Icd::LevelZero::zePhysicalMemCreate(hContext, hDevice, desc, phPhysicalMemory);
+    return Cal::Client::Icd::LevelZero::zePhysicalMemCreate(hContext, hDevice, desc, phPhysicalMemory);
 }
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
-    return Cal::Icd::LevelZero::zePhysicalMemDestroy(hContext, hPhysicalMemory);
+    return Cal::Client::Icd::LevelZero::zePhysicalMemDestroy(hContext, hPhysicalMemory);
 }
 ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) {
-    return Cal::Icd::LevelZero::zeVirtualMemMap(hContext, ptr, size, hPhysicalMemory, offset, access);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemMap(hContext, ptr, size, hPhysicalMemory, offset, access);
 }
 ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zeVirtualMemUnmap(hContext, ptr, size);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemUnmap(hContext, ptr, size);
 }
 ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) {
-    return Cal::Icd::LevelZero::zeVirtualMemSetAccessAttribute(hContext, ptr, size, access);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemSetAccessAttribute(hContext, ptr, size, access);
 }
 ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
-    return Cal::Icd::LevelZero::zeVirtualMemGetAccessAttribute(hContext, ptr, size, access, outSize);
+    return Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute(hContext, ptr, size, access, outSize);
 }
 ze_result_t zexDriverImportExternalPointer (ze_driver_handle_t hDriver, void* ptr, size_t size) {
-    return Cal::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
+    return Cal::Client::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
 }
 ze_result_t zexDriverReleaseImportedPointer (ze_driver_handle_t hDriver, void* ptr) {
-    return Cal::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
+    return Cal::Client::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
 }
 ze_result_t zexDriverGetHostPointerBaseAddress (ze_driver_handle_t hDriver, void* ptr, void** baseAddress) {
-    return Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
+    return Cal::Client::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
 }
 } // extern "C"
 

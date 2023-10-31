@@ -32,7 +32,7 @@ class ChannelClient;
 } // namespace Cal::Rpc
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 
 enum PointerType {
     local,           // MAP_PRIVATE
@@ -56,7 +56,7 @@ class IcdPlatform {
     using UsmRangeIterator = std::map<const void *, const void *>::iterator;
 
   public:
-    IcdPlatform(Cal::Icd::IcdGlobalState &globalState, Cal::ApiType apiType)
+    IcdPlatform(Cal::Client::ClientConnection &globalState, Cal::ApiType apiType)
         : globalState(globalState), apiType(apiType) {
     }
 
@@ -71,7 +71,7 @@ class IcdPlatform {
         return globalState.getConnection();
     }
 
-    Cal::Icd::MallocOverride::MallocShmemExporter &getMallocShmemExporter() {
+    Cal::Client::MallocOverride::MallocShmemExporter &getMallocShmemExporter() {
         return globalState.getMallocShmemExporter();
     }
 
@@ -292,16 +292,16 @@ class IcdPlatform {
     }
 
     PageFaultManager &getPageFaultManager() {
-        return globalState.getPageFaultManager();
+        return Client::Icd::icdGlobalState.getPageFaultManager();
     }
 
   protected:
-    Cal::Icd::IcdGlobalState &globalState;
+    Cal::Client::ClientConnection &globalState;
     const Cal::ApiType apiType;
     std::map<const void *, const void *> userModeAccessibleUsmDeviceAddresses;
     Cal::Utils::Lockable<std::unordered_map<void *, std::vector<void *>>> globalPointers;
     Cal::Utils::Lockable<std::unordered_map<void *, UsmSharedHostAlloc>> usmAllocs;
 };
 
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal

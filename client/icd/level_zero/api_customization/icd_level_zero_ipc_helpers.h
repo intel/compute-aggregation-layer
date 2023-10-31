@@ -13,11 +13,11 @@
 #include "shared/control_messages.h"
 #include "shared/log.h"
 
-namespace Cal::Icd::LevelZero::Ipc {
+namespace Cal::Client::Icd::LevelZero::Ipc {
 
 template <typename IpcHandleT>
 ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &connection = globalL0Platform->getConnection();
     auto lock = connection.lock();
 
@@ -52,7 +52,7 @@ ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles
 
 template <typename IpcHandleT>
 ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
-    auto *globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &connection = globalL0Platform->getConnection();
     auto lock = connection.lock();
 
@@ -91,4 +91,4 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
     return ZE_RESULT_SUCCESS;
 }
 
-} // namespace Cal::Icd::LevelZero::Ipc
+} // namespace Cal::Client::Icd::LevelZero::Ipc

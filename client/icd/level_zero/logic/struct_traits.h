@@ -9,7 +9,7 @@
 
 #include <type_traits>
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 /*
  *  AlwaysFalse metafunction maps any type to std::false_type.
@@ -29,4 +29,4 @@ struct HasPNext : std::false_type {};
 template <class T>
 struct HasPNext<T, std::void_t<decltype(std::declval<T>().pNext)>> : std::true_type {};
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

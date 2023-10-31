@@ -231,7 +231,7 @@ ClCreateProgramWithSourceRpcM::Captures::DynamicTraits ClCreateProgramWithSource
     for(uint32_t i = 0; i < ret.strings.count; ++i){
         DynamicArgTraits nested;
         nested.offset = ret.totalDynamicSize;
-        nested.count = Cal::Icd::Ocl::getSingleSourceLengthForClCreateProgramWithSource(strings, i, lengths);
+        nested.count = Cal::Client::Icd::Ocl::getSingleSourceLengthForClCreateProgramWithSource(strings, i, lengths);
         nested.size = nested.count * sizeof(char);
         ret.totalDynamicSize += alignUpPow2<8>(nested.size);
         ret.strings.nested.push_back(nested);
@@ -893,7 +893,7 @@ size_t ClCreateBufferRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateSubBufferRpcM::Captures::DynamicTraits ClCreateSubBufferRpcM::Captures::DynamicTraits::calculate(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.buffer_create_info.count = Cal::Icd::Ocl::getSubBufferCreateInfoSize(buffer_create_type);
+    ret.buffer_create_info.count = Cal::Client::Icd::Ocl::getSubBufferCreateInfoSize(buffer_create_type);
     ret.buffer_create_info.size = ret.buffer_create_info.count;
     ret.totalDynamicSize = alignUpPow2<8>(ret.buffer_create_info.offset + ret.buffer_create_info.size);
 
@@ -953,7 +953,7 @@ size_t ClGetPipeInfoRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateImageRpcM::Captures::DynamicTraits ClCreateImageRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, const cl_image_format* image_format, const cl_image_desc* image_desc, void* host_ptr, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.host_ptr.count = Cal::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr);
+    ret.host_ptr.count = Cal::Client::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr);
     ret.host_ptr.size = ret.host_ptr.count;
     ret.totalDynamicSize = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);
 
@@ -973,7 +973,7 @@ size_t ClCreateImageRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateImage2DRpcM::Captures::DynamicTraits ClCreateImage2DRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, const cl_image_format* image_format, size_t image_width, size_t image_height, size_t image_row_pitch, void* host_ptr, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.host_ptr.count = Cal::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, 0, image_row_pitch, 0, 0, host_ptr);
+    ret.host_ptr.count = Cal::Client::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, 0, image_row_pitch, 0, 0, host_ptr);
     ret.host_ptr.size = ret.host_ptr.count;
     ret.totalDynamicSize = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);
 
@@ -993,7 +993,7 @@ size_t ClCreateImage2DRpcM::Captures::getCaptureDynMemSize() const {
 
 ClCreateImage3DRpcM::Captures::DynamicTraits ClCreateImage3DRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, const cl_image_format* image_format, size_t image_width, size_t image_height, size_t image_depth, size_t image_row_pitch, size_t image_slice_pitch, void* host_ptr, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.host_ptr.count = Cal::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, 0, host_ptr);
+    ret.host_ptr.count = Cal::Client::Icd::Ocl::getImageHostMemorySize(CL_MEM_OBJECT_IMAGE2D, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, 0, host_ptr);
     ret.host_ptr.size = ret.host_ptr.count;
     ret.totalDynamicSize = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);
 
@@ -1033,7 +1033,7 @@ size_t ClCreateSamplerWithPropertiesRpcM::Captures::getCaptureDynMemSize() const
 
 ClCreateImageWithPropertiesRpcM::Captures::DynamicTraits ClCreateImageWithPropertiesRpcM::Captures::DynamicTraits::calculate(cl_context context, const cl_mem_properties* properties, cl_mem_flags flags, const cl_image_format* image_format, const cl_image_desc* image_desc, void* host_ptr, cl_int* errcode_ret) {
     DynamicTraits ret = {};
-    ret.host_ptr.count = Cal::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr);
+    ret.host_ptr.count = Cal::Client::Icd::Ocl::getImageHostMemorySize(image_format, image_desc, host_ptr);
     ret.host_ptr.size = ret.host_ptr.count;
 
     ret.properties.offset = alignUpPow2<8>(ret.host_ptr.offset + ret.host_ptr.size);

@@ -11,7 +11,7 @@
 
 #include <algorithm>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t IcdL0Module::getKernelNames(uint32_t *pCount, const char **pNames) {
     if (!wasKernelNamesQueried.load() && !queryKernelNames()) {
@@ -47,7 +47,7 @@ bool IcdL0Module::queryKernelNames() {
     }
 
     uint32_t totalLength{0};
-    auto ret = Cal::Icd::LevelZero::zeModuleGetKernelNamesRpcHelper(this, &totalLength, nullptr);
+    auto ret = Cal::Client::Icd::LevelZero::zeModuleGetKernelNamesRpcHelper(this, &totalLength, nullptr);
     if (ZE_RESULT_SUCCESS != ret) {
         log<Verbosity::debug>("Failed to get total length of names of kernels from module from service!");
         return false;
@@ -56,7 +56,7 @@ bool IcdL0Module::queryKernelNames() {
     std::vector<char> concatenatedNames;
     concatenatedNames.resize(totalLength);
 
-    ret = Cal::Icd::LevelZero::zeModuleGetKernelNamesRpcHelper(this, &totalLength, concatenatedNames.data());
+    ret = Cal::Client::Icd::LevelZero::zeModuleGetKernelNamesRpcHelper(this, &totalLength, concatenatedNames.data());
     if (ZE_RESULT_SUCCESS != ret) {
         log<Verbosity::debug>("Failed to get concatenated names of kernels from module from service!");
         return false;
@@ -80,4 +80,4 @@ void IcdL0Module::populateKernelNames(const std::vector<char> &buffer) {
     }
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

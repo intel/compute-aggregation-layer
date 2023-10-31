@@ -152,7 +152,7 @@ auto asLocalObjectOrNull(OclObjectType *obj) {
 }
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 namespace Ocl {
 class IcdOclPlatform;
 struct IcdOclDevice;
@@ -164,21 +164,21 @@ struct IcdOclMem;
 struct IcdOclEvent;
 struct IcdOclSampler;
 } // namespace Ocl
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal
 
-struct _cl_platform_id : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclPlatform> {};
-struct _cl_device_id : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclDevice> {};
-struct _cl_context : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclContext> {};
-struct _cl_command_queue : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclCommandQueue> {};
-struct _cl_program : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclProgram> {};
-struct _cl_kernel : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclKernel> {};
-struct _cl_mem : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclMem> {};
-struct _cl_event : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclEvent> {};
-struct _cl_sampler : cl_icd_base_mapped<Cal::Icd::Ocl::IcdOclSampler> {};
+struct _cl_platform_id : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclPlatform> {};
+struct _cl_device_id : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclDevice> {};
+struct _cl_context : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclContext> {};
+struct _cl_command_queue : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclCommandQueue> {};
+struct _cl_program : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclProgram> {};
+struct _cl_kernel : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclKernel> {};
+struct _cl_mem : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclMem> {};
+struct _cl_event : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclEvent> {};
+struct _cl_sampler : cl_icd_base_mapped<Cal::Client::Icd::Ocl::IcdOclSampler> {};
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 namespace Ocl {
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms);
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
@@ -444,7 +444,7 @@ struct ClBufferRecycler {
 
         void cleanup() {
             for (auto &obj : objects) {
-                Cal::Icd::Ocl::clReleaseMemObject(obj);
+                Cal::Client::Icd::Ocl::clReleaseMemObject(obj);
             }
             this->statistics.dumpToLog(leftBound, rightBound);
         }
@@ -651,7 +651,7 @@ struct IcdOclContext : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclType
                   Cal::Shared::RefCounted<_cl_context, IcdOclTypePrinter>::CleanupFuncT cleanupFunc);
 
     ~IcdOclContext() override {
-        Cal::Icd::icdGlobalState.unregisterAtExit(this);
+        Cal::Client::Icd::icdGlobalState.unregisterAtExit(this);
         clBufferRecycler.cleanup();
         for (auto &device : this->devices) {
             if (device) {
@@ -820,9 +820,9 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
 template <typename OclObjectT>
 void objectCleanup(void *remote, void *local);
 
-class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
+class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform_id {
   public:
-    IcdOclPlatform(Cal::Icd::IcdGlobalState &globalState)
+    IcdOclPlatform(Cal::Client::Icd::IcdGlobalState &globalState)
         : IcdPlatform(globalState, Cal::ApiType::OpenCL) {
         this->envToggles.disableProfiling = Cal::Utils::getCalEnvFlag(calOclDisableProfilingEnvName, false);
     }
@@ -1142,7 +1142,7 @@ class IcdOclPlatform : public Cal::Icd::IcdPlatform, public _cl_platform_id {
 };
 
 inline IcdOclMem::~IcdOclMem() {
-    Cal::Icd::icdGlobalState.getOclPlatform()->destroyUsmDescriptor(hostPtr);
+    Cal::Client::Icd::icdGlobalState.getOclPlatform()->destroyUsmDescriptor(hostPtr);
 }
 
 template <typename T1, typename T2>
@@ -1177,8 +1177,8 @@ constexpr void warnIfNonBlockingRead(cl_bool &blockingRead) {
     }
 }
 
-constexpr void warnIfNonBlockingRead(cl_bool &blockingRead, Cal::Icd::PointerType pt) {
-    if (pt != Cal::Icd::PointerType::local) {
+constexpr void warnIfNonBlockingRead(cl_bool &blockingRead, Cal::Client::Icd::PointerType pt) {
+    if (pt != Cal::Client::Icd::PointerType::local) {
         return;
     }
     if (false == blockingRead) {
@@ -1339,7 +1339,7 @@ inline size_t getSubBufferCreateInfoSize(cl_buffer_create_type type) {
 }
 
 inline void invalidateKernelArgCache() {
-    auto globalOclPlatform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto globalOclPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &objectsMap = globalOclPlatform->getObjectsMap<_cl_kernel>();
     for (auto &kernel : objectsMap.map) {
         kernel.second->clSetKernelArgCache.invalidateCache();
@@ -1363,5 +1363,5 @@ inline bool isCacheable(cl_uint param_name) {
 }
 
 } // namespace Ocl
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal

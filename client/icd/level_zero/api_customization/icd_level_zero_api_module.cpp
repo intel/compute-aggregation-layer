@@ -9,7 +9,7 @@
 #include "client/icd/level_zero/logic/properties_cache.h"
 #include "generated_icd_level_zero.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeModuleGetProperties(ze_module_handle_t hModule, ze_module_properties_t *pModuleProperties) {
     return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Module *>(hModule), pModuleProperties, zeModuleGetPropertiesRpcHelper);
@@ -32,4 +32,4 @@ ze_result_t zeModuleGetKernelNames(ze_module_handle_t hModule, uint32_t *pCount,
     return icdModule->getKernelNames(pCount, pNames);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

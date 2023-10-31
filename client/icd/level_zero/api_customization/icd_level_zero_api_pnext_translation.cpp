@@ -9,10 +9,10 @@
 #include "icd_level_zero_ipc_helpers.h"
 #include "shared/log.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 static void translateRequiredPNextExtension(ze_external_memory_import_fd_t &memoryImportFdExt) {
-    using Cal::Icd::LevelZero::Ipc::reverseTranslateIpcHandles;
+    using Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles;
 
     // This structure is used to match interface of reverseTranslateIpcHandles template function.
     struct IpcHandleFdWrapper {
@@ -41,4 +41,4 @@ void translateRequiredPNextExtensions(const void *pNext) {
     }
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

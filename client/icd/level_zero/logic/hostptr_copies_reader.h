@@ -22,7 +22,7 @@ namespace Cal::Rpc {
 class ChannelClient;
 } // namespace Cal::Rpc
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 class HostptrCopiesReader {
   public:
@@ -35,4 +35,4 @@ class HostptrCopiesReader {
     boost::container::flat_map<const void *, uintptr_t> usmToHostAddressMap{};
 };
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

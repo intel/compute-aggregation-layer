@@ -18,7 +18,7 @@
 #include <iterator>
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 namespace LevelZero {
 
 IcdL0Context::IcdL0Context(ze_context_handle_t remoteObject, Cal::Shared::SingleReference &&parent, CleanupFuncT cleanupFunc)
@@ -33,7 +33,7 @@ void IcdL0Context::beforeReleaseCallback() {
 void *IcdL0Context::allocateStagingArea(size_t size) {
     void *usmHostMem{};
     ze_host_mem_alloc_desc_t desc{ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC, nullptr, 0};
-    if (ZE_RESULT_SUCCESS != Cal::Icd::LevelZero::zeMemAllocHost(this->asLocalObject(), &desc, size, 0, &usmHostMem)) {
+    if (ZE_RESULT_SUCCESS != Cal::Client::Icd::LevelZero::zeMemAllocHost(this->asLocalObject(), &desc, size, 0, &usmHostMem)) {
         log<Verbosity::critical>("Failed to allocate staging buffer via zeMemAllocHost of size %zu", size);
         return nullptr;
     }
@@ -42,7 +42,7 @@ void *IcdL0Context::allocateStagingArea(size_t size) {
 }
 
 void IcdL0Context::deallocateStagingAreas(void *ptr) {
-    Cal::Icd::LevelZero::zeMemFree(this->asLocalObject(), ptr);
+    Cal::Client::Icd::LevelZero::zeMemFree(this->asLocalObject(), ptr);
 }
 
 IcdL0CommandList::CommandListType IcdL0CommandList::selectImmediateType(const ze_command_queue_desc_t *altdesc) {
@@ -157,7 +157,7 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
         return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
     }
 
-    auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     if (!globalL0Platform->writeRequiredMemory(transferDescs)) {
         log<Verbosity::error>("Could not write required memory from user's stack/heap! Execution of command list would be invalid!");
         return ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
@@ -168,7 +168,7 @@ ze_result_t IcdL0CommandList::writeRequiredMemory() {
 
 void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
     if (kernel->sharedIndirectAccessSet) {
-        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
+        Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
     } else {
         for (auto &alloc : kernel->allocationsToMigrate) {
             moveSharedAllocationsToGpuImpl(alloc);
@@ -188,7 +188,7 @@ void IcdL0CommandList::cleanTemporaryAllocations() {
 
 void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {
     if (this->isImmediate()) {
-        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(ptr);
+        Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(ptr);
     } else {
         this->usedAllocations.push_back(ptr);
     }
@@ -199,7 +199,7 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
     for (uint32_t i = 0; i < numCommandLists; i++) {
         auto l0CmdList = static_cast<IcdL0CommandList *>(phCommandLists[i]);
         if (l0CmdList->sharedIndirectAccessSet) {
-            Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
+            Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllAllocationsToGpu();
             indirectAccessSet = true;
             break;
         }
@@ -209,7 +209,7 @@ void IcdL0CommandQueue::moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_
         auto &allocs = l0CmdList->getUsedAllocations();
         if (!indirectAccessSet) {
             for (auto &alloc : allocs) {
-                Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(alloc);
+                Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().moveAllocationToGpu(alloc);
             }
         }
         allocs.clear();
@@ -229,13 +229,13 @@ bool IcdL0Platform::isZeAffinityMaskPresent() {
             uint32_t numAllDevices = 0;
             std::vector<ze_device_handle_t> allDevices;
             std::vector<bool> selectedDevices;
-            auto status = Cal::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, nullptr);
+            auto status = Cal::Client::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, nullptr);
             if (status != ZE_RESULT_SUCCESS) {
                 return;
             }
 
             allDevices.resize(numAllDevices);
-            status = Cal::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, allDevices.data());
+            status = Cal::Client::Icd::LevelZero::zeDeviceGetRpcHelper(this, &numAllDevices, allDevices.data());
             if (status != ZE_RESULT_SUCCESS) {
                 return;
             }
@@ -269,7 +269,7 @@ bool IcdL0Platform::isZeAffinityMaskPresent() {
 
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local) {
-    Cal::Icd::icdGlobalState.getL0Platform()->removeObjectFromMap(static_cast<RemoteL0ObjectT>(remote), static_cast<LocalL0ObjectT>(local));
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->removeObjectFromMap(static_cast<RemoteL0ObjectT>(remote), static_cast<LocalL0ObjectT>(local));
 }
 
 template void objectCleanup<ze_device_handle_t, IcdL0Device *>(void *, void *);
@@ -285,5 +285,5 @@ template void objectCleanup<ze_fence_handle_t, IcdL0Fence *>(void *, void *);
 template void objectCleanup<ze_image_handle_t, IcdL0Image *>(void *, void *);
 
 } // namespace LevelZero
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal

@@ -15,7 +15,7 @@
 #include <shared_mutex>
 #include <vector>
 
-namespace Cal::Icd {
+namespace Cal::Client::Icd {
 
 struct KernelArgCache {
     inline constexpr static uint32_t maxStaticArgSize = 8u;
@@ -82,4 +82,4 @@ struct KernelArgCache {
     }
 };
 
-} // namespace Cal::Icd
+} // namespace Cal::Client::Icd

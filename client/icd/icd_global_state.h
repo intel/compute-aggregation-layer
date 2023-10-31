@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "client/client_connection.h"
 #include "shared/api_types.h"
 #include "shared/log.h"
 
@@ -16,27 +17,9 @@
 #include <unordered_map>
 #include <utility>
 
-namespace Cal {
-namespace Ipc {
-class ClientConnectionFactory;
-class Connection;
-class ShmemImporter;
-} // namespace Ipc
+namespace Cal::Client::Icd {
 
-namespace Usm {
-class UsmShmemImporter;
-}
-
-namespace Rpc {
-class ChannelClient;
-}
-
-namespace Icd {
 class PageFaultManager;
-
-namespace MallocOverride {
-class MallocShmemExporter;
-}
 
 namespace Ocl {
 class IcdOclPlatform;
@@ -51,7 +34,7 @@ struct IcdGlobalsRegistryAtExitWatcher {
 };
 extern IcdGlobalsRegistryAtExitWatcher icdGlobalsRegistryAtExitWatcher;
 
-class IcdGlobalState final {
+class IcdGlobalState : public Cal::Client::ClientConnection {
   public:
     struct AtExitNotification {
         using KeyT = const void *;
@@ -73,42 +56,16 @@ class IcdGlobalState final {
         atExit.callbacks.erase(it);
     }
 
+    void connect() override;
+
     IcdGlobalState();
-    Cal::Icd::Ocl::IcdOclPlatform *getOclPlatform();
-    Cal::Icd::LevelZero::IcdL0Platform *getL0Platform();
+    Cal::Client::Icd::Ocl::IcdOclPlatform *getOclPlatform();
+    Cal::Client::Icd::LevelZero::IcdL0Platform *getL0Platform();
     bool isCacheEnabled() { return this->enableCache; };
     ~IcdGlobalState();
 
-    Cal::Ipc::ShmemImporter &getGlobalShmemImporter() const {
-        return *this->globalShmemImporter;
-    }
-
-    Cal::Usm::UsmShmemImporter &getUsmShmemImporter() const {
-        return *this->usmShmemImporter;
-    }
-
-    Cal::Icd::MallocOverride::MallocShmemExporter &getMallocShmemExporter() const {
-        return *this->mallocShmemExporter;
-    }
-
-    Cal::Icd::PageFaultManager &getPageFaultManager() const {
+    Cal::Client::Icd::PageFaultManager &getPageFaultManager() const {
         return *this->pageFaultManager;
-    }
-
-    Cal::Ipc::Connection &getConnection() const {
-        return *this->connection;
-    }
-
-    Cal::Rpc::ChannelClient &getRpcChannel() const {
-        return *this->rpcChannel;
-    }
-
-    const Cal::Utils::CpuInfo &getCpuInfo() const {
-        return this->cpuInfo;
-    }
-
-    const Cal::Utils::AddressRange &getInitialUsmHeap() const {
-        return initialUsmHeap;
     }
 
   protected:
@@ -120,43 +77,20 @@ class IcdGlobalState final {
         }
     }
 
-    bool ensureServiceIsAvailable();
     bool ensureApiIsAvailable(ApiType api);
 
-    void connect();
-    const char *getSocketPath();
-
-    std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory();
-
     struct {
-        std::unique_ptr<Cal::Icd::Ocl::IcdOclPlatform> platform;
+        std::unique_ptr<Cal::Client::Icd::Ocl::IcdOclPlatform> platform;
         std::once_flag onceFlag;
     } oclPlatform;
 
     struct {
-        std::unique_ptr<Cal::Icd::LevelZero::IcdL0Platform> platform;
+        std::unique_ptr<Cal::Client::Icd::LevelZero::IcdL0Platform> platform;
         std::once_flag onceFlag;
     } l0Platform;
 
-    struct {
-        std::once_flag onceFlag;
-        bool isConnected = false;
-
-        std::string socketPath;
-        bool isZeroCopyForMallocShmemAllowed = false;
-    } connectionTraits;
-
-    std::unique_ptr<Cal::Ipc::ShmemImporter> globalShmemImporter;
-    std::unique_ptr<Cal::Usm::UsmShmemImporter> usmShmemImporter;
-    std::unique_ptr<Cal::Icd::MallocOverride::MallocShmemExporter> mallocShmemExporter;
-    std::unique_ptr<Cal::Icd::PageFaultManager> pageFaultManager;
-    std::unique_ptr<Cal::Ipc::Connection> connection;
-    std::unique_ptr<Cal::Rpc::ChannelClient> rpcChannel;
-    Cal::Utils::AddressRange initialUsmHeap;
-    Cal::Utils::CpuInfo cpuInfo;
-
     bool enableCache = false;
-    bool usesSharedVaForRpcChannel = false;
+    std::unique_ptr<Cal::Client::Icd::PageFaultManager> pageFaultManager;
 
     struct AtExit {
         std::mutex mutex;
@@ -170,6 +104,4 @@ inline IcdGlobalsRegistryAtExitWatcher::~IcdGlobalsRegistryAtExitWatcher() {
     icdGlobalState.notifyAtExit();
 }
 
-} // namespace Icd
-
-} // namespace Cal
+} // namespace Cal::Client::Icd

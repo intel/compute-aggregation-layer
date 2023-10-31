@@ -10,7 +10,7 @@
 #include "icd_level_zero_api.h"
 #include "icd_level_zero_ipc_helpers.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zexMemGetIpcHandles(ze_context_handle_t hContext, const void *ptr, uint32_t *numIpcHandles, ze_ipc_mem_handle_t *pIpcHandles) {
     const auto rpcCommandResult = zexMemGetIpcHandlesRpcHelper(hContext, ptr, numIpcHandles, pIpcHandles);
@@ -19,7 +19,7 @@ ze_result_t zexMemGetIpcHandles(ze_context_handle_t hContext, const void *ptr, u
     }
 
     constexpr const char *functionName = "zexMemGetIpcHandles";
-    return Cal::Icd::LevelZero::Ipc::translateIpcHandles(functionName, *numIpcHandles, pIpcHandles);
+    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles(functionName, *numIpcHandles, pIpcHandles);
 }
 
 ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
@@ -42,7 +42,7 @@ ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
     std::memcpy(ipcHandles.data(), pIpcHandles, numIpcHandles);
 
     constexpr const char *functionName = "zexMemOpenIpcHandles";
-    const auto reverseTranslationResult = Cal::Icd::LevelZero::Ipc::reverseTranslateIpcHandles(functionName, numIpcHandles, ipcHandles.data());
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles(functionName, numIpcHandles, ipcHandles.data());
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
@@ -50,4 +50,4 @@ ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
     return zexMemOpenIpcHandlesRpcHelper(hContext, hDevice, numIpcHandles, ipcHandles.data(), flags, pptr);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

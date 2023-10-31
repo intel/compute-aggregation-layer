@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <mutex>
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 class ImportedHostPointersManager {
   public:
@@ -35,4 +35,4 @@ class ImportedHostPointersManager {
     Cal::Utils::PartitionedAddressRange<void> importedPointers{Cal::Utils::AddressRange{uintptr_t{0}, uintptr_t{0}}};
 };
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

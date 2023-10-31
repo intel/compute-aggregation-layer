@@ -9,7 +9,7 @@
 
 #include "level_zero/ze_api.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeInit(ze_init_flags_t flags);
 
@@ -91,4 +91,4 @@ ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void 
 
 void translateRequiredPNextExtensions(const void *pNext);
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

@@ -12,7 +12,7 @@
 
 #include <type_traits>
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 struct IcdL0TypePrinter {
     template <typename T>
@@ -72,4 +72,4 @@ struct IcdL0TypePrinter {
     }
 };
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

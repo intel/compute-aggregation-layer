@@ -15,7 +15,7 @@
 #include "shared/log.h"
 #include "shared/usm.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 inline static PageFaultManager::Placement getSharedAllocationPlacement(const ze_device_mem_alloc_desc_t *deviceDesc, const ze_host_mem_alloc_desc_t *hostDesc) {
     auto placement = PageFaultManager::Placement::HOST;
@@ -30,35 +30,35 @@ inline static PageFaultManager::Placement getSharedAllocationPlacement(const ze_
 
 ze_result_t zeMemAllocHost(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, void **pptr) {
     Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs implicitArgs;
-    auto result = Cal::Icd::LevelZero::zeMemAllocHostRpcHelper(hContext, host_desc, size, alignment, pptr, implicitArgs);
+    auto result = Cal::Client::Icd::LevelZero::zeMemAllocHostRpcHelper(hContext, host_desc, size, alignment, pptr, implicitArgs);
     if (result != ZE_RESULT_SUCCESS) {
         return result;
     }
-    if (false == Cal::Icd::icdGlobalState.getL0Platform()->openNewUsmHostOrSharedPointer(hContext, *pptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
+    if (false == Cal::Client::Icd::icdGlobalState.getL0Platform()->openNewUsmHostOrSharedPointer(hContext, *pptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
         log<Verbosity::error>("Failed to open USM shared/host shmem");
-        Cal::Icd::LevelZero::zeMemFree(hContext, *pptr);
+        Cal::Client::Icd::LevelZero::zeMemFree(hContext, *pptr);
         *pptr = nullptr;
     }
     return result;
 }
 
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t *device_desc, const ze_host_mem_alloc_desc_t *host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void **pptr) {
-    if (!Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().getSharedAllocationsEnabled()) {
-        return Cal::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
+    if (!Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().getSharedAllocationsEnabled()) {
+        return Cal::Client::Icd::LevelZero::zeMemAllocHost(hContext, host_desc, size, alignment, pptr);
     }
 
     Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs implicitArgs;
-    auto result = Cal::Icd::LevelZero::zeMemAllocSharedRpcHelper(hContext, device_desc, host_desc, size, alignment, hDevice, pptr, implicitArgs);
+    auto result = Cal::Client::Icd::LevelZero::zeMemAllocSharedRpcHelper(hContext, device_desc, host_desc, size, alignment, hDevice, pptr, implicitArgs);
     if (result != ZE_RESULT_SUCCESS) {
         return result;
     }
-    if (false == Cal::Icd::icdGlobalState.getL0Platform()->openNewUsmHostOrSharedPointer(hContext, *pptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
+    if (false == Cal::Client::Icd::icdGlobalState.getL0Platform()->openNewUsmHostOrSharedPointer(hContext, *pptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
         log<Verbosity::error>("Failed to open USM shared/host shmem");
-        Cal::Icd::LevelZero::zeMemFree(hContext, *pptr);
+        Cal::Client::Icd::LevelZero::zeMemFree(hContext, *pptr);
         *pptr = nullptr;
         return result;
     }
-    Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().registerSharedAlloc(*pptr, size, getSharedAllocationPlacement(device_desc, host_desc));
+    Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().registerSharedAlloc(*pptr, size, getSharedAllocationPlacement(device_desc, host_desc));
     return result;
 }
 
@@ -82,7 +82,7 @@ static ze_result_t zeMemGetAllocPropertiesWithExtensions(ze_context_handle_t hCo
             auto exportFdExt = static_cast<ze_external_memory_export_fd_t *>(current);
             FdIpcHandleWrapper ipcHandle{&exportFdExt->fd};
 
-            const auto translationResult = Cal::Icd::LevelZero::Ipc::translateIpcHandles("ze_external_memory_export_fd_t", 1u, &ipcHandle);
+            const auto translationResult = Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("ze_external_memory_export_fd_t", 1u, &ipcHandle);
             if (translationResult != ZE_RESULT_SUCCESS) {
                 return translationResult;
             }
@@ -119,11 +119,11 @@ ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void *ptr, ze_
         return rpcCommandResult;
     }
 
-    return Cal::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandle", 1u, pIpcHandle);
+    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandle", 1u, pIpcHandle);
 }
 
 ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void **pptr) {
-    const auto reverseTranslationResult = Cal::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemOpenIpcHandle", 1u, &handle);
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemOpenIpcHandle", 1u, &handle);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
@@ -131,4 +131,4 @@ ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t 
     return zeMemOpenIpcHandleRpcHelper(hContext, hDevice, handle, flags, pptr);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

@@ -11,6 +11,7 @@ add_subdirectories()
 
 add_library(cal SHARED # acts as ICD
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_global_state.cpp
+            ${cal_source_root_dir}/client/client_connection.cpp
             ${cal_source_root_dir}/client/client_malloc_override.cpp
             ${cal_source_root_dir}/client/client_malloc_override_entry.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_ocl.cpp

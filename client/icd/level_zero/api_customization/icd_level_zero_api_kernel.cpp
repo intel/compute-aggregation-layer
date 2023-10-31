@@ -13,17 +13,17 @@
 #include "generated_icd_level_zero.h"
 #include "icd_level_zero_api.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void *pArgValue) {
     auto l0Kernel = static_cast<IcdL0Kernel *>(hKernel);
 
     if (argSize == sizeof(void *) && pArgValue &&
-        Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().isAllocShared(*reinterpret_cast<const void *const *>(pArgValue))) {
+        Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().isAllocShared(*reinterpret_cast<const void *const *>(pArgValue))) {
         l0Kernel->storeKernelArg(*reinterpret_cast<const void *const *>(pArgValue), argIndex);
     }
 
-    auto cacheEnabled = Cal::Icd::icdGlobalState.isCacheEnabled();
+    auto cacheEnabled = Cal::Client::Icd::icdGlobalState.isCacheEnabled();
     if (!cacheEnabled) {
         return zeKernelSetArgumentValueRpcHelper(hKernel, argIndex, argSize, pArgValue);
     }
@@ -64,4 +64,4 @@ ze_result_t zeKernelSuggestGroupSize(ze_kernel_handle_t hKernel, uint32_t global
     return ret;
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

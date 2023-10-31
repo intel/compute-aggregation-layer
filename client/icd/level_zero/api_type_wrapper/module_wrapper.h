@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t, Logic::IcdL0TypePrinter> {
   public:
@@ -45,4 +45,4 @@ class IcdL0Module : public Cal::Shared::RefCountedWithParent<_ze_module_handle_t
     std::mutex kernelNamesMutex{};
 };
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

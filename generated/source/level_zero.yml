@@ -5,7 +5,7 @@
 config:
   api_name: level_zero
   loader_lib_names: ["libze_loader.so.1"]
-  icd_namespace: "Cal::Icd::LevelZero"
+  icd_namespace: "Cal::Client::Icd::LevelZero"
   rpc_namespace: "Cal::Rpc::LevelZero"
   daemon_namespace: "Cal::Service::Apis::LevelZero"
   icd_dispatch_table_type:
@@ -15,7 +15,7 @@ config:
 
   icd_init_dispatch_table_func_name_format: "initL0{}Ddi"
   icd_get_extenion_func_addr_func_name: "getL0ExtensionFuncionAddressRpcHelper"
-  icd_acquire_global_object: "auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform()"
+  icd_acquire_global_object: "auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform()"
   icd_acquire_channel: "globalPlatform->getRpcChannel()"
   result_type: ze_result_t
   result_success: ZE_RESULT_SUCCESS
@@ -2175,7 +2175,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && hCommandQueue->asLocalObject()->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS && hCommandQueue->asLocalObject()->getCommandQueueMode() == ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandQueue
@@ -2271,7 +2271,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandQueue
@@ -4312,7 +4312,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hEvent
@@ -4336,7 +4336,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hEvent
@@ -4838,7 +4838,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hFence
@@ -4859,7 +4859,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hFence
@@ -5395,7 +5395,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "Cal::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();"
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Client::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();"
             rpc:
               custom_handler: True
           ddi_category: Mem
@@ -5500,7 +5500,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (!Cal::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {\n        return ZE_RESULT_ERROR_INVALID_ARGUMENT;\n    }\n"
+              handler_prologue: "if (!Cal::Client::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {\n        return ZE_RESULT_ERROR_INVALID_ARGUMENT;\n    }\n"
               handler_only_suffix: "RpcHelper"
           ddi_category: Mem
           returns:

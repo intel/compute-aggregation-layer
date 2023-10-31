@@ -11,8 +11,8 @@
 #include "client/icd/level_zero/logic/properties_cache.h"
 #include "generated_icd_level_zero.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 ze_result_t zesDeviceGetProperties(zes_device_handle_t hDevice, zes_device_properties_t *pProperties) {
     return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pProperties, zesDeviceGetPropertiesRpcHelper);
 }
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

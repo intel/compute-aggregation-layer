@@ -9,7 +9,7 @@
 
 #include "shared/log.h"
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 ze_result_t ImportedHostPointersManager::importExternalPointer(void *ptr, size_t size) {
     if (!ptr || !size) {
@@ -82,4 +82,4 @@ ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, vo
     return ZE_RESULT_SUCCESS;
 }
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

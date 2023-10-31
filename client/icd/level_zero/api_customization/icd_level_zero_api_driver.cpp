@@ -13,21 +13,21 @@
 #include "icd_level_zero_api.h"
 #include "shared/log.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeInit(ze_init_flags_t flags) {
-    const auto platform = Cal::Icd::icdGlobalState.getL0Platform();
+    const auto platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     if (!platform) {
         log<Verbosity::error>("CAL service not available. zeInit() cannot be performed!");
         return ZE_RESULT_ERROR_UNINITIALIZED;
     }
 
     log<Verbosity::info>("Initializing LevelZero! Flags argument used with zeInit() will be ignored by Compute Aggregation Layer service.");
-    return Cal::Icd::LevelZero::zeInitRpcHelper(flags);
+    return Cal::Client::Icd::LevelZero::zeInitRpcHelper(flags);
 }
 
 ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
-    const auto platform = Cal::Icd::icdGlobalState.getL0Platform();
+    const auto platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     if (!platform) {
         log<Verbosity::debug>("CAL service not available. Trying to return zero available drivers!");
         if (pCount) {
@@ -41,7 +41,7 @@ ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
         ze_driver_handle_t calDriverHandle{};
 
         uint32_t handleDriversArraySize{1};
-        auto ret = Cal::Icd::LevelZero::zeDriverGetRpcHelper(&handleDriversArraySize, &calDriverHandle);
+        auto ret = Cal::Client::Icd::LevelZero::zeDriverGetRpcHelper(&handleDriversArraySize, &calDriverHandle);
         if ((ZE_RESULT_SUCCESS != ret) || (nullptr == calDriverHandle)) {
             log<Verbosity::debug>("Failed to get ze_driver_handle_t from service");
             if (pCount) {
@@ -78,13 +78,13 @@ ze_result_t zeDriverGetExtensionProperties(ze_driver_handle_t hDriver, uint32_t 
 }
 
 ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr, size_t size) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto ptrType = globalPlatform->getPointerType(ptr);
     if (ptrType != local) {
-        return Cal::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
+        return Cal::Client::Icd::LevelZero::zexDriverImportExternalPointer(hDriver, ptr, size);
     } else {
         log<Verbosity::performance>("zexDriverImportExternalPointer on private pages has no effect");
-        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto &instance = Cal::Client::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
         auto instanceLock = instance.lock();
 
         return instance.importExternalPointer(ptr, size);
@@ -92,12 +92,12 @@ ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr
 }
 
 ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto ptrType = globalPlatform->getPointerType(ptr);
     if (ptrType != local) {
-        return Cal::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
+        return Cal::Client::Icd::LevelZero::zexDriverReleaseImportedPointer(hDriver, ptr);
     } else {
-        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto &instance = Cal::Client::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
         auto instanceLock = instance.lock();
 
         return instance.releaseImportedPointer(ptr);
@@ -105,12 +105,12 @@ ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *pt
 }
 
 ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress) {
-    auto *globalPlatform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto ptrType = globalPlatform->getPointerType(ptr);
     if (ptrType != local) {
-        return Cal::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
+        return Cal::Client::Icd::LevelZero::zexDriverGetHostPointerBaseAddress(hDriver, ptr, baseAddress);
     } else {
-        auto &instance = Cal::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
+        auto &instance = Cal::Client::Icd::LevelZero::Logic::ImportedHostPointersManager::getInstance();
         auto instanceLock = instance.lock();
 
         return instance.getHostPointerBaseAddress(ptr, baseAddress);
@@ -134,4 +134,4 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
     return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

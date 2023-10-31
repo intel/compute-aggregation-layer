@@ -9,7 +9,7 @@
 #include "generated_icd_level_zero.h"
 #include "icd_level_zero_api.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence) {
     auto icdCommandQueue = static_cast<IcdL0CommandQueue *>(hCommandQueue);
@@ -29,4 +29,4 @@ ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommand
     return zeCommandQueueExecuteCommandListsRpcHelper(hCommandQueue, numCommandLists, phCommandLists, hFence);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

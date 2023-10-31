@@ -25,7 +25,7 @@ extern char *__progname;
 cl_icd_dispatch clIcdDispatchTable;
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 namespace Ocl {
 
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms) {
@@ -36,7 +36,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
         }
         return CL_SUCCESS;
     }
-    auto platform = Cal::Icd::icdGlobalState.getOclPlatform();
+    auto platform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     if (nullptr == platform) {
         if (num_platforms) {
             log<Verbosity::debug>("CAL service not available - returning num_platforms=0");
@@ -48,7 +48,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
     if (nullptr == platform->asRemoteObject()) {
         log<Verbosity::debug>("Getting cl_platform_id from service");
         cl_platform_id calPlatformId{};
-        auto ret = Cal::Icd::Ocl::clGetPlatformIDsRpcHelper(1, &calPlatformId, nullptr);
+        auto ret = Cal::Client::Icd::Ocl::clGetPlatformIDsRpcHelper(1, &calPlatformId, nullptr);
         if ((CL_SUCCESS != ret) || (nullptr == calPlatformId)) {
             log<Verbosity::debug>("Failed to get cl_platform_id from service");
             if (num_platforms) {
@@ -65,7 +65,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
     }
 
     if (num_entries > 0) {
-        auto platform = Cal::Icd::icdGlobalState.getOclPlatform();
+        auto platform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
         platforms[0] = platform;
     }
 
@@ -178,23 +178,23 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
 
 void *clGetExtensionFunctionAddress(const char *funcname) {
     if (0 == strcmp(funcname, "clIcdGetPlatformIDsKHR")) {
-        return reinterpret_cast<void *>(Cal::Icd::Ocl::clIcdGetPlatformIDsKHR);
+        return reinterpret_cast<void *>(Cal::Client::Icd::Ocl::clIcdGetPlatformIDsKHR);
     }
     return getOclExtensionFuncionAddressRpcHelper(funcname);
 }
 
 void *clGetExtensionFunctionAddressForPlatform(cl_platform_id platform, const char *funcname) {
-    return Cal::Icd::Ocl::clGetExtensionFunctionAddress(funcname);
+    return Cal::Client::Icd::Ocl::clGetExtensionFunctionAddress(funcname);
 }
 
 cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret) {
     Cal::Rpc::Ocl::ClCreateContextRpcMImplicitArgs implicitArgs = {};
-    return Cal::Icd::Ocl::clCreateContextRpcHelper(properties, num_devices, devices, pfn_notify, user_data, errcode_ret, implicitArgs);
+    return Cal::Client::Icd::Ocl::clCreateContextRpcHelper(properties, num_devices, devices, pfn_notify, user_data, errcode_ret, implicitArgs);
 }
 
 cl_context clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret) {
     Cal::Rpc::Ocl::ClCreateContextFromTypeRpcMImplicitArgs implicitArgs = {};
-    return Cal::Icd::Ocl::clCreateContextFromTypeRpcHelper(properties, device_type, pfn_notify, user_data, errcode_ret, implicitArgs);
+    return Cal::Client::Icd::Ocl::clCreateContextFromTypeRpcHelper(properties, device_type, pfn_notify, user_data, errcode_ret, implicitArgs);
 }
 
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret) {
@@ -202,9 +202,9 @@ cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *er
     if (nullptr == kernel) {
         return kernel;
     }
-    if (false == static_cast<Cal::Icd::Ocl::IcdOclKernel *>(kernel)->initTraits()) { // need to be called out of RPC handler in order to use RPC
+    if (false == static_cast<Cal::Client::Icd::Ocl::IcdOclKernel *>(kernel)->initTraits()) { // need to be called out of RPC handler in order to use RPC
         log<Verbosity::critical>("Failed to initialize kernel traits");
-        delete static_cast<Cal::Icd::Ocl::IcdOclKernel *>(kernel);
+        delete static_cast<Cal::Client::Icd::Ocl::IcdOclKernel *>(kernel);
         if (errcode_ret) {
             *errcode_ret = CL_OUT_OF_HOST_MEMORY;
         }
@@ -220,10 +220,10 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
     if ((CL_SUCCESS == err) && (nullptr != kernels)) {
         cl_uint kernelsToInitialize = (num_kernels < numKernelsCreated) ? num_kernels : numKernelsCreated;
         for (cl_uint i = 0; i < kernelsToInitialize; ++i) {
-            if (false == static_cast<Cal::Icd::Ocl::IcdOclKernel *>(kernels[i])->initTraits()) { // need to be called out of RPC handler in order to use RPC
+            if (false == static_cast<Cal::Client::Icd::Ocl::IcdOclKernel *>(kernels[i])->initTraits()) { // need to be called out of RPC handler in order to use RPC
                 log<Verbosity::critical>("Failed to initialize kernel traits for kernel %d", i);
                 for (cl_uint j = 0; j < kernelsToInitialize; ++j) {
-                    delete static_cast<Cal::Icd::Ocl::IcdOclKernel *>(kernels[j]);
+                    delete static_cast<Cal::Client::Icd::Ocl::IcdOclKernel *>(kernels[j]);
                     kernels[j] = nullptr;
                 }
                 return CL_OUT_OF_HOST_MEMORY;
@@ -238,13 +238,13 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
 
 void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment) {
     Cal::Rpc::Ocl::ClSVMAllocRpcMImplicitArgs implicitArgs;
-    auto ptr = Cal::Icd::Ocl::clSVMAllocRpcHelper(context, flags, size, alignment, implicitArgs);
+    auto ptr = Cal::Client::Icd::Ocl::clSVMAllocRpcHelper(context, flags, size, alignment, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
     }
-    if (false == Cal::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
+    if (false == Cal::Client::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
         log<Verbosity::error>("Failed to open SVM shmem");
-        Cal::Icd::Ocl::clMemFreeINTEL(context, ptr);
+        Cal::Client::Icd::Ocl::clMemFreeINTEL(context, ptr);
         ptr = nullptr;
     }
     return ptr;
@@ -252,13 +252,13 @@ void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uin
 
 void *clHostMemAllocINTEL(cl_context context, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret) {
     Cal::Rpc::Ocl::ClHostMemAllocINTELRpcMImplicitArgs implicitArgs;
-    auto ptr = Cal::Icd::Ocl::clHostMemAllocINTELRpcHelper(context, properties, size, alignment, errcode_ret, implicitArgs);
+    auto ptr = Cal::Client::Icd::Ocl::clHostMemAllocINTELRpcHelper(context, properties, size, alignment, errcode_ret, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
     }
-    if (false == Cal::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
+    if (false == Cal::Client::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
         log<Verbosity::error>("Failed to open USM shared/host shmem");
-        Cal::Icd::Ocl::clMemFreeINTEL(context, ptr);
+        Cal::Client::Icd::Ocl::clMemFreeINTEL(context, ptr);
         ptr = nullptr;
         if (errcode_ret) {
             *errcode_ret = CL_OUT_OF_HOST_MEMORY;
@@ -267,25 +267,25 @@ void *clHostMemAllocINTEL(cl_context context, const cl_mem_properties_intel *pro
     return ptr;
 }
 void *clSharedMemAllocINTEL(cl_context context, cl_device_id device, const cl_mem_properties_intel *properties, size_t size, cl_uint alignment, cl_int *errcode_ret) {
-    if (!Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().getSharedAllocationsEnabled()) {
-        return Cal::Icd::Ocl::clHostMemAllocINTEL(context, properties, size, alignment, errcode_ret);
+    if (!Cal::Client::Icd::icdGlobalState.getPageFaultManager().getSharedAllocationsEnabled()) {
+        return Cal::Client::Icd::Ocl::clHostMemAllocINTEL(context, properties, size, alignment, errcode_ret);
     }
 
     Cal::Rpc::Ocl::ClSharedMemAllocINTELRpcMImplicitArgs implicitArgs;
-    auto ptr = Cal::Icd::Ocl::clSharedMemAllocINTELRpcHelper(context, device, properties, size, alignment, errcode_ret, implicitArgs);
+    auto ptr = Cal::Client::Icd::Ocl::clSharedMemAllocINTELRpcHelper(context, device, properties, size, alignment, errcode_ret, implicitArgs);
     if (nullptr == ptr) {
         return nullptr;
     }
-    if (false == Cal::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
+    if (false == Cal::Client::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, ptr, implicitArgs.shmem_resource, implicitArgs.offset_within_resource, implicitArgs.aligned_size)) {
         log<Verbosity::error>("Failed to open USM shared/host shmem");
-        Cal::Icd::Ocl::clMemFreeINTEL(context, ptr);
+        Cal::Client::Icd::Ocl::clMemFreeINTEL(context, ptr);
         ptr = nullptr;
         if (errcode_ret) {
             *errcode_ret = CL_OUT_OF_HOST_MEMORY;
         }
         return ptr;
     }
-    Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().registerSharedAlloc(ptr, size, getSharedAllocationPlacement(properties));
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().registerSharedAlloc(ptr, size, getSharedAllocationPlacement(properties));
     return ptr;
 }
 
@@ -302,7 +302,7 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         log<Verbosity::performance>("Failed to recycle buffer, size %lu , host_ptr %p ", size, host_ptr);
     }
     cl_mem retMem = nullptr;
-    if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(host_ptr, size)) {
+    if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Client::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(host_ptr, size)) {
         retMem = clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem(context, flags, size, host_ptr, errcode_ret);
     } else {
         Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs implicitArgs = {};
@@ -310,12 +310,12 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         if (nullptr == retMem) {
             return nullptr;
         }
-        if (false == Cal::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, implicitArgs.hostptr,
-                                                                                              implicitArgs.hostptr_shmem_resource,
-                                                                                              implicitArgs.hostptr_offset_within_resource,
-                                                                                              implicitArgs.hostptr_aligned_size)) {
+        if (false == Cal::Client::Icd::icdGlobalState.getOclPlatform()->openNewUsmHostOrSharedPointer(context, implicitArgs.hostptr,
+                                                                                                      implicitArgs.hostptr_shmem_resource,
+                                                                                                      implicitArgs.hostptr_offset_within_resource,
+                                                                                                      implicitArgs.hostptr_aligned_size)) {
             log<Verbosity::error>("Failed to open USM shared/host shmem");
-            Cal::Icd::Ocl::clReleaseMemObject(retMem);
+            Cal::Client::Icd::Ocl::clReleaseMemObject(retMem);
             if (errcode_ret) {
                 *errcode_ret = CL_OUT_OF_HOST_MEMORY;
             }
@@ -365,16 +365,16 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
     auto oclKernel = static_cast<IcdOclKernel *>(kernel);
     auto cacheRet = oclKernel->clSetKernelArgCache.cache.end();
 
-    if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
+    if (Cal::Client::Icd::icdGlobalState.isCacheEnabled()) {
         cacheRet = oclKernel->clSetKernelArgCache.findCachedKernelArg(arg_index, arg_size, arg_value);
     }
 
     cl_int ret = CL_SUCCESS;
 
     if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
-        ret = Cal::Icd::Ocl::clSetKernelArgRpcHelper(kernel, arg_index, arg_size, arg_value);
+        ret = Cal::Client::Icd::Ocl::clSetKernelArgRpcHelper(kernel, arg_index, arg_size, arg_value);
 
-        if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
+        if (Cal::Client::Icd::icdGlobalState.isCacheEnabled()) {
             oclKernel->clSetKernelArgCache.cacheKernelArg(arg_index, arg_size, arg_value);
         }
     }
@@ -383,16 +383,16 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
 }
 
 cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
-    if (!Cal::Icd::icdGlobalState.getOclPlatform()->hasCallbacksHandler()) {
+    if (!Cal::Client::Icd::icdGlobalState.getOclPlatform()->hasCallbacksHandler()) {
         log<Verbosity::debug>("clWaitForEvents - callbacks handler is not enabled");
-        return Cal::Icd::Ocl::clWaitForEventsRpcHelper(num_events, event_list);
+        return Cal::Client::Icd::Ocl::clWaitForEventsRpcHelper(num_events, event_list);
     } else {
         log<Verbosity::debug>("clWaitForEvents - callbacks handler is enabled, will poll event status with clGetEventInfo");
         log<Verbosity::performance>("clWaitForEvents - will use busy polling with clGetEventInfo for callbacks support");
         while (true) {
             for (cl_uint i = 0; i < num_events; i++) {
                 cl_int eventStatus = CL_COMPLETE;
-                cl_int ret = Cal::Icd::Ocl::clGetEventInfo(event_list[i], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(eventStatus), &eventStatus, nullptr);
+                cl_int ret = Cal::Client::Icd::Ocl::clGetEventInfo(event_list[i], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(eventStatus), &eventStatus, nullptr);
                 if (ret != CL_SUCCESS) {
                     log<Verbosity::error>("Failed to get event[%d] status with clGetEventInfo : err=%d", i, ret);
                     return ret;
@@ -418,16 +418,16 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
     oclKernel->storeKernelArg(argValue, argIndex);
     auto cacheRet = oclKernel->clSetKernelArgCache.cache.end();
 
-    if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
+    if (Cal::Client::Icd::icdGlobalState.isCacheEnabled()) {
         cacheRet = oclKernel->clSetKernelArgCache.findCachedKernelArg(argIndex, 0u, argValue);
     }
 
     cl_int ret = CL_SUCCESS;
 
     if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
-        ret = Cal::Icd::Ocl::clSetKernelArgMemPointerINTELRpcHelper(kernel, argIndex, argValue);
+        ret = Cal::Client::Icd::Ocl::clSetKernelArgMemPointerINTELRpcHelper(kernel, argIndex, argValue);
 
-        if (Cal::Icd::icdGlobalState.isCacheEnabled()) {
+        if (Cal::Client::Icd::icdGlobalState.isCacheEnabled()) {
             oclKernel->clSetKernelArgCache.cacheKernelArg(argIndex, 0u, argValue);
         }
     } else {
@@ -437,7 +437,7 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
 }
 
 cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue) {
-    return Cal::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, argIndex, argValue);
+    return Cal::Client::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, argIndex, argValue);
 }
 
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
@@ -462,7 +462,7 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
         break;
     }
 
-    return Cal::Icd::Ocl::clGetMemObjectInfoRpcHelper(memobj, param_name, param_value_size, param_value, param_value_size_ret);
+    return Cal::Client::Icd::Ocl::clGetMemObjectInfoRpcHelper(memobj, param_name, param_value_size, param_value, param_value_size_ret);
 }
 
 void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t offset) {
@@ -591,7 +591,7 @@ IcdOclContext::IcdOclContext(cl_context remoteObject, Cal::Shared::SingleReferen
                              Cal::Shared::RefCounted<_cl_context, IcdOclTypePrinter>::CleanupFuncT cleanupFunc)
     : Cal::Shared::RefCountedWithParent<_cl_context, IcdOclTypePrinter>(remoteObject, std::move(parent), cleanupFunc),
       stagingAreaManager([this](size_t size) { return this->allocateStagingArea(size); }, [this](void *ptr) { return this->deallocateStagingAreas(ptr); }) {
-    Cal::Icd::icdGlobalState.registerAtExit(this, [this](const void *key) { this->globalReleaseCallback(); });
+    Cal::Client::Icd::icdGlobalState.registerAtExit(this, [this](const void *key) { this->globalReleaseCallback(); });
     this->skipTransferOnHostPtrMatch = Cal::Utils::getCalEnvFlag(calIcdBufferRecycleEnvName);
 }
 
@@ -600,7 +600,7 @@ void IcdOclContext::beforeReleaseCallback() {
         this->getStagingAreaManager().clearStagingAreaAllocations();
         clBufferRecycler.cleanup();
         if (implicitQueue) {
-            Cal::Icd::Ocl::clReleaseCommandQueue(implicitQueue);
+            Cal::Client::Icd::Ocl::clReleaseCommandQueue(implicitQueue);
         }
     }
 }
@@ -617,7 +617,7 @@ cl_mem IcdOclContext::tryGetRecycledClBuffer(cl_context context, cl_mem_flags fl
             log<Verbosity::info>("Skipping transfer for recycled buffer %d with host ptr %p", recycledBuffer, host_ptr);
         }
         if (!skipCopy) {
-            auto err = Cal::Icd::Ocl::clEnqueueWriteBuffer(implicitQueue, recycledBuffer, CL_TRUE, 0, size, host_ptr, 0U, nullptr, nullptr);
+            auto err = Cal::Client::Icd::Ocl::clEnqueueWriteBuffer(implicitQueue, recycledBuffer, CL_TRUE, 0, size, host_ptr, 0U, nullptr, nullptr);
             if (err) {
                 log<Verbosity::error>("Could not overwrite recycled buffer");
                 tryRecycleClBuffer(recycledBuffer);
@@ -655,7 +655,7 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
 
         do {
             queueIndex = signedQueueIndex--;
-            implicitQueue = Cal::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
+            implicitQueue = Cal::Client::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
             if (implicitQueue != nullptr) {
                 log<Verbosity::debug>("Created implicit command queue with family: %d and index %d", queueFamily, queueIndex);
             }
@@ -663,7 +663,7 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
         if (implicitQueue == nullptr) {
             queueFamily = 2u;
             queueIndex = 0u;
-            implicitQueue = Cal::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
+            implicitQueue = Cal::Client::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
             if (implicitQueue != nullptr) {
                 log<Verbosity::debug>("Created implicit command queue with family: %d and index %d", queueFamily, queueIndex);
             }
@@ -673,14 +673,14 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
             signedQueueIndex = 3u;
             do {
                 queueIndex = signedQueueIndex--;
-                implicitQueue = Cal::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
+                implicitQueue = Cal::Client::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], properties, nullptr);
                 if (implicitQueue != nullptr) {
                     log<Verbosity::debug>("Created implicit command queue with family: %d and index %d", queueFamily, queueIndex);
                 }
             } while (implicitQueue == nullptr && signedQueueIndex >= 0);
         }
         if (implicitQueue == nullptr) {
-            implicitQueue = Cal::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], nullptr, nullptr);
+            implicitQueue = Cal::Client::Icd::Ocl::clCreateCommandQueueWithProperties(this, devices[0], nullptr, nullptr);
             if (implicitQueue != nullptr) {
                 log<Verbosity::debug>("Created implicit command queue without properties");
             }
@@ -693,7 +693,7 @@ void IcdOclContext::setDevicesList(size_t numDevices, const cl_device_id *device
 
 void *IcdOclContext::allocateStagingArea(size_t size) {
     cl_int cl_err{};
-    void *usmHostMem = Cal::Icd::Ocl::clHostMemAllocINTEL(this->asLocalObject(), nullptr, size, 0, &cl_err);
+    void *usmHostMem = Cal::Client::Icd::Ocl::clHostMemAllocINTEL(this->asLocalObject(), nullptr, size, 0, &cl_err);
     if (CL_SUCCESS != cl_err) {
         log<Verbosity::critical>("Failed to allocate staging buffer via clHostMemAllocINTEL of size %zu", size);
         return nullptr;
@@ -703,12 +703,12 @@ void *IcdOclContext::allocateStagingArea(size_t size) {
 }
 
 void IcdOclContext::deallocateStagingAreas(void *ptr) {
-    Cal::Icd::Ocl::clMemFreeINTEL(this->asLocalObject(), ptr);
+    Cal::Client::Icd::Ocl::clMemFreeINTEL(this->asLocalObject(), ptr);
 }
 
 bool IcdOclKernel::initTraits() {
     cl_uint numArgs = 0;
-    if (CL_SUCCESS != Cal::Icd::Ocl::clGetKernelInfo(this, CL_KERNEL_NUM_ARGS, sizeof(numArgs), &numArgs, 0)) {
+    if (CL_SUCCESS != Cal::Client::Icd::Ocl::clGetKernelInfo(this, CL_KERNEL_NUM_ARGS, sizeof(numArgs), &numArgs, 0)) {
         return false;
     }
     this->argsTraits.reserve(numArgs);
@@ -717,13 +717,13 @@ bool IcdOclKernel::initTraits() {
     for (cl_uint i = 0; i < numArgs; ++i) {
         ArgTraits argTraits;
         size_t typeLen = 0;
-        auto err = Cal::Icd::Ocl::clGetKernelArgInfo(this, i, CL_KERNEL_ARG_TYPE_NAME, argType.size(), argType.data(), &typeLen);
+        auto err = Cal::Client::Icd::Ocl::clGetKernelArgInfo(this, i, CL_KERNEL_ARG_TYPE_NAME, argType.size(), argType.data(), &typeLen);
         if ((CL_SUCCESS != err) && (typeLen < argType.size())) {
             if (typeLen <= argType.size()) {
                 return false;
             }
             argType.resize(typeLen);
-            err = Cal::Icd::Ocl::clGetKernelArgInfo(this, i, CL_KERNEL_ARG_TYPE_NAME, argType.size(), argType.data(), &typeLen);
+            err = Cal::Client::Icd::Ocl::clGetKernelArgInfo(this, i, CL_KERNEL_ARG_TYPE_NAME, argType.size(), argType.data(), &typeLen);
             if (CL_SUCCESS != err) {
                 return false;
             }
@@ -745,10 +745,10 @@ bool IcdOclKernel::initTraits(const IcdOclKernel *sourceKernel) {
 
 void IcdOclKernel::moveArgsToGpu() {
     if (sharedIndirectAccessSet) {
-        Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllAllocationsToGpu();
+        Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllAllocationsToGpu();
     } else {
         for (auto &alloc : this->allocationsToMigrate) {
-            Cal::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(alloc);
+            Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(alloc);
         }
     }
 }
@@ -769,7 +769,7 @@ void IcdOclProgram::storeSizesOfBinaries(void *paramValue, size_t paramValueSize
 
 template <typename OclObjectT>
 void objectCleanup(void *remote, void *local) {
-    Cal::Icd::icdGlobalState.getOclPlatform()->removeObjectFromMap(static_cast<OclObjectT>(remote), static_cast<OclObjectT>(local));
+    Cal::Client::Icd::icdGlobalState.getOclPlatform()->removeObjectFromMap(static_cast<OclObjectT>(remote), static_cast<OclObjectT>(local));
 }
 
 template void objectCleanup<cl_kernel>(void *, void *);
@@ -782,5 +782,5 @@ template void objectCleanup<cl_command_queue>(void *, void *);
 template void objectCleanup<cl_event>(void *, void *);
 
 } // namespace Ocl
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal

@@ -25,7 +25,7 @@ using ReallocFT = void *(*)(void *, size_t);
 
 namespace Cal {
 
-namespace Icd::MallocOverride {
+namespace Client::MallocOverride {
 
 void *mallocRetAddress = nullptr;
 void *callocRetAddress = nullptr;
@@ -68,7 +68,7 @@ bool isAllocFromCal(const Cal::Utils::AddressRange &libraryExecAddressRange) {
     bool foundEntryPoint = false;
     for (int i = 0; i < backtraceDepth; ++i) {
         if (false == foundEntryPoint) {
-            foundEntryPoint = (backtracePtrs[i] == Cal::Icd::MallocOverride::mallocRetAddress) || (backtracePtrs[i] == Cal::Icd::MallocOverride::callocRetAddress);
+            foundEntryPoint = (backtracePtrs[i] == Cal::Client::MallocOverride::mallocRetAddress) || (backtracePtrs[i] == Cal::Client::MallocOverride::callocRetAddress);
         } else {
             if (libraryExecAddressRange.contains(backtracePtrs[i])) {
                 return true;
@@ -202,14 +202,14 @@ void *mallocNoFallback(size_t size) {
 void *malloc(size_t size) {
     auto &globalState = getGlobalState();
     if (predict_true(size < globalState.threshold)) {
-        return Cal::Icd::MallocOverride::Original::malloc(size);
+        return Cal::Client::MallocOverride::Original::malloc(size);
     }
     if (isAllocFromCal(globalState.calLibExecAddressRange)) {
-        return Cal::Icd::MallocOverride::Original::malloc(size);
+        return Cal::Client::MallocOverride::Original::malloc(size);
     }
     auto ptr = mallocNoFallback(size);
     if (nullptr == ptr) {
-        ptr = Cal::Icd::MallocOverride::Original::malloc(size);
+        ptr = Cal::Client::MallocOverride::Original::malloc(size);
     }
     return ptr;
 }
@@ -218,7 +218,7 @@ void *malloc(size_t size) {
 void free(void *ptr) {
     auto &globalState = getGlobalState();
     if (predict_true(false == globalState.asShmemHeapRange.contains(ptr))) {
-        return Cal::Icd::MallocOverride::Original::free(ptr);
+        return Cal::Client::MallocOverride::Original::free(ptr);
     }
     std::lock_guard<std::mutex> lock{globalState.mutex};
     globalState.rangeAllocator.free(ptr);
@@ -229,14 +229,14 @@ void *calloc(size_t nitems, size_t size) {
     auto &globalState = getGlobalState();
     size_t totalSize = nitems * size;
     if (predict_true(totalSize < globalState.threshold)) {
-        return Cal::Icd::MallocOverride::Original::calloc(nitems, size);
+        return Cal::Client::MallocOverride::Original::calloc(nitems, size);
     }
     if (isAllocFromCal(globalState.calLibExecAddressRange)) {
-        return Cal::Icd::MallocOverride::Original::calloc(nitems, size);
+        return Cal::Client::MallocOverride::Original::calloc(nitems, size);
     }
     auto ptr = AsCalShmem::mallocNoFallback(totalSize);
     if (nullptr == ptr) {
-        return Cal::Icd::MallocOverride::Original::calloc(nitems, size);
+        return Cal::Client::MallocOverride::Original::calloc(nitems, size);
     }
     memset(ptr, 0, totalSize);
     return ptr;
@@ -246,14 +246,14 @@ void *calloc(size_t nitems, size_t size) {
 void *realloc(void *ptr, size_t size) {
     auto &globalState = getGlobalState();
     if (predict_true(false == globalState.asShmemHeapRange.contains(ptr))) {
-        return Cal::Icd::MallocOverride::Original::realloc(ptr, size);
+        return Cal::Client::MallocOverride::Original::realloc(ptr, size);
     }
     std::lock_guard<std::mutex> lock{globalState.mutex};
     size_t oldSize = 0U;
     auto newRange = globalState.rangeAllocator.resizeOrAllocate(ptr, size, naturalAlignment, oldSize);
 
     if (nullptr == newRange.base()) { // could not allocate VA in shared heap
-        auto newPtr = Cal::Icd::MallocOverride::Original::malloc(size);
+        auto newPtr = Cal::Client::MallocOverride::Original::malloc(size);
         if (newPtr) {
             memcpy(newPtr, ptr, oldSize);
         } else {
@@ -264,7 +264,7 @@ void *realloc(void *ptr, size_t size) {
     }
 
     if (ensureMemoryIsMapped(newRange) == false) { // could map pages for VA in shared heap
-        auto newPtr = Cal::Icd::MallocOverride::Original::malloc(size);
+        auto newPtr = Cal::Client::MallocOverride::Original::malloc(size);
         if (newPtr) {
             memcpy(newPtr, ptr, oldSize);
         } else {
@@ -296,7 +296,7 @@ bool doInit() {
 
     globalState.calLibExecAddressRange = readCalLibExecAddressRange();
 
-    using namespace Cal::Icd::MallocOverride;
+    using namespace Cal::Client::MallocOverride;
 
     globalState.threshold = Cal::Utils::getCalEnvI64(calOverrideMallocThresholdEnvName, globalState.threshold);
 
@@ -338,22 +338,22 @@ bool doInit() {
     globalState.rangeAllocator = Cal::Allocators::RangeAllocator(globalState.asShmemHeapRange);
     globalState.initError[0] = '\0';
 
-    Cal::Icd::MallocOverride::Overriden::free = AsCalShmem::free;
-    Cal::Icd::MallocOverride::Overriden::realloc = AsCalShmem::realloc;
+    Cal::Client::MallocOverride::Overriden::free = AsCalShmem::free;
+    Cal::Client::MallocOverride::Overriden::realloc = AsCalShmem::realloc;
     return true;
 }
 
 bool doCaptureMallocRetAdddress() {
-    Cal::Icd::MallocOverride::mallocRetAddress = getRetAddress("malloc");
-    if (nullptr == Cal::Icd::MallocOverride::mallocRetAddress) {
+    Cal::Client::MallocOverride::mallocRetAddress = getRetAddress("malloc");
+    if (nullptr == Cal::Client::MallocOverride::mallocRetAddress) {
         std::abort();
     }
     return true;
 }
 
 bool doCaptureCallocRetAdddress() {
-    Cal::Icd::MallocOverride::callocRetAddress = getRetAddress("calloc");
-    if (nullptr == Cal::Icd::MallocOverride::callocRetAddress) {
+    Cal::Client::MallocOverride::callocRetAddress = getRetAddress("calloc");
+    if (nullptr == Cal::Client::MallocOverride::callocRetAddress) {
         std::abort();
     }
     return true;
@@ -375,33 +375,33 @@ bool ensureCallocRetAddressCaptured() {
 }
 
 void *malloc(size_t size) {
-    Cal::Icd::MallocOverride::Overriden::malloc = Cal::Icd::MallocOverride::Original::malloc;
+    Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::Original::malloc;
     ensureMallocRetAddressCaptured();
     ensureInitialized();
-    Cal::Icd::MallocOverride::Overriden::malloc = Cal::Icd::MallocOverride::AsCalShmem::malloc;
+    Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::AsCalShmem::malloc;
     auto p = Overriden::malloc(size);
     return p;
 }
 
 void *calloc(size_t nitems, size_t size) {
-    Cal::Icd::MallocOverride::Overriden::calloc = Cal::Icd::MallocOverride::Original::calloc;
+    Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::Original::calloc;
     ensureCallocRetAddressCaptured();
     ensureInitialized();
-    Cal::Icd::MallocOverride::Overriden::calloc = Cal::Icd::MallocOverride::AsCalShmem::calloc;
+    Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::AsCalShmem::calloc;
     void *p = Overriden::calloc(nitems, size);
     return p;
 }
 } // namespace Init
 
 bool doPreInit() {
-    Cal::Icd::MallocOverride::Original::malloc = getOriginalFunc<MallocFT>("malloc");
-    Cal::Icd::MallocOverride::Original::free = getOriginalFunc<FreeFT>("free");
-    Cal::Icd::MallocOverride::Original::calloc = getOriginalFunc<CallocFT>("calloc");
-    Cal::Icd::MallocOverride::Original::realloc = getOriginalFunc<ReallocFT>("realloc");
-    Cal::Icd::MallocOverride::Overriden::malloc = Cal::Icd::MallocOverride::Init::malloc;
-    Cal::Icd::MallocOverride::Overriden::free = Cal::Icd::MallocOverride::Original::free;
-    Cal::Icd::MallocOverride::Overriden::calloc = Cal::Icd::MallocOverride::Init::calloc;
-    Cal::Icd::MallocOverride::Overriden::realloc = Cal::Icd::MallocOverride::Original::realloc;
+    Cal::Client::MallocOverride::Original::malloc = getOriginalFunc<MallocFT>("malloc");
+    Cal::Client::MallocOverride::Original::free = getOriginalFunc<FreeFT>("free");
+    Cal::Client::MallocOverride::Original::calloc = getOriginalFunc<CallocFT>("calloc");
+    Cal::Client::MallocOverride::Original::realloc = getOriginalFunc<ReallocFT>("realloc");
+    Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::Init::malloc;
+    Cal::Client::MallocOverride::Overriden::free = Cal::Client::MallocOverride::Original::free;
+    Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::Init::calloc;
+    Cal::Client::MallocOverride::Overriden::realloc = Cal::Client::MallocOverride::Original::realloc;
 
     return true;
 }
@@ -460,6 +460,6 @@ void *realloc(void *ptr, size_t size) {
     return p;
 }
 
-} // namespace Icd::MallocOverride
+} // namespace Client::MallocOverride
 
 } // namespace Cal

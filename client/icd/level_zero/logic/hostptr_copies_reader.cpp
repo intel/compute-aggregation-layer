@@ -15,7 +15,7 @@
 
 #include <cstring>
 
-namespace Cal::Icd::LevelZero::Logic {
+namespace Cal::Client::Icd::LevelZero::Logic {
 
 ze_result_t HostptrCopiesReader::readMemory(Cal::Rpc::ChannelClient &channel, Cal::Ipc::ShmemImporter &shmemImporter) {
     const auto transferDescs = getHostptrCopiesToUpdate(channel);
@@ -77,4 +77,4 @@ bool HostptrCopiesReader::copyMappedMemory(Cal::Ipc::ShmemImporter &shmemImporte
     return true;
 }
 
-} // namespace Cal::Icd::LevelZero::Logic
+} // namespace Cal::Client::Icd::LevelZero::Logic

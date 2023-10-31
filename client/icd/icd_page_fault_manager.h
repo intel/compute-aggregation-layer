@@ -17,7 +17,7 @@
 #include <limits>
 #include <mutex>
 
-namespace Cal::Icd {
+namespace Cal::Client::Icd {
 
 class PageFaultManager {
   public:
@@ -220,4 +220,4 @@ class PageFaultManager {
     bool dumpStackOnUnhandledPageFault = false;
 };
 
-} // namespace Cal::Icd
+} // namespace Cal::Client::Icd

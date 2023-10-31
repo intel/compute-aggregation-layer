@@ -34,7 +34,7 @@
 #include <utility>
 
 namespace Cal {
-namespace Icd {
+namespace Client::Icd {
 namespace LevelZero {
 
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
@@ -249,9 +249,9 @@ class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, 
     using RefCountedWithParent::RefCountedWithParent;
 };
 
-class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
+class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_handle_t {
   public:
-    IcdL0Platform(Cal::Icd::IcdGlobalState &globalState)
+    IcdL0Platform(Cal::Client::Icd::IcdGlobalState &globalState)
         : IcdPlatform(globalState, Cal::ApiType::LevelZero) {}
 
     ze_driver_handle_t asRemoteObject() {
@@ -491,5 +491,5 @@ class IcdL0Platform : public Cal::Icd::IcdPlatform, public _ze_driver_handle_t {
 };
 
 } // namespace LevelZero
-} // namespace Icd
+} // namespace Client::Icd
 } // namespace Cal

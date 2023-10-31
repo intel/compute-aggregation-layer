@@ -14,7 +14,7 @@
 #include <tuple>
 #include <vector>
 
-namespace Cal::Icd::LevelZero::Logic::PropertiesCache {
+namespace Cal::Client::Icd::LevelZero::Logic::PropertiesCache {
 
 template <typename... Ts>
 using VectorTuple = std::tuple<std::vector<Ts>...>;
@@ -73,4 +73,4 @@ ze_result_t obtainProperties(L0Obj *obj, uint32_t *pCount, T *properties, F &&rp
     return ret;
 }
 
-} // namespace Cal::Icd::LevelZero::Logic::PropertiesCache
+} // namespace Cal::Client::Icd::LevelZero::Logic::PropertiesCache

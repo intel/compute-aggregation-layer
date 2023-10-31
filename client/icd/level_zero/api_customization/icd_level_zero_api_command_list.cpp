@@ -15,10 +15,10 @@
 #include <array>
 #include <boost/container/small_vector.hpp>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 static auto arePointersUsm(void *dstptr, const void *srcptr) {
-    const auto globalL0Platform = Cal::Icd::icdGlobalState.getL0Platform();
+    const auto globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
 
     std::array<const void *, 2> ptrs = {dstptr, srcptr};
     std::array<bool, 2> testResults = {};
@@ -177,4 +177,4 @@ ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hC
     }
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

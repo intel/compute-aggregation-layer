@@ -7,7 +7,7 @@
 
 #include "client/icd/level_zero/api_type_wrapper/device_wrapper.h"
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 ze_result_t zeDeviceGetSubDevicesRpcHelper(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_handle_t *phSubdevices);
 ze_result_t zeDeviceGetRpcHelper(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices);
 
@@ -67,4 +67,4 @@ bool IcdL0Device::patchDeviceName(ze_device_properties_t &properties) {
     std::copy(std::begin(deviceNameSuffix), std::end(deviceNameSuffix), nullTerminator);
     return true;
 }
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t, Logic::IcdL0TypePrinter> {
   public:
@@ -65,4 +65,4 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
     std::vector<ze_device_handle_t> filteredDevices;
     std::once_flag parseZeAffinityMaskOnce;
 };
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero

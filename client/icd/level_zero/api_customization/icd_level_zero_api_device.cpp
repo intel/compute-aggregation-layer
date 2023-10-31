@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <cstring>
 
-namespace Cal::Icd::LevelZero {
+namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_handle_t *phDevices) {
-    auto platform = Cal::Icd::icdGlobalState.getL0Platform();
+    auto platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     if (!platform || hDriver != static_cast<ze_driver_handle_t>(platform)) {
-        return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
+        return Cal::Client::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
     }
 
     if (platform->isZeAffinityMaskPresent()) {
@@ -55,13 +55,13 @@ ze_result_t zeDeviceGet(ze_driver_handle_t hDriver, uint32_t *pCount, ze_device_
 
         return ZE_RESULT_SUCCESS;
     }
-    return Cal::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetRpcHelper(hDriver, pCount, phDevices);
 }
 
 ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, ze_device_handle_t *phDevices) {
     auto device = static_cast<IcdL0Device *>(hDevice);
     if (!device) {
-        return Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
+        return Cal::Client::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
     }
     device->ensureIsLocalObject();
 
@@ -79,7 +79,7 @@ ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, 
         }
         return ZE_RESULT_SUCCESS;
     }
-    return Cal::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
+    return Cal::Client::Icd::LevelZero::zeDeviceGetSubDevicesRpcHelper(hDevice, pCount, phDevices);
 }
 
 ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properties_t *pDeviceProperties) {
@@ -124,4 +124,4 @@ ze_result_t zeDeviceGetMemoryProperties(ze_device_handle_t hDevice, uint32_t *pC
     return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pCount, pMemProperties, zeDeviceGetMemoryPropertiesRpcHelper);
 }
 
-} // namespace Cal::Icd::LevelZero
+} // namespace Cal::Client::Icd::LevelZero
