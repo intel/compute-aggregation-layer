@@ -399,6 +399,7 @@ cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
                 }
                 if (eventStatus != CL_COMPLETE) {
                     log<Verbosity::bloat>("clGetEventInfo - event[%d] is not complete", i);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     break;
                 }
                 log<Verbosity::bloat>("clGetEventInfo - event[%d] is complete", i);
@@ -481,88 +482,85 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
     while (true) {
         log<Verbosity::debug>("Waiting for callbacks");
         auto status = channel.waitForCallbacks();
-        auto callbackId = channel.peekCompletedCallbackId();
-        if (false == (status && (0 != callbackId.fptr))) {
-            log<Verbosity::debug>("Terminating callbacks handler - status : %d, fptr : 0x%llx, handle : 0x%llx, subType : %d", status, callbackId.fptr, callbackId.handle, callbackId.src.subtype);
-            break;
+        if (!status) {
+            auto callbackId = channel.peekCompletedCallbackId();
+            log<Verbosity::debug>("Terminating callbacks handler - fptr : 0x%llx, handle : 0x%llx, subType : %d", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
         }
 
-        while (true) {
-            callbackId = channel.popCompletedCallbackId();
-            if (0 == callbackId.fptr) {
-                log<Verbosity::debug>("Received null callback notification for message subType : %d", callbackId.src.subtype);
-                break;
-            }
-            switch (callbackId.src.subtype) {
-            default:
-                log<Verbosity::error>("Unknown callback signature for message subType : %d", callbackId.src.subtype);
-                break;
-            case Cal::Rpc::Ocl::ClCreateContextRpcM::messageSubtype:
-            case Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto context = reinterpret_cast<cl_context>(callbackId.handle);
-                platform->translateRemoteObjectToLocalObject(context);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(const char *errinfo, const void *private_info, size_t cb, void *user_data)>(callbackId.fptr);
-                auto oclContext = static_cast<IcdOclContext *>(context);
-                auto errorInfo = reinterpret_cast<const char *>(oclContext->notifyErrInfoMem.get());
-                fptr(errorInfo, nullptr, 0, userData);
-                break;
-            }
-            case Cal::Rpc::Ocl::ClSetEventCallbackRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto event = reinterpret_cast<cl_event>(callbackId.handle);
-                platform->translateRemoteObjectToLocalObject(event);
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_event event, cl_int event_command_status, void *user_data)>(callbackId.fptr);
-                auto commandExecCallbackType = static_cast<cl_int>(callbackId.notificationFlags);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                fptr(event, commandExecCallbackType, userData);
-                break;
-            }
-            case Cal::Rpc::Ocl::ClLinkProgramRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto program = reinterpret_cast<cl_program>(callbackId.handle);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                auto wrappedData = reinterpret_cast<UserDataLinkProgram *>(userData);
-                platform->translateNewRemoteObjectToLocalObject(program, wrappedData->parentContext->asLocalObject());
-                void *originalUserData = wrappedData->originalUserData;
-                delete wrappedData;
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_program program, void *user_data)>(callbackId.fptr);
-                fptr(program, originalUserData);
-                break;
-            }
-            case Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto context = reinterpret_cast<cl_context>(callbackId.handle);
-                platform->translateRemoteObjectToLocalObject(context);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_context context, void *user_data)>(callbackId.fptr);
-                fptr(context, userData);
-                context->asLocalObject()->dec();
-                break;
-            }
-            case Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto memobj = reinterpret_cast<cl_mem>(callbackId.handle);
-                platform->translateRemoteObjectToLocalObject(memobj);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_mem memobj, void *user_data)>(callbackId.fptr);
-                fptr(memobj, userData);
-                memobj->asLocalObject()->dec();
-                break;
-            }
-            case Cal::Rpc::Ocl::ClBuildProgramRpcM::messageSubtype:
-            case Cal::Rpc::Ocl::ClCompileProgramRpcM::messageSubtype:
-            case Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM::messageSubtype: {
-                log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
-                auto program = reinterpret_cast<cl_program>(callbackId.handle);
-                platform->translateRemoteObjectToLocalObject(program);
-                auto userData = reinterpret_cast<void *>(callbackId.data);
-                auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_program program, void *user_data)>(callbackId.fptr);
-                fptr(program, userData);
-                break;
-            }
-            }
+        auto callbackId = channel.popCompletedCallbackId();
+        if (0 == callbackId.fptr) {
+            log<Verbosity::debug>("Received null callback notification for message subType : %d", callbackId.src.subtype);
+            break;
+        }
+        switch (callbackId.src.subtype) {
+        default:
+            log<Verbosity::error>("Unknown callback signature for message subType : %d", callbackId.src.subtype);
+            break;
+        case Cal::Rpc::Ocl::ClCreateContextRpcM::messageSubtype:
+        case Cal::Rpc::Ocl::ClCreateContextFromTypeRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto context = reinterpret_cast<cl_context>(callbackId.handle);
+            platform->translateRemoteObjectToLocalObject(context);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(const char *errinfo, const void *private_info, size_t cb, void *user_data)>(callbackId.fptr);
+            auto oclContext = static_cast<IcdOclContext *>(context);
+            auto errorInfo = reinterpret_cast<const char *>(oclContext->notifyErrInfoMem.get());
+            fptr(errorInfo, nullptr, 0, userData);
+            break;
+        }
+        case Cal::Rpc::Ocl::ClSetEventCallbackRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto event = reinterpret_cast<cl_event>(callbackId.handle);
+            platform->translateRemoteObjectToLocalObject(event);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_event event, cl_int event_command_status, void *user_data)>(callbackId.fptr);
+            auto commandExecCallbackType = static_cast<cl_int>(callbackId.notificationFlags);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            fptr(event, commandExecCallbackType, userData);
+            break;
+        }
+        case Cal::Rpc::Ocl::ClLinkProgramRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto program = reinterpret_cast<cl_program>(callbackId.handle);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            auto wrappedData = reinterpret_cast<UserDataLinkProgram *>(userData);
+            platform->translateNewRemoteObjectToLocalObject(program, wrappedData->parentContext->asLocalObject());
+            void *originalUserData = wrappedData->originalUserData;
+            delete wrappedData;
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_program program, void *user_data)>(callbackId.fptr);
+            fptr(program, originalUserData);
+            break;
+        }
+        case Cal::Rpc::Ocl::ClSetContextDestructorCallbackRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto context = reinterpret_cast<cl_context>(callbackId.handle);
+            platform->translateRemoteObjectToLocalObject(context);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_context context, void *user_data)>(callbackId.fptr);
+            fptr(context, userData);
+            context->asLocalObject()->dec();
+            break;
+        }
+        case Cal::Rpc::Ocl::ClSetMemObjectDestructorCallbackRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto memobj = reinterpret_cast<cl_mem>(callbackId.handle);
+            platform->translateRemoteObjectToLocalObject(memobj);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_mem memobj, void *user_data)>(callbackId.fptr);
+            fptr(memobj, userData);
+            memobj->asLocalObject()->dec();
+            break;
+        }
+        case Cal::Rpc::Ocl::ClBuildProgramRpcM::messageSubtype:
+        case Cal::Rpc::Ocl::ClCompileProgramRpcM::messageSubtype:
+        case Cal::Rpc::Ocl::ClSetProgramReleaseCallbackRpcM::messageSubtype: {
+            log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
+            auto program = reinterpret_cast<cl_program>(callbackId.handle);
+            platform->translateRemoteObjectToLocalObject(program);
+            auto userData = reinterpret_cast<void *>(callbackId.data);
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_program program, void *user_data)>(callbackId.fptr);
+            fptr(program, userData);
+            break;
+        }
         }
     }
     log<Verbosity::debug>("Finished callbacks handler");
