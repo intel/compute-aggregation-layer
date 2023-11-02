@@ -871,7 +871,7 @@ size_t ClEnqueueMigrateMemObjectsRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClCreateBufferRpcM::Captures::DynamicTraits ClCreateBufferRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret) {
+ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::Captures::DynamicTraits ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::Captures::DynamicTraits::calculate(cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret) {
     DynamicTraits ret = {};
     ret.host_ptr.count = ((nullptr != host_ptr) ? size : 0U);
     ret.host_ptr.size = ret.host_ptr.count;
@@ -881,12 +881,12 @@ ClCreateBufferRpcM::Captures::DynamicTraits ClCreateBufferRpcM::Captures::Dynami
     return ret;
 }
 
-size_t ClCreateBufferRpcM::Captures::getCaptureTotalSize() const {
+size_t ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::Captures::getCaptureTotalSize() const {
      auto size = offsetof(Captures, host_ptr) + Cal::Utils::alignUpPow2<8>(this->countHost_ptr);
      return size;
 }
 
-size_t ClCreateBufferRpcM::Captures::getCaptureDynMemSize() const {
+size_t ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countHost_ptr);
      return size;
 }

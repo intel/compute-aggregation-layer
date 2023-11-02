@@ -716,7 +716,6 @@ inline bool clEnqueueMigrateMemObjectsHandler(Provider &service, Cal::Rpc::Chann
                                                 );
     return true;
 }
-bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM*>(command);
@@ -730,6 +729,18 @@ inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider
                                                 apiCommand->args.flags, 
                                                 apiCommand->args.size, 
                                                 importedMallocPtrHostPtr, 
+                                                apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
+                                                );
+    return true;
+}
+inline bool clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
+                                                apiCommand->args.context, 
+                                                apiCommand->args.flags, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.host_ptr ? apiCommand->captures.host_ptr : nullptr, 
                                                 apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
                                                 );
     return true;
@@ -1471,6 +1482,18 @@ inline bool clGetDeviceGlobalVariablePointerINTELHandler(Provider &service, Cal:
                                                 apiCommand->args.globalVariableName ? apiCommand->captures.globalVariableName : nullptr, 
                                                 apiCommand->args.globalVariableSizeRet ? &apiCommand->captures.globalVariableSizeRet : nullptr, 
                                                 apiCommand->args.globalVariablePointerRet ? &apiCommand->captures.globalVariablePointerRet : nullptr
+                                                );
+    return true;
+}
+inline bool clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
+                                                apiCommand->args.context, 
+                                                apiCommand->args.flags, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.host_ptr, 
+                                                apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
                                                 );
     return true;
 }
@@ -2230,8 +2253,8 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClEnqueueBarrierRpcM::messageSubtype] = clEnqueueBarrierHandler;
     outHandlers[ClEnqueueWaitForEventsRpcM::messageSubtype] = clEnqueueWaitForEventsHandler;
     outHandlers[ClEnqueueMigrateMemObjectsRpcM::messageSubtype] = clEnqueueMigrateMemObjectsHandler;
-    outHandlers[ClCreateBufferRpcM::messageSubtype] = clCreateBufferHandler;
     outHandlers[ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM::messageSubtype] = clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler;
+    outHandlers[ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::messageSubtype] = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemHandler;
     outHandlers[ClCreateSubBufferRpcM::messageSubtype] = clCreateSubBufferHandler;
     outHandlers[ClCreatePipeRpcM::messageSubtype] = clCreatePipeHandler;
     outHandlers[ClGetPipeInfoRpcM::messageSubtype] = clGetPipeInfoHandler;
@@ -2293,6 +2316,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClMemBlockingFreeINTELRpcM::messageSubtype] = clMemBlockingFreeINTELHandler;
     outHandlers[ClEnqueueMigrateMemINTELRpcM::messageSubtype] = clEnqueueMigrateMemINTELHandler;
     outHandlers[ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype] = clGetDeviceGlobalVariablePointerINTELHandler;
+    outHandlers[ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM::messageSubtype] = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmHandler;
     outHandlers[ClEnqueueWriteBuffer_LocalRpcM::messageSubtype] = clEnqueueWriteBuffer_LocalHandler;
     outHandlers[ClEnqueueWriteBuffer_UsmRpcM::messageSubtype] = clEnqueueWriteBuffer_UsmHandler;
     outHandlers[ClEnqueueWriteBuffer_SharedRpcM::messageSubtype] = clEnqueueWriteBuffer_SharedHandler;
@@ -2771,7 +2795,7 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueMigrateMemObjectsRpcM &apiComma
                                                 apiCommand.args.event
                                                 );
 }
-inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcM &apiCommand) {
+inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
                                                 apiCommand.args.context, 
                                                 apiCommand.args.flags, 
@@ -2780,7 +2804,7 @@ inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcM &apiCommand) {
                                                 apiCommand.args.errcode_ret
                                                 );
 }
-inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM &apiCommand) {
+inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
                                                 apiCommand.args.context, 
                                                 apiCommand.args.flags, 
@@ -3412,6 +3436,15 @@ inline void callDirectly(Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpc
                                                 apiCommand.args.globalVariablePointerRet
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(
+                                                apiCommand.args.context, 
+                                                apiCommand.args.flags, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.host_ptr, 
+                                                apiCommand.args.errcode_ret
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBuffer(
                                                 apiCommand.args.command_queue, 
@@ -3886,8 +3919,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClEnqueueBarrierRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueBarrierRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueWaitForEventsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWaitForEventsRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMigrateMemObjectsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemObjectsRpcM*>(command)); break;
-        case Cal::Rpc::Ocl::ClCreateBufferRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmemRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateSubBufferRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubBufferRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreatePipeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreatePipeRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetPipeInfoRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetPipeInfoRpcM*>(command)); break;
@@ -3949,6 +3982,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueWriteBuffer_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBuffer_UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueWriteBuffer_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBuffer_SharedRpcM*>(command)); break;

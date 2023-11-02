@@ -279,6 +279,10 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem(cl_context context, 
    return {};
 }
 
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem(cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret){
+   return {};
+}
+
 cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret){
    return {};
 }
@@ -455,6 +459,10 @@ cl_int clEnqueueSVMMigrateMem(cl_command_queue command_queue, cl_uint num_svm_po
 }
 
 cl_int clEnqueueSVMMemcpy(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+   return {};
+}
+
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm(cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret){
    return {};
 }
 

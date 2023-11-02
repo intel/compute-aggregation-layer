@@ -1376,11 +1376,10 @@ cl_int clReleaseMemObject (cl_mem memobj) {
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    {
-        memobj->asLocalObject()->dec();
-    }
     cl_int ret = command->captures.ret;
 
+    channelLock.unlock();
+    memobj->asLocalObject()->dec();
     return ret;
 }
 cl_int clReleaseEvent (cl_event event) {
@@ -1988,33 +1987,7 @@ cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_m
     return ret;
 }
  // clGetExtensionFunctionAddressForPlatform ignored in generator - based on dont_generate_handler flag
-cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implArgsForClCreateBufferRpcM) {
-    log<Verbosity::bloat>("Establishing RPC for clCreateBuffer");
-    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::Ocl::ClCreateBufferRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(context, flags, size, host_ptr, errcode_ret);
-    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace) CommandT(dynMemTraits, context, flags, size, host_ptr, errcode_ret);
-    command->copyFromCaller(dynMemTraits, implArgsForClCreateBufferRpcM);
-    command->args.context = context->asLocalObject()->asRemoteObject();
-    command->args.flags = Cal::Client::Icd::Ocl::translateUseHostPtr(flags);
-
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    command->copyToCaller(dynMemTraits, implArgsForClCreateBufferRpcM);
-    cl_mem ret = command->captures.ret;
-
-    ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
-    return ret;
-}
+ // clCreateBuffer ignored in generator - based on dont_generate_handler flag
 cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
@@ -2038,6 +2011,15 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context,
 
     ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
     return ret;
+}
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret) {
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    [[maybe_unused]] auto host_ptr_pointer_type = globalPlatform->getPointerType(host_ptr);
+    
+    
+{
+        return clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm(context, flags, size, host_ptr, errcode_ret);
+    }
 }
 cl_mem clCreateSubBufferRpcHelper (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clCreateSubBuffer");
@@ -3878,6 +3860,32 @@ cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program pr
     }
     cl_int ret = command->captures.ret;
 
+    return ret;
+}
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret) {
+    [[maybe_unused]] constexpr auto host_ptr_kind = usm;
+    Cal::Client::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(host_ptr);
+    log<Verbosity::bloat>("Establishing RPC for clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(context, flags, size, host_ptr, errcode_ret);
+    command->args.context = context->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    cl_mem ret = command->captures.ret;
+
+    ret = globalPlatform->translateNewRemoteObjectToLocalObject(ret, context);
     return ret;
 }
 cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {

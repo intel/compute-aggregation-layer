@@ -2055,6 +2055,7 @@ config:
                   "invalidateKernelArgCache();",
                   "if(memobj->asLocalObject()->getContext() && memobj->asLocalObject()->getContext()->tryRecycleClBuffer(memobj)){ return CL_SUCCESS; }",
                 ]
+              handler_epilogue: "memobj->asLocalObject()->dec();"
             rpc:
               custom_handler: True
           returns:
@@ -2067,7 +2068,6 @@ config:
               type: cl_mem
               kind: scalar
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
-              translate_after: "{arg}->asLocalObject()->dec()"
         - name: clReleaseEvent
           latency: 0.0
           call_async: true
@@ -2604,24 +2604,22 @@ config:
           latency: 1.0
           special_handling:
             icd:
-              handler_only_suffix: "RpcHelper" # Dedicated handling due to shmem management
+              dont_generate_handler: True
             rpc:
-              custom_handler: True
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
           returns:
             type: cl_mem
             kind: scalar
-            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
           args:
             0:
               name: context
               type: cl_context
               kind: scalar
-              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: flags
               type: cl_mem_flags
               kind: scalar
-              translate_before: "{dst} = Cal::Client::Icd::Ocl::translateUseHostPtr({arg})"
             2:
               name: size
               type: size_t
@@ -2649,27 +2647,6 @@ config:
                   kind: scalar
                   default: "CL_DEVICE_NOT_AVAILABLE"
                 server_access: write
-          implicit_args:
-            0:
-              name: hostptr
-              type: "void*"
-              kind: scalar
-              server_access: write
-            1:
-              name: hostptr_shmem_resource
-              type: int
-              kind: scalar
-              server_access: write
-            2:
-              name: hostptr_offset_within_resource
-              type: size_t
-              kind: scalar
-              server_access: write
-            3:
-              name: hostptr_aligned_size
-              type: size_t
-              kind: scalar
-              server_access: write
         - name: clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem
           latency: 1.0
           special_handling:
@@ -2705,6 +2682,56 @@ config:
                   type: "void"
                   kind: "scalar"
                 server_access: read
+            4:
+              name: errcode_ret
+              type: "cl_int*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: cl_int
+                  kind: scalar
+                  default: "CL_DEVICE_NOT_AVAILABLE"
+                server_access: write
+        - name: clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem
+          latency: 1.0
+          special_handling:
+            variant_of: "clCreateBuffer"
+            icd:
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getOclPlatform()->getPageFaultManager().moveAllocationToGpu(host_ptr);"
+              not_in_dispatch_table: True
+          returns:
+            type: cl_mem
+            kind: scalar
+            translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, context)"
+          args:
+            0:
+              name: context
+              type: cl_context
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: flags
+              type: cl_mem_flags
+              kind: scalar
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: host_ptr
+              type: "void*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "((nullptr != {arg_prefix}host_ptr) ? {arg_prefix}size : 0U)"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: read
+              kind_variants:
+                - kind: ptr_usm_va
             4:
               name: errcode_ret
               type: "cl_int*"

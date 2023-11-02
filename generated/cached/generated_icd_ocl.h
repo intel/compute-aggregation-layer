@@ -19,7 +19,6 @@ namespace Ocl {
 
 struct ClCreateContextRpcMImplicitArgs;
 struct ClCreateContextFromTypeRpcMImplicitArgs;
-struct ClCreateBufferRpcMImplicitArgs;
 struct ClSVMAllocRpcMImplicitArgs;
 struct ClHostMemAllocINTELRpcMImplicitArgs;
 struct ClSharedMemAllocINTELRpcMImplicitArgs;
@@ -99,8 +98,9 @@ cl_int clEnqueueBarrier (cl_command_queue command_queue);
 cl_int clEnqueueWaitForEvents (cl_command_queue command_queue, cl_uint num_events, const cl_event* event_list);
 cl_int clEnqueueMigrateMemObjects (cl_command_queue command_queue, cl_uint num_mem_objects, const cl_mem* mem_objects, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 void* clGetExtensionFunctionAddressForPlatform (cl_platform_id platform, const char* funcname);
-cl_mem clCreateBufferRpcHelper (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret, Cal::Rpc::Ocl::ClCreateBufferRpcMImplicitArgs &implArgsForClCreateBufferRpcM);
+cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
 cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
 cl_mem clCreateSubBufferRpcHelper (cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type, const void* buffer_create_info, cl_int* errcode_ret);
 cl_mem clCreatePipe (cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties* properties, cl_int* errcode_ret);
 cl_int clGetPipeInfo (cl_mem pipe, cl_pipe_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
@@ -163,6 +163,7 @@ cl_int clMemFreeINTEL (cl_context context, void* ptr);
 cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr);
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
+cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
 cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);

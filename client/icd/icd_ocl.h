@@ -288,6 +288,8 @@ struct IcdOclMem : Cal::Shared::RefCountedWithParent<_cl_mem, IcdOclTypePrinter>
         return imageTraits;
     }
 
+    std::unique_ptr<void, std::function<void(void *)>> standaloneHostPtrAllocation;
+
   protected:
     OclImageTraits imageTraits = {};
 };

@@ -360,7 +360,7 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Releasing cl_mem for reuse : %p", mem);
     if (CL_SUCCESS != clReleaseMemObject(mem)) {
-        log<Verbosity::error>("Failed to released cl_mem : %p", mem);
+        log<Verbosity::error>("Failed to release cl_mem : %p", mem);
         return 1;
     }
     log<Verbosity::info>("Succesfully released cl_mem : %p", mem);
@@ -377,7 +377,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Creating cl_mem object");
     int initData2 = 23;
     cl_mem mem2 = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int), &initData2, &cl_err);
-    if ((nullptr == mem) || (CL_SUCCESS != cl_err)) {
+    if ((nullptr == mem2) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create cl_mem object #2 with error : %d", cl_err);
         return 1;
     };

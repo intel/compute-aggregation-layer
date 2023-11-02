@@ -434,55 +434,6 @@ inline bool clEnqueueSVMMigrateMemHandler(Provider &service, Cal::Rpc::ChannelSe
     return true;
 }
 
-inline bool clCreateBufferHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clCreateBuffer");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcM *>(command);
-
-    auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
-
-    auto flags = apiCommand->args.flags;
-    flags = flags & (~(CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR));
-    flags |= CL_MEM_USE_HOST_PTR;
-
-    auto ctxLock = ctx.lock();
-    for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
-        if (false == shmem.isValid()) {
-            continue;
-        }
-        void *cpuAddress = shmem.getSubAllocationPtr();
-
-        if (apiCommand->args.host_ptr && (apiCommand->args.flags & (CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR))) {
-            memcpy(cpuAddress, apiCommand->captures.host_ptr, apiCommand->args.size);
-        }
-        apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clCreateBuffer(apiCommand->args.context, flags, alignedSize,
-                                                                                     cpuAddress, &apiCommand->captures.errcode_ret);
-
-        if (nullptr == apiCommand->captures.ret) {
-            log<Verbosity::debug>("Failed to create buffer out of host memory of size %zu bytes from USM shared/host heap :%zx-%zx", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
-            heap.free(shmem);
-            continue; // try different heap
-        }
-        if (apiCommand->captures.ret != nullptr) {
-            log<Verbosity::debug>("Succesfully created buffer out of host memory of size %zu bytes out of USM shared/host memory from heap : %zx-%zx as %p ", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end, apiCommand->captures.ret);
-            ctx.addUsmSharedHostAlloc(apiCommand->captures.ret, shmem, ApiType::OpenCL, gpuDestructorClMem);
-            apiCommand->implicitArgs.hostptr = cpuAddress;
-            apiCommand->implicitArgs.hostptr_shmem_resource = shmem.getSourceAllocation()->getShmemId();
-            apiCommand->implicitArgs.hostptr_offset_within_resource = shmem.getSubAllocationOffset();
-            apiCommand->implicitArgs.hostptr_aligned_size = alignedSize;
-            break;
-        }
-    }
-    if (nullptr == apiCommand->captures.ret) {
-        log<Verbosity::debug>("None of USM shared/host heaps could acommodate new host ptr for clCreateBuffer");
-        if (CL_SUCCESS == apiCommand->captures.errcode_ret) {
-            apiCommand->captures.errcode_ret = CL_OUT_OF_RESOURCES;
-        }
-    }
-
-    return true;
-}
-
 inline bool clMemFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clMemFreeINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClMemFreeINTELRpcM *>(command);

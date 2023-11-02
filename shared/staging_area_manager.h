@@ -61,6 +61,17 @@ class StagingAreaManager {
         }
     }
 
+    void deallocateStagingArea(void *ptr) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto found = std::find_if(allocations.begin(), allocations.end(), [ptr](const auto &it) {
+            return it.ptr == ptr;
+        });
+        if (found != allocations.end()) {
+            deallocator(ptr);
+            allocations.erase(found);
+        }
+    }
+
   protected:
     std::vector<StagingArea> allocations{};
 
