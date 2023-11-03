@@ -70,11 +70,16 @@ class ClientConnection {
         return initialUsmHeap;
     }
 
+    bool isConnected() const {
+        return connectionTraits.isConnected;
+    }
+
+    virtual void connect();
+
   protected:
     bool ensureServiceIsAvailable();
     bool ensureApiIsAvailable(ApiType api);
 
-    virtual void connect();
     const char *getSocketPath();
 
     std::unique_ptr<Cal::Ipc::ClientConnectionFactory> createConnectionFactory();
