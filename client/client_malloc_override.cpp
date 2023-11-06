@@ -201,7 +201,7 @@ void *mallocNoFallback(size_t size) {
 // thread-safe
 void *malloc(size_t size) {
     auto &globalState = getGlobalState();
-    if (predict_true(size < globalState.threshold)) {
+    if (BOOST_LIKELY(size < globalState.threshold)) {
         return Cal::Client::MallocOverride::Original::malloc(size);
     }
     if (isAllocFromCal(globalState.calLibExecAddressRange)) {
@@ -217,7 +217,7 @@ void *malloc(size_t size) {
 // thread-safe
 void free(void *ptr) {
     auto &globalState = getGlobalState();
-    if (predict_true(false == globalState.asShmemHeapRange.contains(ptr))) {
+    if (BOOST_LIKELY(false == globalState.asShmemHeapRange.contains(ptr))) {
         return Cal::Client::MallocOverride::Original::free(ptr);
     }
     std::lock_guard<std::mutex> lock{globalState.mutex};
@@ -228,7 +228,7 @@ void free(void *ptr) {
 void *calloc(size_t nitems, size_t size) {
     auto &globalState = getGlobalState();
     size_t totalSize = nitems * size;
-    if (predict_true(totalSize < globalState.threshold)) {
+    if (BOOST_LIKELY(totalSize < globalState.threshold)) {
         return Cal::Client::MallocOverride::Original::calloc(nitems, size);
     }
     if (isAllocFromCal(globalState.calLibExecAddressRange)) {
@@ -245,7 +245,7 @@ void *calloc(size_t nitems, size_t size) {
 // thread-safe
 void *realloc(void *ptr, size_t size) {
     auto &globalState = getGlobalState();
-    if (predict_true(false == globalState.asShmemHeapRange.contains(ptr))) {
+    if (BOOST_LIKELY(false == globalState.asShmemHeapRange.contains(ptr))) {
         return Cal::Client::MallocOverride::Original::realloc(ptr, size);
     }
     std::lock_guard<std::mutex> lock{globalState.mutex};
