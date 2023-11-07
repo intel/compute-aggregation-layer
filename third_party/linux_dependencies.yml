@@ -4,7 +4,7 @@ components:
     dest_dir: neo
     type: git
     branch: master
-    revision: 9bb559d468cd2a2ea957065ff6e3530618f6c40c
+    revision: a1c7f419fb47a5d6ff4e3183bbf0f24b40ac08c7
     repository: https://github.com/intel/compute-runtime.git
 converter: M-2
 version: '1'
