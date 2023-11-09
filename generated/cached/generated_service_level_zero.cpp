@@ -20,6 +20,11 @@ namespace Apis {
 namespace LevelZero {
 
 namespace Standard {
+ze_result_t (*zetTracerExpCreate)(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) = nullptr;
+ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer) = nullptr;
+ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
+ze_result_t (*zetTracerExpSetEpilogues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
+ze_result_t (*zetTracerExpSetEnabled)(zet_tracer_exp_handle_t hTracer, ze_bool_t enable) = nullptr;
 ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force) = nullptr;
 ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState) = nullptr;
@@ -166,6 +171,36 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false;
     }
 
+    zetTracerExpCreate = reinterpret_cast<decltype(zetTracerExpCreate)>(dlsym(libraryHandle, "zetTracerExpCreate"));
+    if(nullptr == zetTracerExpCreate){
+        log<Verbosity::error>("Missing symbol zetTracerExpCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetTracerExpDestroy = reinterpret_cast<decltype(zetTracerExpDestroy)>(dlsym(libraryHandle, "zetTracerExpDestroy"));
+    if(nullptr == zetTracerExpDestroy){
+        log<Verbosity::error>("Missing symbol zetTracerExpDestroy in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetTracerExpSetPrologues = reinterpret_cast<decltype(zetTracerExpSetPrologues)>(dlsym(libraryHandle, "zetTracerExpSetPrologues"));
+    if(nullptr == zetTracerExpSetPrologues){
+        log<Verbosity::error>("Missing symbol zetTracerExpSetPrologues in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetTracerExpSetEpilogues = reinterpret_cast<decltype(zetTracerExpSetEpilogues)>(dlsym(libraryHandle, "zetTracerExpSetEpilogues"));
+    if(nullptr == zetTracerExpSetEpilogues){
+        log<Verbosity::error>("Missing symbol zetTracerExpSetEpilogues in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetTracerExpSetEnabled = reinterpret_cast<decltype(zetTracerExpSetEnabled)>(dlsym(libraryHandle, "zetTracerExpSetEnabled"));
+    if(nullptr == zetTracerExpSetEnabled){
+        log<Verbosity::error>("Missing symbol zetTracerExpSetEnabled in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zesDeviceReset = reinterpret_cast<decltype(zesDeviceReset)>(dlsym(libraryHandle, "zesDeviceReset"));
     if(nullptr == zesDeviceReset){
         log<Verbosity::error>("Missing symbol zesDeviceReset in %s", loadPath.c_str());
@@ -948,6 +983,11 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 }
 
 void unloadLevelZeroLibrary() {
+    zetTracerExpCreate = nullptr;
+    zetTracerExpDestroy = nullptr;
+    zetTracerExpSetPrologues = nullptr;
+    zetTracerExpSetEpilogues = nullptr;
+    zetTracerExpSetEnabled = nullptr;
     zesDeviceReset = nullptr;
     zesDeviceResetExt = nullptr;
     zesDeviceGetState = nullptr;

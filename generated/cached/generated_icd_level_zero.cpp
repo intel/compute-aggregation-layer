@@ -40,6 +40,11 @@ auto mutable_element_cast(const T **el) {
     return reinterpret_cast<NonVoidT>(nonConst);
 };
 
+ // zetTracerExpCreate ignored in generator - based on dont_generate_handler flag
+ // zetTracerExpDestroy ignored in generator - based on dont_generate_handler flag
+ // zetTracerExpSetPrologues ignored in generator - based on dont_generate_handler flag
+ // zetTracerExpSetEpilogues ignored in generator - based on dont_generate_handler flag
+ // zetTracerExpSetEnabled ignored in generator - based on dont_generate_handler flag
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceReset");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -5251,6 +5256,21 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
 
 
 extern "C" {
+ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) {
+    return Cal::Client::Icd::LevelZero::zetTracerExpCreate(hContext, desc, phTracer);
+}
+ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer) {
+    return Cal::Client::Icd::LevelZero::zetTracerExpDestroy(hTracer);
+}
+ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) {
+    return Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues(hTracer, pCoreCbs);
+}
+ze_result_t zetTracerExpSetEpilogues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) {
+    return Cal::Client::Icd::LevelZero::zetTracerExpSetEpilogues(hTracer, pCoreCbs);
+}
+ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t enable) {
+    return Cal::Client::Icd::LevelZero::zetTracerExpSetEnabled(hTracer, enable);
+}
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     return Cal::Client::Icd::LevelZero::zesDeviceReset(hDevice, force);
 }

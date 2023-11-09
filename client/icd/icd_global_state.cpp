@@ -26,6 +26,7 @@ IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
+    tracingEnabled = Cal::Utils::getCalEnvFlag("ZET_ENABLE_API_TRACING_EXP", false);
 }
 
 IcdGlobalState::~IcdGlobalState() = default;

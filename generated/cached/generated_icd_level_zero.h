@@ -10,8 +10,10 @@
 
 #include "shared/log.h"
 #include "shared/shmem_transfer_desc.h"
+#include "client/icd/icd_global_state.h"
 #include "client/icd/level_zero/api_customization/icd_level_zero_api.h"
 #include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"
+#include "client/icd/level_zero/api_customization/icd_level_zero_api_tracing.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"
@@ -37,6 +39,11 @@ namespace Cal {
 namespace Client {
 namespace Icd {
 namespace LevelZero {
+ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer);
+ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer);
+ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
+ze_result_t zetTracerExpSetEpilogues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
+ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
@@ -141,6 +148,7 @@ ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const vo
 ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
+ze_result_t zeModuleCreateTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
 ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog);
@@ -831,26 +839,6 @@ inline void zetMetricQueryGetDataUnimpl() {
     log<Verbosity::critical>("Function MetricQuery.zetMetricQueryGetData is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetTracerExpCreateUnimpl() {
-    log<Verbosity::critical>("Function TracerExp.zetTracerExpCreate is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetTracerExpDestroyUnimpl() {
-    log<Verbosity::critical>("Function TracerExp.zetTracerExpDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetTracerExpSetProloguesUnimpl() {
-    log<Verbosity::critical>("Function TracerExp.zetTracerExpSetPrologues is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetTracerExpSetEpiloguesUnimpl() {
-    log<Verbosity::critical>("Function TracerExp.zetTracerExpSetEpilogues is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetTracerExpSetEnabledUnimpl() {
-    log<Verbosity::critical>("Function TracerExp.zetTracerExpSetEnabled is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 } // Unimplemented
 
 inline void initL0Ddi(ze_dditable_t &dt){
@@ -937,6 +925,9 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.Mem.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle;
     dt.Mem.pfnFreeExt = Cal::Client::Icd::LevelZero::zeMemFreeExt;
     dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate;
+    if (tracingEnabled) {
+        dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreateTracing;
+    }
     dt.Module.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleDestroy;
     dt.Module.pfnDynamicLink = Cal::Client::Icd::LevelZero::zeModuleDynamicLink;
     dt.ModuleBuildLog.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy;
@@ -1111,6 +1102,11 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Frequency.pfnOcSetTjMax = reinterpret_cast<decltype(dt.Frequency.pfnOcSetTjMax)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcSetTjMaxUnimpl);
 }
 inline void initL0ToolsDdi(zet_dditable_t &dt){
+    dt.TracerExp.pfnCreate = Cal::Client::Icd::LevelZero::zetTracerExpCreate;
+    dt.TracerExp.pfnDestroy = Cal::Client::Icd::LevelZero::zetTracerExpDestroy;
+    dt.TracerExp.pfnSetPrologues = Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues;
+    dt.TracerExp.pfnSetEpilogues = Cal::Client::Icd::LevelZero::zetTracerExpSetEpilogues;
+    dt.TracerExp.pfnSetEnabled = Cal::Client::Icd::LevelZero::zetTracerExpSetEnabled;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Kernel.pfnGetProfileInfo = reinterpret_cast<decltype(dt.Kernel.pfnGetProfileInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetKernelGetProfileInfoUnimpl);
     dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp = reinterpret_cast<decltype(dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMultipleMetricValuesExpUnimpl);
@@ -1146,11 +1142,6 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.CommandList.pfnAppendMetricQueryEnd = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricQueryEnd)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricQueryEndUnimpl);
     dt.CommandList.pfnAppendMetricMemoryBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricMemoryBarrier)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricMemoryBarrierUnimpl);
     dt.MetricQuery.pfnGetData = reinterpret_cast<decltype(dt.MetricQuery.pfnGetData)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryGetDataUnimpl);
-    dt.TracerExp.pfnCreate = reinterpret_cast<decltype(dt.TracerExp.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zetTracerExpCreateUnimpl);
-    dt.TracerExp.pfnDestroy = reinterpret_cast<decltype(dt.TracerExp.pfnDestroy)>(Cal::Client::Icd::LevelZero::Unimplemented::zetTracerExpDestroyUnimpl);
-    dt.TracerExp.pfnSetPrologues = reinterpret_cast<decltype(dt.TracerExp.pfnSetPrologues)>(Cal::Client::Icd::LevelZero::Unimplemented::zetTracerExpSetProloguesUnimpl);
-    dt.TracerExp.pfnSetEpilogues = reinterpret_cast<decltype(dt.TracerExp.pfnSetEpilogues)>(Cal::Client::Icd::LevelZero::Unimplemented::zetTracerExpSetEpiloguesUnimpl);
-    dt.TracerExp.pfnSetEnabled = reinterpret_cast<decltype(dt.TracerExp.pfnSetEnabled)>(Cal::Client::Icd::LevelZero::Unimplemented::zetTracerExpSetEnabledUnimpl);
 }
 
 void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName);

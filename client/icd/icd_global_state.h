@@ -17,6 +17,8 @@
 #include <unordered_map>
 #include <utility>
 
+extern bool tracingEnabled;
+
 namespace Cal::Client::Icd {
 
 class PageFaultManager;

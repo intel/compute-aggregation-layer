@@ -185,6 +185,13 @@ struct DynamicStructTraits<ze_module_program_exp_desc_t> {
     int32_t pConstantsCount{-1};
 };
 
+template <>
+struct DynamicStructTraits<zet_tracer_exp_desc_t> {
+    int32_t pNextOffset{-1};
+    int32_t pNextCount{-1};
+    const void* pNextFirstOriginalElement{nullptr};
+};
+
 
 template<typename T>
 inline char *asMemcpyDstT(T * ptr) {
@@ -200,6 +207,11 @@ inline char *asMemcpyDstT(void * ptr) {
     return reinterpret_cast<char*>(const_cast<void*>(ptr));
 };
 
+ // zetTracerExpCreate ignored in generator - based on dont_generate_rpc_message flag
+ // zetTracerExpDestroy ignored in generator - based on dont_generate_rpc_message flag
+ // zetTracerExpSetPrologues ignored in generator - based on dont_generate_rpc_message flag
+ // zetTracerExpSetEpilogues ignored in generator - based on dont_generate_rpc_message flag
+ // zetTracerExpSetEnabled ignored in generator - based on dont_generate_rpc_message flag
 struct ZesDeviceResetRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 0;

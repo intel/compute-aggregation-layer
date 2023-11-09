@@ -173,11 +173,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("CommandList.zetCommandListAppendMetricQueryEnd");
     ret.push_back("CommandList.zetCommandListAppendMetricMemoryBarrier");
     ret.push_back("MetricQuery.zetMetricQueryGetData");
-    ret.push_back("TracerExp.zetTracerExpCreate");
-    ret.push_back("TracerExp.zetTracerExpDestroy");
-    ret.push_back("TracerExp.zetTracerExpSetPrologues");
-    ret.push_back("TracerExp.zetTracerExpSetEpilogues");
-    ret.push_back("TracerExp.zetTracerExpSetEnabled");
     return ret;
 }
 

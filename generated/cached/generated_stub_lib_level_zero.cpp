@@ -11,6 +11,26 @@
 #include "level_zero/zes_api.h"
 #include "level_zero/zet_ddi.h"
 
+ze_result_t zetTracerExpCreate(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer){
+   return {};
+}
+
+ze_result_t zetTracerExpDestroy(zet_tracer_exp_handle_t hTracer){
+   return {};
+}
+
+ze_result_t zetTracerExpSetPrologues(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs){
+   return {};
+}
+
+ze_result_t zetTracerExpSetEpilogues(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs){
+   return {};
+}
+
+ze_result_t zetTracerExpSetEnabled(zet_tracer_exp_handle_t hTracer, ze_bool_t enable){
+   return {};
+}
+
 ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
    return {};
 }

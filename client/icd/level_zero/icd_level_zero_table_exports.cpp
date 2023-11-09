@@ -22,6 +22,7 @@ zes_dditable_t l0SysmanDdi = {};
 zel_tracing_dditable_t l0TracingDdi = {};
 
 ze_api_version_t supportedL0ApiVersion = ZE_API_VERSION_CURRENT;
+bool tracingEnabled = false;
 
 template <typename DdiT>
 ze_result_t validateTable(ze_api_version_t version, DdiT *ddi) {

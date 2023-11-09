@@ -38,8 +38,10 @@ config:
     icd_h:
       - '#include "shared/log.h"'
       - '#include "shared/shmem_transfer_desc.h"'
+      - '#include "client/icd/icd_global_state.h"'
       - '#include "client/icd/level_zero/api_customization/icd_level_zero_api.h"'
       - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"'
+      - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_tracing.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
       - '#include "level_zero/zes_api.h"'
@@ -1385,6 +1387,25 @@ config:
           name: size
           type: size_t
           kind: scalar
+    - name: zet_tracer_exp_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          #kind: scalar
+          #translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+        2:
+          name: pUserData
+          type: void*
+          kind: pointer
 
   unimplemented:
     - name: "core"
@@ -1555,17 +1576,136 @@ config:
           CommandList.zetCommandListAppendMetricQueryEnd,
           CommandList.zetCommandListAppendMetricMemoryBarrier,
           MetricQuery.zetMetricQueryGetData,
-          TracerExp.zetTracerExpCreate,
-          TracerExp.zetTracerExpDestroy,
-          TracerExp.zetTracerExpSetPrologues,
-          TracerExp.zetTracerExpSetEpilogues,
-          TracerExp.zetTracerExpSetEnabled,
         ]
 
   functions:
     - name: "tools"
-      members: []
-
+      members:
+        - name: zetTracerExpCreate
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
+          latency: 1.0
+          ddi_category: TracerExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hContext
+              type: zet_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: desc
+              type: const zet_tracer_exp_desc_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_tracer_exp_desc_t
+                  kind: struct
+                server_access: read
+            2:
+              name: phTracer
+              type: zet_tracer_exp_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_tracer_exp_handle_t
+                  kind: scalar
+                server_access: write
+        - name: zetTracerExpDestroy
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
+          latency: 1.0
+          ddi_category: TracerExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hTracer
+              type: zet_tracer_exp_handle_t
+              kind: scalar
+        - name: zetTracerExpSetPrologues
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
+          latency: 1.0
+          ddi_category: TracerExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hTracer
+              type: zet_tracer_exp_handle_t
+              kind: scalar
+            1:
+              name: pCoreCbs
+              type: zet_core_callbacks_t*
+              kind: pointer
+        - name: zetTracerExpSetEpilogues
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
+          latency: 1.0
+          ddi_category: TracerExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hTracer
+              type: zet_tracer_exp_handle_t
+              kind: scalar
+            1:
+              name: pCoreCbs
+              type: zet_core_callbacks_t*
+              kind: pointer
+        - name: zetTracerExpSetEnabled
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_handler: True
+              dont_generate_rpc_message: True
+          latency: 1.0
+          ddi_category: TracerExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hTracer
+              type: zet_tracer_exp_handle_t
+              kind: scalar
+            1:
+              name: enable
+              type: ze_bool_t
+              kind: scalar
     - name: "sysman"
       members:
         - name: zesDeviceReset

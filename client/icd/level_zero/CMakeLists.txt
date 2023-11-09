@@ -21,12 +21,16 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_module.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_pnext_translation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_sysman.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_tracing.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/device_wrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/module_wrapper.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/hostptr_copies_reader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/imported_host_pointers_manager.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/tracing/tracing_imp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tracing/tracing_module_imp.cpp
 
     ${generated_dir}/generated_icd_level_zero.cpp
     ${generated_dir}/generated_rpc_messages_level_zero.cpp
