@@ -11,7 +11,7 @@
 
 struct _zet_tracer_exp_handle_t {};
 
-namespace Cal::Client::Icd {
+namespace Cal::Client::Icd::LevelZero {
 
 struct APITracer : _zet_tracer_exp_handle_t {
     static APITracer *create();
@@ -32,4 +32,4 @@ struct APITracerContext {
     virtual void releaseActivetracersList() = 0;
 };
 
-} // namespace Cal::Client::Icd
+} // namespace Cal::Client::Icd::LevelZero

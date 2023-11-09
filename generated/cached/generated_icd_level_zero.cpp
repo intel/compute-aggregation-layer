@@ -13,6 +13,7 @@
 
 #include "client/icd/level_zero/icd_level_zero.h"
 #include "client/icd/icd_page_fault_manager.h"
+#include "client/icd/level_zero/tracing/tracing_imp.h"
 #include "generated_icd_level_zero.h"
 #include "generated_rpc_messages_level_zero.h"
 
@@ -5247,6 +5248,2153 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
         return reinterpret_cast<void*>(Cal::Client::Icd::LevelZero::zexDriverGetHostPointerBaseAddress);
     }
     return nullptr;
+}
+
+ze_result_t zeContextSystemBarrier_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextSystemBarrier,
+                                    hContext, hDevice);
+
+    ze_context_system_barrier_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextSystemBarrierCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextSystemBarrierCb_t, Context, pfnSystemBarrierCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextSystemBarrier,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice);
+}
+ze_result_t zeCommandListCreate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListCreate,
+                                    hContext, hDevice, desc, phCommandList);
+
+    ze_command_list_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphCommandList = &phCommandList;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListCreateCb_t, CommandList, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.pphCommandList);
+}
+ze_result_t zeCommandListCreateImmediate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListCreateImmediate,
+                                    hContext, hDevice, altdesc, phCommandList);
+
+    ze_command_list_create_immediate_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.paltdesc = &altdesc;
+    tracerParams.pphCommandList = &phCommandList;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListCreateImmediateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListCreateImmediateCb_t, CommandList, pfnCreateImmediateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListCreateImmediate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.paltdesc, *tracerParams.pphCommandList);
+}
+ze_result_t zeCommandListDestroy_WithTracing(ze_command_list_handle_t hCommandList) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListDestroy,
+                                    hCommandList);
+
+    ze_command_list_destroy_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListDestroyCb_t, CommandList, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList);
+}
+ze_result_t zeCommandListClose_WithTracing(ze_command_list_handle_t hCommandList) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListClose,
+                                    hCommandList);
+
+    ze_command_list_close_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListCloseCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListCloseCb_t, CommandList, pfnCloseCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListClose,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList);
+}
+ze_result_t zeCommandListReset_WithTracing(ze_command_list_handle_t hCommandList) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListReset,
+                                    hCommandList);
+
+    ze_command_list_reset_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListResetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListResetCb_t, CommandList, pfnResetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListReset,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList);
+}
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_WithTracing(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp,
+                                    hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_write_global_timestamp_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pdstptr = &dstptr;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendWriteGlobalTimestampCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendWriteGlobalTimestampCb_t, CommandList, pfnAppendWriteGlobalTimestampCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pdstptr, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandQueueCreate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandQueueCreate,
+                                    hContext, hDevice, desc, phCommandQueue);
+
+    ze_command_queue_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphCommandQueue = &phCommandQueue;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandQueueCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandQueueCreateCb_t, CommandQueue, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandQueueCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.pphCommandQueue);
+}
+ze_result_t zeCommandQueueDestroy_WithTracing(ze_command_queue_handle_t hCommandQueue) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandQueueDestroy,
+                                    hCommandQueue);
+
+    ze_command_queue_destroy_params_t tracerParams;
+    tracerParams.phCommandQueue = &hCommandQueue;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandQueueDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandQueueDestroyCb_t, CommandQueue, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandQueueDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandQueue);
+}
+ze_result_t zeCommandQueueExecuteCommandLists_WithTracing(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandQueueExecuteCommandLists,
+                                    hCommandQueue, numCommandLists, phCommandLists, hFence);
+
+    ze_command_queue_execute_command_lists_params_t tracerParams;
+    tracerParams.phCommandQueue = &hCommandQueue;
+    tracerParams.pnumCommandLists = &numCommandLists;
+    tracerParams.pphCommandLists = &phCommandLists;
+    tracerParams.phFence = &hFence;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandQueueExecuteCommandListsCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandQueueExecuteCommandListsCb_t, CommandQueue, pfnExecuteCommandListsCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandQueueExecuteCommandLists,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandQueue, *tracerParams.pnumCommandLists, *tracerParams.pphCommandLists, *tracerParams.phFence);
+}
+ze_result_t zeCommandQueueSynchronize_WithTracing(ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandQueueSynchronize,
+                                    hCommandQueue, timeout);
+
+    ze_command_queue_synchronize_params_t tracerParams;
+    tracerParams.phCommandQueue = &hCommandQueue;
+    tracerParams.ptimeout = &timeout;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandQueueSynchronizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandQueueSynchronizeCb_t, CommandQueue, pfnSynchronizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandQueueSynchronize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandQueue, *tracerParams.ptimeout);
+}
+ze_result_t zeContextCreate_WithTracing(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextCreate,
+                                    hDriver, desc, phContext);
+
+    ze_context_create_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphContext = &phContext;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextCreateCb_t, Context, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.pdesc, *tracerParams.pphContext);
+}
+ze_result_t zeContextDestroy_WithTracing(ze_context_handle_t hContext) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextDestroy,
+                                    hContext);
+
+    ze_context_destroy_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextDestroyCb_t, Context, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext);
+}
+ze_result_t zeContextGetStatus_WithTracing(ze_context_handle_t hContext) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextGetStatus,
+                                    hContext);
+
+    ze_context_get_status_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextGetStatusCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextGetStatusCb_t, Context, pfnGetStatusCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextGetStatus,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext);
+}
+ze_result_t zeCommandListAppendMemoryCopy_WithTracing(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopy,
+                                    hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_memory_copy_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pdstptr = &dstptr;
+    tracerParams.psrcptr = &srcptr;
+    tracerParams.psize = &size;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemoryCopyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemoryCopyCb_t, CommandList, pfnAppendMemoryCopyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pdstptr, *tracerParams.psrcptr, *tracerParams.psize, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendMemoryFill_WithTracing(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill,
+                                    hCommandList, ptr, pattern, pattern_size, size, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_memory_fill_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pptr = &ptr;
+    tracerParams.ppattern = &pattern;
+    tracerParams.ppattern_size = &pattern_size;
+    tracerParams.psize = &size;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemoryFillCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemoryFillCb_t, CommandList, pfnAppendMemoryFillCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pptr, *tracerParams.ppattern, *tracerParams.ppattern_size, *tracerParams.psize, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendMemoryPrefetch_WithTracing(ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch,
+                                    hCommandList, ptr, size);
+
+    ze_command_list_append_memory_prefetch_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemoryPrefetchCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemoryPrefetchCb_t, CommandList, pfnAppendMemoryPrefetchCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pptr, *tracerParams.psize);
+}
+ze_result_t zeCommandListAppendMemAdvise_WithTracing(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemAdvise,
+                                    hCommandList, hDevice, ptr, size, advice);
+
+    ze_command_list_append_mem_advise_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+    tracerParams.padvice = &advice;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemAdviseCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemAdviseCb_t, CommandList, pfnAppendMemAdviseCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemAdvise,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phDevice, *tracerParams.pptr, *tracerParams.psize, *tracerParams.padvice);
+}
+ze_result_t zeDeviceGet_WithTracing(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGet,
+                                    hDriver, pCount, phDevices);
+
+    ze_device_get_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.ppCount = &pCount;
+    tracerParams.pphDevices = &phDevices;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetCb_t, Device, pfnGetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGet,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.ppCount, *tracerParams.pphDevices);
+}
+ze_result_t zeDeviceGetSubDevices_WithTracing(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetSubDevices,
+                                    hDevice, pCount, phSubdevices);
+
+    ze_device_get_sub_devices_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppCount = &pCount;
+    tracerParams.pphSubdevices = &phSubdevices;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetSubDevicesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetSubDevicesCb_t, Device, pfnGetSubDevicesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetSubDevices,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppCount, *tracerParams.pphSubdevices);
+}
+ze_result_t zeDeviceGetProperties_WithTracing(ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetProperties,
+                                    hDevice, pDeviceProperties);
+
+    ze_device_get_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppDeviceProperties = &pDeviceProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetPropertiesCb_t, Device, pfnGetPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppDeviceProperties);
+}
+ze_result_t zeDeviceGetComputeProperties_WithTracing(ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetComputeProperties,
+                                    hDevice, pComputeProperties);
+
+    ze_device_get_compute_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppComputeProperties = &pComputeProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetComputePropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetComputePropertiesCb_t, Device, pfnGetComputePropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetComputeProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppComputeProperties);
+}
+ze_result_t zeDeviceGetModuleProperties_WithTracing(ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetModuleProperties,
+                                    hDevice, pModuleProperties);
+
+    ze_device_get_module_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppModuleProperties = &pModuleProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetModulePropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetModulePropertiesCb_t, Device, pfnGetModulePropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetModuleProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppModuleProperties);
+}
+ze_result_t zeDeviceGetCommandQueueGroupProperties_WithTracing(ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties,
+                                    hDevice, pCount, pCommandQueueGroupProperties);
+
+    ze_device_get_command_queue_group_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppCount = &pCount;
+    tracerParams.ppCommandQueueGroupProperties = &pCommandQueueGroupProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetCommandQueueGroupPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetCommandQueueGroupPropertiesCb_t, Device, pfnGetCommandQueueGroupPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppCount, *tracerParams.ppCommandQueueGroupProperties);
+}
+ze_result_t zeDeviceGetMemoryProperties_WithTracing(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetMemoryProperties,
+                                    hDevice, pCount, pMemProperties);
+
+    ze_device_get_memory_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppCount = &pCount;
+    tracerParams.ppMemProperties = &pMemProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetMemoryPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetMemoryPropertiesCb_t, Device, pfnGetMemoryPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetMemoryProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppCount, *tracerParams.ppMemProperties);
+}
+ze_result_t zeDeviceGetMemoryAccessProperties_WithTracing(ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetMemoryAccessProperties,
+                                    hDevice, pMemAccessProperties);
+
+    ze_device_get_memory_access_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppMemAccessProperties = &pMemAccessProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetMemoryAccessPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetMemoryAccessPropertiesCb_t, Device, pfnGetMemoryAccessPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetMemoryAccessProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppMemAccessProperties);
+}
+ze_result_t zeDeviceGetCacheProperties_WithTracing(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetCacheProperties,
+                                    hDevice, pCount, pCacheProperties);
+
+    ze_device_get_cache_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppCount = &pCount;
+    tracerParams.ppCacheProperties = &pCacheProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetCachePropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetCachePropertiesCb_t, Device, pfnGetCachePropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetCacheProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppCount, *tracerParams.ppCacheProperties);
+}
+ze_result_t zeDeviceGetImageProperties_WithTracing(ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetImageProperties,
+                                    hDevice, pImageProperties);
+
+    ze_device_get_image_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppImageProperties = &pImageProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetImagePropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetImagePropertiesCb_t, Device, pfnGetImagePropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetImageProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppImageProperties);
+}
+ze_result_t zeDeviceGetExternalMemoryProperties_WithTracing(ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetExternalMemoryProperties,
+                                    hDevice, pExternalMemoryProperties);
+
+    ze_device_get_external_memory_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppExternalMemoryProperties = &pExternalMemoryProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetExternalMemoryPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetExternalMemoryPropertiesCb_t, Device, pfnGetExternalMemoryPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetExternalMemoryProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.ppExternalMemoryProperties);
+}
+ze_result_t zeDeviceGetP2PProperties_WithTracing(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetP2PProperties,
+                                    hDevice, hPeerDevice, pP2PProperties);
+
+    ze_device_get_p2_p_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.phPeerDevice = &hPeerDevice;
+    tracerParams.ppP2PProperties = &pP2PProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetP2PPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetP2PPropertiesCb_t, Device, pfnGetP2PPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetP2PProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.phPeerDevice, *tracerParams.ppP2PProperties);
+}
+ze_result_t zeDeviceCanAccessPeer_WithTracing(ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceCanAccessPeer,
+                                    hDevice, hPeerDevice, value);
+
+    ze_device_can_access_peer_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.phPeerDevice = &hPeerDevice;
+    tracerParams.pvalue = &value;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceCanAccessPeerCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceCanAccessPeerCb_t, Device, pfnCanAccessPeerCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceCanAccessPeer,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.phPeerDevice, *tracerParams.pvalue);
+}
+ze_result_t zeDeviceGetStatus_WithTracing(ze_device_handle_t hDevice) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDeviceGetStatus,
+                                    hDevice);
+
+    ze_device_get_status_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDeviceGetStatusCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDeviceGetStatusCb_t, Device, pfnGetStatusCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDeviceGetStatus,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice);
+}
+ze_result_t zeDriverGet_WithTracing(uint32_t* pCount, ze_driver_handle_t* phDrivers) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDriverGet,
+                                    pCount, phDrivers);
+
+    ze_driver_get_params_t tracerParams;
+    tracerParams.ppCount = &pCount;
+    tracerParams.pphDrivers = &phDrivers;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDriverGetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDriverGetCb_t, Driver, pfnGetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDriverGet,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.ppCount, *tracerParams.pphDrivers);
+}
+ze_result_t zeDriverGetApiVersion_WithTracing(ze_driver_handle_t hDriver, ze_api_version_t* version) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDriverGetApiVersion,
+                                    hDriver, version);
+
+    ze_driver_get_api_version_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.pversion = &version;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDriverGetApiVersionCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDriverGetApiVersionCb_t, Driver, pfnGetApiVersionCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDriverGetApiVersion,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.pversion);
+}
+ze_result_t zeDriverGetProperties_WithTracing(ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDriverGetProperties,
+                                    hDriver, pDriverProperties);
+
+    ze_driver_get_properties_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.ppDriverProperties = &pDriverProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDriverGetPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDriverGetPropertiesCb_t, Driver, pfnGetPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDriverGetProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.ppDriverProperties);
+}
+ze_result_t zeDriverGetIpcProperties_WithTracing(ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDriverGetIpcProperties,
+                                    hDriver, pIpcProperties);
+
+    ze_driver_get_ipc_properties_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.ppIpcProperties = &pIpcProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDriverGetIpcPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDriverGetIpcPropertiesCb_t, Driver, pfnGetIpcPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDriverGetIpcProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.ppIpcProperties);
+}
+ze_result_t zeDriverGetExtensionProperties_WithTracing(ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties,
+                                    hDriver, pCount, pExtensionProperties);
+
+    ze_driver_get_extension_properties_params_t tracerParams;
+    tracerParams.phDriver = &hDriver;
+    tracerParams.ppCount = &pCount;
+    tracerParams.ppExtensionProperties = &pExtensionProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnDriverGetExtensionPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnDriverGetExtensionPropertiesCb_t, Driver, pfnGetExtensionPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDriver, *tracerParams.ppCount, *tracerParams.ppExtensionProperties);
+}
+ze_result_t zeEventPoolCreate_WithTracing(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventPoolCreate,
+                                    hContext, desc, numDevices, phDevices, phEventPool);
+
+    ze_event_pool_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pdesc = &desc;
+    tracerParams.pnumDevices = &numDevices;
+    tracerParams.pphDevices = &phDevices;
+    tracerParams.pphEventPool = &phEventPool;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventPoolCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventPoolCreateCb_t, EventPool, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventPoolCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pdesc, *tracerParams.pnumDevices, *tracerParams.pphDevices, *tracerParams.pphEventPool);
+}
+ze_result_t zeEventPoolDestroy_WithTracing(ze_event_pool_handle_t hEventPool) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventPoolDestroy,
+                                    hEventPool);
+
+    ze_event_pool_destroy_params_t tracerParams;
+    tracerParams.phEventPool = &hEventPool;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventPoolDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventPoolDestroyCb_t, EventPool, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventPoolDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEventPool);
+}
+ze_result_t zeEventCreate_WithTracing(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventCreate,
+                                    hEventPool, desc, phEvent);
+
+    ze_event_create_params_t tracerParams;
+    tracerParams.phEventPool = &hEventPool;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphEvent = &phEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventCreateCb_t, Event, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEventPool, *tracerParams.pdesc, *tracerParams.pphEvent);
+}
+ze_result_t zeEventDestroy_WithTracing(ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventDestroy,
+                                    hEvent);
+
+    ze_event_destroy_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventDestroyCb_t, Event, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent);
+}
+ze_result_t zeEventPoolGetIpcHandle_WithTracing(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventPoolGetIpcHandle,
+                                    hEventPool, phIpc);
+
+    ze_event_pool_get_ipc_handle_params_t tracerParams;
+    tracerParams.phEventPool = &hEventPool;
+    tracerParams.pphIpc = &phIpc;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventPoolGetIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventPoolGetIpcHandleCb_t, EventPool, pfnGetIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventPoolGetIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEventPool, *tracerParams.pphIpc);
+}
+ze_result_t zeEventPoolOpenIpcHandle_WithTracing(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventPoolOpenIpcHandle,
+                                    hContext, hIpc, phEventPool);
+
+    ze_event_pool_open_ipc_handle_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phIpc = &hIpc;
+    tracerParams.pphEventPool = &phEventPool;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventPoolOpenIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventPoolOpenIpcHandleCb_t, EventPool, pfnOpenIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventPoolOpenIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phIpc, *tracerParams.pphEventPool);
+}
+ze_result_t zeEventPoolCloseIpcHandle_WithTracing(ze_event_pool_handle_t hEventPool) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventPoolCloseIpcHandle,
+                                    hEventPool);
+
+    ze_event_pool_close_ipc_handle_params_t tracerParams;
+    tracerParams.phEventPool = &hEventPool;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventPoolCloseIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventPoolCloseIpcHandleCb_t, EventPool, pfnCloseIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventPoolCloseIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEventPool);
+}
+ze_result_t zeCommandListAppendBarrier_WithTracing(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendBarrier,
+                                    hCommandList, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_barrier_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendBarrierCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendBarrierCb_t, CommandList, pfnAppendBarrierCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendBarrier,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendSignalEvent_WithTracing(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendSignalEvent,
+                                    hCommandList, hEvent);
+
+    ze_command_list_append_signal_event_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendSignalEventCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendSignalEventCb_t, CommandList, pfnAppendSignalEventCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendSignalEvent,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phEvent);
+}
+ze_result_t zeCommandListAppendWaitOnEvents_WithTracing(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendWaitOnEvents,
+                                    hCommandList, numEvents, phEvents);
+
+    ze_command_list_append_wait_on_events_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pnumEvents = &numEvents;
+    tracerParams.pphEvents = &phEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendWaitOnEventsCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendWaitOnEventsCb_t, CommandList, pfnAppendWaitOnEventsCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendWaitOnEvents,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pnumEvents, *tracerParams.pphEvents);
+}
+ze_result_t zeEventHostSignal_WithTracing(ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventHostSignal,
+                                    hEvent);
+
+    ze_event_host_signal_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventHostSignalCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventHostSignalCb_t, Event, pfnHostSignalCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventHostSignal,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent);
+}
+ze_result_t zeEventHostSynchronize_WithTracing(ze_event_handle_t hEvent, uint64_t timeout) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventHostSynchronize,
+                                    hEvent, timeout);
+
+    ze_event_host_synchronize_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+    tracerParams.ptimeout = &timeout;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventHostSynchronizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventHostSynchronizeCb_t, Event, pfnHostSynchronizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventHostSynchronize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent, *tracerParams.ptimeout);
+}
+ze_result_t zeEventQueryStatus_WithTracing(ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventQueryStatus,
+                                    hEvent);
+
+    ze_event_query_status_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventQueryStatusCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventQueryStatusCb_t, Event, pfnQueryStatusCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventQueryStatus,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent);
+}
+ze_result_t zeCommandListAppendEventReset_WithTracing(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendEventReset,
+                                    hCommandList, hEvent);
+
+    ze_command_list_append_event_reset_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendEventResetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendEventResetCb_t, CommandList, pfnAppendEventResetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendEventReset,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phEvent);
+}
+ze_result_t zeEventHostReset_WithTracing(ze_event_handle_t hEvent) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventHostReset,
+                                    hEvent);
+
+    ze_event_host_reset_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventHostResetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventHostResetCb_t, Event, pfnHostResetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventHostReset,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent);
+}
+ze_result_t zeEventQueryKernelTimestamp_WithTracing(ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestamp,
+                                    hEvent, dstptr);
+
+    ze_event_query_kernel_timestamp_params_t tracerParams;
+    tracerParams.phEvent = &hEvent;
+    tracerParams.pdstptr = &dstptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnEventQueryKernelTimestampCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnEventQueryKernelTimestampCb_t, Event, pfnQueryKernelTimestampCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestamp,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phEvent, *tracerParams.pdstptr);
+}
+ze_result_t zeCommandListAppendQueryKernelTimestamps_WithTracing(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps,
+                                    hCommandList, numEvents, phEvents, dstptr, pOffsets, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_query_kernel_timestamps_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pnumEvents = &numEvents;
+    tracerParams.pphEvents = &phEvents;
+    tracerParams.pdstptr = &dstptr;
+    tracerParams.ppOffsets = &pOffsets;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendQueryKernelTimestampsCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendQueryKernelTimestampsCb_t, CommandList, pfnAppendQueryKernelTimestampsCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pnumEvents, *tracerParams.pphEvents, *tracerParams.pdstptr, *tracerParams.ppOffsets, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeFenceCreate_WithTracing(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeFenceCreate,
+                                    hCommandQueue, desc, phFence);
+
+    ze_fence_create_params_t tracerParams;
+    tracerParams.phCommandQueue = &hCommandQueue;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphFence = &phFence;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnFenceCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnFenceCreateCb_t, Fence, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeFenceCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandQueue, *tracerParams.pdesc, *tracerParams.pphFence);
+}
+ze_result_t zeFenceDestroy_WithTracing(ze_fence_handle_t hFence) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeFenceDestroy,
+                                    hFence);
+
+    ze_fence_destroy_params_t tracerParams;
+    tracerParams.phFence = &hFence;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnFenceDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnFenceDestroyCb_t, Fence, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeFenceDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phFence);
+}
+ze_result_t zeFenceHostSynchronize_WithTracing(ze_fence_handle_t hFence, uint64_t timeout) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeFenceHostSynchronize,
+                                    hFence, timeout);
+
+    ze_fence_host_synchronize_params_t tracerParams;
+    tracerParams.phFence = &hFence;
+    tracerParams.ptimeout = &timeout;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnFenceHostSynchronizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnFenceHostSynchronizeCb_t, Fence, pfnHostSynchronizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeFenceHostSynchronize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phFence, *tracerParams.ptimeout);
+}
+ze_result_t zeFenceQueryStatus_WithTracing(ze_fence_handle_t hFence) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeFenceQueryStatus,
+                                    hFence);
+
+    ze_fence_query_status_params_t tracerParams;
+    tracerParams.phFence = &hFence;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnFenceQueryStatusCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnFenceQueryStatusCb_t, Fence, pfnQueryStatusCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeFenceQueryStatus,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phFence);
+}
+ze_result_t zeFenceReset_WithTracing(ze_fence_handle_t hFence) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeFenceReset,
+                                    hFence);
+
+    ze_fence_reset_params_t tracerParams;
+    tracerParams.phFence = &hFence;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnFenceResetCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnFenceResetCb_t, Fence, pfnResetCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeFenceReset,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phFence);
+}
+ze_result_t zeImageGetProperties_WithTracing(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeImageGetProperties,
+                                    hDevice, desc, pImageProperties);
+
+    ze_image_get_properties_params_t tracerParams;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.ppImageProperties = &pImageProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnImageGetPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnImageGetPropertiesCb_t, Image, pfnGetPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeImageGetProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.ppImageProperties);
+}
+ze_result_t zeImageCreate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeImageCreate,
+                                    hContext, hDevice, desc, phImage);
+
+    ze_image_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphImage = &phImage;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnImageCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnImageCreateCb_t, Image, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeImageCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.pphImage);
+}
+ze_result_t zeImageDestroy_WithTracing(ze_image_handle_t hImage) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeImageDestroy,
+                                    hImage);
+
+    ze_image_destroy_params_t tracerParams;
+    tracerParams.phImage = &hImage;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnImageDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnImageDestroyCb_t, Image, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeImageDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phImage);
+}
+ze_result_t zeMemAllocShared_WithTracing(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemAllocShared,
+                                    hContext, device_desc, host_desc, size, alignment, hDevice, pptr);
+
+    ze_mem_alloc_shared_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pdevice_desc = &device_desc;
+    tracerParams.phost_desc = &host_desc;
+    tracerParams.psize = &size;
+    tracerParams.palignment = &alignment;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemAllocSharedCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemAllocSharedCb_t, Mem, pfnAllocSharedCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemAllocShared,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pdevice_desc, *tracerParams.phost_desc, *tracerParams.psize, *tracerParams.palignment, *tracerParams.phDevice, *tracerParams.ppptr);
+}
+ze_result_t zeMemAllocDevice_WithTracing(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemAllocDevice,
+                                    hContext, device_desc, size, alignment, hDevice, pptr);
+
+    ze_mem_alloc_device_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pdevice_desc = &device_desc;
+    tracerParams.psize = &size;
+    tracerParams.palignment = &alignment;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemAllocDeviceCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemAllocDeviceCb_t, Mem, pfnAllocDeviceCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemAllocDevice,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pdevice_desc, *tracerParams.psize, *tracerParams.palignment, *tracerParams.phDevice, *tracerParams.ppptr);
+}
+ze_result_t zeMemAllocHost_WithTracing(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemAllocHost,
+                                    hContext, host_desc, size, alignment, pptr);
+
+    ze_mem_alloc_host_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phost_desc = &host_desc;
+    tracerParams.psize = &size;
+    tracerParams.palignment = &alignment;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemAllocHostCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemAllocHostCb_t, Mem, pfnAllocHostCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemAllocHost,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phost_desc, *tracerParams.psize, *tracerParams.palignment, *tracerParams.ppptr);
+}
+ze_result_t zeMemFree_WithTracing(ze_context_handle_t hContext, void* ptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemFree,
+                                    hContext, ptr);
+
+    ze_mem_free_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemFreeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemFreeCb_t, Mem, pfnFreeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemFree,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr);
+}
+ze_result_t zeMemGetAllocProperties_WithTracing(ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemGetAllocProperties,
+                                    hContext, ptr, pMemAllocProperties, phDevice);
+
+    ze_mem_get_alloc_properties_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.ppMemAllocProperties = &pMemAllocProperties;
+    tracerParams.pphDevice = &phDevice;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemGetAllocPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemGetAllocPropertiesCb_t, Mem, pfnGetAllocPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemGetAllocProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.ppMemAllocProperties, *tracerParams.pphDevice);
+}
+ze_result_t zeMemGetAddressRange_WithTracing(ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemGetAddressRange,
+                                    hContext, ptr, pBase, pSize);
+
+    ze_mem_get_address_range_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.ppBase = &pBase;
+    tracerParams.ppSize = &pSize;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemGetAddressRangeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemGetAddressRangeCb_t, Mem, pfnGetAddressRangeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemGetAddressRange,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.ppBase, *tracerParams.ppSize);
+}
+ze_result_t zeMemGetIpcHandle_WithTracing(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemGetIpcHandle,
+                                    hContext, ptr, pIpcHandle);
+
+    ze_mem_get_ipc_handle_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.ppIpcHandle = &pIpcHandle;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemGetIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemGetIpcHandleCb_t, Mem, pfnGetIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemGetIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.ppIpcHandle);
+}
+ze_result_t zeMemOpenIpcHandle_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle,
+                                    hContext, hDevice, handle, flags, pptr);
+
+    ze_mem_open_ipc_handle_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.phandle = &handle;
+    tracerParams.pflags = &flags;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemOpenIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemOpenIpcHandleCb_t, Mem, pfnOpenIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.phandle, *tracerParams.pflags, *tracerParams.ppptr);
+}
+ze_result_t zeMemCloseIpcHandle_WithTracing(ze_context_handle_t hContext, const void* ptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle,
+                                    hContext, ptr);
+
+    ze_mem_close_ipc_handle_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnMemCloseIpcHandleCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnMemCloseIpcHandleCb_t, Mem, pfnCloseIpcHandleCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr);
+}
+ze_result_t zeModuleCreate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleCreate,
+                                    hContext, hDevice, desc, phModule, phBuildLog);
+
+    ze_module_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphModule = &phModule;
+    tracerParams.pphBuildLog = &phBuildLog;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleCreateCb_t, Module, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.pphModule, *tracerParams.pphBuildLog);
+}
+ze_result_t zeModuleDestroy_WithTracing(ze_module_handle_t hModule) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleDestroy,
+                                    hModule);
+
+    ze_module_destroy_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleDestroyCb_t, Module, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule);
+}
+ze_result_t zeModuleDynamicLink_WithTracing(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleDynamicLink,
+                                    numModules, phModules, phLinkLog);
+
+    ze_module_dynamic_link_params_t tracerParams;
+    tracerParams.pnumModules = &numModules;
+    tracerParams.pphModules = &phModules;
+    tracerParams.pphLinkLog = &phLinkLog;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleDynamicLinkCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleDynamicLinkCb_t, Module, pfnDynamicLinkCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleDynamicLink,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.pnumModules, *tracerParams.pphModules, *tracerParams.pphLinkLog);
+}
+ze_result_t zeModuleBuildLogDestroy_WithTracing(ze_module_build_log_handle_t hModuleBuildLog) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy,
+                                    hModuleBuildLog);
+
+    ze_module_build_log_destroy_params_t tracerParams;
+    tracerParams.phModuleBuildLog = &hModuleBuildLog;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleBuildLogDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleBuildLogDestroyCb_t, ModuleBuildLog, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModuleBuildLog);
+}
+ze_result_t zeModuleBuildLogGetString_WithTracing(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleBuildLogGetString,
+                                    hModuleBuildLog, pSize, pBuildLog);
+
+    ze_module_build_log_get_string_params_t tracerParams;
+    tracerParams.phModuleBuildLog = &hModuleBuildLog;
+    tracerParams.ppSize = &pSize;
+    tracerParams.ppBuildLog = &pBuildLog;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleBuildLogGetStringCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleBuildLogGetStringCb_t, ModuleBuildLog, pfnGetStringCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleBuildLogGetString,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModuleBuildLog, *tracerParams.ppSize, *tracerParams.ppBuildLog);
+}
+ze_result_t zeModuleGetNativeBinary_WithTracing(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleGetNativeBinary,
+                                    hModule, pSize, pModuleNativeBinary);
+
+    ze_module_get_native_binary_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.ppSize = &pSize;
+    tracerParams.ppModuleNativeBinary = &pModuleNativeBinary;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleGetNativeBinaryCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleGetNativeBinaryCb_t, Module, pfnGetNativeBinaryCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleGetNativeBinary,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.ppSize, *tracerParams.ppModuleNativeBinary);
+}
+ze_result_t zeModuleGetGlobalPointer_WithTracing(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleGetGlobalPointer,
+                                    hModule, pGlobalName, pSize, pptr);
+
+    ze_module_get_global_pointer_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.ppGlobalName = &pGlobalName;
+    tracerParams.ppSize = &pSize;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleGetGlobalPointerCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleGetGlobalPointerCb_t, Module, pfnGetGlobalPointerCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleGetGlobalPointer,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.ppGlobalName, *tracerParams.ppSize, *tracerParams.ppptr);
+}
+ze_result_t zeModuleGetKernelNames_WithTracing(ze_module_handle_t hModule, uint32_t* pCount, const char** pNames) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleGetKernelNames,
+                                    hModule, pCount, pNames);
+
+    ze_module_get_kernel_names_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.ppCount = &pCount;
+    tracerParams.ppNames = &pNames;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleGetKernelNamesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleGetKernelNamesCb_t, Module, pfnGetKernelNamesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleGetKernelNames,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.ppCount, *tracerParams.ppNames);
+}
+ze_result_t zeModuleGetProperties_WithTracing(ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleGetProperties,
+                                    hModule, pModuleProperties);
+
+    ze_module_get_properties_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.ppModuleProperties = &pModuleProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleGetPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleGetPropertiesCb_t, Module, pfnGetPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleGetProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.ppModuleProperties);
+}
+ze_result_t zeKernelCreate_WithTracing(ze_module_handle_t hModule, const ze_kernel_desc_t* desc, ze_kernel_handle_t* phKernel) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelCreate,
+                                    hModule, desc, phKernel);
+
+    ze_kernel_create_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphKernel = &phKernel;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelCreateCb_t, Kernel, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.pdesc, *tracerParams.pphKernel);
+}
+ze_result_t zeKernelDestroy_WithTracing(ze_kernel_handle_t hKernel) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelDestroy,
+                                    hKernel);
+
+    ze_kernel_destroy_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelDestroyCb_t, Kernel, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel);
+}
+ze_result_t zeModuleGetFunctionPointer_WithTracing(ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeModuleGetFunctionPointer,
+                                    hModule, pFunctionName, pfnFunction);
+
+    ze_module_get_function_pointer_params_t tracerParams;
+    tracerParams.phModule = &hModule;
+    tracerParams.ppFunctionName = &pFunctionName;
+    tracerParams.ppfnFunction = &pfnFunction;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnModuleGetFunctionPointerCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnModuleGetFunctionPointerCb_t, Module, pfnGetFunctionPointerCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeModuleGetFunctionPointer,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phModule, *tracerParams.ppFunctionName, *tracerParams.ppfnFunction);
+}
+ze_result_t zeKernelSetGroupSize_WithTracing(ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSetGroupSize,
+                                    hKernel, groupSizeX, groupSizeY, groupSizeZ);
+
+    ze_kernel_set_group_size_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.pgroupSizeX = &groupSizeX;
+    tracerParams.pgroupSizeY = &groupSizeY;
+    tracerParams.pgroupSizeZ = &groupSizeZ;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSetGroupSizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSetGroupSizeCb_t, Kernel, pfnSetGroupSizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSetGroupSize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.pgroupSizeX, *tracerParams.pgroupSizeY, *tracerParams.pgroupSizeZ);
+}
+ze_result_t zeKernelSuggestGroupSize_WithTracing(ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSuggestGroupSize,
+                                    hKernel, globalSizeX, globalSizeY, globalSizeZ, groupSizeX, groupSizeY, groupSizeZ);
+
+    ze_kernel_suggest_group_size_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.pglobalSizeX = &globalSizeX;
+    tracerParams.pglobalSizeY = &globalSizeY;
+    tracerParams.pglobalSizeZ = &globalSizeZ;
+    tracerParams.pgroupSizeX = &groupSizeX;
+    tracerParams.pgroupSizeY = &groupSizeY;
+    tracerParams.pgroupSizeZ = &groupSizeZ;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSuggestGroupSizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSuggestGroupSizeCb_t, Kernel, pfnSuggestGroupSizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSuggestGroupSize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.pglobalSizeX, *tracerParams.pglobalSizeY, *tracerParams.pglobalSizeZ, *tracerParams.pgroupSizeX, *tracerParams.pgroupSizeY, *tracerParams.pgroupSizeZ);
+}
+ze_result_t zeKernelSuggestMaxCooperativeGroupCount_WithTracing(ze_kernel_handle_t hKernel, uint32_t* totalGroupCount) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount,
+                                    hKernel, totalGroupCount);
+
+    ze_kernel_suggest_max_cooperative_group_count_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ptotalGroupCount = &totalGroupCount;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSuggestMaxCooperativeGroupCountCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSuggestMaxCooperativeGroupCountCb_t, Kernel, pfnSuggestMaxCooperativeGroupCountCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.ptotalGroupCount);
+}
+ze_result_t zeKernelSetArgumentValue_WithTracing(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSetArgumentValue,
+                                    hKernel, argIndex, argSize, pArgValue);
+
+    ze_kernel_set_argument_value_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.pargIndex = &argIndex;
+    tracerParams.pargSize = &argSize;
+    tracerParams.ppArgValue = &pArgValue;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSetArgumentValueCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSetArgumentValueCb_t, Kernel, pfnSetArgumentValueCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSetArgumentValue,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.pargIndex, *tracerParams.pargSize, *tracerParams.ppArgValue);
+}
+ze_result_t zeKernelSetIndirectAccess_WithTracing(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSetIndirectAccess,
+                                    hKernel, flags);
+
+    ze_kernel_set_indirect_access_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.pflags = &flags;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSetIndirectAccessCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSetIndirectAccessCb_t, Kernel, pfnSetIndirectAccessCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSetIndirectAccess,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.pflags);
+}
+ze_result_t zeKernelGetIndirectAccess_WithTracing(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess,
+                                    hKernel, pFlags);
+
+    ze_kernel_get_indirect_access_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppFlags = &pFlags;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelGetIndirectAccessCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelGetIndirectAccessCb_t, Kernel, pfnGetIndirectAccessCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.ppFlags);
+}
+ze_result_t zeKernelSetCacheConfig_WithTracing(ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig,
+                                    hKernel, flags);
+
+    ze_kernel_set_cache_config_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.pflags = &flags;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelSetCacheConfigCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelSetCacheConfigCb_t, Kernel, pfnSetCacheConfigCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.pflags);
+}
+ze_result_t zeKernelGetProperties_WithTracing(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelGetProperties,
+                                    hKernel, pKernelProperties);
+
+    ze_kernel_get_properties_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppKernelProperties = &pKernelProperties;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelGetPropertiesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelGetPropertiesCb_t, Kernel, pfnGetPropertiesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelGetProperties,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.ppKernelProperties);
+}
+ze_result_t zeKernelGetName_WithTracing(ze_kernel_handle_t hKernel, size_t* pSize, char* pName) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelGetName,
+                                    hKernel, pSize, pName);
+
+    ze_kernel_get_name_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppSize = &pSize;
+    tracerParams.ppName = &pName;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelGetNameCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelGetNameCb_t, Kernel, pfnGetNameCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelGetName,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.ppSize, *tracerParams.ppName);
+}
+ze_result_t zeCommandListAppendLaunchKernel_WithTracing(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernel,
+                                    hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_launch_kernel_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppLaunchFuncArgs = &pLaunchFuncArgs;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendLaunchKernelCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendLaunchKernelCb_t, CommandList, pfnAppendLaunchKernelCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernel,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phKernel, *tracerParams.ppLaunchFuncArgs, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendLaunchCooperativeKernel_WithTracing(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel,
+                                    hCommandList, hKernel, pLaunchFuncArgs, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_launch_cooperative_kernel_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppLaunchFuncArgs = &pLaunchFuncArgs;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendLaunchCooperativeKernelCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendLaunchCooperativeKernelCb_t, CommandList, pfnAppendLaunchCooperativeKernelCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phKernel, *tracerParams.ppLaunchFuncArgs, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendLaunchKernelIndirect_WithTracing(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect,
+                                    hCommandList, hKernel, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_launch_kernel_indirect_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppLaunchArgumentsBuffer = &pLaunchArgumentsBuffer;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendLaunchKernelIndirectCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendLaunchKernelIndirectCb_t, CommandList, pfnAppendLaunchKernelIndirectCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.phKernel, *tracerParams.ppLaunchArgumentsBuffer, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect_WithTracing(ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect,
+                                    hCommandList, numKernels, phKernels, pCountBuffer, pLaunchArgumentsBuffer, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_launch_multiple_kernels_indirect_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pnumKernels = &numKernels;
+    tracerParams.pphKernels = &phKernels;
+    tracerParams.ppCountBuffer = &pCountBuffer;
+    tracerParams.ppLaunchArgumentsBuffer = &pLaunchArgumentsBuffer;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendLaunchMultipleKernelsIndirectCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendLaunchMultipleKernelsIndirectCb_t, CommandList, pfnAppendLaunchMultipleKernelsIndirectCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pnumKernels, *tracerParams.pphKernels, *tracerParams.ppCountBuffer, *tracerParams.ppLaunchArgumentsBuffer, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
+ze_result_t zeContextMakeMemoryResident_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextMakeMemoryResident,
+                                    hContext, hDevice, ptr, size);
+
+    ze_context_make_memory_resident_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextMakeMemoryResidentCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextMakeMemoryResidentCb_t, Context, pfnMakeMemoryResidentCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextMakeMemoryResident,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pptr, *tracerParams.psize);
+}
+ze_result_t zeContextEvictMemory_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextEvictMemory,
+                                    hContext, hDevice, ptr, size);
+
+    ze_context_evict_memory_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnContextEvictMemoryCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnContextEvictMemoryCb_t, Context, pfnEvictMemoryCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeContextEvictMemory,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pptr, *tracerParams.psize);
+}
+ze_result_t zeVirtualMemReserve_WithTracing(ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemReserve,
+                                    hContext, pStart, size, pptr);
+
+    ze_virtual_mem_reserve_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.ppStart = &pStart;
+    tracerParams.psize = &size;
+    tracerParams.ppptr = &pptr;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemReserveCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemReserveCb_t, VirtualMem, pfnReserveCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemReserve,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.ppStart, *tracerParams.psize, *tracerParams.ppptr);
+}
+ze_result_t zeVirtualMemFree_WithTracing(ze_context_handle_t hContext, const void* ptr, size_t size) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemFree,
+                                    hContext, ptr, size);
+
+    ze_virtual_mem_free_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemFreeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemFreeCb_t, VirtualMem, pfnFreeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemFree,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.psize);
+}
+ze_result_t zeVirtualMemQueryPageSize_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemQueryPageSize,
+                                    hContext, hDevice, size, pagesize);
+
+    ze_virtual_mem_query_page_size_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.psize = &size;
+    tracerParams.ppagesize = &pagesize;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemQueryPageSizeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemQueryPageSizeCb_t, VirtualMem, pfnQueryPageSizeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemQueryPageSize,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.psize, *tracerParams.ppagesize);
+}
+ze_result_t zePhysicalMemCreate_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zePhysicalMemCreate,
+                                    hContext, hDevice, desc, phPhysicalMemory);
+
+    ze_physical_mem_create_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phDevice = &hDevice;
+    tracerParams.pdesc = &desc;
+    tracerParams.pphPhysicalMemory = &phPhysicalMemory;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnPhysicalMemCreateCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnPhysicalMemCreateCb_t, PhysicalMem, pfnCreateCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zePhysicalMemCreate,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phDevice, *tracerParams.pdesc, *tracerParams.pphPhysicalMemory);
+}
+ze_result_t zePhysicalMemDestroy_WithTracing(ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zePhysicalMemDestroy,
+                                    hContext, hPhysicalMemory);
+
+    ze_physical_mem_destroy_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.phPhysicalMemory = &hPhysicalMemory;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnPhysicalMemDestroyCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnPhysicalMemDestroyCb_t, PhysicalMem, pfnDestroyCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zePhysicalMemDestroy,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.phPhysicalMemory);
+}
+ze_result_t zeVirtualMemMap_WithTracing(ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemMap,
+                                    hContext, ptr, size, hPhysicalMemory, offset, access);
+
+    ze_virtual_mem_map_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+    tracerParams.phPhysicalMemory = &hPhysicalMemory;
+    tracerParams.poffset = &offset;
+    tracerParams.paccess = &access;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemMapCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemMapCb_t, VirtualMem, pfnMapCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemMap,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.psize, *tracerParams.phPhysicalMemory, *tracerParams.poffset, *tracerParams.paccess);
+}
+ze_result_t zeVirtualMemUnmap_WithTracing(ze_context_handle_t hContext, const void* ptr, size_t size) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemUnmap,
+                                    hContext, ptr, size);
+
+    ze_virtual_mem_unmap_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemUnmapCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemUnmapCb_t, VirtualMem, pfnUnmapCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemUnmap,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.psize);
+}
+ze_result_t zeVirtualMemSetAccessAttribute_WithTracing(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemSetAccessAttribute,
+                                    hContext, ptr, size, access);
+
+    ze_virtual_mem_set_access_attribute_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+    tracerParams.paccess = &access;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemSetAccessAttributeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemSetAccessAttributeCb_t, VirtualMem, pfnSetAccessAttributeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemSetAccessAttribute,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.psize, *tracerParams.paccess);
+}
+ze_result_t zeVirtualMemGetAccessAttribute_WithTracing(ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute,
+                                    hContext, ptr, size, access, outSize);
+
+    ze_virtual_mem_get_access_attribute_params_t tracerParams;
+    tracerParams.phContext = &hContext;
+    tracerParams.pptr = &ptr;
+    tracerParams.psize = &size;
+    tracerParams.paccess = &access;
+    tracerParams.poutSize = &outSize;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnVirtualMemGetAccessAttributeCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnVirtualMemGetAccessAttributeCb_t, VirtualMem, pfnGetAccessAttributeCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phContext, *tracerParams.pptr, *tracerParams.psize, *tracerParams.paccess, *tracerParams.poutSize);
 }
 
 } // namespace LevelZero

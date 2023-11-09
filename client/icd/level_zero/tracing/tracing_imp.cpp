@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <thread>
 
-namespace Cal::Client::Icd {
+namespace Cal::Client::Icd::LevelZero {
 
 thread_local ze_bool_t tracingInProgress = 0;
 
@@ -58,7 +58,7 @@ ze_result_t APITracerImp::destroyTracer(zet_tracer_exp_handle_t phTracer) {
 
     ze_result_t result = pGlobalAPITracerContextImp->finalizeDisableImpTracingWait(tracer);
     if (result == ZE_RESULT_SUCCESS) {
-        delete Cal::Client::Icd::APITracer::fromHandle(phTracer);
+        delete Cal::Client::Icd::LevelZero::APITracer::fromHandle(phTracer);
     }
     return result;
 }
@@ -315,4 +315,4 @@ void APITracerContextImp::releaseActivetracersList() {
         myThreadPrivateTracerData.tracerArrayPointer.store(nullptr, std::memory_order_relaxed);
 }
 
-} // namespace Cal::Client::Icd
+} // namespace Cal::Client::Icd::LevelZero

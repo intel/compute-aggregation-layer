@@ -2029,8 +2029,8 @@ inline bool clEnqueueMemcpyINTEL_Local_UsmHandler(Provider &service, Cal::Rpc::C
 inline bool clEnqueueMemcpyINTEL_Local_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL_Local_Shared");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_SharedRpcM*>(command);
-    void *importedMallocPtrSrcptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrSrcptr)  && (nullptr != apiCommand->args.srcPtr)){
+    void *importedMallocPtrSrcPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrSrcPtr)  && (nullptr != apiCommand->args.srcPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.srcPtr, apiCommand->args.size);
         return false;
     }
@@ -2038,7 +2038,7 @@ inline bool clEnqueueMemcpyINTEL_Local_SharedHandler(Provider &service, Cal::Rpc
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dstPtr, 
-                                                importedMallocPtrSrcptr, 
+                                                importedMallocPtrSrcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -2091,8 +2091,8 @@ inline bool clEnqueueMemcpyINTEL_Usm_UsmHandler(Provider &service, Cal::Rpc::Cha
 inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL_Usm_Shared");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_SharedRpcM*>(command);
-    void *importedMallocPtrSrcptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrSrcptr)  && (nullptr != apiCommand->args.srcPtr)){
+    void *importedMallocPtrSrcPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrSrcPtr)  && (nullptr != apiCommand->args.srcPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.srcPtr, apiCommand->args.size);
         return false;
     }
@@ -2100,7 +2100,7 @@ inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dstPtr, 
-                                                importedMallocPtrSrcptr, 
+                                                importedMallocPtrSrcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -2115,15 +2115,15 @@ inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::
 inline bool clEnqueueMemcpyINTEL_Shared_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL_Shared_Local");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_LocalRpcM*>(command);
-    void *importedMallocPtrDstptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrDstptr)  && (nullptr != apiCommand->args.dstPtr)){
+    void *importedMallocPtrDstPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrDstPtr)  && (nullptr != apiCommand->args.dstPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstPtr, apiCommand->args.size);
         return false;
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstptr, 
+                                                importedMallocPtrDstPtr, 
                                                 apiCommand->args.srcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -2139,15 +2139,15 @@ inline bool clEnqueueMemcpyINTEL_Shared_LocalHandler(Provider &service, Cal::Rpc
 inline bool clEnqueueMemcpyINTEL_Shared_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL_Shared_Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_UsmRpcM*>(command);
-    void *importedMallocPtrDstptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrDstptr)  && (nullptr != apiCommand->args.dstPtr)){
+    void *importedMallocPtrDstPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrDstPtr)  && (nullptr != apiCommand->args.dstPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstPtr, apiCommand->args.size);
         return false;
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstptr, 
+                                                importedMallocPtrDstPtr, 
                                                 apiCommand->args.srcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -2163,21 +2163,21 @@ inline bool clEnqueueMemcpyINTEL_Shared_UsmHandler(Provider &service, Cal::Rpc::
 inline bool clEnqueueMemcpyINTEL_Shared_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemcpyINTEL_Shared_Shared");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_SharedRpcM*>(command);
-    void *importedMallocPtrDstptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrDstptr)  && (nullptr != apiCommand->args.dstPtr)){
+    void *importedMallocPtrDstPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrDstPtr)  && (nullptr != apiCommand->args.dstPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstPtr, apiCommand->args.size);
         return false;
     }
-    void *importedMallocPtrSrcptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
-    if((nullptr == importedMallocPtrSrcptr)  && (nullptr != apiCommand->args.srcPtr)){
+    void *importedMallocPtrSrcPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.srcPtr), apiCommand->args.size, 0U);
+    if((nullptr == importedMallocPtrSrcPtr)  && (nullptr != apiCommand->args.srcPtr)){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.srcPtr, apiCommand->args.size);
         return false;
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                importedMallocPtrDstPtr, 
+                                                importedMallocPtrSrcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 

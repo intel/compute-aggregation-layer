@@ -30,7 +30,6 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/imported_host_pointers_manager.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/tracing/tracing_imp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tracing/tracing_module_imp.cpp
 
     ${generated_dir}/generated_icd_level_zero.cpp
     ${generated_dir}/generated_rpc_messages_level_zero.cpp

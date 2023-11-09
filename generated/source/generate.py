@@ -8,6 +8,7 @@ import copy
 import itertools
 import os
 import re
+import string
 import sys
 import yaml
 
@@ -435,6 +436,7 @@ class SpecialHandling:
             self.handler_prologue = src.get("handler_prologue", None)
             self.handler_epilogue = src.get("handler_epilogue", None)
             self.handler_epilogue_data = src.get("handler_epilogue_data", None)
+            self.tracable = src.get("tracable", None)
             if self.handler_prologue and not isinstance(self.handler_prologue, list):
                 self.handler_prologue = [self.handler_prologue]
             if self.handler_epilogue and not isinstance(self.handler_epilogue, list):
@@ -472,7 +474,7 @@ class SpecialHandling:
 
 
 class FunctionTraits:
-    def __init__(self, function):
+    def __init__(self, function, tracable_group_defaults):
         self.function = function
         self.num_of_all_args_with_inline_dynamic_mem = len(self.get_inline_dyn_ptr_array_args()) + \
             self.count_of_capturable_struct_members_includig_nested(self.get_ptr_array_args())
@@ -489,6 +491,7 @@ class FunctionTraits:
         self.requires_malloc_shmem_zero_copy_handler = any(arg.kind.is_pointer_zero_copy_malloc_shmem() for arg in function.args)
         self.requires_pointer_remapping = any(arg.kind.is_pointer_remapped() for arg in function.args)
         self.has_arg_kind_variants = any(arg.kind_variants for arg in function.args)
+        self.is_tracable = function.special_handling.icd.tracable if (function.special_handling and function.special_handling.icd and (function.special_handling.icd.tracable != None)) else tracable_group_defaults
 
     def requires_copy_from_caller(self, ptr_array_args, implicit_args):
         is_copy_required_for_ptr_array_args = any(not arg.kind_details.server_access.write_only() for arg in ptr_array_args if not (arg.capture_details.mode.is_standalone_mode() or arg.capture_details.mode.is_staging_usm_mode()))
@@ -1256,7 +1259,7 @@ class Redirection:
         self.conditions = []
 
 class Function:
-    def __init__(self, structures, src: dict):
+    def __init__(self, structures, src: dict, tracable_group_defaults : bool):
         self.structures = structures
         self.name = src["name"]
         self.latency = float(src.get("latency", 0.0))
@@ -1275,11 +1278,12 @@ class Function:
         self.aliased_function = None
         self.redirections = []
         self.const_expressions = []
+        self.tracable_group_defaults = tracable_group_defaults
         self.recreateTraitsAndCaptureLayout(structures)
 
     def recreateTraitsAndCaptureLayout(self, structures):
         self.message_name = f"{self.name[0].upper()}{self.name[1:]}RpcM"
-        self.traits = FunctionTraits(self)
+        self.traits = FunctionTraits(self, self.tracable_group_defaults)
         for arg in self.args:
             arg.create_traits(self, False)
         for iarg in self.implicit_args:
@@ -1290,8 +1294,8 @@ class Function:
     def get_args_list_str(self) -> str:
         return ", ".join(arg.to_str() for arg in self.args)
 
-    def get_call_params_list_str(self) -> str:
-        return ", ".join([f"{arg.name}" for arg in self.args])
+    def get_call_params_list_str(self, prefix="") -> str:
+        return ", ".join([f"{prefix}{arg.name}" for arg in self.args])
 
 
 class MemberLayoutFormatter:
@@ -1395,8 +1399,28 @@ TraitsFormater = Formater.RpcMessage.Captures.Traits
 
 
 def to_pascal_case(anycase: str) -> str:
-    return anycase.replace("_", " ").title().replace(" ", "")
+    if not anycase:
+        return anycase
+    if("_") in anycase:
+        return anycase.replace("_", " ").title().replace(" ", "")
+    elif(" ") in anycase:
+        return anycase.title().replace(" ", "")
+    return anycase[0].upper() + anycase[1:]
 
+def to_camel_case(anycase: str) -> str:
+    pascal = to_pascal_case(anycase)
+    if not pascal:
+        return pascal
+    return pascal[0].lower() + pascal[1:]
+
+def to_snake_case(anycase: str) -> str:
+    if not anycase:
+        return anycase
+    ret = anycase[0].lower() + anycase[1:]
+    for ul in string.ascii_uppercase:
+        if ul in ret:
+            ret = ret.replace(ul, f"_{ul.lower()}")
+    return ret
 
 class FileHeaders:
     def __init__(self, src: dict):
@@ -1440,13 +1464,16 @@ class Config:
     def __init__(self, src: dict):
         self.api_name = src["api_name"]
         self.loader_lib_names = src["loader_lib_names"]
+        self.supports_tracing = src["supports_tracing"]
 
         self.structures = [Structure(s) for s in src.get("structures", [])]
         self.structures_by_name = {struct.name: struct for struct in self.structures}
         for s in self.structures:
             s.set_all_structures_description(self.structures_by_name)
 
-        self.functions = {function_group["name"] : [Function(self.structures_by_name, f) for f in function_group["members"]] for function_group in src.get("functions", [])}
+        self.tracable_group_defaults = {function_group["name"] : (function_group["tracable_default"] if "tracable_default" in function_group.keys() else False) for function_group in src.get("functions", [])}
+        self.functions = {function_group["name"] : [Function(self.structures_by_name, f, self.tracable_group_defaults[function_group["name"]]) for f in function_group["members"]] for function_group in src.get("functions", [])}
+        self.group_prefixes = {function_group["name"] : (function_group["prefix"] if "prefix" in function_group.keys() else "") for function_group in src.get("functions", [])}
         generated_variants = []
         for group in self.functions.keys():
             for func in self.functions[group]:
@@ -1719,6 +1746,12 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
     def dont_generate_handler(f):
         return f.special_handling and f.special_handling.icd and f.special_handling.icd.dont_generate_handler
 
+    def get_func_ddi_name_bind(f):
+        return get_func_ddi_name(config, f)
+
+    def get_ddi_name_bind(f):
+        return get_ddi_name(config, f)
+
     functions_in_dispatch_table = {group_name : [f for f in config.functions[group_name] if not (
         f.special_handling and f.special_handling.icd and f.special_handling.icd.not_in_dispatch_table)] for group_name in config.functions}
 
@@ -1750,6 +1783,9 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
 
     def can_be_null(arg):
         return arg.kind_details and arg.kind_details.can_be_null
+    
+    def remove_prefix(text : str, prefix : str) -> str :
+        return text[len(prefix) : ] if text.startswith(prefix) else text
 
     with open("icd.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
@@ -1777,6 +1813,13 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
         get_arg_from_capture=get_arg_from_capture,
         is_unsupported=is_unsupported,
         can_be_null=can_be_null,
+        to_pascal_case = to_pascal_case,
+        to_camel_case = to_camel_case,
+        to_snake_case = to_snake_case,
+        get_ddi_name = get_ddi_name_bind,
+        get_func_ddi_name = get_func_ddi_name_bind,
+        remove_prefix = remove_prefix,
+
         prologue=lambda f: f.special_handling.icd.handler_prologue if (
             f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_prologue) else "",
         epilogue=lambda f: f.special_handling.icd.handler_epilogue if (

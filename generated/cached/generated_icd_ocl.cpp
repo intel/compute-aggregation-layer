@@ -5647,6 +5647,7 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     return nullptr;
 }
 
+
 } // namespace Ocl
 } // namespace Icd
 } // namespace Client

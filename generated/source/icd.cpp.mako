@@ -357,6 +357,35 @@ void *${config.icd_get_extenion_func_addr_func_name}(const char *funcName) {
 }
 % endif # config.icd_get_extenion_func_addr_func_name
 
+%  if config.supports_tracing:
+%   for group_name in functions:
+%    for func in [f for f in functions_in_dispatch_table[group_name] if f.traits.is_tracable]:
+<%  func_base = func if not func.aliased_function else func.aliased_function%>\
+<%  prefix = config.group_prefixes[group_name]%>\
+${func_base.returns.type.str} ${func.name}_WithTracing(${func_base.get_args_list_str()}) {
+    ZE_HANDLE_TRACER_RECURSION(${'::'.join(config.icd_namespace + [func.name])},
+                                    ${func_base.get_call_params_list_str()});
+
+    ${to_snake_case(func.name)}_params_t tracerParams;
+%     for arg in func_base.args:
+    tracerParams.p${arg.name} = &${arg.name};
+%     endfor # arg in func_base.args:
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<${prefix}_pfn${to_pascal_case(remove_prefix(func.name, prefix))}Cb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ${prefix}_pfn${to_pascal_case(remove_prefix(func.name, prefix))}Cb_t, ${func.ddi_category}, pfn${to_pascal_case(remove_prefix(func.name, prefix+func.ddi_category))}Cb);
+
+    return ${'::'.join(config.icd_namespace + ["apiTracerWrapperImp"])}(${'::'.join(config.icd_namespace + [func.name])},
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 ${func_base.get_call_params_list_str("*tracerParams.p")});
+}
+%    endfor # func in functions_in_dispatch_table[group_name]:
+%   endfor # group_name in functions
+%  endif # config.supports_tracing
+
 % for namespace_part in reversed(icd_namespace):
 } // namespace ${namespace_part}
 % endfor

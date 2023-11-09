@@ -12,6 +12,7 @@ config:
     "core": "ze_dditable_t"
     "sysman": "zes_dditable_t"
     "tools": "zet_dditable_t"
+  supports_tracing: True
 
   icd_init_dispatch_table_func_name_format: "initL0{}Ddi"
   icd_get_extenion_func_addr_func_name: "getL0ExtensionFuncionAddressRpcHelper"
@@ -51,6 +52,7 @@ config:
     icd_cpp:
       - '#include "client/icd/level_zero/icd_level_zero.h"'
       - '#include "client/icd/icd_page_fault_manager.h"'
+      - '#include "client/icd/level_zero/tracing/tracing_imp.h"'
     api:
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/zes_api.h"'
@@ -1580,6 +1582,8 @@ config:
 
   functions:
     - name: "tools"
+      prefix: "zet"
+      tracable_default: False
       members:
         - name: zetTracerExpCreate
           special_handling:
@@ -1707,6 +1711,8 @@ config:
               type: ze_bool_t
               kind: scalar
     - name: "sysman"
+      prefix: "zes"
+      tracable_default: False
       members:
         - name: zesDeviceReset
           latency: 1.0
@@ -1954,12 +1960,15 @@ config:
                 server_access: read_write
 
     - name: "core"
+      prefix: "ze"
+      tracable_default: True
       members:
         - name: zeInit
           latency: 1.0
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
+              tracable: False
             rpc:
               custom_handler: True
           ddi_category: Global
@@ -2484,6 +2493,9 @@ config:
         - name: zeContextCreateEx
           latency: 1.0
           ddi_category: Context
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -3888,6 +3900,9 @@ config:
         - name: zeDeviceGetGlobalTimestamps
           latency: 0.0
           ddi_category: Device
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -3922,6 +3937,9 @@ config:
                 server_access: write
         - name: zeDeviceReserveCacheExt
           ddi_category: Device
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -3941,6 +3959,9 @@ config:
               kind: scalar
         - name: zeDeviceSetCacheAdviceExt
           ddi_category: Device
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -4120,6 +4141,7 @@ config:
           special_handling:
             icd:
               dont_generate_handler: True
+              tracable: False
             rpc:
               dont_generate_rpc_message: True
           ddi_category: Driver
@@ -4644,6 +4666,9 @@ config:
         - name: zeEventQueryTimestampsExp
           latency: 0.0
           ddi_category: EventExp
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -4687,6 +4712,7 @@ config:
           special_handling:
             icd:
               dont_generate_handler: True
+              tracable: False
             rpc:
               dont_generate_rpc_message: True
           ddi_category: Event
@@ -5042,6 +5068,9 @@ config:
         - name: zeKernelSetGlobalOffsetExp
           latency: 0.0
           ddi_category: KernelExp
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -5311,6 +5340,9 @@ config:
         - name: zeKernelSchedulingHintExp
           latency: 0.0
           ddi_category: KernelExp
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -5850,6 +5882,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              tracable: False
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getL0Platform()->getPageFaultManager().unregisterSharedAlloc(ptr);\n    Cal::Client::Icd::icdGlobalState.getL0Platform()->invalidateAllKernelArgCaches();\n    hContext->asLocalObject()->allocPropertiesCache.invalidateAllocPropertiesCache();"
             rpc:
               custom_handler: True
@@ -6831,6 +6864,9 @@ config:
         - name: zeCommandListHostSynchronize
           latency: 0.0
           ddi_category: CommandList
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar
@@ -6849,6 +6885,9 @@ config:
         - name: zeDevicePciGetPropertiesExt
           latency: 0.0
           ddi_category: Device
+          special_handling:
+            icd:
+              tracable: False
           returns:
             type: ze_result_t
             kind: scalar

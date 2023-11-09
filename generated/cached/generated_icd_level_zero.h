@@ -56,167 +56,315 @@ ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_de
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice);
+ze_result_t zeContextSystemBarrier_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
+ze_result_t zeCommandListCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
+ze_result_t zeCommandListCreateImmediate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList);
 ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList);
+ze_result_t zeCommandListDestroy_WithTracing (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListClose (ze_command_list_handle_t hCommandList);
+ze_result_t zeCommandListClose_WithTracing (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList);
+ze_result_t zeCommandListReset_WithTracing (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_WithTracing (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
+ze_result_t zeCommandQueueCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue);
+ze_result_t zeCommandQueueDestroy_WithTracing (ze_command_queue_handle_t hCommandQueue);
 ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
+ze_result_t zeCommandQueueExecuteCommandLists_WithTracing (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs);
+ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper_WithTracing (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs);
 ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
+ze_result_t zeCommandQueueSynchronize_WithTracing (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
+ze_result_t zeContextCreate_WithTracing (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
 ze_result_t zeContextCreateEx (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext);
 ze_result_t zeContextDestroy (ze_context_handle_t hContext);
+ze_result_t zeContextDestroy_WithTracing (ze_context_handle_t hContext);
 ze_result_t zeContextGetStatus (ze_context_handle_t hContext);
+ze_result_t zeContextGetStatus_WithTracing (ze_context_handle_t hContext);
 ze_result_t zeCommandListAppendMemoryCopy (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopy_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFill (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFill_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size);
+ze_result_t zeCommandListAppendMemoryPrefetch_WithTracing (ze_command_list_handle_t hCommandList, const void* ptr, size_t size);
 ze_result_t zeCommandListAppendMemAdvise (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice);
+ze_result_t zeCommandListAppendMemAdvise_WithTracing (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice);
 ze_result_t zeDeviceGetRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices);
+ze_result_t zeDeviceGet_WithTracing (ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices);
 ze_result_t zeDeviceGetSubDevicesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices);
+ze_result_t zeDeviceGetSubDevices_WithTracing (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices);
 ze_result_t zeDeviceGetPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties);
+ze_result_t zeDeviceGetProperties_WithTracing (ze_device_handle_t hDevice, ze_device_properties_t* pDeviceProperties);
 ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties);
+ze_result_t zeDeviceGetComputeProperties_WithTracing (ze_device_handle_t hDevice, ze_device_compute_properties_t* pComputeProperties);
 ze_result_t zeDeviceGetModulePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties);
+ze_result_t zeDeviceGetModuleProperties_WithTracing (ze_device_handle_t hDevice, ze_device_module_properties_t* pModuleProperties);
 ze_result_t zeDeviceGetCommandQueueGroupPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties);
+ze_result_t zeDeviceGetCommandQueueGroupProperties_WithTracing (ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties);
 ze_result_t zeDeviceGetMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties);
+ze_result_t zeDeviceGetMemoryProperties_WithTracing (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties);
 ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties);
+ze_result_t zeDeviceGetMemoryAccessProperties_WithTracing (ze_device_handle_t hDevice, ze_device_memory_access_properties_t* pMemAccessProperties);
 ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties);
+ze_result_t zeDeviceGetCacheProperties_WithTracing (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties);
 ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties);
+ze_result_t zeDeviceGetImageProperties_WithTracing (ze_device_handle_t hDevice, ze_device_image_properties_t* pImageProperties);
 ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties);
+ze_result_t zeDeviceGetExternalMemoryProperties_WithTracing (ze_device_handle_t hDevice, ze_device_external_memory_properties_t* pExternalMemoryProperties);
 ze_result_t zeDeviceGetP2PProperties (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties);
+ze_result_t zeDeviceGetP2PProperties_WithTracing (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_device_p2p_properties_t* pP2PProperties);
 ze_result_t zeDeviceCanAccessPeer (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
+ze_result_t zeDeviceCanAccessPeer_WithTracing (ze_device_handle_t hDevice, ze_device_handle_t hPeerDevice, ze_bool_t* value);
 ze_result_t zeDeviceGetStatus (ze_device_handle_t hDevice);
+ze_result_t zeDeviceGetStatus_WithTracing (ze_device_handle_t hDevice);
 ze_result_t zeDeviceGetGlobalTimestamps (ze_device_handle_t hDevice, uint64_t* hostTimestamp, uint64_t* deviceTimestamp);
 ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLevel, size_t cacheReservationSize);
 ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, size_t regionSize, ze_cache_ext_region_t cacheRegion);
 ze_result_t zeDriverGetRpcHelper (uint32_t* pCount, ze_driver_handle_t* phDrivers);
+ze_result_t zeDriverGet_WithTracing (uint32_t* pCount, ze_driver_handle_t* phDrivers);
 ze_result_t zeDriverGetApiVersion (ze_driver_handle_t hDriver, ze_api_version_t* version);
+ze_result_t zeDriverGetApiVersion_WithTracing (ze_driver_handle_t hDriver, ze_api_version_t* version);
 ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties);
+ze_result_t zeDriverGetProperties_WithTracing (ze_driver_handle_t hDriver, ze_driver_properties_t* pDriverProperties);
 ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties);
+ze_result_t zeDriverGetIpcProperties_WithTracing (ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties);
 ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties);
+ze_result_t zeDriverGetExtensionProperties_WithTracing (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties);
 ze_result_t zeDriverGetExtensionFunctionAddress (ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress);
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool);
+ze_result_t zeEventPoolCreate_WithTracing (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool);
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool);
+ze_result_t zeEventPoolDestroy_WithTracing (ze_event_pool_handle_t hEventPool);
 ze_result_t zeEventCreate (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
+ze_result_t zeEventCreate_WithTracing (ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
 ze_result_t zeEventDestroy (ze_event_handle_t hEvent);
+ze_result_t zeEventDestroy_WithTracing (ze_event_handle_t hEvent);
 ze_result_t zeEventPoolGetIpcHandleRpcHelper (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc);
+ze_result_t zeEventPoolGetIpcHandle_WithTracing (ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc);
 ze_result_t zeEventPoolOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool);
+ze_result_t zeEventPoolOpenIpcHandle_WithTracing (ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool);
 ze_result_t zeEventPoolCloseIpcHandle (ze_event_pool_handle_t hEventPool);
+ze_result_t zeEventPoolCloseIpcHandle_WithTracing (ze_event_pool_handle_t hEventPool);
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendBarrier_WithTracing (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
+ze_result_t zeCommandListAppendSignalEvent_WithTracing (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
+ze_result_t zeCommandListAppendWaitOnEvents_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent);
+ze_result_t zeEventHostSignal_WithTracing (ze_event_handle_t hEvent);
 ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout);
+ze_result_t zeEventHostSynchronize_WithTracing (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent);
+ze_result_t zeEventQueryStatus_WithTracing (ze_event_handle_t hEvent);
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
+ze_result_t zeCommandListAppendEventReset_WithTracing (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent);
 ze_result_t zeEventHostReset (ze_event_handle_t hEvent);
+ze_result_t zeEventHostReset_WithTracing (ze_event_handle_t hEvent);
 ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr);
+ze_result_t zeEventQueryKernelTimestamp_WithTracing (ze_event_handle_t hEvent, ze_kernel_timestamp_result_t* dstptr);
 ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendQueryKernelTimestamps_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps);
 ze_result_t zeEventQueryKernelTimestampsExt (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults);
 ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps);
+ze_result_t zeEventQueryKernelTimestampsExtRpcHelper_WithTracing (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps);
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
+ze_result_t zeFenceCreate_WithTracing (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence);
+ze_result_t zeFenceDestroy_WithTracing (ze_fence_handle_t hFence);
 ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout);
+ze_result_t zeFenceHostSynchronize_WithTracing (ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence);
+ze_result_t zeFenceQueryStatus_WithTracing (ze_fence_handle_t hFence);
 ze_result_t zeFenceReset (ze_fence_handle_t hFence);
+ze_result_t zeFenceReset_WithTracing (ze_fence_handle_t hFence);
 ze_result_t zeKernelSetGlobalOffsetExp (ze_kernel_handle_t hKernel, uint32_t offsetX, uint32_t offsetY, uint32_t offsetZ);
 ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
+ze_result_t zeImageGetProperties_WithTracing (ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties);
 ze_result_t zeImageCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
+ze_result_t zeImageCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 ze_result_t zeImageDestroy (ze_image_handle_t hImage);
+ze_result_t zeImageDestroy_WithTracing (ze_image_handle_t hImage);
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint);
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM);
+ze_result_t zeMemAllocShared_WithTracing (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
+ze_result_t zeMemAllocDevice_WithTracing (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 ze_result_t zeMemAllocHostRpcHelper (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocHostRpcMImplicitArgs &implArgsForZeMemAllocHostRpcM);
+ze_result_t zeMemAllocHost_WithTracing (ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr);
 ze_result_t zeMemFree (ze_context_handle_t hContext, void* ptr);
+ze_result_t zeMemFree_WithTracing (ze_context_handle_t hContext, void* ptr);
 ze_result_t zeMemGetAllocPropertiesRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
+ze_result_t zeMemGetAllocProperties_WithTracing (ze_context_handle_t hContext, const void* ptr, ze_memory_allocation_properties_t* pMemAllocProperties, ze_device_handle_t* phDevice);
 ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize);
+ze_result_t zeMemGetAddressRange_WithTracing (ze_context_handle_t hContext, const void* ptr, void** pBase, size_t* pSize);
 ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle);
+ze_result_t zeMemGetIpcHandle_WithTracing (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle);
 ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
+ze_result_t zeMemOpenIpcHandle_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr);
+ze_result_t zeMemCloseIpcHandle_WithTracing (ze_context_handle_t hContext, const void* ptr);
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
+ze_result_t zexMemGetIpcHandles_WithTracing (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
 ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
+ze_result_t zexMemOpenIpcHandles_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
-ze_result_t zeModuleCreateTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
+ze_result_t zeModuleCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
+ze_result_t zeModuleDestroy_WithTracing (ze_module_handle_t hModule);
 ze_result_t zeModuleDynamicLink (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
+ze_result_t zeModuleDynamicLink_WithTracing (uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
 ze_result_t zeModuleBuildLogDestroy (ze_module_build_log_handle_t hModuleBuildLog);
+ze_result_t zeModuleBuildLogDestroy_WithTracing (ze_module_build_log_handle_t hModuleBuildLog);
 ze_result_t zeModuleBuildLogGetString (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog);
+ze_result_t zeModuleBuildLogGetString_WithTracing (ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog);
 ze_result_t zeModuleGetNativeBinary (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary);
+ze_result_t zeModuleGetNativeBinary_WithTracing (ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary);
 ze_result_t zeModuleGetGlobalPointer (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr);
+ze_result_t zeModuleGetGlobalPointer_WithTracing (ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr);
 ze_result_t zeModuleGetKernelNames (ze_module_handle_t hModule, uint32_t* pCount, const char** pNames);
+ze_result_t zeModuleGetKernelNames_WithTracing (ze_module_handle_t hModule, uint32_t* pCount, const char** pNames);
 ze_result_t zeModuleGetKernelNamesRpcHelper (ze_module_handle_t hModule, uint32_t* totalLength, char* namesBuffer);
+ze_result_t zeModuleGetKernelNamesRpcHelper_WithTracing (ze_module_handle_t hModule, uint32_t* totalLength, char* namesBuffer);
 ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties);
+ze_result_t zeModuleGetProperties_WithTracing (ze_module_handle_t hModule, ze_module_properties_t* pModuleProperties);
 ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* desc, ze_kernel_handle_t* phKernel);
+ze_result_t zeKernelCreate_WithTracing (ze_module_handle_t hModule, const ze_kernel_desc_t* desc, ze_kernel_handle_t* phKernel);
 ze_result_t zeKernelDestroy (ze_kernel_handle_t hKernel);
+ze_result_t zeKernelDestroy_WithTracing (ze_kernel_handle_t hKernel);
 ze_result_t zeModuleGetFunctionPointer (ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction);
+ze_result_t zeModuleGetFunctionPointer_WithTracing (ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction);
 ze_result_t zeKernelSetGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ);
+ze_result_t zeKernelSetGroupSize_WithTracing (ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ);
 ze_result_t zeKernelSuggestGroupSizeRpcHelper (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ);
+ze_result_t zeKernelSuggestGroupSize_WithTracing (ze_kernel_handle_t hKernel, uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t* groupSizeX, uint32_t* groupSizeY, uint32_t* groupSizeZ);
 ze_result_t zeKernelSuggestMaxCooperativeGroupCount (ze_kernel_handle_t hKernel, uint32_t* totalGroupCount);
+ze_result_t zeKernelSuggestMaxCooperativeGroupCount_WithTracing (ze_kernel_handle_t hKernel, uint32_t* totalGroupCount);
 ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue);
+ze_result_t zeKernelSetArgumentValue_WithTracing (ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue);
 ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags);
+ze_result_t zeKernelSetIndirectAccess_WithTracing (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags);
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags);
+ze_result_t zeKernelGetIndirectAccess_WithTracing (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags);
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags);
+ze_result_t zeKernelSetCacheConfig_WithTracing (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags);
 ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
+ze_result_t zeKernelGetProperties_WithTracing (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
 ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
+ze_result_t zeKernelGetName_WithTracing (ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendLaunchKernel_WithTracing (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendLaunchCooperativeKernel_WithTracing (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendLaunchKernelIndirect_WithTracing (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout);
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties);
 ze_result_t zeContextMakeMemoryResident (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+ze_result_t zeContextMakeMemoryResident_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 ze_result_t zeContextEvictMemory (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
+ze_result_t zeContextEvictMemory_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, void* ptr, size_t size);
 ze_result_t zeVirtualMemReserve (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr);
+ze_result_t zeVirtualMemReserve_WithTracing (ze_context_handle_t hContext, const void* pStart, size_t size, void** pptr);
 ze_result_t zeVirtualMemFree (ze_context_handle_t hContext, const void* ptr, size_t size);
+ze_result_t zeVirtualMemFree_WithTracing (ze_context_handle_t hContext, const void* ptr, size_t size);
 ze_result_t zeVirtualMemQueryPageSize (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
+ze_result_t zeVirtualMemQueryPageSize_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, size_t size, size_t* pagesize);
 ze_result_t zePhysicalMemCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
+ze_result_t zePhysicalMemCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_physical_mem_desc_t* desc, ze_physical_mem_handle_t* phPhysicalMemory);
 ze_result_t zePhysicalMemDestroy (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
+ze_result_t zePhysicalMemDestroy_WithTracing (ze_context_handle_t hContext, ze_physical_mem_handle_t hPhysicalMemory);
 ze_result_t zeVirtualMemMap (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access);
+ze_result_t zeVirtualMemMap_WithTracing (ze_context_handle_t hContext, const void* ptr, size_t size, ze_physical_mem_handle_t hPhysicalMemory, size_t offset, ze_memory_access_attribute_t access);
 ze_result_t zeVirtualMemUnmap (ze_context_handle_t hContext, const void* ptr, size_t size);
+ze_result_t zeVirtualMemUnmap_WithTracing (ze_context_handle_t hContext, const void* ptr, size_t size);
 ze_result_t zeVirtualMemSetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access);
+ze_result_t zeVirtualMemSetAccessAttribute_WithTracing (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t access);
 ze_result_t zeVirtualMemGetAccessAttribute (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize);
+ze_result_t zeVirtualMemGetAccessAttribute_WithTracing (ze_context_handle_t hContext, const void* ptr, size_t size, ze_memory_access_attribute_t* access, size_t* outSize);
 ze_result_t zexDriverImportExternalPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr, size_t size);
+ze_result_t zexDriverImportExternalPointer_WithTracing (ze_driver_handle_t hDriver, void* ptr, size_t size);
 ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver, void* ptr);
+ze_result_t zexDriverReleaseImportedPointer_WithTracing (ze_driver_handle_t hDriver, void* ptr);
 ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
+ze_result_t zexDriverGetHostPointerBaseAddress_WithTracing (ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
@@ -844,127 +992,445 @@ inline void zetMetricQueryGetDataUnimpl() {
 inline void initL0Ddi(ze_dditable_t &dt){
     dt.Global.pfnInit = Cal::Client::Icd::LevelZero::zeInit;
     dt.Context.pfnSystemBarrier = Cal::Client::Icd::LevelZero::zeContextSystemBarrier;
+    if (tracingEnabled) {
+        dt.Context.pfnSystemBarrier = Cal::Client::Icd::LevelZero::zeContextSystemBarrier_WithTracing;
+    }
     dt.CommandList.pfnCreate = Cal::Client::Icd::LevelZero::zeCommandListCreate;
+    if (tracingEnabled) {
+        dt.CommandList.pfnCreate = Cal::Client::Icd::LevelZero::zeCommandListCreate_WithTracing;
+    }
     dt.CommandList.pfnCreateImmediate = Cal::Client::Icd::LevelZero::zeCommandListCreateImmediate;
+    if (tracingEnabled) {
+        dt.CommandList.pfnCreateImmediate = Cal::Client::Icd::LevelZero::zeCommandListCreateImmediate_WithTracing;
+    }
     dt.CommandList.pfnDestroy = Cal::Client::Icd::LevelZero::zeCommandListDestroy;
+    if (tracingEnabled) {
+        dt.CommandList.pfnDestroy = Cal::Client::Icd::LevelZero::zeCommandListDestroy_WithTracing;
+    }
     dt.CommandList.pfnClose = Cal::Client::Icd::LevelZero::zeCommandListClose;
+    if (tracingEnabled) {
+        dt.CommandList.pfnClose = Cal::Client::Icd::LevelZero::zeCommandListClose_WithTracing;
+    }
     dt.CommandList.pfnReset = Cal::Client::Icd::LevelZero::zeCommandListReset;
+    if (tracingEnabled) {
+        dt.CommandList.pfnReset = Cal::Client::Icd::LevelZero::zeCommandListReset_WithTracing;
+    }
     dt.CommandList.pfnAppendWriteGlobalTimestamp = Cal::Client::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendWriteGlobalTimestamp = Cal::Client::Icd::LevelZero::zeCommandListAppendWriteGlobalTimestamp_WithTracing;
+    }
     dt.CommandQueue.pfnCreate = Cal::Client::Icd::LevelZero::zeCommandQueueCreate;
+    if (tracingEnabled) {
+        dt.CommandQueue.pfnCreate = Cal::Client::Icd::LevelZero::zeCommandQueueCreate_WithTracing;
+    }
     dt.CommandQueue.pfnDestroy = Cal::Client::Icd::LevelZero::zeCommandQueueDestroy;
+    if (tracingEnabled) {
+        dt.CommandQueue.pfnDestroy = Cal::Client::Icd::LevelZero::zeCommandQueueDestroy_WithTracing;
+    }
     dt.CommandQueue.pfnExecuteCommandLists = Cal::Client::Icd::LevelZero::zeCommandQueueExecuteCommandLists;
+    if (tracingEnabled) {
+        dt.CommandQueue.pfnExecuteCommandLists = Cal::Client::Icd::LevelZero::zeCommandQueueExecuteCommandLists_WithTracing;
+    }
     dt.CommandQueue.pfnSynchronize = Cal::Client::Icd::LevelZero::zeCommandQueueSynchronize;
+    if (tracingEnabled) {
+        dt.CommandQueue.pfnSynchronize = Cal::Client::Icd::LevelZero::zeCommandQueueSynchronize_WithTracing;
+    }
     dt.Context.pfnCreate = Cal::Client::Icd::LevelZero::zeContextCreate;
+    if (tracingEnabled) {
+        dt.Context.pfnCreate = Cal::Client::Icd::LevelZero::zeContextCreate_WithTracing;
+    }
     dt.Context.pfnCreateEx = Cal::Client::Icd::LevelZero::zeContextCreateEx;
     dt.Context.pfnDestroy = Cal::Client::Icd::LevelZero::zeContextDestroy;
+    if (tracingEnabled) {
+        dt.Context.pfnDestroy = Cal::Client::Icd::LevelZero::zeContextDestroy_WithTracing;
+    }
     dt.Context.pfnGetStatus = Cal::Client::Icd::LevelZero::zeContextGetStatus;
+    if (tracingEnabled) {
+        dt.Context.pfnGetStatus = Cal::Client::Icd::LevelZero::zeContextGetStatus_WithTracing;
+    }
     dt.CommandList.pfnAppendMemoryCopy = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopy;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendMemoryCopy = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopy_WithTracing;
+    }
     dt.CommandList.pfnAppendMemoryFill = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendMemoryFill = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill_WithTracing;
+    }
     dt.CommandList.pfnAppendMemoryPrefetch = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendMemoryPrefetch = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch_WithTracing;
+    }
     dt.CommandList.pfnAppendMemAdvise = Cal::Client::Icd::LevelZero::zeCommandListAppendMemAdvise;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendMemAdvise = Cal::Client::Icd::LevelZero::zeCommandListAppendMemAdvise_WithTracing;
+    }
     dt.Device.pfnGet = Cal::Client::Icd::LevelZero::zeDeviceGet;
+    if (tracingEnabled) {
+        dt.Device.pfnGet = Cal::Client::Icd::LevelZero::zeDeviceGet_WithTracing;
+    }
     dt.Device.pfnGetSubDevices = Cal::Client::Icd::LevelZero::zeDeviceGetSubDevices;
+    if (tracingEnabled) {
+        dt.Device.pfnGetSubDevices = Cal::Client::Icd::LevelZero::zeDeviceGetSubDevices_WithTracing;
+    }
     dt.Device.pfnGetProperties = Cal::Client::Icd::LevelZero::zeDeviceGetProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetProperties = Cal::Client::Icd::LevelZero::zeDeviceGetProperties_WithTracing;
+    }
     dt.Device.pfnGetComputeProperties = Cal::Client::Icd::LevelZero::zeDeviceGetComputeProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetComputeProperties = Cal::Client::Icd::LevelZero::zeDeviceGetComputeProperties_WithTracing;
+    }
     dt.Device.pfnGetModuleProperties = Cal::Client::Icd::LevelZero::zeDeviceGetModuleProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetModuleProperties = Cal::Client::Icd::LevelZero::zeDeviceGetModuleProperties_WithTracing;
+    }
     dt.Device.pfnGetCommandQueueGroupProperties = Cal::Client::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetCommandQueueGroupProperties = Cal::Client::Icd::LevelZero::zeDeviceGetCommandQueueGroupProperties_WithTracing;
+    }
     dt.Device.pfnGetMemoryProperties = Cal::Client::Icd::LevelZero::zeDeviceGetMemoryProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetMemoryProperties = Cal::Client::Icd::LevelZero::zeDeviceGetMemoryProperties_WithTracing;
+    }
     dt.Device.pfnGetMemoryAccessProperties = Cal::Client::Icd::LevelZero::zeDeviceGetMemoryAccessProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetMemoryAccessProperties = Cal::Client::Icd::LevelZero::zeDeviceGetMemoryAccessProperties_WithTracing;
+    }
     dt.Device.pfnGetCacheProperties = Cal::Client::Icd::LevelZero::zeDeviceGetCacheProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetCacheProperties = Cal::Client::Icd::LevelZero::zeDeviceGetCacheProperties_WithTracing;
+    }
     dt.Device.pfnGetImageProperties = Cal::Client::Icd::LevelZero::zeDeviceGetImageProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetImageProperties = Cal::Client::Icd::LevelZero::zeDeviceGetImageProperties_WithTracing;
+    }
     dt.Device.pfnGetExternalMemoryProperties = Cal::Client::Icd::LevelZero::zeDeviceGetExternalMemoryProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetExternalMemoryProperties = Cal::Client::Icd::LevelZero::zeDeviceGetExternalMemoryProperties_WithTracing;
+    }
     dt.Device.pfnGetP2PProperties = Cal::Client::Icd::LevelZero::zeDeviceGetP2PProperties;
+    if (tracingEnabled) {
+        dt.Device.pfnGetP2PProperties = Cal::Client::Icd::LevelZero::zeDeviceGetP2PProperties_WithTracing;
+    }
     dt.Device.pfnCanAccessPeer = Cal::Client::Icd::LevelZero::zeDeviceCanAccessPeer;
+    if (tracingEnabled) {
+        dt.Device.pfnCanAccessPeer = Cal::Client::Icd::LevelZero::zeDeviceCanAccessPeer_WithTracing;
+    }
     dt.Device.pfnGetStatus = Cal::Client::Icd::LevelZero::zeDeviceGetStatus;
+    if (tracingEnabled) {
+        dt.Device.pfnGetStatus = Cal::Client::Icd::LevelZero::zeDeviceGetStatus_WithTracing;
+    }
     dt.Device.pfnGetGlobalTimestamps = Cal::Client::Icd::LevelZero::zeDeviceGetGlobalTimestamps;
     dt.Device.pfnReserveCacheExt = Cal::Client::Icd::LevelZero::zeDeviceReserveCacheExt;
     dt.Device.pfnSetCacheAdviceExt = Cal::Client::Icd::LevelZero::zeDeviceSetCacheAdviceExt;
     dt.Driver.pfnGet = Cal::Client::Icd::LevelZero::zeDriverGet;
+    if (tracingEnabled) {
+        dt.Driver.pfnGet = Cal::Client::Icd::LevelZero::zeDriverGet_WithTracing;
+    }
     dt.Driver.pfnGetApiVersion = Cal::Client::Icd::LevelZero::zeDriverGetApiVersion;
+    if (tracingEnabled) {
+        dt.Driver.pfnGetApiVersion = Cal::Client::Icd::LevelZero::zeDriverGetApiVersion_WithTracing;
+    }
     dt.Driver.pfnGetProperties = Cal::Client::Icd::LevelZero::zeDriverGetProperties;
+    if (tracingEnabled) {
+        dt.Driver.pfnGetProperties = Cal::Client::Icd::LevelZero::zeDriverGetProperties_WithTracing;
+    }
     dt.Driver.pfnGetIpcProperties = Cal::Client::Icd::LevelZero::zeDriverGetIpcProperties;
+    if (tracingEnabled) {
+        dt.Driver.pfnGetIpcProperties = Cal::Client::Icd::LevelZero::zeDriverGetIpcProperties_WithTracing;
+    }
     dt.Driver.pfnGetExtensionProperties = Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties;
+    if (tracingEnabled) {
+        dt.Driver.pfnGetExtensionProperties = Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties_WithTracing;
+    }
     dt.Driver.pfnGetExtensionFunctionAddress = Cal::Client::Icd::LevelZero::zeDriverGetExtensionFunctionAddress;
     dt.EventPool.pfnCreate = Cal::Client::Icd::LevelZero::zeEventPoolCreate;
+    if (tracingEnabled) {
+        dt.EventPool.pfnCreate = Cal::Client::Icd::LevelZero::zeEventPoolCreate_WithTracing;
+    }
     dt.EventPool.pfnDestroy = Cal::Client::Icd::LevelZero::zeEventPoolDestroy;
+    if (tracingEnabled) {
+        dt.EventPool.pfnDestroy = Cal::Client::Icd::LevelZero::zeEventPoolDestroy_WithTracing;
+    }
     dt.Event.pfnCreate = Cal::Client::Icd::LevelZero::zeEventCreate;
+    if (tracingEnabled) {
+        dt.Event.pfnCreate = Cal::Client::Icd::LevelZero::zeEventCreate_WithTracing;
+    }
     dt.Event.pfnDestroy = Cal::Client::Icd::LevelZero::zeEventDestroy;
+    if (tracingEnabled) {
+        dt.Event.pfnDestroy = Cal::Client::Icd::LevelZero::zeEventDestroy_WithTracing;
+    }
     dt.EventPool.pfnGetIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolGetIpcHandle;
+    if (tracingEnabled) {
+        dt.EventPool.pfnGetIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolGetIpcHandle_WithTracing;
+    }
     dt.EventPool.pfnOpenIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolOpenIpcHandle;
+    if (tracingEnabled) {
+        dt.EventPool.pfnOpenIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolOpenIpcHandle_WithTracing;
+    }
     dt.EventPool.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolCloseIpcHandle;
+    if (tracingEnabled) {
+        dt.EventPool.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeEventPoolCloseIpcHandle_WithTracing;
+    }
     dt.CommandList.pfnAppendBarrier = Cal::Client::Icd::LevelZero::zeCommandListAppendBarrier;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendBarrier = Cal::Client::Icd::LevelZero::zeCommandListAppendBarrier_WithTracing;
+    }
     dt.CommandList.pfnAppendSignalEvent = Cal::Client::Icd::LevelZero::zeCommandListAppendSignalEvent;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendSignalEvent = Cal::Client::Icd::LevelZero::zeCommandListAppendSignalEvent_WithTracing;
+    }
     dt.CommandList.pfnAppendWaitOnEvents = Cal::Client::Icd::LevelZero::zeCommandListAppendWaitOnEvents;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendWaitOnEvents = Cal::Client::Icd::LevelZero::zeCommandListAppendWaitOnEvents_WithTracing;
+    }
     dt.Event.pfnHostSignal = Cal::Client::Icd::LevelZero::zeEventHostSignal;
+    if (tracingEnabled) {
+        dt.Event.pfnHostSignal = Cal::Client::Icd::LevelZero::zeEventHostSignal_WithTracing;
+    }
     dt.Event.pfnHostSynchronize = Cal::Client::Icd::LevelZero::zeEventHostSynchronize;
+    if (tracingEnabled) {
+        dt.Event.pfnHostSynchronize = Cal::Client::Icd::LevelZero::zeEventHostSynchronize_WithTracing;
+    }
     dt.Event.pfnQueryStatus = Cal::Client::Icd::LevelZero::zeEventQueryStatus;
+    if (tracingEnabled) {
+        dt.Event.pfnQueryStatus = Cal::Client::Icd::LevelZero::zeEventQueryStatus_WithTracing;
+    }
     dt.CommandList.pfnAppendEventReset = Cal::Client::Icd::LevelZero::zeCommandListAppendEventReset;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendEventReset = Cal::Client::Icd::LevelZero::zeCommandListAppendEventReset_WithTracing;
+    }
     dt.Event.pfnHostReset = Cal::Client::Icd::LevelZero::zeEventHostReset;
+    if (tracingEnabled) {
+        dt.Event.pfnHostReset = Cal::Client::Icd::LevelZero::zeEventHostReset_WithTracing;
+    }
     dt.Event.pfnQueryKernelTimestamp = Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestamp;
+    if (tracingEnabled) {
+        dt.Event.pfnQueryKernelTimestamp = Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestamp_WithTracing;
+    }
     dt.CommandList.pfnAppendQueryKernelTimestamps = Cal::Client::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendQueryKernelTimestamps = Cal::Client::Icd::LevelZero::zeCommandListAppendQueryKernelTimestamps_WithTracing;
+    }
     dt.EventExp.pfnQueryTimestampsExp = Cal::Client::Icd::LevelZero::zeEventQueryTimestampsExp;
     dt.Event.pfnQueryKernelTimestampsExt = Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestampsExt;
     dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate;
+    if (tracingEnabled) {
+        dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate_WithTracing;
+    }
     dt.Fence.pfnDestroy = Cal::Client::Icd::LevelZero::zeFenceDestroy;
+    if (tracingEnabled) {
+        dt.Fence.pfnDestroy = Cal::Client::Icd::LevelZero::zeFenceDestroy_WithTracing;
+    }
     dt.Fence.pfnHostSynchronize = Cal::Client::Icd::LevelZero::zeFenceHostSynchronize;
+    if (tracingEnabled) {
+        dt.Fence.pfnHostSynchronize = Cal::Client::Icd::LevelZero::zeFenceHostSynchronize_WithTracing;
+    }
     dt.Fence.pfnQueryStatus = Cal::Client::Icd::LevelZero::zeFenceQueryStatus;
+    if (tracingEnabled) {
+        dt.Fence.pfnQueryStatus = Cal::Client::Icd::LevelZero::zeFenceQueryStatus_WithTracing;
+    }
     dt.Fence.pfnReset = Cal::Client::Icd::LevelZero::zeFenceReset;
+    if (tracingEnabled) {
+        dt.Fence.pfnReset = Cal::Client::Icd::LevelZero::zeFenceReset_WithTracing;
+    }
     dt.KernelExp.pfnSetGlobalOffsetExp = Cal::Client::Icd::LevelZero::zeKernelSetGlobalOffsetExp;
     dt.Image.pfnGetProperties = Cal::Client::Icd::LevelZero::zeImageGetProperties;
+    if (tracingEnabled) {
+        dt.Image.pfnGetProperties = Cal::Client::Icd::LevelZero::zeImageGetProperties_WithTracing;
+    }
     dt.Image.pfnCreate = Cal::Client::Icd::LevelZero::zeImageCreate;
+    if (tracingEnabled) {
+        dt.Image.pfnCreate = Cal::Client::Icd::LevelZero::zeImageCreate_WithTracing;
+    }
     dt.Image.pfnDestroy = Cal::Client::Icd::LevelZero::zeImageDestroy;
+    if (tracingEnabled) {
+        dt.Image.pfnDestroy = Cal::Client::Icd::LevelZero::zeImageDestroy_WithTracing;
+    }
     dt.KernelExp.pfnSchedulingHintExp = Cal::Client::Icd::LevelZero::zeKernelSchedulingHintExp;
     dt.Mem.pfnAllocShared = Cal::Client::Icd::LevelZero::zeMemAllocShared;
+    if (tracingEnabled) {
+        dt.Mem.pfnAllocShared = Cal::Client::Icd::LevelZero::zeMemAllocShared_WithTracing;
+    }
     dt.Mem.pfnAllocDevice = Cal::Client::Icd::LevelZero::zeMemAllocDevice;
+    if (tracingEnabled) {
+        dt.Mem.pfnAllocDevice = Cal::Client::Icd::LevelZero::zeMemAllocDevice_WithTracing;
+    }
     dt.Mem.pfnAllocHost = Cal::Client::Icd::LevelZero::zeMemAllocHost;
+    if (tracingEnabled) {
+        dt.Mem.pfnAllocHost = Cal::Client::Icd::LevelZero::zeMemAllocHost_WithTracing;
+    }
     dt.Mem.pfnFree = Cal::Client::Icd::LevelZero::zeMemFree;
+    if (tracingEnabled) {
+        dt.Mem.pfnFree = Cal::Client::Icd::LevelZero::zeMemFree_WithTracing;
+    }
     dt.Mem.pfnGetAllocProperties = Cal::Client::Icd::LevelZero::zeMemGetAllocProperties;
+    if (tracingEnabled) {
+        dt.Mem.pfnGetAllocProperties = Cal::Client::Icd::LevelZero::zeMemGetAllocProperties_WithTracing;
+    }
     dt.Mem.pfnGetAddressRange = Cal::Client::Icd::LevelZero::zeMemGetAddressRange;
+    if (tracingEnabled) {
+        dt.Mem.pfnGetAddressRange = Cal::Client::Icd::LevelZero::zeMemGetAddressRange_WithTracing;
+    }
     dt.Mem.pfnGetIpcHandle = Cal::Client::Icd::LevelZero::zeMemGetIpcHandle;
+    if (tracingEnabled) {
+        dt.Mem.pfnGetIpcHandle = Cal::Client::Icd::LevelZero::zeMemGetIpcHandle_WithTracing;
+    }
     dt.Mem.pfnOpenIpcHandle = Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle;
+    if (tracingEnabled) {
+        dt.Mem.pfnOpenIpcHandle = Cal::Client::Icd::LevelZero::zeMemOpenIpcHandle_WithTracing;
+    }
     dt.Mem.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle;
+    if (tracingEnabled) {
+        dt.Mem.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle_WithTracing;
+    }
     dt.Mem.pfnFreeExt = Cal::Client::Icd::LevelZero::zeMemFreeExt;
     dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate;
     if (tracingEnabled) {
-        dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreateTracing;
+        dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate_WithTracing;
     }
     dt.Module.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleDestroy;
+    if (tracingEnabled) {
+        dt.Module.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleDestroy_WithTracing;
+    }
     dt.Module.pfnDynamicLink = Cal::Client::Icd::LevelZero::zeModuleDynamicLink;
+    if (tracingEnabled) {
+        dt.Module.pfnDynamicLink = Cal::Client::Icd::LevelZero::zeModuleDynamicLink_WithTracing;
+    }
     dt.ModuleBuildLog.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy;
+    if (tracingEnabled) {
+        dt.ModuleBuildLog.pfnDestroy = Cal::Client::Icd::LevelZero::zeModuleBuildLogDestroy_WithTracing;
+    }
     dt.ModuleBuildLog.pfnGetString = Cal::Client::Icd::LevelZero::zeModuleBuildLogGetString;
+    if (tracingEnabled) {
+        dt.ModuleBuildLog.pfnGetString = Cal::Client::Icd::LevelZero::zeModuleBuildLogGetString_WithTracing;
+    }
     dt.Module.pfnGetNativeBinary = Cal::Client::Icd::LevelZero::zeModuleGetNativeBinary;
+    if (tracingEnabled) {
+        dt.Module.pfnGetNativeBinary = Cal::Client::Icd::LevelZero::zeModuleGetNativeBinary_WithTracing;
+    }
     dt.Module.pfnGetGlobalPointer = Cal::Client::Icd::LevelZero::zeModuleGetGlobalPointer;
+    if (tracingEnabled) {
+        dt.Module.pfnGetGlobalPointer = Cal::Client::Icd::LevelZero::zeModuleGetGlobalPointer_WithTracing;
+    }
     dt.Module.pfnGetKernelNames = Cal::Client::Icd::LevelZero::zeModuleGetKernelNames;
+    if (tracingEnabled) {
+        dt.Module.pfnGetKernelNames = Cal::Client::Icd::LevelZero::zeModuleGetKernelNames_WithTracing;
+    }
     dt.Module.pfnGetProperties = Cal::Client::Icd::LevelZero::zeModuleGetProperties;
+    if (tracingEnabled) {
+        dt.Module.pfnGetProperties = Cal::Client::Icd::LevelZero::zeModuleGetProperties_WithTracing;
+    }
     dt.Kernel.pfnCreate = Cal::Client::Icd::LevelZero::zeKernelCreate;
+    if (tracingEnabled) {
+        dt.Kernel.pfnCreate = Cal::Client::Icd::LevelZero::zeKernelCreate_WithTracing;
+    }
     dt.Kernel.pfnDestroy = Cal::Client::Icd::LevelZero::zeKernelDestroy;
+    if (tracingEnabled) {
+        dt.Kernel.pfnDestroy = Cal::Client::Icd::LevelZero::zeKernelDestroy_WithTracing;
+    }
     dt.Module.pfnGetFunctionPointer = Cal::Client::Icd::LevelZero::zeModuleGetFunctionPointer;
+    if (tracingEnabled) {
+        dt.Module.pfnGetFunctionPointer = Cal::Client::Icd::LevelZero::zeModuleGetFunctionPointer_WithTracing;
+    }
     dt.Kernel.pfnSetGroupSize = Cal::Client::Icd::LevelZero::zeKernelSetGroupSize;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSetGroupSize = Cal::Client::Icd::LevelZero::zeKernelSetGroupSize_WithTracing;
+    }
     dt.Kernel.pfnSuggestGroupSize = Cal::Client::Icd::LevelZero::zeKernelSuggestGroupSize;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSuggestGroupSize = Cal::Client::Icd::LevelZero::zeKernelSuggestGroupSize_WithTracing;
+    }
     dt.Kernel.pfnSuggestMaxCooperativeGroupCount = Cal::Client::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSuggestMaxCooperativeGroupCount = Cal::Client::Icd::LevelZero::zeKernelSuggestMaxCooperativeGroupCount_WithTracing;
+    }
     dt.Kernel.pfnSetArgumentValue = Cal::Client::Icd::LevelZero::zeKernelSetArgumentValue;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSetArgumentValue = Cal::Client::Icd::LevelZero::zeKernelSetArgumentValue_WithTracing;
+    }
     dt.Kernel.pfnSetIndirectAccess = Cal::Client::Icd::LevelZero::zeKernelSetIndirectAccess;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSetIndirectAccess = Cal::Client::Icd::LevelZero::zeKernelSetIndirectAccess_WithTracing;
+    }
     dt.Kernel.pfnGetIndirectAccess = Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess;
+    if (tracingEnabled) {
+        dt.Kernel.pfnGetIndirectAccess = Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess_WithTracing;
+    }
     dt.Kernel.pfnSetCacheConfig = Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig;
+    if (tracingEnabled) {
+        dt.Kernel.pfnSetCacheConfig = Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig_WithTracing;
+    }
     dt.Kernel.pfnGetProperties = Cal::Client::Icd::LevelZero::zeKernelGetProperties;
+    if (tracingEnabled) {
+        dt.Kernel.pfnGetProperties = Cal::Client::Icd::LevelZero::zeKernelGetProperties_WithTracing;
+    }
     dt.Kernel.pfnGetName = Cal::Client::Icd::LevelZero::zeKernelGetName;
+    if (tracingEnabled) {
+        dt.Kernel.pfnGetName = Cal::Client::Icd::LevelZero::zeKernelGetName_WithTracing;
+    }
     dt.CommandList.pfnAppendLaunchKernel = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernel;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendLaunchKernel = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernel_WithTracing;
+    }
     dt.CommandList.pfnAppendLaunchCooperativeKernel = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendLaunchCooperativeKernel = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchCooperativeKernel_WithTracing;
+    }
     dt.CommandList.pfnAppendLaunchKernelIndirect = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendLaunchKernelIndirect = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchKernelIndirect_WithTracing;
+    }
     dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendLaunchMultipleKernelsIndirect = Cal::Client::Icd::LevelZero::zeCommandListAppendLaunchMultipleKernelsIndirect_WithTracing;
+    }
     dt.CommandList.pfnHostSynchronize = Cal::Client::Icd::LevelZero::zeCommandListHostSynchronize;
     dt.Device.pfnPciGetPropertiesExt = Cal::Client::Icd::LevelZero::zeDevicePciGetPropertiesExt;
     dt.Context.pfnMakeMemoryResident = Cal::Client::Icd::LevelZero::zeContextMakeMemoryResident;
+    if (tracingEnabled) {
+        dt.Context.pfnMakeMemoryResident = Cal::Client::Icd::LevelZero::zeContextMakeMemoryResident_WithTracing;
+    }
     dt.Context.pfnEvictMemory = Cal::Client::Icd::LevelZero::zeContextEvictMemory;
+    if (tracingEnabled) {
+        dt.Context.pfnEvictMemory = Cal::Client::Icd::LevelZero::zeContextEvictMemory_WithTracing;
+    }
     dt.VirtualMem.pfnReserve = Cal::Client::Icd::LevelZero::zeVirtualMemReserve;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnReserve = Cal::Client::Icd::LevelZero::zeVirtualMemReserve_WithTracing;
+    }
     dt.VirtualMem.pfnFree = Cal::Client::Icd::LevelZero::zeVirtualMemFree;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnFree = Cal::Client::Icd::LevelZero::zeVirtualMemFree_WithTracing;
+    }
     dt.VirtualMem.pfnQueryPageSize = Cal::Client::Icd::LevelZero::zeVirtualMemQueryPageSize;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnQueryPageSize = Cal::Client::Icd::LevelZero::zeVirtualMemQueryPageSize_WithTracing;
+    }
     dt.PhysicalMem.pfnCreate = Cal::Client::Icd::LevelZero::zePhysicalMemCreate;
+    if (tracingEnabled) {
+        dt.PhysicalMem.pfnCreate = Cal::Client::Icd::LevelZero::zePhysicalMemCreate_WithTracing;
+    }
     dt.PhysicalMem.pfnDestroy = Cal::Client::Icd::LevelZero::zePhysicalMemDestroy;
+    if (tracingEnabled) {
+        dt.PhysicalMem.pfnDestroy = Cal::Client::Icd::LevelZero::zePhysicalMemDestroy_WithTracing;
+    }
     dt.VirtualMem.pfnMap = Cal::Client::Icd::LevelZero::zeVirtualMemMap;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnMap = Cal::Client::Icd::LevelZero::zeVirtualMemMap_WithTracing;
+    }
     dt.VirtualMem.pfnUnmap = Cal::Client::Icd::LevelZero::zeVirtualMemUnmap;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnUnmap = Cal::Client::Icd::LevelZero::zeVirtualMemUnmap_WithTracing;
+    }
     dt.VirtualMem.pfnSetAccessAttribute = Cal::Client::Icd::LevelZero::zeVirtualMemSetAccessAttribute;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnSetAccessAttribute = Cal::Client::Icd::LevelZero::zeVirtualMemSetAccessAttribute_WithTracing;
+    }
     dt.VirtualMem.pfnGetAccessAttribute = Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute;
+    if (tracingEnabled) {
+        dt.VirtualMem.pfnGetAccessAttribute = Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute_WithTracing;
+    }
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);

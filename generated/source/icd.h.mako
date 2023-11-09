@@ -35,9 +35,9 @@ namespace ${namespace_part} {
 %  for f in functions[group_name]:
 <% func_base = f if not f.aliased_function else f.aliased_function%>\
 ${func_base.returns.type.str} ${get_func_handler_name(f)} (${get_func_handler_args_list_str(func_base)});
-%      if f.name == "zeModuleCreate":
-${func_base.returns.type.str} ${get_func_handler_name(f)}Tracing (${get_func_handler_args_list_str(func_base)});
-%      endif # func.name == "zeModuleCreate"
+%   if config.supports_tracing and f.traits.is_tracable:
+${func_base.returns.type.str} ${f.name}_WithTracing (${func_base.get_args_list_str()});
+%   endif #config.supports_tracing:
 %  endfor # functions[group_name]
 % endfor # functions
 
@@ -59,11 +59,11 @@ inline void ${fname.rpartition(".")[2]}Unimpl() {
 inline void ${config.icd_init_dispatch_table_func_name_format.format(init_func_name_suffix)}(${config.icd_dispatch_table_type[group_name]} &dt){
 %  for func in functions_in_dispatch_table[group_name]:
     dt.${get_func_ddi_name(func)} = ${'::'.join(config.icd_namespace + [func.name])};
-%      if func.name == "zeModuleCreate":
+%   if config.supports_tracing and func.traits.is_tracable:
     if (tracingEnabled) {
-        dt.${get_func_ddi_name(func)} = ${'::'.join(config.icd_namespace + [func.name])}Tracing;
+        dt.${get_func_ddi_name(func)} = ${'::'.join(config.icd_namespace + [func.name])}_WithTracing;
     }
-%      endif # func.name == "zeModuleCreate"
+%   endif #config.supports_tracing:
 %  endfor # functions_in_dispatch_table
 %  if config.unimplemented:
     // below are unimplemented, provided bindings are for easier debugging only

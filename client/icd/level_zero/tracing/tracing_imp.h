@@ -11,6 +11,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <level_zero/layers/zel_tracing_register_cb.h>
 #include <level_zero/ze_api.h>
 #include <level_zero/ze_ddi.h>
 #include <list>
@@ -19,7 +20,7 @@
 
 extern ze_dditable_t l0Ddi;
 
-namespace Cal::Client::Icd {
+namespace Cal::Client::Icd::LevelZero {
 
 extern thread_local ze_bool_t tracingInProgress;
 extern struct APITracerContextImp *pGlobalAPITracerContextImp;
@@ -129,16 +130,16 @@ template <class T>
 class APITracerCallbackDataImp {
   public:
     T apiOrdinal = {};
-    std::vector<Cal::Client::Icd::APITracerCallbackStateImp<T>> prologCallbacks;
-    std::vector<Cal::Client::Icd::APITracerCallbackStateImp<T>> epilogCallbacks;
+    std::vector<Cal::Client::Icd::LevelZero::APITracerCallbackStateImp<T>> prologCallbacks;
+    std::vector<Cal::Client::Icd::LevelZero::APITracerCallbackStateImp<T>> epilogCallbacks;
 };
 
-#define ZE_HANDLE_TRACER_RECURSION(ze_api_ptr, ...) \
-    do {                                            \
-        if (Cal::Client::Icd::tracingInProgress) {  \
-            return ze_api_ptr(__VA_ARGS__);         \
-        }                                           \
-        Cal::Client::Icd::tracingInProgress = 1;    \
+#define ZE_HANDLE_TRACER_RECURSION(ze_api_ptr, ...)           \
+    do {                                                      \
+        if (Cal::Client::Icd::LevelZero::tracingInProgress) { \
+            return ze_api_ptr(__VA_ARGS__);                   \
+        }                                                     \
+        Cal::Client::Icd::LevelZero::tracingInProgress = 1;   \
     } while (0)
 
 #define ZE_GEN_TRACER_ARRAY_ENTRY(callbackPtr, tracerArray, tracerArrayIndex, callbackType, callbackCategory, callbackFunction) \
@@ -146,26 +147,26 @@ class APITracerCallbackDataImp {
         callbackPtr = tracerArray->tracerArrayEntries[tracerArrayIndex].callbackType.callbackCategory.callbackFunction;         \
     } while (0)
 
-#define ZE_GEN_PER_API_CALLBACK_STATE(perApiCallbackData, tracerType, callbackCategory, callbackFunctionType)                               \
-    Cal::Client::Icd::tracer_array_t *currentTracerArray;                                                                                   \
-    currentTracerArray = (Cal::Client::Icd::tracer_array_t *)Cal::Client::Icd::pGlobalAPITracerContextImp->getActiveTracersList();          \
-    if (currentTracerArray) {                                                                                                               \
-        for (size_t i = 0; i < currentTracerArray->tracerArrayCount; i++) {                                                                 \
-            tracerType prologueCallbackPtr;                                                                                                 \
-            tracerType epilogue_callback_ptr;                                                                                               \
-            ZE_GEN_TRACER_ARRAY_ENTRY(prologueCallbackPtr, currentTracerArray, i, corePrologues, callbackCategory, callbackFunctionType);   \
-            ZE_GEN_TRACER_ARRAY_ENTRY(epilogue_callback_ptr, currentTracerArray, i, coreEpilogues, callbackCategory, callbackFunctionType); \
-                                                                                                                                            \
-            Cal::Client::Icd::APITracerCallbackStateImp<tracerType> prologCallback;                                                         \
-            prologCallback.currentApiCallback = prologueCallbackPtr;                                                                        \
-            prologCallback.pUserData = currentTracerArray->tracerArrayEntries[i].pUserData;                                                 \
-            perApiCallbackData.prologCallbacks.push_back(prologCallback);                                                                   \
-                                                                                                                                            \
-            Cal::Client::Icd::APITracerCallbackStateImp<tracerType> epilogCallback;                                                         \
-            epilogCallback.currentApiCallback = epilogue_callback_ptr;                                                                      \
-            epilogCallback.pUserData = currentTracerArray->tracerArrayEntries[i].pUserData;                                                 \
-            perApiCallbackData.epilogCallbacks.push_back(epilogCallback);                                                                   \
-        }                                                                                                                                   \
+#define ZE_GEN_PER_API_CALLBACK_STATE(perApiCallbackData, tracerType, callbackCategory, callbackFunctionType)                                            \
+    Cal::Client::Icd::LevelZero::tracer_array_t *currentTracerArray;                                                                                     \
+    currentTracerArray = (Cal::Client::Icd::LevelZero::tracer_array_t *)Cal::Client::Icd::LevelZero::pGlobalAPITracerContextImp->getActiveTracersList(); \
+    if (currentTracerArray) {                                                                                                                            \
+        for (size_t i = 0; i < currentTracerArray->tracerArrayCount; i++) {                                                                              \
+            tracerType prologueCallbackPtr;                                                                                                              \
+            tracerType epilogue_callback_ptr;                                                                                                            \
+            ZE_GEN_TRACER_ARRAY_ENTRY(prologueCallbackPtr, currentTracerArray, i, corePrologues, callbackCategory, callbackFunctionType);                \
+            ZE_GEN_TRACER_ARRAY_ENTRY(epilogue_callback_ptr, currentTracerArray, i, coreEpilogues, callbackCategory, callbackFunctionType);              \
+                                                                                                                                                         \
+            Cal::Client::Icd::LevelZero::APITracerCallbackStateImp<tracerType> prologCallback;                                                           \
+            prologCallback.currentApiCallback = prologueCallbackPtr;                                                                                     \
+            prologCallback.pUserData = currentTracerArray->tracerArrayEntries[i].pUserData;                                                              \
+            perApiCallbackData.prologCallbacks.push_back(prologCallback);                                                                                \
+                                                                                                                                                         \
+            Cal::Client::Icd::LevelZero::APITracerCallbackStateImp<tracerType> epilogCallback;                                                           \
+            epilogCallback.currentApiCallback = epilogue_callback_ptr;                                                                                   \
+            epilogCallback.pUserData = currentTracerArray->tracerArrayEntries[i].pUserData;                                                              \
+            perApiCallbackData.epilogCallbacks.push_back(epilogCallback);                                                                                \
+        }                                                                                                                                                \
     }
 
 template <typename TFunction_pointer, typename TParams, typename TTracer, typename TTracerPrologCallbacks, typename TTracerEpilogCallbacks, typename... Args>
@@ -191,9 +192,9 @@ ze_result_t apiTracerWrapperImp(TFunction_pointer zeApiPtr,
         if (callbacksEpilogs->at(i).currentApiCallback != nullptr)
             callbacksEpilogs->at(i).currentApiCallback(paramsStruct, ret, callbacksEpilogs->at(i).pUserData, &ppTracerInstanceUserData[i]);
     }
-    Cal::Client::Icd::tracingInProgress = 0;
-    Cal::Client::Icd::pGlobalAPITracerContextImp->releaseActivetracersList();
+    Cal::Client::Icd::LevelZero::tracingInProgress = 0;
+    Cal::Client::Icd::LevelZero::pGlobalAPITracerContextImp->releaseActivetracersList();
     return ret;
 }
 
-} // namespace Cal::Client::Icd
+} // namespace Cal::Client::Icd::LevelZero

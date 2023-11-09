@@ -10,6 +10,7 @@ config:
   daemon_namespace: "Cal::Service::Apis::Ocl"
   icd_dispatch_table_type:
     "core": "cl_icd_dispatch"
+  supports_tracing: False
 
   icd_init_dispatch_table_func_name_format: "initOclIcdDispatchTable"
   icd_get_extenion_func_addr_func_name: getOclExtensionFuncionAddressRpcHelper
