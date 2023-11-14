@@ -47,6 +47,10 @@ ze_result_t zesEngineGetProperties(zes_engine_handle_t hEngine, zes_engine_prope
    return {};
 }
 
+ze_result_t zesEngineGetActivity(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats){
+   return {};
+}
+
 ze_result_t zesDeviceGetState(zes_device_handle_t hDevice, zes_device_state_t* pState){
    return {};
 }

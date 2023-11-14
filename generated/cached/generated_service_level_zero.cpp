@@ -29,6 +29,7 @@ ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force) = nu
 ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
+ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
 ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState) = nullptr;
 ze_result_t (*zesDeviceProcessesGetState)(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) = nullptr;
 ze_result_t (*zesDevicePciGetProperties)(zes_device_handle_t hDevice, zes_pci_properties_t* pProperties) = nullptr;
@@ -222,6 +223,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesEngineGetProperties = reinterpret_cast<decltype(zesEngineGetProperties)>(dlsym(libraryHandle, "zesEngineGetProperties"));
     if(nullptr == zesEngineGetProperties){
         log<Verbosity::error>("Missing symbol zesEngineGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesEngineGetActivity = reinterpret_cast<decltype(zesEngineGetActivity)>(dlsym(libraryHandle, "zesEngineGetActivity"));
+    if(nullptr == zesEngineGetActivity){
+        log<Verbosity::error>("Missing symbol zesEngineGetActivity in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1006,6 +1013,7 @@ void unloadLevelZeroLibrary() {
     zesDeviceResetExt = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
     zesEngineGetProperties = nullptr;
+    zesEngineGetActivity = nullptr;
     zesDeviceGetState = nullptr;
     zesDeviceProcessesGetState = nullptr;
     zesDevicePciGetProperties = nullptr;

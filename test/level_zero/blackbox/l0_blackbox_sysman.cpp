@@ -65,4 +65,16 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getDevices(drivers[0], devices));
 
     RUN_REQUIRED_STEP(getZesDeviceProperties(devices[0]));
+
+    uint32_t count = 0;
+    RUN_REQUIRED_STEP(zesDeviceEnumEngineGroups(devices[0], &count, nullptr));
+
+    std::vector<zes_engine_handle_t> engineHandles(count);
+    RUN_REQUIRED_STEP(zesDeviceEnumEngineGroups(devices[0], &count, engineHandles.data()));
+
+    zes_engine_properties_t properties = {ZES_STRUCTURE_TYPE_ENGINE_PROPERTIES, nullptr};
+    RUN_REQUIRED_STEP(zesEngineGetProperties(engineHandles[0], &properties));
+
+    zes_engine_stats_t stats = {};
+    RUN_REQUIRED_STEP(zesEngineGetActivity(engineHandles[0], &stats));
 }

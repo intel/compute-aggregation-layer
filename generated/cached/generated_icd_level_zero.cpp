@@ -136,6 +136,29 @@ ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_prop
 
     return ret;
 }
+ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) {
+    log<Verbosity::bloat>("Establishing RPC for zesEngineGetActivity");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hEngine, pStats);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceGetState");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7479,6 +7502,9 @@ ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pC
 }
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) {
     return Cal::Client::Icd::LevelZero::zesEngineGetProperties(hEngine, pProperties);
+}
+ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) {
+    return Cal::Client::Icd::LevelZero::zesEngineGetActivity(hEngine, pStats);
 }
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
     return Cal::Client::Icd::LevelZero::zesDeviceGetState(hDevice, pState);

@@ -48,6 +48,7 @@ ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
+ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
 ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
 ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
@@ -591,10 +592,6 @@ inline void zesDeviceGetEccStateUnimpl() {
 }
 inline void zesDeviceSetEccStateUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesEngineGetActivityUnimpl() {
-    log<Verbosity::critical>("Function Engine.zesEngineGetActivity is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumSchedulersUnimpl() {
@@ -1458,6 +1455,7 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnResetExt = Cal::Client::Icd::LevelZero::zesDeviceResetExt;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
+    dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
     dt.Device.pfnGetState = Cal::Client::Icd::LevelZero::zesDeviceGetState;
     dt.Device.pfnProcessesGetState = Cal::Client::Icd::LevelZero::zesDeviceProcessesGetState;
     dt.Device.pfnPciGetProperties = Cal::Client::Icd::LevelZero::zesDevicePciGetProperties;
@@ -1497,7 +1495,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
     dt.Device.pfnSetEccState = reinterpret_cast<decltype(dt.Device.pfnSetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceSetEccStateUnimpl);
-    dt.Engine.pfnGetActivity = reinterpret_cast<decltype(dt.Engine.pfnGetActivity)>(Cal::Client::Icd::LevelZero::Unimplemented::zesEngineGetActivityUnimpl);
     dt.Device.pfnEnumSchedulers = reinterpret_cast<decltype(dt.Device.pfnEnumSchedulers)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumSchedulersUnimpl);
     dt.Scheduler.pfnGetProperties = reinterpret_cast<decltype(dt.Scheduler.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetPropertiesUnimpl);
     dt.Scheduler.pfnGetCurrentMode = reinterpret_cast<decltype(dt.Scheduler.pfnGetCurrentMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetCurrentModeUnimpl);
