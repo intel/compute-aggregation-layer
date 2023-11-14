@@ -1474,7 +1474,6 @@ config:
           Device.zesDeviceEccConfigurable,
           Device.zesDeviceGetEccState,
           Device.zesDeviceSetEccState,
-          Engine.zesEngineGetProperties,
           Engine.zesEngineGetActivity,
           Device.zesDeviceEnumSchedulers,
           Scheduler.zesSchedulerGetProperties,
@@ -1784,6 +1783,30 @@ config:
                 element:
                   type: zes_engine_handle_t
                   kind: pointer
+                server_access: read_write
+
+        - name: zesEngineGetProperties
+          latency: 1.0
+          ddi_category: Engine
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hEngine
+              type: zes_engine_handle_t
+              kind: scalar
+            2:
+              name: pProperties
+              type: zes_engine_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_engine_properties_t
+                  kind: scalar
                 server_access: read_write
 
         - name: zesDeviceGetState

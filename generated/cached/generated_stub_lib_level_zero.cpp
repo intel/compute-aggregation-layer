@@ -43,6 +43,10 @@ ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCo
    return {};
 }
 
+ze_result_t zesEngineGetProperties(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties){
+   return {};
+}
+
 ze_result_t zesDeviceGetState(zes_device_handle_t hDevice, zes_device_state_t* pState){
    return {};
 }

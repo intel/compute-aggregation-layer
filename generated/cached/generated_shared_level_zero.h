@@ -74,7 +74,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Device.zesDeviceEccConfigurable");
     ret.push_back("Device.zesDeviceGetEccState");
     ret.push_back("Device.zesDeviceSetEccState");
-    ret.push_back("Engine.zesEngineGetProperties");
     ret.push_back("Engine.zesEngineGetActivity");
     ret.push_back("Device.zesDeviceEnumSchedulers");
     ret.push_back("Scheduler.zesSchedulerGetProperties");
