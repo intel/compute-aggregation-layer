@@ -1474,7 +1474,6 @@ config:
           Device.zesDeviceEccConfigurable,
           Device.zesDeviceGetEccState,
           Device.zesDeviceSetEccState,
-          Device.zesDeviceEnumEngineGroups,
           Engine.zesEngineGetProperties,
           Engine.zesEngineGetActivity,
           Device.zesDeviceEnumSchedulers,
@@ -1750,6 +1749,43 @@ config:
               type: zes_reset_properties_t*
               kind: pointer
 
+        - name: zesDeviceEnumEngineGroups
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phEngine
+              type: zes_engine_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_engine_handle_t
+                  kind: pointer
+                server_access: read_write
+
         - name: zesDeviceGetState
           latency: 1.0
           ddi_category: Device
@@ -1918,6 +1954,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pProperties
               type: zes_device_properties_t*

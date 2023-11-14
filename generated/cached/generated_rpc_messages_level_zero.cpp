@@ -16,6 +16,26 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
+ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
+    DynamicTraits ret = {};
+    ret.phEngine.count = (pCount ? *pCount : 0);
+    ret.phEngine.size = ret.phEngine.count * sizeof(zes_engine_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phEngine.offset + ret.phEngine.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumEngineGroupsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phEngine) + Cal::Utils::alignUpPow2<8>(this->countPhEngine * sizeof(zes_engine_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumEngineGroupsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhEngine * sizeof(zes_engine_handle_t));
+     return size;
+}
+
 ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     DynamicTraits ret = {};
     ret.pProcesses.count = (pCount ? *pCount : 0);

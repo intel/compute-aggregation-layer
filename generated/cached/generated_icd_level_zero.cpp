@@ -88,6 +88,31 @@ ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties
 
     return ret;
 }
+ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumEngineGroups");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phEngine);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phEngine);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceGetState");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -231,6 +256,7 @@ ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_de
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pProperties);
     command->copyFromCaller();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -7424,6 +7450,9 @@ ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
 }
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) {
     return Cal::Client::Icd::LevelZero::zesDeviceResetExt(hDevice, pProperties);
+}
+ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);
 }
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState) {
     return Cal::Client::Icd::LevelZero::zesDeviceGetState(hDevice, pState);

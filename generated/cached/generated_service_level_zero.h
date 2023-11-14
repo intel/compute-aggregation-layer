@@ -36,6 +36,7 @@ extern ze_result_t (*zetTracerExpSetEpilogues)(zet_tracer_exp_handle_t hTracer, 
 extern ze_result_t (*zetTracerExpSetEnabled)(zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
 extern ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force);
 extern ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
+extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState);
 extern ze_result_t (*zesDeviceProcessesGetState)(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
 extern ze_result_t (*zesDevicePciGetProperties)(zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
@@ -191,6 +192,16 @@ inline bool zesDeviceResetExtHandler(Provider &service, Cal::Rpc::ChannelServer 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pProperties
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumEngineGroupsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumEngineGroups");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumEngineGroups(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phEngine ? apiCommand->captures.phEngine : nullptr
                                                 );
     return true;
 }
@@ -2222,6 +2233,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers.resize(ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
     outHandlers[ZesDeviceResetExtRpcM::messageSubtype] = zesDeviceResetExtHandler;
+    outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesDeviceGetStateRpcM::messageSubtype] = zesDeviceGetStateHandler;
     outHandlers[ZesDeviceProcessesGetStateRpcM::messageSubtype] = zesDeviceProcessesGetStateHandler;
     outHandlers[ZesDevicePciGetPropertiesRpcM::messageSubtype] = zesDevicePciGetPropertiesHandler;
@@ -2398,6 +2410,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM &apiCommand)
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumEngineGroups(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phEngine
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM &apiCommand) {
@@ -3676,6 +3695,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
             return false;
         case Cal::Rpc::LevelZero::ZesDeviceResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM*>(command)); break;
