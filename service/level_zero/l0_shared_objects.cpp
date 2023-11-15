@@ -21,6 +21,7 @@ bool L0SharedObjects::init() {
         return false;
     }
 
+    Cal::Sys::setenv("ZES_ENABLE_SYSMAN", "1", true);
     zeInitReturnValue = Cal::Service::Apis::LevelZero::Standard::zeInit(0);
     if (zeInitReturnValue != ZE_RESULT_SUCCESS) {
         log<Verbosity::info>("zeInit() call has failed! LevelZero API will always return failure on zeInit() to clients");
