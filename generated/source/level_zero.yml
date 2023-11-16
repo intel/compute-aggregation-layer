@@ -1261,6 +1261,68 @@ config:
           name: haveReplayCounters
           type: ze_bool_t
           kind: scalar
+    - name: zes_power_ext_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: domain
+          type: zes_power_domain_t
+          kind: scalar
+        3:
+          name: defaultLimit
+          type: zes_power_limit_ext_desc_t
+          kind: scalar
+    - name: zes_power_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+            possible_nontrivial_nested_types:
+              - extension_type: zes_power_ext_properties_t
+                extension_enum_value: ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES
+        2:
+          name: onSubdevice
+          type: ze_bool_t
+          kind: scalar
+        3:
+          name: subdeviceId
+          type: uint32_t
+          kind: scalar
+        4:
+          name: canControl
+          type: ze_bool_t
+          kind: scalar
+        5:
+          name: isEnergyThresholdSupported
+          type: ze_bool_t
+          kind: scalar
+        6:
+          name: defaultLimit
+          type: int32_t
+          kind: scalar
+        7:
+          name: minLimit
+          type: int32_t
+          kind: scalar
+        8:
+          name: maxLimit
+          type: int32_t
+          kind: scalar
     - name: zes_pci_address_t
       members:
         0:
@@ -1460,7 +1522,7 @@ config:
           Firmware.zesFirmwareGetProperties,
           Firmware.zesFirmwareFlash,
           Power.zesPowerGetLimitsExt,
-          Power.zesPowerSetLimitsExt,
+          Power.zesPowerSetLimitsExt,          
           Device.zesDeviceEnumStandbyDomains,
           Standby.zesStandbyGetProperties,
           Standby.zesStandbyGetMode,
@@ -1495,14 +1557,6 @@ config:
           Led.zesLedGetState,
           Led.zesLedSetState,
           Led.zesLedSetColor,
-          Device.zesDeviceEnumPowerDomains,
-          Device.zesDeviceGetCardPowerDomain,
-          Power.zesPowerGetProperties,
-          Power.zesPowerGetEnergyCounter,
-          Power.zesPowerGetLimits,
-          Power.zesPowerSetLimits,
-          Power.zesPowerGetEnergyThreshold,
-          Power.zesPowerSetEnergyThreshold,
           Device.zesDeviceEnumFabricPorts,
           FabricPort.zesFabricPortGetProperties,
           FabricPort.zesFabricPortGetLinkType,
@@ -1746,6 +1800,242 @@ config:
               name: pProperties
               type: zes_reset_properties_t*
               kind: pointer
+
+        - name: zesDeviceEnumPowerDomains
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phPower
+              type: zes_pwr_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_pwr_handle_t
+                  kind: pointer
+                server_access: read_write
+        - name: zesDeviceGetCardPowerDomain
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: phPower
+              type: zes_pwr_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_pwr_handle_t
+                  kind: pointer
+                server_access: read_write
+        - name: zesPowerGetProperties
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_power_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zesPowerGetEnergyCounter
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pEnergy
+              type: zes_power_energy_counter_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_energy_counter_t
+                  kind: scalar
+                server_access: read_write
+        - name: zesPowerGetLimits
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pSustained
+              type: zes_power_sustained_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_sustained_limit_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: pBurst
+              type: zes_power_burst_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_burst_limit_t
+                  kind: scalar
+                server_access: read_write
+            3:
+              name: pPeak
+              type: zes_power_peak_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_peak_limit_t
+                  kind: scalar
+                server_access: read_write
+        - name: zesPowerSetLimits
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pSustained
+              type: const zes_power_sustained_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_sustained_limit_t
+                  kind: scalar
+                server_access: read
+            2:
+              name: pBurst
+              type: const zes_power_burst_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_burst_limit_t
+                  kind: scalar
+                server_access: read
+            3:
+              name: pPeak
+              type: const zes_power_peak_limit_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_power_peak_limit_t
+                  kind: scalar
+                server_access: read
+        - name: zesPowerGetEnergyThreshold
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pThreshold
+              type: zes_energy_threshold_t *
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_energy_threshold_t
+                  kind: scalar
+                server_access: read_write
+        - name: zesPowerSetEnergyThreshold
+          latency: 1.0
+          ddi_category: Power
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPower
+              type: zes_pwr_handle_t
+              kind: scalar
+            1:
+              name: pThreshold
+              type: double
+              kind: scalar
 
         - name: zesDeviceEnumEngineGroups
           latency: 1.0

@@ -36,6 +36,14 @@ extern ze_result_t (*zetTracerExpSetEpilogues)(zet_tracer_exp_handle_t hTracer, 
 extern ze_result_t (*zetTracerExpSetEnabled)(zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
 extern ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force);
 extern ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
+extern ze_result_t (*zesDeviceEnumPowerDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower);
+extern ze_result_t (*zesDeviceGetCardPowerDomain)(zes_device_handle_t hDevice, zes_pwr_handle_t* phPower);
+extern ze_result_t (*zesPowerGetProperties)(zes_pwr_handle_t hPower, zes_power_properties_t* pProperties);
+extern ze_result_t (*zesPowerGetEnergyCounter)(zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy);
+extern ze_result_t (*zesPowerGetLimits)(zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak);
+extern ze_result_t (*zesPowerSetLimits)(zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak);
+extern ze_result_t (*zesPowerGetEnergyThreshold)(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
+extern ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThreshold);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -194,6 +202,84 @@ inline bool zesDeviceResetExtHandler(Provider &service, Cal::Rpc::ChannelServer 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pProperties
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumPowerDomainsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumPowerDomains");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumPowerDomains(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phPower ? apiCommand->captures.phPower : nullptr
+                                                );
+    return true;
+}
+inline bool zesDeviceGetCardPowerDomainHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceGetCardPowerDomain");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetCardPowerDomainRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceGetCardPowerDomain(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.phPower ? &apiCommand->captures.phPower : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetProperties(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerGetEnergyCounterHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerGetEnergyCounter");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetEnergyCounter(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pEnergy ? &apiCommand->captures.pEnergy : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerGetLimitsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerGetLimits");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetLimits(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pSustained ? &apiCommand->captures.pSustained : nullptr, 
+                                                apiCommand->args.pBurst ? &apiCommand->captures.pBurst : nullptr, 
+                                                apiCommand->args.pPeak ? &apiCommand->captures.pPeak : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerSetLimitsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerSetLimits");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetLimits(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pSustained ? &apiCommand->captures.pSustained : nullptr, 
+                                                apiCommand->args.pBurst ? &apiCommand->captures.pBurst : nullptr, 
+                                                apiCommand->args.pPeak ? &apiCommand->captures.pPeak : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerGetEnergyThresholdHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerGetEnergyThreshold");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetEnergyThreshold(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pThreshold ? &apiCommand->captures.pThreshold : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerSetEnergyThresholdHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerSetEnergyThreshold");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetEnergyThreshold(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pThreshold
                                                 );
     return true;
 }
@@ -2253,6 +2339,14 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers.resize(ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::messageSubtype + 1);
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
     outHandlers[ZesDeviceResetExtRpcM::messageSubtype] = zesDeviceResetExtHandler;
+    outHandlers[ZesDeviceEnumPowerDomainsRpcM::messageSubtype] = zesDeviceEnumPowerDomainsHandler;
+    outHandlers[ZesDeviceGetCardPowerDomainRpcM::messageSubtype] = zesDeviceGetCardPowerDomainHandler;
+    outHandlers[ZesPowerGetPropertiesRpcM::messageSubtype] = zesPowerGetPropertiesHandler;
+    outHandlers[ZesPowerGetEnergyCounterRpcM::messageSubtype] = zesPowerGetEnergyCounterHandler;
+    outHandlers[ZesPowerGetLimitsRpcM::messageSubtype] = zesPowerGetLimitsHandler;
+    outHandlers[ZesPowerSetLimitsRpcM::messageSubtype] = zesPowerSetLimitsHandler;
+    outHandlers[ZesPowerGetEnergyThresholdRpcM::messageSubtype] = zesPowerGetEnergyThresholdHandler;
+    outHandlers[ZesPowerSetEnergyThresholdRpcM::messageSubtype] = zesPowerSetEnergyThresholdHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
@@ -2432,6 +2526,59 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM &apiCommand)
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceResetExt(
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumPowerDomains(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phPower
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceGetCardPowerDomainRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceGetCardPowerDomain(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.phPower
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetProperties(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetEnergyCounter(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pEnergy
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetLimits(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pSustained, 
+                                                apiCommand.args.pBurst, 
+                                                apiCommand.args.pPeak
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetLimits(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pSustained, 
+                                                apiCommand.args.pBurst, 
+                                                apiCommand.args.pPeak
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetEnergyThreshold(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pThreshold
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetEnergyThreshold(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pThreshold
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
@@ -3729,6 +3876,14 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
             return false;
         case Cal::Rpc::LevelZero::ZesDeviceResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceGetCardPowerDomainRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetCardPowerDomainRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;

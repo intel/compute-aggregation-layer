@@ -8,6 +8,7 @@
 #pragma once
 
 #include "level_zero/ze_api.h"
+#include "level_zero/zes_api.h"
 #include "shared/log.h"
 
 #include <array>
@@ -102,7 +103,13 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_module_program_exp_desc_t);
     }
 
-    log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", static_cast<int>(desc->stype));
+    auto stypeInt = static_cast<int>(desc->stype);
+
+    if (ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES == stypeInt) {
+        return sizeof(zes_power_ext_properties_t);
+    }
+
+    log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", stypeInt);
     std::abort();
     return 0;
 }

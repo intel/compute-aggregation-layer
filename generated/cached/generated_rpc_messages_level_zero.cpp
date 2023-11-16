@@ -16,6 +16,70 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
+ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower) {
+    DynamicTraits ret = {};
+    ret.phPower.count = (pCount ? *pCount : 0);
+    ret.phPower.size = ret.phPower.count * sizeof(zes_pwr_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phPower.offset + ret.phPower.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumPowerDomainsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phPower) + Cal::Utils::alignUpPow2<8>(this->countPhPower * sizeof(zes_pwr_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumPowerDomainsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhPower * sizeof(zes_pwr_handle_t));
+     return size;
+}
+
+ZesPowerGetPropertiesRpcM::Captures::DynamicTraits ZesPowerGetPropertiesRpcM::Captures::DynamicTraits::calculate(zes_pwr_handle_t hPower, zes_power_properties_t* pProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pProperties) {
+        ret.pPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pPropertiesNestedTraits.count = 1;
+        ret.pPropertiesNestedTraits.size = ret.pPropertiesNestedTraits.count * sizeof(DynamicStructTraits<zes_power_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pPropertiesNestedTraits.count; ++i) {
+            const auto& pPropertiesPNext = pProperties[i].pNext;
+            if(!pPropertiesPNext){
+                continue;
+            }
+
+            const auto pPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pProperties[i].pNext)));
+            if(!pPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pProperties[i].pNext);
+            for(uint32_t j = 0; j < pPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pPropertiesPNextListElement));
+                pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZesPowerGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZesPowerGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     DynamicTraits ret = {};
     ret.phEngine.count = (pCount ? *pCount : 0);

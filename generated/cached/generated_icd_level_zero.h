@@ -46,6 +46,14 @@ ze_result_t zetTracerExpSetEpilogues (zet_tracer_exp_handle_t hTracer, zet_core_
 ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
+ze_result_t zesDeviceEnumPowerDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower);
+ze_result_t zesDeviceGetCardPowerDomain (zes_device_handle_t hDevice, zes_pwr_handle_t* phPower);
+ze_result_t zesPowerGetProperties (zes_pwr_handle_t hPower, zes_power_properties_t* pProperties);
+ze_result_t zesPowerGetEnergyCounter (zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy);
+ze_result_t zesPowerGetLimits (zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak);
+ze_result_t zesPowerSetLimits (zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak);
+ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
+ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThreshold);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -676,38 +684,6 @@ inline void zesLedSetStateUnimpl() {
 }
 inline void zesLedSetColorUnimpl() {
     log<Verbosity::critical>("Function Led.zesLedSetColor is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumPowerDomainsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumPowerDomains is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceGetCardPowerDomainUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceGetCardPowerDomain is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerGetEnergyCounterUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerGetEnergyCounter is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerGetLimitsUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerGetLimits is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerSetLimitsUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerSetLimits is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerGetEnergyThresholdUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerGetEnergyThreshold is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerSetEnergyThresholdUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerSetEnergyThreshold is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumFabricPortsUnimpl() {
@@ -1453,6 +1429,14 @@ inline void initL0Ddi(ze_dditable_t &dt){
 inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnReset = Cal::Client::Icd::LevelZero::zesDeviceReset;
     dt.Device.pfnResetExt = Cal::Client::Icd::LevelZero::zesDeviceResetExt;
+    dt.Device.pfnEnumPowerDomains = Cal::Client::Icd::LevelZero::zesDeviceEnumPowerDomains;
+    dt.Device.pfnGetCardPowerDomain = Cal::Client::Icd::LevelZero::zesDeviceGetCardPowerDomain;
+    dt.Power.pfnGetProperties = Cal::Client::Icd::LevelZero::zesPowerGetProperties;
+    dt.Power.pfnGetEnergyCounter = Cal::Client::Icd::LevelZero::zesPowerGetEnergyCounter;
+    dt.Power.pfnGetLimits = Cal::Client::Icd::LevelZero::zesPowerGetLimits;
+    dt.Power.pfnSetLimits = Cal::Client::Icd::LevelZero::zesPowerSetLimits;
+    dt.Power.pfnGetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerGetEnergyThreshold;
+    dt.Power.pfnSetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerSetEnergyThreshold;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
@@ -1516,14 +1500,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Led.pfnGetState = reinterpret_cast<decltype(dt.Led.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesLedGetStateUnimpl);
     dt.Led.pfnSetState = reinterpret_cast<decltype(dt.Led.pfnSetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesLedSetStateUnimpl);
     dt.Led.pfnSetColor = reinterpret_cast<decltype(dt.Led.pfnSetColor)>(Cal::Client::Icd::LevelZero::Unimplemented::zesLedSetColorUnimpl);
-    dt.Device.pfnEnumPowerDomains = reinterpret_cast<decltype(dt.Device.pfnEnumPowerDomains)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumPowerDomainsUnimpl);
-    dt.Device.pfnGetCardPowerDomain = reinterpret_cast<decltype(dt.Device.pfnGetCardPowerDomain)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetCardPowerDomainUnimpl);
-    dt.Power.pfnGetProperties = reinterpret_cast<decltype(dt.Power.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerGetPropertiesUnimpl);
-    dt.Power.pfnGetEnergyCounter = reinterpret_cast<decltype(dt.Power.pfnGetEnergyCounter)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerGetEnergyCounterUnimpl);
-    dt.Power.pfnGetLimits = reinterpret_cast<decltype(dt.Power.pfnGetLimits)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerGetLimitsUnimpl);
-    dt.Power.pfnSetLimits = reinterpret_cast<decltype(dt.Power.pfnSetLimits)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerSetLimitsUnimpl);
-    dt.Power.pfnGetEnergyThreshold = reinterpret_cast<decltype(dt.Power.pfnGetEnergyThreshold)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerGetEnergyThresholdUnimpl);
-    dt.Power.pfnSetEnergyThreshold = reinterpret_cast<decltype(dt.Power.pfnSetEnergyThreshold)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerSetEnergyThresholdUnimpl);
     dt.Device.pfnEnumFabricPorts = reinterpret_cast<decltype(dt.Device.pfnEnumFabricPorts)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFabricPortsUnimpl);
     dt.FabricPort.pfnGetProperties = reinterpret_cast<decltype(dt.FabricPort.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetPropertiesUnimpl);
     dt.FabricPort.pfnGetLinkType = reinterpret_cast<decltype(dt.FabricPort.pfnGetLinkType)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetLinkTypeUnimpl);

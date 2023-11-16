@@ -95,14 +95,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Led.zesLedGetState");
     ret.push_back("Led.zesLedSetState");
     ret.push_back("Led.zesLedSetColor");
-    ret.push_back("Device.zesDeviceEnumPowerDomains");
-    ret.push_back("Device.zesDeviceGetCardPowerDomain");
-    ret.push_back("Power.zesPowerGetProperties");
-    ret.push_back("Power.zesPowerGetEnergyCounter");
-    ret.push_back("Power.zesPowerGetLimits");
-    ret.push_back("Power.zesPowerSetLimits");
-    ret.push_back("Power.zesPowerGetEnergyThreshold");
-    ret.push_back("Power.zesPowerSetEnergyThreshold");
     ret.push_back("Device.zesDeviceEnumFabricPorts");
     ret.push_back("FabricPort.zesFabricPortGetProperties");
     ret.push_back("FabricPort.zesFabricPortGetLinkType");

@@ -39,6 +39,38 @@ ze_result_t zesDeviceResetExt(zes_device_handle_t hDevice, zes_reset_properties_
    return {};
 }
 
+ze_result_t zesDeviceEnumPowerDomains(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower){
+   return {};
+}
+
+ze_result_t zesDeviceGetCardPowerDomain(zes_device_handle_t hDevice, zes_pwr_handle_t* phPower){
+   return {};
+}
+
+ze_result_t zesPowerGetProperties(zes_pwr_handle_t hPower, zes_power_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesPowerGetEnergyCounter(zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy){
+   return {};
+}
+
+ze_result_t zesPowerGetLimits(zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak){
+   return {};
+}
+
+ze_result_t zesPowerSetLimits(zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak){
+   return {};
+}
+
+ze_result_t zesPowerGetEnergyThreshold(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold){
+   return {};
+}
+
+ze_result_t zesPowerSetEnergyThreshold(zes_pwr_handle_t hPower, double pThreshold){
+   return {};
+}
+
 ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine){
    return {};
 }
