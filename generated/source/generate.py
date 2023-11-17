@@ -653,7 +653,7 @@ class FunctionCaptureLayout:
                 member_size_calculation += f"\n{spaces}for(uint32_t {it} = 0; {it} < {current_member_count_name}; ++{it}){{"
                 member_size_calculation += f"\n{spaces}    {total_size_var} += alignUpPow2<8>(getUnderlyingSize({list_element_name}));"
                 if self.children:
-                    member_size_calculation += f"\n\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
+                    member_size_calculation += f"\n\n{spaces}    const auto extensionType = static_cast<int>(getExtensionType({list_element_name}));"
 
                     children_per_ext_dict = self.get_children_per_extension()
                     for enum_value, ext_children in children_per_ext_dict.items():
@@ -838,7 +838,7 @@ class FunctionCaptureLayout:
                 copy_from_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
 
                 if self.children:
-                    copy_from_caller += f"\n\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
+                    copy_from_caller += f"\n\n{spaces}    const auto extensionType = static_cast<int>(getExtensionType({list_element_name}));"
 
                     children_per_ext_dict = self.get_children_per_extension()
                     for enum_value, ext_children in children_per_ext_dict.items():
@@ -981,7 +981,7 @@ class FunctionCaptureLayout:
                 reassemble_nested_structs += f"\n{spaces}    }}\n"
 
                 if self.children:
-                    reassemble_nested_structs += f"\n{spaces}    const auto extensionType = {list_element_name}Traits[{next_it} - 1].extensionType;"
+                    reassemble_nested_structs += f"\n{spaces}    const auto extensionType = static_cast<int>({list_element_name}Traits[{next_it} - 1].extensionType);"
 
                     children_per_ext_dict = self.get_children_per_extension()
                     for enum_value, ext_children in children_per_ext_dict.items():

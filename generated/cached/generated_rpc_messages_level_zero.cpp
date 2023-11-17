@@ -62,6 +62,26 @@ ZesPowerGetPropertiesRpcM::Captures::DynamicTraits ZesPowerGetPropertiesRpcM::Ca
             auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pProperties[i].pNext);
             for(uint32_t j = 0; j < pPropertiesPNextCount; ++j){
                 ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pPropertiesPNextListElement));
+
+                const auto extensionType = static_cast<int>(getExtensionType(pPropertiesPNextListElement));
+                if (extensionType == ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES) {
+                    auto& extension = *reinterpret_cast<const zes_power_ext_properties_t*>(pPropertiesPNextListElement);
+                    ret.totalDynamicSize += alignUpPow2<8>(sizeof(DynamicStructTraits<zes_power_ext_properties_t>));
+
+                    do {
+                        const auto& pPropertiesPNextDefaultLimit = extension.defaultLimit;
+                        if(!pPropertiesPNextDefaultLimit){
+                            continue;
+                        }
+
+                        const auto pPropertiesPNextDefaultLimitCount = static_cast<uint32_t>(1);
+                        if(!pPropertiesPNextDefaultLimitCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
+                    } while (0);
+                }
                 pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
             }
 
@@ -78,6 +98,46 @@ size_t ZesPowerGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
 
 size_t ZesPowerGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
+}
+
+ZesPowerGetLimitsExtRpcM::Captures::DynamicTraits ZesPowerGetLimitsExtRpcM::Captures::DynamicTraits::calculate(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    DynamicTraits ret = {};
+    ret.pSustained.count = (pCount ? *pCount : 0);
+    ret.pSustained.size = ret.pSustained.count * sizeof(zes_power_limit_ext_desc_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pSustained.offset + ret.pSustained.size);
+
+
+    return ret;
+}
+
+size_t ZesPowerGetLimitsExtRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pSustained) + Cal::Utils::alignUpPow2<8>(this->countPSustained * sizeof(zes_power_limit_ext_desc_t));
+     return size;
+}
+
+size_t ZesPowerGetLimitsExtRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPSustained * sizeof(zes_power_limit_ext_desc_t));
+     return size;
+}
+
+ZesPowerSetLimitsExtRpcM::Captures::DynamicTraits ZesPowerSetLimitsExtRpcM::Captures::DynamicTraits::calculate(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    DynamicTraits ret = {};
+    ret.pSustained.count = (pCount ? *pCount : 0);
+    ret.pSustained.size = ret.pSustained.count * sizeof(zes_power_limit_ext_desc_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pSustained.offset + ret.pSustained.size);
+
+
+    return ret;
+}
+
+size_t ZesPowerSetLimitsExtRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pSustained) + Cal::Utils::alignUpPow2<8>(this->countPSustained * sizeof(zes_power_limit_ext_desc_t));
+     return size;
+}
+
+size_t ZesPowerSetLimitsExtRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPSustained * sizeof(zes_power_limit_ext_desc_t));
+     return size;
 }
 
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
@@ -1333,7 +1393,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
             for(uint32_t j = 0; j < descPNextCount; ++j){
                 ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(descPNextListElement));
 
-                const auto extensionType = getExtensionType(descPNextListElement);
+                const auto extensionType = static_cast<int>(getExtensionType(descPNextListElement));
                 if (extensionType == ZE_STRUCTURE_TYPE_MODULE_PROGRAM_EXP_DESC) {
                     auto& extension = *reinterpret_cast<const ze_module_program_exp_desc_t*>(descPNextListElement);
                     ret.totalDynamicSize += alignUpPow2<8>(sizeof(DynamicStructTraits<ze_module_program_exp_desc_t>));

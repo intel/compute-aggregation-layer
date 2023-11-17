@@ -229,6 +229,53 @@ ze_result_t zesPowerSetLimits (zes_pwr_handle_t hPower, const zes_power_sustaine
 
     return ret;
 }
+ze_result_t zesPowerGetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    log<Verbosity::bloat>("Establishing RPC for zesPowerGetLimitsExt");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesPowerGetLimitsExtRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hPower, pCount, pSustained);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hPower, pCount, pSustained);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesPowerSetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    log<Verbosity::bloat>("Establishing RPC for zesPowerSetLimitsExt");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hPower, pCount, pSustained);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hPower, pCount, pSustained);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold) {
     log<Verbosity::bloat>("Establishing RPC for zesPowerGetEnergyThreshold");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7699,6 +7746,12 @@ ze_result_t zesPowerGetLimits (zes_pwr_handle_t hPower, zes_power_sustained_limi
 }
 ze_result_t zesPowerSetLimits (zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak) {
     return Cal::Client::Icd::LevelZero::zesPowerSetLimits(hPower, pSustained, pBurst, pPeak);
+}
+ze_result_t zesPowerGetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    return Cal::Client::Icd::LevelZero::zesPowerGetLimitsExt(hPower, pCount, pSustained);
+}
+ze_result_t zesPowerSetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
+    return Cal::Client::Icd::LevelZero::zesPowerSetLimitsExt(hPower, pCount, pSustained);
 }
 ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold) {
     return Cal::Client::Icd::LevelZero::zesPowerGetEnergyThreshold(hPower, pThreshold);

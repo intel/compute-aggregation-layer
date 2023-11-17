@@ -52,6 +52,8 @@ ze_result_t zesPowerGetProperties (zes_pwr_handle_t hPower, zes_power_properties
 ze_result_t zesPowerGetEnergyCounter (zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy);
 ze_result_t zesPowerGetLimits (zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak);
 ze_result_t zesPowerSetLimits (zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak);
+ze_result_t zesPowerGetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
+ze_result_t zesPowerSetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
 ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
 ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThreshold);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
@@ -540,14 +542,6 @@ inline void zesFirmwareGetPropertiesUnimpl() {
 }
 inline void zesFirmwareFlashUnimpl() {
     log<Verbosity::critical>("Function Firmware.zesFirmwareFlash is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerGetLimitsExtUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerGetLimitsExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesPowerSetLimitsExtUnimpl() {
-    log<Verbosity::critical>("Function Power.zesPowerSetLimitsExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumStandbyDomainsUnimpl() {
@@ -1435,6 +1429,8 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Power.pfnGetEnergyCounter = Cal::Client::Icd::LevelZero::zesPowerGetEnergyCounter;
     dt.Power.pfnGetLimits = Cal::Client::Icd::LevelZero::zesPowerGetLimits;
     dt.Power.pfnSetLimits = Cal::Client::Icd::LevelZero::zesPowerSetLimits;
+    dt.Power.pfnGetLimitsExt = Cal::Client::Icd::LevelZero::zesPowerGetLimitsExt;
+    dt.Power.pfnSetLimitsExt = Cal::Client::Icd::LevelZero::zesPowerSetLimitsExt;
     dt.Power.pfnGetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerGetEnergyThreshold;
     dt.Power.pfnSetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerSetEnergyThreshold;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
@@ -1464,8 +1460,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEnumFirmwares = reinterpret_cast<decltype(dt.Device.pfnEnumFirmwares)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFirmwaresUnimpl);
     dt.Firmware.pfnGetProperties = reinterpret_cast<decltype(dt.Firmware.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFirmwareGetPropertiesUnimpl);
     dt.Firmware.pfnFlash = reinterpret_cast<decltype(dt.Firmware.pfnFlash)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFirmwareFlashUnimpl);
-    dt.Power.pfnGetLimitsExt = reinterpret_cast<decltype(dt.Power.pfnGetLimitsExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerGetLimitsExtUnimpl);
-    dt.Power.pfnSetLimitsExt = reinterpret_cast<decltype(dt.Power.pfnSetLimitsExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPowerSetLimitsExtUnimpl);
     dt.Device.pfnEnumStandbyDomains = reinterpret_cast<decltype(dt.Device.pfnEnumStandbyDomains)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumStandbyDomainsUnimpl);
     dt.Standby.pfnGetProperties = reinterpret_cast<decltype(dt.Standby.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetPropertiesUnimpl);
     dt.Standby.pfnGetMode = reinterpret_cast<decltype(dt.Standby.pfnGetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetModeUnimpl);

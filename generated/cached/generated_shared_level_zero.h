@@ -59,8 +59,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Device.zesDeviceEnumFirmwares");
     ret.push_back("Firmware.zesFirmwareGetProperties");
     ret.push_back("Firmware.zesFirmwareFlash");
-    ret.push_back("Power.zesPowerGetLimitsExt");
-    ret.push_back("Power.zesPowerSetLimitsExt");
     ret.push_back("Device.zesDeviceEnumStandbyDomains");
     ret.push_back("Standby.zesStandbyGetProperties");
     ret.push_back("Standby.zesStandbyGetMode");

@@ -33,6 +33,8 @@ ze_result_t (*zesPowerGetProperties)(zes_pwr_handle_t hPower, zes_power_properti
 ze_result_t (*zesPowerGetEnergyCounter)(zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy) = nullptr;
 ze_result_t (*zesPowerGetLimits)(zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak) = nullptr;
 ze_result_t (*zesPowerSetLimits)(zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak) = nullptr;
+ze_result_t (*zesPowerGetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) = nullptr;
+ze_result_t (*zesPowerSetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) = nullptr;
 ze_result_t (*zesPowerGetEnergyThreshold)(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold) = nullptr;
 ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThreshold) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
@@ -255,6 +257,18 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesPowerSetLimits = reinterpret_cast<decltype(zesPowerSetLimits)>(dlsym(libraryHandle, "zesPowerSetLimits"));
     if(nullptr == zesPowerSetLimits){
         log<Verbosity::error>("Missing symbol zesPowerSetLimits in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesPowerGetLimitsExt = reinterpret_cast<decltype(zesPowerGetLimitsExt)>(dlsym(libraryHandle, "zesPowerGetLimitsExt"));
+    if(nullptr == zesPowerGetLimitsExt){
+        log<Verbosity::error>("Missing symbol zesPowerGetLimitsExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesPowerSetLimitsExt = reinterpret_cast<decltype(zesPowerSetLimitsExt)>(dlsym(libraryHandle, "zesPowerSetLimitsExt"));
+    if(nullptr == zesPowerSetLimitsExt){
+        log<Verbosity::error>("Missing symbol zesPowerSetLimitsExt in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1073,6 +1087,8 @@ void unloadLevelZeroLibrary() {
     zesPowerGetEnergyCounter = nullptr;
     zesPowerGetLimits = nullptr;
     zesPowerSetLimits = nullptr;
+    zesPowerGetLimitsExt = nullptr;
+    zesPowerSetLimitsExt = nullptr;
     zesPowerGetEnergyThreshold = nullptr;
     zesPowerSetEnergyThreshold = nullptr;
     zesDeviceEnumEngineGroups = nullptr;

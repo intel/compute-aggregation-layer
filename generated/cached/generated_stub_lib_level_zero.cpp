@@ -63,6 +63,14 @@ ze_result_t zesPowerSetLimits(zes_pwr_handle_t hPower, const zes_power_sustained
    return {};
 }
 
+ze_result_t zesPowerGetLimitsExt(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained){
+   return {};
+}
+
+ze_result_t zesPowerSetLimitsExt(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained){
+   return {};
+}
+
 ze_result_t zesPowerGetEnergyThreshold(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold){
    return {};
 }

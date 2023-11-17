@@ -42,6 +42,8 @@ extern ze_result_t (*zesPowerGetProperties)(zes_pwr_handle_t hPower, zes_power_p
 extern ze_result_t (*zesPowerGetEnergyCounter)(zes_pwr_handle_t hPower, zes_power_energy_counter_t* pEnergy);
 extern ze_result_t (*zesPowerGetLimits)(zes_pwr_handle_t hPower, zes_power_sustained_limit_t* pSustained, zes_power_burst_limit_t* pBurst, zes_power_peak_limit_t* pPeak);
 extern ze_result_t (*zesPowerSetLimits)(zes_pwr_handle_t hPower, const zes_power_sustained_limit_t* pSustained, const zes_power_burst_limit_t* pBurst, const zes_power_peak_limit_t* pPeak);
+extern ze_result_t (*zesPowerGetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
+extern ze_result_t (*zesPowerSetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
 extern ze_result_t (*zesPowerGetEnergyThreshold)(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
 extern ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThreshold);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
@@ -262,6 +264,26 @@ inline bool zesPowerSetLimitsHandler(Provider &service, Cal::Rpc::ChannelServer 
                                                 apiCommand->args.pSustained ? &apiCommand->captures.pSustained : nullptr, 
                                                 apiCommand->args.pBurst ? &apiCommand->captures.pBurst : nullptr, 
                                                 apiCommand->args.pPeak ? &apiCommand->captures.pPeak : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerGetLimitsExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerGetLimitsExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetLimitsExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetLimitsExt(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.pSustained ? apiCommand->captures.pSustained : nullptr
+                                                );
+    return true;
+}
+inline bool zesPowerSetLimitsExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPowerSetLimitsExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetLimitsExt(
+                                                apiCommand->args.hPower, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.pSustained ? apiCommand->captures.pSustained : nullptr
                                                 );
     return true;
 }
@@ -2345,6 +2367,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesPowerGetEnergyCounterRpcM::messageSubtype] = zesPowerGetEnergyCounterHandler;
     outHandlers[ZesPowerGetLimitsRpcM::messageSubtype] = zesPowerGetLimitsHandler;
     outHandlers[ZesPowerSetLimitsRpcM::messageSubtype] = zesPowerSetLimitsHandler;
+    outHandlers[ZesPowerGetLimitsExtRpcM::messageSubtype] = zesPowerGetLimitsExtHandler;
+    outHandlers[ZesPowerSetLimitsExtRpcM::messageSubtype] = zesPowerSetLimitsExtHandler;
     outHandlers[ZesPowerGetEnergyThresholdRpcM::messageSubtype] = zesPowerGetEnergyThresholdHandler;
     outHandlers[ZesPowerSetEnergyThresholdRpcM::messageSubtype] = zesPowerSetEnergyThresholdHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
@@ -2567,6 +2591,20 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM &apiCommand)
                                                 apiCommand.args.pSustained, 
                                                 apiCommand.args.pBurst, 
                                                 apiCommand.args.pPeak
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetLimitsExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerGetLimitsExt(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.pSustained
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetLimitsExt(
+                                                apiCommand.args.hPower, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.pSustained
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM &apiCommand) {
@@ -3882,6 +3920,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyCounterRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetLimitsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerGetLimitsExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetLimitsExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
