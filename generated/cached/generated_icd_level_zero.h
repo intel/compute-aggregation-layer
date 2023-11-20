@@ -59,6 +59,11 @@ ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThresho
 ze_result_t zesDeviceEventRegister (zes_device_handle_t hDevice, zes_event_type_flags_t events);
 ze_result_t zesDriverEventListen (ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
 ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
+ze_result_t zesDeviceEnumTemperatureSensors (zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature);
+ze_result_t zesTemperatureGetProperties (zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties);
+ze_result_t zesTemperatureGetConfig (zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig);
+ze_result_t zesTemperatureSetConfig (zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig);
+ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTemperature);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -561,26 +566,6 @@ inline void zesStandbyGetModeUnimpl() {
 }
 inline void zesStandbySetModeUnimpl() {
     log<Verbosity::critical>("Function Standby.zesStandbySetMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumTemperatureSensorsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumTemperatureSensors is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetConfigUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureSetConfigUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetStateUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetState is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEccAvailableUnimpl() {
@@ -1427,6 +1412,11 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEventRegister = Cal::Client::Icd::LevelZero::zesDeviceEventRegister;
     dt.Driver.pfnEventListen = Cal::Client::Icd::LevelZero::zesDriverEventListen;
     dt.Driver.pfnEventListenEx = Cal::Client::Icd::LevelZero::zesDriverEventListenEx;
+    dt.Device.pfnEnumTemperatureSensors = Cal::Client::Icd::LevelZero::zesDeviceEnumTemperatureSensors;
+    dt.Temperature.pfnGetProperties = Cal::Client::Icd::LevelZero::zesTemperatureGetProperties;
+    dt.Temperature.pfnGetConfig = Cal::Client::Icd::LevelZero::zesTemperatureGetConfig;
+    dt.Temperature.pfnSetConfig = Cal::Client::Icd::LevelZero::zesTemperatureSetConfig;
+    dt.Temperature.pfnGetState = Cal::Client::Icd::LevelZero::zesTemperatureGetState;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
@@ -1458,11 +1448,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Standby.pfnGetProperties = reinterpret_cast<decltype(dt.Standby.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetPropertiesUnimpl);
     dt.Standby.pfnGetMode = reinterpret_cast<decltype(dt.Standby.pfnGetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetModeUnimpl);
     dt.Standby.pfnSetMode = reinterpret_cast<decltype(dt.Standby.pfnSetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbySetModeUnimpl);
-    dt.Device.pfnEnumTemperatureSensors = reinterpret_cast<decltype(dt.Device.pfnEnumTemperatureSensors)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumTemperatureSensorsUnimpl);
-    dt.Temperature.pfnGetProperties = reinterpret_cast<decltype(dt.Temperature.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetPropertiesUnimpl);
-    dt.Temperature.pfnGetConfig = reinterpret_cast<decltype(dt.Temperature.pfnGetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetConfigUnimpl);
-    dt.Temperature.pfnSetConfig = reinterpret_cast<decltype(dt.Temperature.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureSetConfigUnimpl);
-    dt.Temperature.pfnGetState = reinterpret_cast<decltype(dt.Temperature.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetStateUnimpl);
     dt.Device.pfnEccAvailable = reinterpret_cast<decltype(dt.Device.pfnEccAvailable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccAvailableUnimpl);
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);

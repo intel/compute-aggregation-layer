@@ -49,6 +49,11 @@ extern ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double
 extern ze_result_t (*zesDeviceEventRegister)(zes_device_handle_t hDevice, zes_event_type_flags_t events);
 extern ze_result_t (*zesDriverEventListen)(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
 extern ze_result_t (*zesDriverEventListenEx)(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
+extern ze_result_t (*zesDeviceEnumTemperatureSensors)(zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature);
+extern ze_result_t (*zesTemperatureGetProperties)(zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties);
+extern ze_result_t (*zesTemperatureGetConfig)(zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig);
+extern ze_result_t (*zesTemperatureSetConfig)(zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig);
+extern ze_result_t (*zesTemperatureGetState)(zes_temp_handle_t hTemperature, double* pTemperature);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -340,6 +345,52 @@ inline bool zesDriverEventListenExHandler(Provider &service, Cal::Rpc::ChannelSe
                                                 apiCommand->args.phDevices ? apiCommand->captures.phDevices : nullptr, 
                                                 apiCommand->args.pNumDeviceEvents ? &apiCommand->captures.pNumDeviceEvents : nullptr, 
                                                 apiCommand->args.pEvents ? &apiCommand->captures.pEvents : nullptr
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumTemperatureSensorsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumTemperatureSensors");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumTemperatureSensorsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumTemperatureSensors(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phTemperature ? apiCommand->captures.phTemperature : nullptr
+                                                );
+    return true;
+}
+inline bool zesTemperatureGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesTemperatureGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetProperties(
+                                                apiCommand->args.hTemperature, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesTemperatureGetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesTemperatureGetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetConfig(
+                                                apiCommand->args.hTemperature, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesTemperatureSetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesTemperatureSetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureSetConfig(
+                                                apiCommand->args.hTemperature, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesTemperatureGetStateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesTemperatureGetState");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetState(
+                                                apiCommand->args.hTemperature, 
+                                                apiCommand->args.pTemperature ? &apiCommand->captures.pTemperature : nullptr
                                                 );
     return true;
 }
@@ -2412,6 +2463,11 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesDeviceEventRegisterRpcM::messageSubtype] = zesDeviceEventRegisterHandler;
     outHandlers[ZesDriverEventListenRpcM::messageSubtype] = zesDriverEventListenHandler;
     outHandlers[ZesDriverEventListenExRpcM::messageSubtype] = zesDriverEventListenExHandler;
+    outHandlers[ZesDeviceEnumTemperatureSensorsRpcM::messageSubtype] = zesDeviceEnumTemperatureSensorsHandler;
+    outHandlers[ZesTemperatureGetPropertiesRpcM::messageSubtype] = zesTemperatureGetPropertiesHandler;
+    outHandlers[ZesTemperatureGetConfigRpcM::messageSubtype] = zesTemperatureGetConfigHandler;
+    outHandlers[ZesTemperatureSetConfigRpcM::messageSubtype] = zesTemperatureSetConfigHandler;
+    outHandlers[ZesTemperatureGetStateRpcM::messageSubtype] = zesTemperatureGetStateHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
@@ -2684,6 +2740,37 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM &apiCom
                                                 apiCommand.args.phDevices, 
                                                 apiCommand.args.pNumDeviceEvents, 
                                                 apiCommand.args.pEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumTemperatureSensorsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumTemperatureSensors(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phTemperature
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesTemperatureGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetProperties(
+                                                apiCommand.args.hTemperature, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetConfig(
+                                                apiCommand.args.hTemperature, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureSetConfig(
+                                                apiCommand.args.hTemperature, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetState(
+                                                apiCommand.args.hTemperature, 
+                                                apiCommand.args.pTemperature
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
@@ -3994,6 +4081,11 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDriverEventListenRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumTemperatureSensorsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumTemperatureSensorsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesTemperatureGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;

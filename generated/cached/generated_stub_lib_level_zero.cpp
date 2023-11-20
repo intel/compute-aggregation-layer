@@ -91,6 +91,26 @@ ze_result_t zesDriverEventListenEx(ze_driver_handle_t hDriver, uint64_t timeout,
    return {};
 }
 
+ze_result_t zesDeviceEnumTemperatureSensors(zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature){
+   return {};
+}
+
+ze_result_t zesTemperatureGetProperties(zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesTemperatureGetConfig(zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig){
+   return {};
+}
+
+ze_result_t zesTemperatureSetConfig(zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig){
+   return {};
+}
+
+ze_result_t zesTemperatureGetState(zes_temp_handle_t hTemperature, double* pTemperature){
+   return {};
+}
+
 ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine){
    return {};
 }

@@ -412,6 +412,122 @@ ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout
 
     return ret;
 }
+ze_result_t zesDeviceEnumTemperatureSensors (zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumTemperatureSensors");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumTemperatureSensorsRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phTemperature);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phTemperature);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesTemperatureGetProperties (zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesTemperatureGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesTemperatureGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hTemperature, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesTemperatureGetConfig (zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesTemperatureGetConfig");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hTemperature, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesTemperatureSetConfig (zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesTemperatureSetConfig");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hTemperature, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTemperature) {
+    log<Verbosity::bloat>("Establishing RPC for zesTemperatureGetState");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hTemperature, pTemperature);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumEngineGroups");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7859,6 +7975,21 @@ ze_result_t zesDriverEventListen (ze_driver_handle_t hDriver, uint32_t timeout, 
 }
 ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
     return Cal::Client::Icd::LevelZero::zesDriverEventListenEx(hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+}
+ze_result_t zesDeviceEnumTemperatureSensors (zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumTemperatureSensors(hDevice, pCount, phTemperature);
+}
+ze_result_t zesTemperatureGetProperties (zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesTemperatureGetProperties(hTemperature, pProperties);
+}
+ze_result_t zesTemperatureGetConfig (zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig) {
+    return Cal::Client::Icd::LevelZero::zesTemperatureGetConfig(hTemperature, pConfig);
+}
+ze_result_t zesTemperatureSetConfig (zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig) {
+    return Cal::Client::Icd::LevelZero::zesTemperatureSetConfig(hTemperature, pConfig);
+}
+ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTemperature) {
+    return Cal::Client::Icd::LevelZero::zesTemperatureGetState(hTemperature, pTemperature);
 }
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);

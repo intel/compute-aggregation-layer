@@ -40,6 +40,11 @@ ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThres
 ze_result_t (*zesDeviceEventRegister)(zes_device_handle_t hDevice, zes_event_type_flags_t events) = nullptr;
 ze_result_t (*zesDriverEventListen)(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) = nullptr;
 ze_result_t (*zesDriverEventListenEx)(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) = nullptr;
+ze_result_t (*zesDeviceEnumTemperatureSensors)(zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature) = nullptr;
+ze_result_t (*zesTemperatureGetProperties)(zes_temp_handle_t hTemperature, zes_temp_properties_t* pProperties) = nullptr;
+ze_result_t (*zesTemperatureGetConfig)(zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig) = nullptr;
+ze_result_t (*zesTemperatureSetConfig)(zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig) = nullptr;
+ze_result_t (*zesTemperatureGetState)(zes_temp_handle_t hTemperature, double* pTemperature) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
 ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
@@ -302,6 +307,36 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesDriverEventListenEx = reinterpret_cast<decltype(zesDriverEventListenEx)>(dlsym(libraryHandle, "zesDriverEventListenEx"));
     if(nullptr == zesDriverEventListenEx){
         log<Verbosity::error>("Missing symbol zesDriverEventListenEx in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumTemperatureSensors = reinterpret_cast<decltype(zesDeviceEnumTemperatureSensors)>(dlsym(libraryHandle, "zesDeviceEnumTemperatureSensors"));
+    if(nullptr == zesDeviceEnumTemperatureSensors){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumTemperatureSensors in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesTemperatureGetProperties = reinterpret_cast<decltype(zesTemperatureGetProperties)>(dlsym(libraryHandle, "zesTemperatureGetProperties"));
+    if(nullptr == zesTemperatureGetProperties){
+        log<Verbosity::error>("Missing symbol zesTemperatureGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesTemperatureGetConfig = reinterpret_cast<decltype(zesTemperatureGetConfig)>(dlsym(libraryHandle, "zesTemperatureGetConfig"));
+    if(nullptr == zesTemperatureGetConfig){
+        log<Verbosity::error>("Missing symbol zesTemperatureGetConfig in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesTemperatureSetConfig = reinterpret_cast<decltype(zesTemperatureSetConfig)>(dlsym(libraryHandle, "zesTemperatureSetConfig"));
+    if(nullptr == zesTemperatureSetConfig){
+        log<Verbosity::error>("Missing symbol zesTemperatureSetConfig in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesTemperatureGetState = reinterpret_cast<decltype(zesTemperatureGetState)>(dlsym(libraryHandle, "zesTemperatureGetState"));
+    if(nullptr == zesTemperatureGetState){
+        log<Verbosity::error>("Missing symbol zesTemperatureGetState in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1115,6 +1150,11 @@ void unloadLevelZeroLibrary() {
     zesDeviceEventRegister = nullptr;
     zesDriverEventListen = nullptr;
     zesDriverEventListenEx = nullptr;
+    zesDeviceEnumTemperatureSensors = nullptr;
+    zesTemperatureGetProperties = nullptr;
+    zesTemperatureGetConfig = nullptr;
+    zesTemperatureSetConfig = nullptr;
+    zesTemperatureGetState = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
     zesEngineGetProperties = nullptr;
     zesEngineGetActivity = nullptr;
