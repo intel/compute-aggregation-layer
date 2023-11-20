@@ -100,9 +100,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("FabricPort.zesFabricPortSetConfig");
     ret.push_back("FabricPort.zesFabricPortGetState");
     ret.push_back("FabricPort.zesFabricPortGetThroughput");
-    ret.push_back("Device.zesDeviceEventRegister");
-    ret.push_back("Driver.zesDriverEventListen");
-    ret.push_back("Driver.zesDriverEventListenEx");
     ret.push_back("Device.zesDeviceEnumDiagnosticTestSuites");
     ret.push_back("Diagnostics.zesDiagnosticsGetProperties");
     ret.push_back("Diagnostics.zesDiagnosticsGetTests");

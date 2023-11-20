@@ -37,6 +37,9 @@ ze_result_t (*zesPowerGetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, z
 ze_result_t (*zesPowerSetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) = nullptr;
 ze_result_t (*zesPowerGetEnergyThreshold)(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold) = nullptr;
 ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThreshold) = nullptr;
+ze_result_t (*zesDeviceEventRegister)(zes_device_handle_t hDevice, zes_event_type_flags_t events) = nullptr;
+ze_result_t (*zesDriverEventListen)(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) = nullptr;
+ze_result_t (*zesDriverEventListenEx)(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
 ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
@@ -281,6 +284,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesPowerSetEnergyThreshold = reinterpret_cast<decltype(zesPowerSetEnergyThreshold)>(dlsym(libraryHandle, "zesPowerSetEnergyThreshold"));
     if(nullptr == zesPowerSetEnergyThreshold){
         log<Verbosity::error>("Missing symbol zesPowerSetEnergyThreshold in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEventRegister = reinterpret_cast<decltype(zesDeviceEventRegister)>(dlsym(libraryHandle, "zesDeviceEventRegister"));
+    if(nullptr == zesDeviceEventRegister){
+        log<Verbosity::error>("Missing symbol zesDeviceEventRegister in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDriverEventListen = reinterpret_cast<decltype(zesDriverEventListen)>(dlsym(libraryHandle, "zesDriverEventListen"));
+    if(nullptr == zesDriverEventListen){
+        log<Verbosity::error>("Missing symbol zesDriverEventListen in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDriverEventListenEx = reinterpret_cast<decltype(zesDriverEventListenEx)>(dlsym(libraryHandle, "zesDriverEventListenEx"));
+    if(nullptr == zesDriverEventListenEx){
+        log<Verbosity::error>("Missing symbol zesDriverEventListenEx in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1091,6 +1112,9 @@ void unloadLevelZeroLibrary() {
     zesPowerSetLimitsExt = nullptr;
     zesPowerGetEnergyThreshold = nullptr;
     zesPowerSetEnergyThreshold = nullptr;
+    zesDeviceEventRegister = nullptr;
+    zesDriverEventListen = nullptr;
+    zesDriverEventListenEx = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
     zesEngineGetProperties = nullptr;
     zesEngineGetActivity = nullptr;

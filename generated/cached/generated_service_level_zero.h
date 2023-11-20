@@ -46,6 +46,9 @@ extern ze_result_t (*zesPowerGetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pC
 extern ze_result_t (*zesPowerSetLimitsExt)(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
 extern ze_result_t (*zesPowerGetEnergyThreshold)(zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
 extern ze_result_t (*zesPowerSetEnergyThreshold)(zes_pwr_handle_t hPower, double pThreshold);
+extern ze_result_t (*zesDeviceEventRegister)(zes_device_handle_t hDevice, zes_event_type_flags_t events);
+extern ze_result_t (*zesDriverEventListen)(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
+extern ze_result_t (*zesDriverEventListenEx)(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -302,6 +305,41 @@ inline bool zesPowerSetEnergyThresholdHandler(Provider &service, Cal::Rpc::Chann
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetEnergyThreshold(
                                                 apiCommand->args.hPower, 
                                                 apiCommand->args.pThreshold
+                                                );
+    return true;
+}
+inline bool zesDeviceEventRegisterHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEventRegister");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEventRegister(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.events
+                                                );
+    return true;
+}
+inline bool zesDriverEventListenHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDriverEventListen");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDriverEventListen(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.timeout, 
+                                                apiCommand->args.count, 
+                                                apiCommand->args.phDevices ? apiCommand->captures.phDevices : nullptr, 
+                                                apiCommand->args.pNumDeviceEvents ? &apiCommand->captures.pNumDeviceEvents : nullptr, 
+                                                apiCommand->args.pEvents ? &apiCommand->captures.pEvents : nullptr
+                                                );
+    return true;
+}
+inline bool zesDriverEventListenExHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDriverEventListenEx");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDriverEventListenEx(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.timeout, 
+                                                apiCommand->args.count, 
+                                                apiCommand->args.phDevices ? apiCommand->captures.phDevices : nullptr, 
+                                                apiCommand->args.pNumDeviceEvents ? &apiCommand->captures.pNumDeviceEvents : nullptr, 
+                                                apiCommand->args.pEvents ? &apiCommand->captures.pEvents : nullptr
                                                 );
     return true;
 }
@@ -2371,6 +2409,9 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesPowerSetLimitsExtRpcM::messageSubtype] = zesPowerSetLimitsExtHandler;
     outHandlers[ZesPowerGetEnergyThresholdRpcM::messageSubtype] = zesPowerGetEnergyThresholdHandler;
     outHandlers[ZesPowerSetEnergyThresholdRpcM::messageSubtype] = zesPowerSetEnergyThresholdHandler;
+    outHandlers[ZesDeviceEventRegisterRpcM::messageSubtype] = zesDeviceEventRegisterHandler;
+    outHandlers[ZesDriverEventListenRpcM::messageSubtype] = zesDriverEventListenHandler;
+    outHandlers[ZesDriverEventListenExRpcM::messageSubtype] = zesDriverEventListenExHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
@@ -2617,6 +2658,32 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM &ap
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPowerSetEnergyThreshold(
                                                 apiCommand.args.hPower, 
                                                 apiCommand.args.pThreshold
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEventRegister(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.events
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDriverEventListenRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDriverEventListen(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.timeout, 
+                                                apiCommand.args.count, 
+                                                apiCommand.args.phDevices, 
+                                                apiCommand.args.pNumDeviceEvents, 
+                                                apiCommand.args.pEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDriverEventListenEx(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.timeout, 
+                                                apiCommand.args.count, 
+                                                apiCommand.args.phDevices, 
+                                                apiCommand.args.pNumDeviceEvents, 
+                                                apiCommand.args.pEvents
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
@@ -3924,6 +3991,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetLimitsExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerGetEnergyThresholdRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPowerSetEnergyThresholdRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDriverEventListenRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;

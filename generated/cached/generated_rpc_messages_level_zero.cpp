@@ -140,6 +140,46 @@ size_t ZesPowerSetLimitsExtRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDriverEventListenRpcM::Captures::DynamicTraits ZesDriverEventListenRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    DynamicTraits ret = {};
+    ret.phDevices.count = count;
+    ret.phDevices.size = ret.phDevices.count * sizeof(zes_device_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
+
+
+    return ret;
+}
+
+size_t ZesDriverEventListenRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phDevices) + Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(zes_device_handle_t));
+     return size;
+}
+
+size_t ZesDriverEventListenRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(zes_device_handle_t));
+     return size;
+}
+
+ZesDriverEventListenExRpcM::Captures::DynamicTraits ZesDriverEventListenExRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    DynamicTraits ret = {};
+    ret.phDevices.count = count;
+    ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
+
+
+    return ret;
+}
+
+size_t ZesDriverEventListenExRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phDevices) + Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
+     return size;
+}
+
+size_t ZesDriverEventListenExRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhDevices * sizeof(ze_device_handle_t));
+     return size;
+}
+
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     DynamicTraits ret = {};
     ret.phEngine.count = (pCount ? *pCount : 0);

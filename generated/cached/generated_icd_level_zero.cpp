@@ -320,6 +320,98 @@ ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThresho
 
     return ret;
 }
+ze_result_t zesDeviceEventRegister (zes_device_handle_t hDevice, zes_event_type_flags_t events) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEventRegister");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEventRegisterRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDevice, events);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesDriverEventListen (ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zesDriverEventListen");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDriverEventListenRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
+    if(phDevices)
+    {
+        auto base = command->captures.phDevices;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phDevices.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zesDriverEventListenEx");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDriverEventListenExRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
+    if(phDevices)
+    {
+        auto base = command->captures.phDevices;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phDevices.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumEngineGroups");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7758,6 +7850,15 @@ ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_thre
 }
 ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThreshold) {
     return Cal::Client::Icd::LevelZero::zesPowerSetEnergyThreshold(hPower, pThreshold);
+}
+ze_result_t zesDeviceEventRegister (zes_device_handle_t hDevice, zes_event_type_flags_t events) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEventRegister(hDevice, events);
+}
+ze_result_t zesDriverEventListen (ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    return Cal::Client::Icd::LevelZero::zesDriverEventListen(hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
+}
+ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
+    return Cal::Client::Icd::LevelZero::zesDriverEventListenEx(hDriver, timeout, count, phDevices, pNumDeviceEvents, pEvents);
 }
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);

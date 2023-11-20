@@ -56,6 +56,9 @@ ze_result_t zesPowerGetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes
 ze_result_t zesPowerSetLimitsExt (zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained);
 ze_result_t zesPowerGetEnergyThreshold (zes_pwr_handle_t hPower, zes_energy_threshold_t * pThreshold);
 ze_result_t zesPowerSetEnergyThreshold (zes_pwr_handle_t hPower, double pThreshold);
+ze_result_t zesDeviceEventRegister (zes_device_handle_t hDevice, zes_event_type_flags_t events);
+ze_result_t zesDriverEventListen (ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
+ze_result_t zesDriverEventListenEx (ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -706,18 +709,6 @@ inline void zesFabricPortGetStateUnimpl() {
 }
 inline void zesFabricPortGetThroughputUnimpl() {
     log<Verbosity::critical>("Function FabricPort.zesFabricPortGetThroughput is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEventRegisterUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEventRegister is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDriverEventListenUnimpl() {
-    log<Verbosity::critical>("Function Driver.zesDriverEventListen is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDriverEventListenExUnimpl() {
-    log<Verbosity::critical>("Function Driver.zesDriverEventListenEx is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumDiagnosticTestSuitesUnimpl() {
@@ -1433,6 +1424,9 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Power.pfnSetLimitsExt = Cal::Client::Icd::LevelZero::zesPowerSetLimitsExt;
     dt.Power.pfnGetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerGetEnergyThreshold;
     dt.Power.pfnSetEnergyThreshold = Cal::Client::Icd::LevelZero::zesPowerSetEnergyThreshold;
+    dt.Device.pfnEventRegister = Cal::Client::Icd::LevelZero::zesDeviceEventRegister;
+    dt.Driver.pfnEventListen = Cal::Client::Icd::LevelZero::zesDriverEventListen;
+    dt.Driver.pfnEventListenEx = Cal::Client::Icd::LevelZero::zesDriverEventListenEx;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
@@ -1501,9 +1495,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.FabricPort.pfnSetConfig = reinterpret_cast<decltype(dt.FabricPort.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortSetConfigUnimpl);
     dt.FabricPort.pfnGetState = reinterpret_cast<decltype(dt.FabricPort.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetStateUnimpl);
     dt.FabricPort.pfnGetThroughput = reinterpret_cast<decltype(dt.FabricPort.pfnGetThroughput)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetThroughputUnimpl);
-    dt.Device.pfnEventRegister = reinterpret_cast<decltype(dt.Device.pfnEventRegister)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEventRegisterUnimpl);
-    dt.Driver.pfnEventListen = reinterpret_cast<decltype(dt.Driver.pfnEventListen)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenUnimpl);
-    dt.Driver.pfnEventListenEx = reinterpret_cast<decltype(dt.Driver.pfnEventListenEx)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenExUnimpl);
     dt.Device.pfnEnumDiagnosticTestSuites = reinterpret_cast<decltype(dt.Device.pfnEnumDiagnosticTestSuites)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumDiagnosticTestSuitesUnimpl);
     dt.Diagnostics.pfnGetProperties = reinterpret_cast<decltype(dt.Diagnostics.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetPropertiesUnimpl);
     dt.Diagnostics.pfnGetTests = reinterpret_cast<decltype(dt.Diagnostics.pfnGetTests)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetTestsUnimpl);

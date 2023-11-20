@@ -1569,9 +1569,6 @@ config:
           FabricPort.zesFabricPortSetConfig,
           FabricPort.zesFabricPortGetState,
           FabricPort.zesFabricPortGetThroughput,
-          Device.zesDeviceEventRegister,
-          Driver.zesDriverEventListen,
-          Driver.zesDriverEventListenEx,
           Device.zesDeviceEnumDiagnosticTestSuites,
           Diagnostics.zesDiagnosticsGetProperties,
           Diagnostics.zesDiagnosticsGetTests,
@@ -2111,6 +2108,134 @@ config:
               name: pThreshold
               type: double
               kind: scalar
+
+        - name: zesDeviceEventRegister
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: events
+              type: zes_event_type_flags_t
+              kind: scalar
+        - name: zesDriverEventListen
+          latency: 1.0
+          ddi_category: Driver
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: timeout
+              type: uint32_t
+              kind: scalar
+            2:
+              name: count
+              type: uint32_t
+              kind: scalar
+            3:
+              name: phDevices
+              type: ze_device_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "count"
+                can_be_null: True
+                element:
+                  type: zes_device_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+            4:
+              name: pNumDeviceEvents
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            5:
+              name: pEvents
+              type: zes_event_type_flags_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_event_type_flags_t
+                  kind: scalar
+                server_access: read_write
+        - name: zesDriverEventListenEx
+          latency: 1.0
+          ddi_category: Driver
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: timeout
+              type: uint64_t
+              kind: scalar
+            2:
+              name: count
+              type: uint32_t
+              kind: scalar
+            3:
+              name: phDevices
+              type: zes_device_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "count"
+                can_be_null: True
+                element:
+                  type: ze_device_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+            4:
+              name: pNumDeviceEvents
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            5:
+              name: pEvents
+              type: zes_event_type_flags_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_event_type_flags_t
+                  kind: scalar
+                server_access: read_write
 
         - name: zesDeviceEnumEngineGroups
           latency: 1.0

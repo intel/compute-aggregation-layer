@@ -79,6 +79,18 @@ ze_result_t zesPowerSetEnergyThreshold(zes_pwr_handle_t hPower, double pThreshol
    return {};
 }
 
+ze_result_t zesDeviceEventRegister(zes_device_handle_t hDevice, zes_event_type_flags_t events){
+   return {};
+}
+
+ze_result_t zesDriverEventListen(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents){
+   return {};
+}
+
+ze_result_t zesDriverEventListenEx(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents){
+   return {};
+}
+
 ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine){
    return {};
 }
