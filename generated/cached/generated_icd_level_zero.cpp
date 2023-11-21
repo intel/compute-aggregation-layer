@@ -642,6 +642,360 @@ ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_stat
 
     return ret;
 }
+ze_result_t zesDeviceEnumFrequencyDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumFrequencyDomains");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumFrequencyDomainsRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phFrequency);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phFrequency);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyGetProperties (zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyGetAvailableClocks (zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyGetAvailableClocks");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyGetAvailableClocksRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hFrequency, pCount, phFrequency);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hFrequency, pCount, phFrequency);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyGetRange (zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyGetRange");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyGetRangeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencySetRange (zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencySetRange");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencySetRangeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pLimits);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyGetState (zes_freq_handle_t hFrequency, zes_freq_state_t* pState) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyGetState");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyGetStateRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pState);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyGetThrottleTime (zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyGetThrottleTime");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyGetThrottleTimeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pThrottleTime);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcGetCapabilities (zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcGetCapabilities");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcGetCapabilitiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pOcCapabilities);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcGetVoltageTarget (zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcGetVoltageTarget");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcGetVoltageTargetRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pCurrentVoltageTarget, pCurrentVoltageOffset);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcSetVoltageTarget (zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcSetVoltageTarget");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcSetVoltageTargetRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, CurrentVoltageTarget, CurrentVoltageOffset);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcSetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcSetMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcSetModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, CurrentOcMode);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcGetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcGetMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcGetModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pCurrentOcMode);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcGetIccMax (zes_freq_handle_t hFrequency, double* pOcIccMax) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcGetIccMax");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcGetIccMaxRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pOcIccMax);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcSetIccMax (zes_freq_handle_t hFrequency, double ocIccMax) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcSetIccMax");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcSetIccMaxRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, ocIccMax);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcGetTjMax (zes_freq_handle_t hFrequency, double* pOcTjMax) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcGetTjMax");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, pOcTjMax);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesFrequencyOcSetTjMax (zes_freq_handle_t hFrequency, double ocTjMax) {
+    log<Verbosity::bloat>("Establishing RPC for zesFrequencyOcSetTjMax");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hFrequency, ocTjMax);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumEngineGroups");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8119,6 +8473,54 @@ ze_result_t zesRasSetConfig (zes_ras_handle_t hRas, const zes_ras_config_t* pCon
 }
 ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState) {
     return Cal::Client::Icd::LevelZero::zesRasGetState(hRas, clear, pState);
+}
+ze_result_t zesDeviceEnumFrequencyDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumFrequencyDomains(hDevice, pCount, phFrequency);
+}
+ze_result_t zesFrequencyGetProperties (zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyGetProperties(hFrequency, pProperties);
+}
+ze_result_t zesFrequencyGetAvailableClocks (zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyGetAvailableClocks(hFrequency, pCount, phFrequency);
+}
+ze_result_t zesFrequencyGetRange (zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyGetRange(hFrequency, pConfig);
+}
+ze_result_t zesFrequencySetRange (zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits) {
+    return Cal::Client::Icd::LevelZero::zesFrequencySetRange(hFrequency, pLimits);
+}
+ze_result_t zesFrequencyGetState (zes_freq_handle_t hFrequency, zes_freq_state_t* pState) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyGetState(hFrequency, pState);
+}
+ze_result_t zesFrequencyGetThrottleTime (zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyGetThrottleTime(hFrequency, pThrottleTime);
+}
+ze_result_t zesFrequencyOcGetCapabilities (zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcGetCapabilities(hFrequency, pOcCapabilities);
+}
+ze_result_t zesFrequencyOcGetVoltageTarget (zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcGetVoltageTarget(hFrequency, pCurrentVoltageTarget, pCurrentVoltageOffset);
+}
+ze_result_t zesFrequencyOcSetVoltageTarget (zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcSetVoltageTarget(hFrequency, CurrentVoltageTarget, CurrentVoltageOffset);
+}
+ze_result_t zesFrequencyOcSetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcSetMode(hFrequency, CurrentOcMode);
+}
+ze_result_t zesFrequencyOcGetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcGetMode(hFrequency, pCurrentOcMode);
+}
+ze_result_t zesFrequencyOcGetIccMax (zes_freq_handle_t hFrequency, double* pOcIccMax) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcGetIccMax(hFrequency, pOcIccMax);
+}
+ze_result_t zesFrequencyOcSetIccMax (zes_freq_handle_t hFrequency, double ocIccMax) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcSetIccMax(hFrequency, ocIccMax);
+}
+ze_result_t zesFrequencyOcGetTjMax (zes_freq_handle_t hFrequency, double* pOcTjMax) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcGetTjMax(hFrequency, pOcTjMax);
+}
+ze_result_t zesFrequencyOcSetTjMax (zes_freq_handle_t hFrequency, double ocTjMax) {
+    return Cal::Client::Icd::LevelZero::zesFrequencyOcSetTjMax(hFrequency, ocTjMax);
 }
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);

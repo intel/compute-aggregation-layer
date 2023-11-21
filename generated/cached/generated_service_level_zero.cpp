@@ -50,6 +50,22 @@ ze_result_t (*zesRasGetProperties)(zes_ras_handle_t hRas, zes_ras_properties_t* 
 ze_result_t (*zesRasGetConfig)(zes_ras_handle_t hRas, zes_ras_config_t * pConfig) = nullptr;
 ze_result_t (*zesRasSetConfig)(zes_ras_handle_t hRas, const zes_ras_config_t* pConfig) = nullptr;
 ze_result_t (*zesRasGetState)(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState) = nullptr;
+ze_result_t (*zesDeviceEnumFrequencyDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency) = nullptr;
+ze_result_t (*zesFrequencyGetProperties)(zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties) = nullptr;
+ze_result_t (*zesFrequencyGetAvailableClocks)(zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency) = nullptr;
+ze_result_t (*zesFrequencyGetRange)(zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig) = nullptr;
+ze_result_t (*zesFrequencySetRange)(zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits) = nullptr;
+ze_result_t (*zesFrequencyGetState)(zes_freq_handle_t hFrequency, zes_freq_state_t* pState) = nullptr;
+ze_result_t (*zesFrequencyGetThrottleTime)(zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime) = nullptr;
+ze_result_t (*zesFrequencyOcGetCapabilities)(zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities) = nullptr;
+ze_result_t (*zesFrequencyOcGetVoltageTarget)(zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset) = nullptr;
+ze_result_t (*zesFrequencyOcSetVoltageTarget)(zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset) = nullptr;
+ze_result_t (*zesFrequencyOcSetMode)(zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode) = nullptr;
+ze_result_t (*zesFrequencyOcGetMode)(zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode) = nullptr;
+ze_result_t (*zesFrequencyOcGetIccMax)(zes_freq_handle_t hFrequency, double* pOcIccMax) = nullptr;
+ze_result_t (*zesFrequencyOcSetIccMax)(zes_freq_handle_t hFrequency, double ocIccMax) = nullptr;
+ze_result_t (*zesFrequencyOcGetTjMax)(zes_freq_handle_t hFrequency, double* pOcTjMax) = nullptr;
+ze_result_t (*zesFrequencyOcSetTjMax)(zes_freq_handle_t hFrequency, double ocTjMax) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
 ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
@@ -372,6 +388,102 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesRasGetState = reinterpret_cast<decltype(zesRasGetState)>(dlsym(libraryHandle, "zesRasGetState"));
     if(nullptr == zesRasGetState){
         log<Verbosity::error>("Missing symbol zesRasGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumFrequencyDomains = reinterpret_cast<decltype(zesDeviceEnumFrequencyDomains)>(dlsym(libraryHandle, "zesDeviceEnumFrequencyDomains"));
+    if(nullptr == zesDeviceEnumFrequencyDomains){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumFrequencyDomains in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyGetProperties = reinterpret_cast<decltype(zesFrequencyGetProperties)>(dlsym(libraryHandle, "zesFrequencyGetProperties"));
+    if(nullptr == zesFrequencyGetProperties){
+        log<Verbosity::error>("Missing symbol zesFrequencyGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyGetAvailableClocks = reinterpret_cast<decltype(zesFrequencyGetAvailableClocks)>(dlsym(libraryHandle, "zesFrequencyGetAvailableClocks"));
+    if(nullptr == zesFrequencyGetAvailableClocks){
+        log<Verbosity::error>("Missing symbol zesFrequencyGetAvailableClocks in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyGetRange = reinterpret_cast<decltype(zesFrequencyGetRange)>(dlsym(libraryHandle, "zesFrequencyGetRange"));
+    if(nullptr == zesFrequencyGetRange){
+        log<Verbosity::error>("Missing symbol zesFrequencyGetRange in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencySetRange = reinterpret_cast<decltype(zesFrequencySetRange)>(dlsym(libraryHandle, "zesFrequencySetRange"));
+    if(nullptr == zesFrequencySetRange){
+        log<Verbosity::error>("Missing symbol zesFrequencySetRange in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyGetState = reinterpret_cast<decltype(zesFrequencyGetState)>(dlsym(libraryHandle, "zesFrequencyGetState"));
+    if(nullptr == zesFrequencyGetState){
+        log<Verbosity::error>("Missing symbol zesFrequencyGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyGetThrottleTime = reinterpret_cast<decltype(zesFrequencyGetThrottleTime)>(dlsym(libraryHandle, "zesFrequencyGetThrottleTime"));
+    if(nullptr == zesFrequencyGetThrottleTime){
+        log<Verbosity::error>("Missing symbol zesFrequencyGetThrottleTime in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcGetCapabilities = reinterpret_cast<decltype(zesFrequencyOcGetCapabilities)>(dlsym(libraryHandle, "zesFrequencyOcGetCapabilities"));
+    if(nullptr == zesFrequencyOcGetCapabilities){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcGetCapabilities in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcGetVoltageTarget = reinterpret_cast<decltype(zesFrequencyOcGetVoltageTarget)>(dlsym(libraryHandle, "zesFrequencyOcGetVoltageTarget"));
+    if(nullptr == zesFrequencyOcGetVoltageTarget){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcGetVoltageTarget in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcSetVoltageTarget = reinterpret_cast<decltype(zesFrequencyOcSetVoltageTarget)>(dlsym(libraryHandle, "zesFrequencyOcSetVoltageTarget"));
+    if(nullptr == zesFrequencyOcSetVoltageTarget){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcSetVoltageTarget in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcSetMode = reinterpret_cast<decltype(zesFrequencyOcSetMode)>(dlsym(libraryHandle, "zesFrequencyOcSetMode"));
+    if(nullptr == zesFrequencyOcSetMode){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcSetMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcGetMode = reinterpret_cast<decltype(zesFrequencyOcGetMode)>(dlsym(libraryHandle, "zesFrequencyOcGetMode"));
+    if(nullptr == zesFrequencyOcGetMode){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcGetMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcGetIccMax = reinterpret_cast<decltype(zesFrequencyOcGetIccMax)>(dlsym(libraryHandle, "zesFrequencyOcGetIccMax"));
+    if(nullptr == zesFrequencyOcGetIccMax){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcGetIccMax in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcSetIccMax = reinterpret_cast<decltype(zesFrequencyOcSetIccMax)>(dlsym(libraryHandle, "zesFrequencyOcSetIccMax"));
+    if(nullptr == zesFrequencyOcSetIccMax){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcSetIccMax in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcGetTjMax = reinterpret_cast<decltype(zesFrequencyOcGetTjMax)>(dlsym(libraryHandle, "zesFrequencyOcGetTjMax"));
+    if(nullptr == zesFrequencyOcGetTjMax){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcGetTjMax in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesFrequencyOcSetTjMax = reinterpret_cast<decltype(zesFrequencyOcSetTjMax)>(dlsym(libraryHandle, "zesFrequencyOcSetTjMax"));
+    if(nullptr == zesFrequencyOcSetTjMax){
+        log<Verbosity::error>("Missing symbol zesFrequencyOcSetTjMax in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1195,6 +1307,22 @@ void unloadLevelZeroLibrary() {
     zesRasGetConfig = nullptr;
     zesRasSetConfig = nullptr;
     zesRasGetState = nullptr;
+    zesDeviceEnumFrequencyDomains = nullptr;
+    zesFrequencyGetProperties = nullptr;
+    zesFrequencyGetAvailableClocks = nullptr;
+    zesFrequencyGetRange = nullptr;
+    zesFrequencySetRange = nullptr;
+    zesFrequencyGetState = nullptr;
+    zesFrequencyGetThrottleTime = nullptr;
+    zesFrequencyOcGetCapabilities = nullptr;
+    zesFrequencyOcGetVoltageTarget = nullptr;
+    zesFrequencyOcSetVoltageTarget = nullptr;
+    zesFrequencyOcSetMode = nullptr;
+    zesFrequencyOcGetMode = nullptr;
+    zesFrequencyOcGetIccMax = nullptr;
+    zesFrequencyOcSetIccMax = nullptr;
+    zesFrequencyOcGetTjMax = nullptr;
+    zesFrequencyOcSetTjMax = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
     zesEngineGetProperties = nullptr;
     zesEngineGetActivity = nullptr;

@@ -59,6 +59,22 @@ extern ze_result_t (*zesRasGetProperties)(zes_ras_handle_t hRas, zes_ras_propert
 extern ze_result_t (*zesRasGetConfig)(zes_ras_handle_t hRas, zes_ras_config_t * pConfig);
 extern ze_result_t (*zesRasSetConfig)(zes_ras_handle_t hRas, const zes_ras_config_t* pConfig);
 extern ze_result_t (*zesRasGetState)(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState);
+extern ze_result_t (*zesDeviceEnumFrequencyDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency);
+extern ze_result_t (*zesFrequencyGetProperties)(zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties);
+extern ze_result_t (*zesFrequencyGetAvailableClocks)(zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency);
+extern ze_result_t (*zesFrequencyGetRange)(zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig);
+extern ze_result_t (*zesFrequencySetRange)(zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits);
+extern ze_result_t (*zesFrequencyGetState)(zes_freq_handle_t hFrequency, zes_freq_state_t* pState);
+extern ze_result_t (*zesFrequencyGetThrottleTime)(zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime);
+extern ze_result_t (*zesFrequencyOcGetCapabilities)(zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities);
+extern ze_result_t (*zesFrequencyOcGetVoltageTarget)(zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset);
+extern ze_result_t (*zesFrequencyOcSetVoltageTarget)(zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset);
+extern ze_result_t (*zesFrequencyOcSetMode)(zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode);
+extern ze_result_t (*zesFrequencyOcGetMode)(zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode);
+extern ze_result_t (*zesFrequencyOcGetIccMax)(zes_freq_handle_t hFrequency, double* pOcIccMax);
+extern ze_result_t (*zesFrequencyOcSetIccMax)(zes_freq_handle_t hFrequency, double ocIccMax);
+extern ze_result_t (*zesFrequencyOcGetTjMax)(zes_freq_handle_t hFrequency, double* pOcTjMax);
+extern ze_result_t (*zesFrequencyOcSetTjMax)(zes_freq_handle_t hFrequency, double ocTjMax);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -443,6 +459,154 @@ inline bool zesRasGetStateHandler(Provider &service, Cal::Rpc::ChannelServer &ch
                                                 apiCommand->args.hRas, 
                                                 apiCommand->args.clear, 
                                                 apiCommand->args.pState
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumFrequencyDomainsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumFrequencyDomains");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumFrequencyDomainsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumFrequencyDomains(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phFrequency ? apiCommand->captures.phFrequency : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetProperties(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyGetAvailableClocksHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyGetAvailableClocks");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetAvailableClocksRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetAvailableClocks(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phFrequency ? apiCommand->captures.phFrequency : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyGetRangeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyGetRange");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetRangeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetRange(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencySetRangeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencySetRange");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencySetRangeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencySetRange(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pLimits ? &apiCommand->captures.pLimits : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyGetStateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyGetState");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetStateRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetState(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pState ? &apiCommand->captures.pState : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyGetThrottleTimeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyGetThrottleTime");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetThrottleTimeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetThrottleTime(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pThrottleTime ? &apiCommand->captures.pThrottleTime : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcGetCapabilitiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcGetCapabilities");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetCapabilitiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetCapabilities(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pOcCapabilities ? &apiCommand->captures.pOcCapabilities : nullptr
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcGetVoltageTargetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcGetVoltageTarget");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetVoltageTargetRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetVoltageTarget(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pCurrentVoltageTarget, 
+                                                apiCommand->args.pCurrentVoltageOffset
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcSetVoltageTargetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcSetVoltageTarget");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetVoltageTargetRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetVoltageTarget(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.CurrentVoltageTarget, 
+                                                apiCommand->args.CurrentVoltageOffset
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcSetModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcSetMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetMode(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.CurrentOcMode
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcGetModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcGetMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetMode(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pCurrentOcMode
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcGetIccMaxHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcGetIccMax");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetIccMaxRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetIccMax(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pOcIccMax
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcSetIccMaxHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcSetIccMax");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetIccMaxRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetIccMax(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.ocIccMax
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcGetTjMaxHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcGetTjMax");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetTjMax(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.pOcTjMax
+                                                );
+    return true;
+}
+inline bool zesFrequencyOcSetTjMaxHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesFrequencyOcSetTjMax");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetTjMax(
+                                                apiCommand->args.hFrequency, 
+                                                apiCommand->args.ocTjMax
                                                 );
     return true;
 }
@@ -2525,6 +2689,22 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesRasGetConfigRpcM::messageSubtype] = zesRasGetConfigHandler;
     outHandlers[ZesRasSetConfigRpcM::messageSubtype] = zesRasSetConfigHandler;
     outHandlers[ZesRasGetStateRpcM::messageSubtype] = zesRasGetStateHandler;
+    outHandlers[ZesDeviceEnumFrequencyDomainsRpcM::messageSubtype] = zesDeviceEnumFrequencyDomainsHandler;
+    outHandlers[ZesFrequencyGetPropertiesRpcM::messageSubtype] = zesFrequencyGetPropertiesHandler;
+    outHandlers[ZesFrequencyGetAvailableClocksRpcM::messageSubtype] = zesFrequencyGetAvailableClocksHandler;
+    outHandlers[ZesFrequencyGetRangeRpcM::messageSubtype] = zesFrequencyGetRangeHandler;
+    outHandlers[ZesFrequencySetRangeRpcM::messageSubtype] = zesFrequencySetRangeHandler;
+    outHandlers[ZesFrequencyGetStateRpcM::messageSubtype] = zesFrequencyGetStateHandler;
+    outHandlers[ZesFrequencyGetThrottleTimeRpcM::messageSubtype] = zesFrequencyGetThrottleTimeHandler;
+    outHandlers[ZesFrequencyOcGetCapabilitiesRpcM::messageSubtype] = zesFrequencyOcGetCapabilitiesHandler;
+    outHandlers[ZesFrequencyOcGetVoltageTargetRpcM::messageSubtype] = zesFrequencyOcGetVoltageTargetHandler;
+    outHandlers[ZesFrequencyOcSetVoltageTargetRpcM::messageSubtype] = zesFrequencyOcSetVoltageTargetHandler;
+    outHandlers[ZesFrequencyOcSetModeRpcM::messageSubtype] = zesFrequencyOcSetModeHandler;
+    outHandlers[ZesFrequencyOcGetModeRpcM::messageSubtype] = zesFrequencyOcGetModeHandler;
+    outHandlers[ZesFrequencyOcGetIccMaxRpcM::messageSubtype] = zesFrequencyOcGetIccMaxHandler;
+    outHandlers[ZesFrequencyOcSetIccMaxRpcM::messageSubtype] = zesFrequencyOcSetIccMaxHandler;
+    outHandlers[ZesFrequencyOcGetTjMaxRpcM::messageSubtype] = zesFrequencyOcGetTjMaxHandler;
+    outHandlers[ZesFrequencyOcSetTjMaxRpcM::messageSubtype] = zesFrequencyOcSetTjMaxHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
@@ -2860,6 +3040,106 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesRasGetStateRpcM &apiCommand) {
                                                 apiCommand.args.hRas, 
                                                 apiCommand.args.clear, 
                                                 apiCommand.args.pState
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumFrequencyDomainsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumFrequencyDomains(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phFrequency
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetProperties(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyGetAvailableClocksRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetAvailableClocks(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phFrequency
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyGetRangeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetRange(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencySetRangeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencySetRange(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pLimits
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyGetStateRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetState(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pState
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyGetThrottleTimeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyGetThrottleTime(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pThrottleTime
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcGetCapabilitiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetCapabilities(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pOcCapabilities
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcGetVoltageTargetRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetVoltageTarget(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pCurrentVoltageTarget, 
+                                                apiCommand.args.pCurrentVoltageOffset
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcSetVoltageTargetRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetVoltageTarget(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.CurrentVoltageTarget, 
+                                                apiCommand.args.CurrentVoltageOffset
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcSetModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetMode(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.CurrentOcMode
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcGetModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetMode(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pCurrentOcMode
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcGetIccMaxRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetIccMax(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pOcIccMax
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcSetIccMaxRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetIccMax(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.ocIccMax
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcGetTjMax(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.pOcTjMax
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesFrequencyOcSetTjMax(
+                                                apiCommand.args.hFrequency, 
+                                                apiCommand.args.ocTjMax
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
@@ -4180,6 +4460,22 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesRasGetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetConfigRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesRasSetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasSetConfigRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesRasGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetStateRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumFrequencyDomainsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumFrequencyDomainsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyGetAvailableClocksRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetAvailableClocksRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyGetRangeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetRangeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencySetRangeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencySetRangeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetStateRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyGetThrottleTimeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyGetThrottleTimeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcGetCapabilitiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetCapabilitiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcGetVoltageTargetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetVoltageTargetRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcSetVoltageTargetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetVoltageTargetRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcSetModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcGetModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcGetIccMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetIccMaxRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcSetIccMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetIccMaxRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;

@@ -1407,6 +1407,150 @@ config:
               type: uint64_t
               kind: scalar
             server_access: read_write
+    - name: zes_freq_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+        2:
+          name: type
+          type: zes_freq_domain_t
+          kind: scalar
+        3:
+          name: onSubdevice
+          type: ze_bool_t
+          kind: scalar
+        4:
+          name: subdeviceId
+          type: uint32_t
+          kind: scalar
+        5:
+          name: canControl
+          type: ze_bool_t
+          kind: scalar
+        6:
+          name: isThrottleEventSupported
+          type: ze_bool_t
+          kind: scalar
+        7:
+          name: min
+          type: double
+          kind: scalar
+        8:
+          name: max
+          type: double
+          kind: scalar
+    - name: zes_freq_state_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: const void*
+          kind: scalar
+        2:
+          name: currentVoltage
+          type: double
+          kind: scalar
+        3:
+          name: request
+          type: double
+          kind: scalar
+        4:
+          name: tdp
+          type: double
+          kind: scalar
+        5:
+          name: efficient
+          type: double
+          kind: scalar
+        6:
+          name: actual
+          type: double
+          kind: scalar
+        7:
+          name: throttleReasons
+          type: zes_freq_throttle_reason_flags_t
+          kind: scalar
+    - name: zes_freq_throttle_time_t
+      members:
+        0:
+          name: throttleTime
+          type: uint64_t
+          kind: scalar
+        1:
+          name: timestamp
+          type: uint64_t
+          kind: scalar
+    - name: zes_oc_capabilities_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: const void*
+          kind: scalar
+        2:
+          name: isOcSupported
+          type: ze_bool_t
+          kind: scalar
+        3:
+          name: maxFactoryDefaultFrequency
+          type: double
+          kind: scalar
+        4:
+          name: maxFactoryDefaultVoltage
+          type: double
+          kind: scalar
+        5:
+          name: maxOcFrequency
+          type: double
+          kind: scalar
+        6:
+          name: minOcVoltageOffset
+          type: double
+          kind: scalar
+        7:
+          name: maxOcVoltageOffset
+          type: double
+          kind: scalar
+        8:
+          name: maxOcVoltage
+          type: double
+          kind: scalar
+        9:
+          name: isTjMaxSupported
+          type: ze_bool_t
+          kind: scalar
+        10:
+          name: isIccMaxSupported
+          type: ze_bool_t
+          kind: scalar
+        11:
+          name: isHighVoltModeCapable
+          type: ze_bool_t
+          kind: scalar
+        12:
+          name: isHighVoltModeEnabled
+          type: ze_bool_t
+          kind: scalar
+        13:
+          name: isExtendedModeSupported
+          type: ze_bool_t
+          kind: scalar
+        14:
+          name: isFixedModeSupported
+          type: ze_bool_t
+          kind: scalar
     - name: zes_pci_address_t
       members:
         0:
@@ -1604,6 +1748,11 @@ config:
           Standby.zesStandbyGetProperties,
           Standby.zesStandbyGetMode,
           Standby.zesStandbySetMode,
+          Device.zesDeviceEnumTemperatureSensors,
+          Temperature.zesTemperatureGetProperties,
+          Temperature.zesTemperatureGetConfig,
+          Temperature.zesTemperatureSetConfig,
+          Temperature.zesTemperatureGetState,
           Device.zesDeviceEccAvailable,
           Device.zesDeviceEccConfigurable,
           Device.zesDeviceGetEccState,
@@ -1636,6 +1785,9 @@ config:
           FabricPort.zesFabricPortSetConfig,
           FabricPort.zesFabricPortGetState,
           FabricPort.zesFabricPortGetThroughput,
+          Device.zesDeviceEventRegister,
+          Driver.zesDriverEventListen,
+          Driver.zesDriverEventListenEx,
           Device.zesDeviceEnumDiagnosticTestSuites,
           Diagnostics.zesDiagnosticsGetProperties,
           Diagnostics.zesDiagnosticsGetTests,
@@ -1643,22 +1795,6 @@ config:
           Device.zesDeviceEnumPsus,
           Psu.zesPsuGetProperties,
           Psu.zesPsuGetState,
-          Device.zesDeviceEnumFrequencyDomains,
-          Frequency.zesFrequencyGetProperties,
-          Frequency.zesFrequencyGetAvailableClocks,
-          Frequency.zesFrequencyGetRange,
-          Frequency.zesFrequencySetRange,
-          Frequency.zesFrequencyGetState,
-          Frequency.zesFrequencyGetThrottleTime,
-          Frequency.zesFrequencyOcGetCapabilities,
-          Frequency.zesFrequencyOcGetVoltageTarget,
-          Frequency.zesFrequencyOcSetVoltageTarget,
-          Frequency.zesFrequencyOcSetMode,
-          Frequency.zesFrequencyOcGetMode,
-          Frequency.zesFrequencyOcGetIccMax,
-          Frequency.zesFrequencyOcSetIccMax,
-          Frequency.zesFrequencyOcGetTjMax,
-          Frequency.zesFrequencyOcSetTjMax,
         ]
 
     - name: "tools"
@@ -2559,6 +2695,351 @@ config:
               type: zes_ras_state_t*
               kind: pointer
 
+        - name: zesDeviceEnumFrequencyDomains
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phFrequency
+              type: zes_freq_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_freq_handle_t
+                  kind: pointer
+                server_access: read_write
+        - name: zesFrequencyGetProperties
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_freq_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_freq_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zesFrequencyGetAvailableClocks
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phFrequency
+              type: double*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: double
+                  kind: scalar
+                server_access: read_write
+        - name: zesFrequencyGetRange
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pConfig
+              type: zes_freq_range_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                 type: zes_freq_range_t
+                 kind: scalar
+                server_access: read_write
+        - name: zesFrequencySetRange
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pLimits
+              type: const zes_freq_range_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                 type: zes_freq_range_t
+                 kind: scalar
+                server_access: read
+        - name: zesFrequencyGetState
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pState
+              type: zes_freq_state_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_freq_state_t
+                  kind: struct
+                server_access: read_write
+        - name: zesFrequencyGetThrottleTime
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pThrottleTime
+              type: zes_freq_throttle_time_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_freq_throttle_time_t
+                  kind: struct
+                server_access: read_write
+        - name: zesFrequencyOcGetCapabilities
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pOcCapabilities
+              type: zes_oc_capabilities_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_oc_capabilities_t
+                  kind: struct
+                server_access: read_write
+        - name: zesFrequencyOcGetVoltageTarget
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pCurrentVoltageTarget
+              type: double*
+              kind: pointer
+            2:
+              name: pCurrentVoltageOffset
+              type: double*
+              kind: pointer
+        - name: zesFrequencyOcSetVoltageTarget
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: CurrentVoltageTarget
+              type: double
+              kind: pointer
+            2:
+              name: CurrentVoltageOffset
+              type: double
+              kind: pointer
+        - name: zesFrequencyOcSetMode
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: CurrentOcMode
+              type: zes_oc_mode_t
+              kind: scalar
+        - name: zesFrequencyOcGetMode
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pCurrentOcMode
+              type: zes_oc_mode_t*
+              kind: pointer
+        - name: zesFrequencyOcGetIccMax
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pOcIccMax
+              type: double*
+              kind: pointer
+        - name: zesFrequencyOcSetIccMax
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: ocIccMax
+              type: double
+              kind: scalar
+        - name: zesFrequencyOcGetTjMax
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: pOcTjMax
+              type: double*
+              kind: pointer
+        - name: zesFrequencyOcSetTjMax
+          latency: 1.0
+          ddi_category: Frequency
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hFrequency
+              type: zes_freq_handle_t
+              kind: scalar
+            1:
+              name: ocTjMax
+              type: double
+              kind: pointer
         - name: zesDeviceEnumEngineGroups
           latency: 1.0
           ddi_category: Device

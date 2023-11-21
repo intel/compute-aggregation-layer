@@ -69,6 +69,22 @@ ze_result_t zesRasGetProperties (zes_ras_handle_t hRas, zes_ras_properties_t* pP
 ze_result_t zesRasGetConfig (zes_ras_handle_t hRas, zes_ras_config_t * pConfig);
 ze_result_t zesRasSetConfig (zes_ras_handle_t hRas, const zes_ras_config_t* pConfig);
 ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState);
+ze_result_t zesDeviceEnumFrequencyDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency);
+ze_result_t zesFrequencyGetProperties (zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties);
+ze_result_t zesFrequencyGetAvailableClocks (zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency);
+ze_result_t zesFrequencyGetRange (zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig);
+ze_result_t zesFrequencySetRange (zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits);
+ze_result_t zesFrequencyGetState (zes_freq_handle_t hFrequency, zes_freq_state_t* pState);
+ze_result_t zesFrequencyGetThrottleTime (zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime);
+ze_result_t zesFrequencyOcGetCapabilities (zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities);
+ze_result_t zesFrequencyOcGetVoltageTarget (zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset);
+ze_result_t zesFrequencyOcSetVoltageTarget (zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset);
+ze_result_t zesFrequencyOcSetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode);
+ze_result_t zesFrequencyOcGetMode (zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode);
+ze_result_t zesFrequencyOcGetIccMax (zes_freq_handle_t hFrequency, double* pOcIccMax);
+ze_result_t zesFrequencyOcSetIccMax (zes_freq_handle_t hFrequency, double ocIccMax);
+ze_result_t zesFrequencyOcGetTjMax (zes_freq_handle_t hFrequency, double* pOcTjMax);
+ze_result_t zesFrequencyOcSetTjMax (zes_freq_handle_t hFrequency, double ocTjMax);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -553,6 +569,26 @@ inline void zesStandbySetModeUnimpl() {
     log<Verbosity::critical>("Function Standby.zesStandbySetMode is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
+inline void zesDeviceEnumTemperatureSensorsUnimpl() {
+    log<Verbosity::critical>("Function Device.zesDeviceEnumTemperatureSensors is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesTemperatureGetPropertiesUnimpl() {
+    log<Verbosity::critical>("Function Temperature.zesTemperatureGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesTemperatureGetConfigUnimpl() {
+    log<Verbosity::critical>("Function Temperature.zesTemperatureGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesTemperatureSetConfigUnimpl() {
+    log<Verbosity::critical>("Function Temperature.zesTemperatureSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesTemperatureGetStateUnimpl() {
+    log<Verbosity::critical>("Function Temperature.zesTemperatureGetState is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
 inline void zesDeviceEccAvailableUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceEccAvailable is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -681,6 +717,18 @@ inline void zesFabricPortGetThroughputUnimpl() {
     log<Verbosity::critical>("Function FabricPort.zesFabricPortGetThroughput is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
+inline void zesDeviceEventRegisterUnimpl() {
+    log<Verbosity::critical>("Function Device.zesDeviceEventRegister is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesDriverEventListenUnimpl() {
+    log<Verbosity::critical>("Function Driver.zesDriverEventListen is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
+inline void zesDriverEventListenExUnimpl() {
+    log<Verbosity::critical>("Function Driver.zesDriverEventListenEx is not yet implemented in Compute Aggregation Layer - aborting");
+    std::abort();
+}
 inline void zesDeviceEnumDiagnosticTestSuitesUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceEnumDiagnosticTestSuites is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -707,70 +755,6 @@ inline void zesPsuGetPropertiesUnimpl() {
 }
 inline void zesPsuGetStateUnimpl() {
     log<Verbosity::critical>("Function Psu.zesPsuGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumFrequencyDomainsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumFrequencyDomains is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyGetAvailableClocksUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyGetAvailableClocks is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyGetRangeUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyGetRange is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencySetRangeUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencySetRange is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyGetStateUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyGetThrottleTimeUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyGetThrottleTime is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcGetCapabilitiesUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcGetCapabilities is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcGetVoltageTargetUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcGetVoltageTarget is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcSetVoltageTargetUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcSetVoltageTarget is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcSetModeUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcSetMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcGetModeUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcGetMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcGetIccMaxUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcGetIccMax is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcSetIccMaxUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcSetIccMax is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcGetTjMaxUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcGetTjMax is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesFrequencyOcSetTjMaxUnimpl() {
-    log<Verbosity::critical>("Function Frequency.zesFrequencyOcSetTjMax is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zetKernelGetProfileInfoUnimpl() {
@@ -1407,6 +1391,22 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Ras.pfnGetConfig = Cal::Client::Icd::LevelZero::zesRasGetConfig;
     dt.Ras.pfnSetConfig = Cal::Client::Icd::LevelZero::zesRasSetConfig;
     dt.Ras.pfnGetState = Cal::Client::Icd::LevelZero::zesRasGetState;
+    dt.Device.pfnEnumFrequencyDomains = Cal::Client::Icd::LevelZero::zesDeviceEnumFrequencyDomains;
+    dt.Frequency.pfnGetProperties = Cal::Client::Icd::LevelZero::zesFrequencyGetProperties;
+    dt.Frequency.pfnGetAvailableClocks = Cal::Client::Icd::LevelZero::zesFrequencyGetAvailableClocks;
+    dt.Frequency.pfnGetRange = Cal::Client::Icd::LevelZero::zesFrequencyGetRange;
+    dt.Frequency.pfnSetRange = Cal::Client::Icd::LevelZero::zesFrequencySetRange;
+    dt.Frequency.pfnGetState = Cal::Client::Icd::LevelZero::zesFrequencyGetState;
+    dt.Frequency.pfnGetThrottleTime = Cal::Client::Icd::LevelZero::zesFrequencyGetThrottleTime;
+    dt.Frequency.pfnOcGetCapabilities = Cal::Client::Icd::LevelZero::zesFrequencyOcGetCapabilities;
+    dt.Frequency.pfnOcGetVoltageTarget = Cal::Client::Icd::LevelZero::zesFrequencyOcGetVoltageTarget;
+    dt.Frequency.pfnOcSetVoltageTarget = Cal::Client::Icd::LevelZero::zesFrequencyOcSetVoltageTarget;
+    dt.Frequency.pfnOcSetMode = Cal::Client::Icd::LevelZero::zesFrequencyOcSetMode;
+    dt.Frequency.pfnOcGetMode = Cal::Client::Icd::LevelZero::zesFrequencyOcGetMode;
+    dt.Frequency.pfnOcGetIccMax = Cal::Client::Icd::LevelZero::zesFrequencyOcGetIccMax;
+    dt.Frequency.pfnOcSetIccMax = Cal::Client::Icd::LevelZero::zesFrequencyOcSetIccMax;
+    dt.Frequency.pfnOcGetTjMax = Cal::Client::Icd::LevelZero::zesFrequencyOcGetTjMax;
+    dt.Frequency.pfnOcSetTjMax = Cal::Client::Icd::LevelZero::zesFrequencyOcSetTjMax;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
@@ -1433,6 +1433,11 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Standby.pfnGetProperties = reinterpret_cast<decltype(dt.Standby.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetPropertiesUnimpl);
     dt.Standby.pfnGetMode = reinterpret_cast<decltype(dt.Standby.pfnGetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetModeUnimpl);
     dt.Standby.pfnSetMode = reinterpret_cast<decltype(dt.Standby.pfnSetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbySetModeUnimpl);
+    dt.Device.pfnEnumTemperatureSensors = reinterpret_cast<decltype(dt.Device.pfnEnumTemperatureSensors)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumTemperatureSensorsUnimpl);
+    dt.Temperature.pfnGetProperties = reinterpret_cast<decltype(dt.Temperature.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetPropertiesUnimpl);
+    dt.Temperature.pfnGetConfig = reinterpret_cast<decltype(dt.Temperature.pfnGetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetConfigUnimpl);
+    dt.Temperature.pfnSetConfig = reinterpret_cast<decltype(dt.Temperature.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureSetConfigUnimpl);
+    dt.Temperature.pfnGetState = reinterpret_cast<decltype(dt.Temperature.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetStateUnimpl);
     dt.Device.pfnEccAvailable = reinterpret_cast<decltype(dt.Device.pfnEccAvailable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccAvailableUnimpl);
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
@@ -1465,6 +1470,9 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.FabricPort.pfnSetConfig = reinterpret_cast<decltype(dt.FabricPort.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortSetConfigUnimpl);
     dt.FabricPort.pfnGetState = reinterpret_cast<decltype(dt.FabricPort.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetStateUnimpl);
     dt.FabricPort.pfnGetThroughput = reinterpret_cast<decltype(dt.FabricPort.pfnGetThroughput)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetThroughputUnimpl);
+    dt.Device.pfnEventRegister = reinterpret_cast<decltype(dt.Device.pfnEventRegister)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEventRegisterUnimpl);
+    dt.Driver.pfnEventListen = reinterpret_cast<decltype(dt.Driver.pfnEventListen)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenUnimpl);
+    dt.Driver.pfnEventListenEx = reinterpret_cast<decltype(dt.Driver.pfnEventListenEx)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenExUnimpl);
     dt.Device.pfnEnumDiagnosticTestSuites = reinterpret_cast<decltype(dt.Device.pfnEnumDiagnosticTestSuites)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumDiagnosticTestSuitesUnimpl);
     dt.Diagnostics.pfnGetProperties = reinterpret_cast<decltype(dt.Diagnostics.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetPropertiesUnimpl);
     dt.Diagnostics.pfnGetTests = reinterpret_cast<decltype(dt.Diagnostics.pfnGetTests)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetTestsUnimpl);
@@ -1472,22 +1480,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEnumPsus = reinterpret_cast<decltype(dt.Device.pfnEnumPsus)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumPsusUnimpl);
     dt.Psu.pfnGetProperties = reinterpret_cast<decltype(dt.Psu.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPsuGetPropertiesUnimpl);
     dt.Psu.pfnGetState = reinterpret_cast<decltype(dt.Psu.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPsuGetStateUnimpl);
-    dt.Device.pfnEnumFrequencyDomains = reinterpret_cast<decltype(dt.Device.pfnEnumFrequencyDomains)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFrequencyDomainsUnimpl);
-    dt.Frequency.pfnGetProperties = reinterpret_cast<decltype(dt.Frequency.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyGetPropertiesUnimpl);
-    dt.Frequency.pfnGetAvailableClocks = reinterpret_cast<decltype(dt.Frequency.pfnGetAvailableClocks)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyGetAvailableClocksUnimpl);
-    dt.Frequency.pfnGetRange = reinterpret_cast<decltype(dt.Frequency.pfnGetRange)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyGetRangeUnimpl);
-    dt.Frequency.pfnSetRange = reinterpret_cast<decltype(dt.Frequency.pfnSetRange)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencySetRangeUnimpl);
-    dt.Frequency.pfnGetState = reinterpret_cast<decltype(dt.Frequency.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyGetStateUnimpl);
-    dt.Frequency.pfnGetThrottleTime = reinterpret_cast<decltype(dt.Frequency.pfnGetThrottleTime)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyGetThrottleTimeUnimpl);
-    dt.Frequency.pfnOcGetCapabilities = reinterpret_cast<decltype(dt.Frequency.pfnOcGetCapabilities)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcGetCapabilitiesUnimpl);
-    dt.Frequency.pfnOcGetVoltageTarget = reinterpret_cast<decltype(dt.Frequency.pfnOcGetVoltageTarget)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcGetVoltageTargetUnimpl);
-    dt.Frequency.pfnOcSetVoltageTarget = reinterpret_cast<decltype(dt.Frequency.pfnOcSetVoltageTarget)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcSetVoltageTargetUnimpl);
-    dt.Frequency.pfnOcSetMode = reinterpret_cast<decltype(dt.Frequency.pfnOcSetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcSetModeUnimpl);
-    dt.Frequency.pfnOcGetMode = reinterpret_cast<decltype(dt.Frequency.pfnOcGetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcGetModeUnimpl);
-    dt.Frequency.pfnOcGetIccMax = reinterpret_cast<decltype(dt.Frequency.pfnOcGetIccMax)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcGetIccMaxUnimpl);
-    dt.Frequency.pfnOcSetIccMax = reinterpret_cast<decltype(dt.Frequency.pfnOcSetIccMax)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcSetIccMaxUnimpl);
-    dt.Frequency.pfnOcGetTjMax = reinterpret_cast<decltype(dt.Frequency.pfnOcGetTjMax)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcGetTjMaxUnimpl);
-    dt.Frequency.pfnOcSetTjMax = reinterpret_cast<decltype(dt.Frequency.pfnOcSetTjMax)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFrequencyOcSetTjMaxUnimpl);
 }
 inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.TracerExp.pfnCreate = Cal::Client::Icd::LevelZero::zetTracerExpCreate;

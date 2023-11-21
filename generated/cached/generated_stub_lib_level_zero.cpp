@@ -131,6 +131,70 @@ ze_result_t zesRasGetState(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state
    return {};
 }
 
+ze_result_t zesDeviceEnumFrequencyDomains(zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency){
+   return {};
+}
+
+ze_result_t zesFrequencyGetProperties(zes_freq_handle_t hFrequency, zes_freq_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesFrequencyGetAvailableClocks(zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency){
+   return {};
+}
+
+ze_result_t zesFrequencyGetRange(zes_freq_handle_t hFrequency, zes_freq_range_t* pConfig){
+   return {};
+}
+
+ze_result_t zesFrequencySetRange(zes_freq_handle_t hFrequency, const zes_freq_range_t* pLimits){
+   return {};
+}
+
+ze_result_t zesFrequencyGetState(zes_freq_handle_t hFrequency, zes_freq_state_t* pState){
+   return {};
+}
+
+ze_result_t zesFrequencyGetThrottleTime(zes_freq_handle_t hFrequency, zes_freq_throttle_time_t* pThrottleTime){
+   return {};
+}
+
+ze_result_t zesFrequencyOcGetCapabilities(zes_freq_handle_t hFrequency, zes_oc_capabilities_t* pOcCapabilities){
+   return {};
+}
+
+ze_result_t zesFrequencyOcGetVoltageTarget(zes_freq_handle_t hFrequency, double* pCurrentVoltageTarget, double* pCurrentVoltageOffset){
+   return {};
+}
+
+ze_result_t zesFrequencyOcSetVoltageTarget(zes_freq_handle_t hFrequency, double CurrentVoltageTarget, double CurrentVoltageOffset){
+   return {};
+}
+
+ze_result_t zesFrequencyOcSetMode(zes_freq_handle_t hFrequency, zes_oc_mode_t CurrentOcMode){
+   return {};
+}
+
+ze_result_t zesFrequencyOcGetMode(zes_freq_handle_t hFrequency, zes_oc_mode_t* pCurrentOcMode){
+   return {};
+}
+
+ze_result_t zesFrequencyOcGetIccMax(zes_freq_handle_t hFrequency, double* pOcIccMax){
+   return {};
+}
+
+ze_result_t zesFrequencyOcSetIccMax(zes_freq_handle_t hFrequency, double ocIccMax){
+   return {};
+}
+
+ze_result_t zesFrequencyOcGetTjMax(zes_freq_handle_t hFrequency, double* pOcTjMax){
+   return {};
+}
+
+ze_result_t zesFrequencyOcSetTjMax(zes_freq_handle_t hFrequency, double ocTjMax){
+   return {};
+}
+
 ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine){
    return {};
 }

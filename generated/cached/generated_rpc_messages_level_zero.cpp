@@ -220,6 +220,46 @@ size_t ZesDeviceEnumRasErrorSetsRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDeviceEnumFrequencyDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumFrequencyDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency) {
+    DynamicTraits ret = {};
+    ret.phFrequency.count = (pCount ? *pCount : 0);
+    ret.phFrequency.size = ret.phFrequency.count * sizeof(zes_freq_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phFrequency.offset + ret.phFrequency.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumFrequencyDomainsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phFrequency) + Cal::Utils::alignUpPow2<8>(this->countPhFrequency * sizeof(zes_freq_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumFrequencyDomainsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhFrequency * sizeof(zes_freq_handle_t));
+     return size;
+}
+
+ZesFrequencyGetAvailableClocksRpcM::Captures::DynamicTraits ZesFrequencyGetAvailableClocksRpcM::Captures::DynamicTraits::calculate(zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency) {
+    DynamicTraits ret = {};
+    ret.phFrequency.count = (pCount ? *pCount : 0);
+    ret.phFrequency.size = ret.phFrequency.count * sizeof(double);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phFrequency.offset + ret.phFrequency.size);
+
+
+    return ret;
+}
+
+size_t ZesFrequencyGetAvailableClocksRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phFrequency) + Cal::Utils::alignUpPow2<8>(this->countPhFrequency * sizeof(double));
+     return size;
+}
+
+size_t ZesFrequencyGetAvailableClocksRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhFrequency * sizeof(double));
+     return size;
+}
+
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     DynamicTraits ret = {};
     ret.phEngine.count = (pCount ? *pCount : 0);
