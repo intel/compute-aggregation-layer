@@ -17135,7 +17135,7 @@ static_assert(std::is_standard_layout_v<ZeCommandListAppendLaunchMultipleKernels
 struct ZeCommandListHostSynchronizeRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 183;
-    static constexpr float latency = 0.0;
+    static constexpr float latency = 2.0;
     static constexpr CallCategory category = CallCategory::Other;
 
 

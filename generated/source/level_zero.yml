@@ -8776,15 +8776,18 @@ config:
                   translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
                 server_access: read
         - name: zeCommandListHostSynchronize
-          latency: 0.0
+          latency: 2.0
           ddi_category: CommandList
           special_handling:
             icd:
               tracable: False
+            rpc:
+              custom_handler: True
           returns:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
           args:
             0:
               name: hCommandList

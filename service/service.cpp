@@ -1304,6 +1304,20 @@ bool zeFenceQueryStatusHandler(Provider &service, Cal::Rpc::ChannelServer &chann
     return updateHostptrCopies(channel, ctx);
 }
 
+bool zeCommandListHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListHostSynchronize");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListHostSynchronize(
+        apiCommand->args.hCommandList,
+        apiCommand->args.timeout);
+
+    if (apiCommand->captures.ret != ZE_RESULT_SUCCESS) {
+        return true;
+    }
+
+    return updateHostptrCopies(channel, ctx);
+}
+
 bool zeCommandQueueSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueSynchronize");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueSynchronizeRpcM *>(command);

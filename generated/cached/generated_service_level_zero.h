@@ -2057,15 +2057,7 @@ inline bool zeCommandListAppendLaunchMultipleKernelsIndirectHandler(Provider &se
                                                 );
     return true;
 }
-inline bool zeCommandListHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListHostSynchronize");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListHostSynchronizeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListHostSynchronize(
-                                                apiCommand->args.hCommandList, 
-                                                apiCommand->args.timeout
-                                                );
-    return true;
-}
+bool zeCommandListHostSynchronizeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeDevicePciGetPropertiesExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeDevicePciGetPropertiesExt");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDevicePciGetPropertiesExtRpcM*>(command);

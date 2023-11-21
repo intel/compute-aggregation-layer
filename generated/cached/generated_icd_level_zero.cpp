@@ -5038,6 +5038,9 @@ ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList,
     }
     ze_result_t ret = command->captures.ret;
 
+    if (ret == ZE_RESULT_SUCCESS) {
+        ret = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());
+    };
     return ret;
 }
 ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_properties_t* pPciProperties) {

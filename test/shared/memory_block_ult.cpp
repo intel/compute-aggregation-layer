@@ -772,13 +772,13 @@ TEST_F(MemoryBlocksManagerTestWithThreeNonOverlappingBlocks, GivenThreeNonOverla
 }
 
 TEST_F(MemoryBlocksManagerTestWithThreeUSMBlocks, GivenThreeUSMPairsInManagerWhenGettingRequiredTransfersThenCorrectTransfersAreReturned) {
-    auto getBlock = [this](int id) -> std::pair<const void *, size_t> & {
+    auto getBlockOffset = [this](int id) {
         auto it = std::next(memoryBlocksManager.usmMemoryPairs.begin(), id);
-        return (*it);
+        return reinterpret_cast<uint64_t>(it->first);
     };
-    auto &firstUSMPair = getBlock(0);
-    [[maybe_unused]] auto &secondUSMPair = getBlock(1);
-    auto &thirdUSMPair = getBlock(2);
+    auto firstUSMPairOffset = getBlockOffset(0);
+    [[maybe_unused]] auto secondUSMPairOffset = getBlockOffset(1);
+    auto thirdUSMPairOffset = getBlockOffset(2);
 
     uint32_t transferDescsCount{4};
     Cal::Rpc::TransferDesc transferDescs[4] = {};
@@ -792,11 +792,11 @@ TEST_F(MemoryBlocksManagerTestWithThreeUSMBlocks, GivenThreeUSMPairsInManagerWhe
     ASSERT_TRUE(enoughSpace);
 
     ASSERT_EQ(2u, transferDescsCount);
-    EXPECT_EQ(reinterpret_cast<uint64_t>(firstUSMPair.first), transferDescs[0].offsetFromResourceStart);
+    EXPECT_EQ(firstUSMPairOffset, transferDescs[0].offsetFromResourceStart);
     EXPECT_EQ(firstChunkSize, transferDescs[0].bytesCountToCopy);
     EXPECT_EQ(transferDescs[0].shmemId, -1);
 
-    EXPECT_EQ(reinterpret_cast<uint64_t>(thirdUSMPair.first), transferDescs[1].offsetFromResourceStart);
+    EXPECT_EQ(thirdUSMPairOffset, transferDescs[1].offsetFromResourceStart);
     EXPECT_EQ(thirdChunkSize, transferDescs[1].bytesCountToCopy);
     EXPECT_EQ(transferDescs[1].shmemId, -1);
 }

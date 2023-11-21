@@ -777,6 +777,12 @@ class BasicMemoryBlocksManager {
         return true;
     }
 
+    inline void fillTransferDescFromUsmPair(Cal::Rpc::TransferDesc &transferDesc, std::pair<const void *, size_t> &usmMemoryPair) {
+        transferDesc.offsetFromResourceStart = reinterpret_cast<uint64_t>(usmMemoryPair.first);
+        transferDesc.bytesCountToCopy = usmMemoryPair.second;
+        transferDesc.shmemId = -1;
+    }
+
     bool getRequiredTransferDescs(uint32_t &transferDescsCount,
                                   Cal::Rpc::TransferDesc *transferDescs,
                                   uint32_t chunksCount,
@@ -800,10 +806,9 @@ class BasicMemoryBlocksManager {
                 bool foundAsUSM{false};
                 for (auto &pair : usmMemoryPairs) {
                     if (pair.first == chunks[i].address) {
-                        transferDescs[appendedTransfersCount].offsetFromResourceStart = reinterpret_cast<uint64_t>(pair.first);
-                        transferDescs[appendedTransfersCount].bytesCountToCopy = pair.second;
-                        transferDescs[appendedTransfersCount].shmemId = -1;
+                        fillTransferDescFromUsmPair(transferDescs[appendedTransfersCount], pair);
                         appendedTransfersCount++;
+                        usmMemoryPairs.erase(pair.first);
                         foundAsUSM = true;
                         break;
                     }
@@ -826,10 +831,8 @@ class BasicMemoryBlocksManager {
         if (!memoryBlock) {
             for (auto &pair : usmMemoryPairs) {
                 if (pair.first == range.base()) {
-                    auto &transferDesc = transferDescs.emplace_back();
-                    transferDesc.offsetFromResourceStart = reinterpret_cast<uint64_t>(pair.first);
-                    transferDesc.bytesCountToCopy = pair.second;
-                    transferDesc.shmemId = -1;
+                    fillTransferDescFromUsmPair(transferDescs.emplace_back(), pair);
+                    usmMemoryPairs.erase(pair.first);
                     return true;
                 }
             }
