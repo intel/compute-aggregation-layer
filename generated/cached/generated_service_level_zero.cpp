@@ -45,6 +45,11 @@ ze_result_t (*zesTemperatureGetProperties)(zes_temp_handle_t hTemperature, zes_t
 ze_result_t (*zesTemperatureGetConfig)(zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig) = nullptr;
 ze_result_t (*zesTemperatureSetConfig)(zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig) = nullptr;
 ze_result_t (*zesTemperatureGetState)(zes_temp_handle_t hTemperature, double* pTemperature) = nullptr;
+ze_result_t (*zesDeviceEnumRasErrorSets)(zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas) = nullptr;
+ze_result_t (*zesRasGetProperties)(zes_ras_handle_t hRas, zes_ras_properties_t* pProperties) = nullptr;
+ze_result_t (*zesRasGetConfig)(zes_ras_handle_t hRas, zes_ras_config_t * pConfig) = nullptr;
+ze_result_t (*zesRasSetConfig)(zes_ras_handle_t hRas, const zes_ras_config_t* pConfig) = nullptr;
+ze_result_t (*zesRasGetState)(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
 ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
@@ -337,6 +342,36 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesTemperatureGetState = reinterpret_cast<decltype(zesTemperatureGetState)>(dlsym(libraryHandle, "zesTemperatureGetState"));
     if(nullptr == zesTemperatureGetState){
         log<Verbosity::error>("Missing symbol zesTemperatureGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumRasErrorSets = reinterpret_cast<decltype(zesDeviceEnumRasErrorSets)>(dlsym(libraryHandle, "zesDeviceEnumRasErrorSets"));
+    if(nullptr == zesDeviceEnumRasErrorSets){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumRasErrorSets in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesRasGetProperties = reinterpret_cast<decltype(zesRasGetProperties)>(dlsym(libraryHandle, "zesRasGetProperties"));
+    if(nullptr == zesRasGetProperties){
+        log<Verbosity::error>("Missing symbol zesRasGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesRasGetConfig = reinterpret_cast<decltype(zesRasGetConfig)>(dlsym(libraryHandle, "zesRasGetConfig"));
+    if(nullptr == zesRasGetConfig){
+        log<Verbosity::error>("Missing symbol zesRasGetConfig in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesRasSetConfig = reinterpret_cast<decltype(zesRasSetConfig)>(dlsym(libraryHandle, "zesRasSetConfig"));
+    if(nullptr == zesRasSetConfig){
+        log<Verbosity::error>("Missing symbol zesRasSetConfig in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesRasGetState = reinterpret_cast<decltype(zesRasGetState)>(dlsym(libraryHandle, "zesRasGetState"));
+    if(nullptr == zesRasGetState){
+        log<Verbosity::error>("Missing symbol zesRasGetState in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1155,6 +1190,11 @@ void unloadLevelZeroLibrary() {
     zesTemperatureGetConfig = nullptr;
     zesTemperatureSetConfig = nullptr;
     zesTemperatureGetState = nullptr;
+    zesDeviceEnumRasErrorSets = nullptr;
+    zesRasGetProperties = nullptr;
+    zesRasGetConfig = nullptr;
+    zesRasSetConfig = nullptr;
+    zesRasGetState = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
     zesEngineGetProperties = nullptr;
     zesEngineGetActivity = nullptr;

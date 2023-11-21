@@ -528,6 +528,120 @@ ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTem
 
     return ret;
 }
+ze_result_t zesDeviceEnumRasErrorSets (zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumRasErrorSets");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumRasErrorSetsRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phRas);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phRas);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesRasGetProperties (zes_ras_handle_t hRas, zes_ras_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesRasGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesRasGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hRas, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesRasGetConfig (zes_ras_handle_t hRas, zes_ras_config_t * pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesRasGetConfig");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesRasGetConfigRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hRas, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesRasSetConfig (zes_ras_handle_t hRas, const zes_ras_config_t* pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesRasSetConfig");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesRasSetConfigRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hRas, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState) {
+    log<Verbosity::bloat>("Establishing RPC for zesRasGetState");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesRasGetStateRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hRas, clear, pState);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumEngineGroups");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7990,6 +8104,21 @@ ze_result_t zesTemperatureSetConfig (zes_temp_handle_t hTemperature, const zes_t
 }
 ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTemperature) {
     return Cal::Client::Icd::LevelZero::zesTemperatureGetState(hTemperature, pTemperature);
+}
+ze_result_t zesDeviceEnumRasErrorSets (zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumRasErrorSets(hDevice, pCount, phRas);
+}
+ze_result_t zesRasGetProperties (zes_ras_handle_t hRas, zes_ras_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesRasGetProperties(hRas, pProperties);
+}
+ze_result_t zesRasGetConfig (zes_ras_handle_t hRas, zes_ras_config_t * pConfig) {
+    return Cal::Client::Icd::LevelZero::zesRasGetConfig(hRas, pConfig);
+}
+ze_result_t zesRasSetConfig (zes_ras_handle_t hRas, const zes_ras_config_t* pConfig) {
+    return Cal::Client::Icd::LevelZero::zesRasSetConfig(hRas, pConfig);
+}
+ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState) {
+    return Cal::Client::Icd::LevelZero::zesRasGetState(hRas, clear, pState);
 }
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);

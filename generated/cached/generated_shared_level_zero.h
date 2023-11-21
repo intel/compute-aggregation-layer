@@ -44,11 +44,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Context.zeContextEvictImage");
     ret.push_back("Sampler.zeSamplerCreate");
     ret.push_back("Sampler.zeSamplerDestroy");
-    ret.push_back("Device.zesDeviceEnumRasErrorSets");
-    ret.push_back("Ras.zesRasGetProperties");
-    ret.push_back("Ras.zesRasGetConfig");
-    ret.push_back("Ras.zesRasSetConfig");
-    ret.push_back("Ras.zesRasGetState");
     ret.push_back("Device.zesDeviceEnumFans");
     ret.push_back("Fan.zesFanGetProperties");
     ret.push_back("Fan.zesFanGetConfig");

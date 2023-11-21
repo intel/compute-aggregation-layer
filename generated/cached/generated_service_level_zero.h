@@ -54,6 +54,11 @@ extern ze_result_t (*zesTemperatureGetProperties)(zes_temp_handle_t hTemperature
 extern ze_result_t (*zesTemperatureGetConfig)(zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig);
 extern ze_result_t (*zesTemperatureSetConfig)(zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig);
 extern ze_result_t (*zesTemperatureGetState)(zes_temp_handle_t hTemperature, double* pTemperature);
+extern ze_result_t (*zesDeviceEnumRasErrorSets)(zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas);
+extern ze_result_t (*zesRasGetProperties)(zes_ras_handle_t hRas, zes_ras_properties_t* pProperties);
+extern ze_result_t (*zesRasGetConfig)(zes_ras_handle_t hRas, zes_ras_config_t * pConfig);
+extern ze_result_t (*zesRasSetConfig)(zes_ras_handle_t hRas, const zes_ras_config_t* pConfig);
+extern ze_result_t (*zesRasGetState)(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -391,6 +396,53 @@ inline bool zesTemperatureGetStateHandler(Provider &service, Cal::Rpc::ChannelSe
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetState(
                                                 apiCommand->args.hTemperature, 
                                                 apiCommand->args.pTemperature ? &apiCommand->captures.pTemperature : nullptr
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumRasErrorSetsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumRasErrorSets");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumRasErrorSetsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumRasErrorSets(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phRas ? apiCommand->captures.phRas : nullptr
+                                                );
+    return true;
+}
+inline bool zesRasGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesRasGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetProperties(
+                                                apiCommand->args.hRas, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesRasGetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesRasGetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetConfig(
+                                                apiCommand->args.hRas, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesRasSetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesRasSetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesRasSetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasSetConfig(
+                                                apiCommand->args.hRas, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesRasGetStateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesRasGetState");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetStateRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetState(
+                                                apiCommand->args.hRas, 
+                                                apiCommand->args.clear, 
+                                                apiCommand->args.pState
                                                 );
     return true;
 }
@@ -2468,6 +2520,11 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesTemperatureGetConfigRpcM::messageSubtype] = zesTemperatureGetConfigHandler;
     outHandlers[ZesTemperatureSetConfigRpcM::messageSubtype] = zesTemperatureSetConfigHandler;
     outHandlers[ZesTemperatureGetStateRpcM::messageSubtype] = zesTemperatureGetStateHandler;
+    outHandlers[ZesDeviceEnumRasErrorSetsRpcM::messageSubtype] = zesDeviceEnumRasErrorSetsHandler;
+    outHandlers[ZesRasGetPropertiesRpcM::messageSubtype] = zesRasGetPropertiesHandler;
+    outHandlers[ZesRasGetConfigRpcM::messageSubtype] = zesRasGetConfigHandler;
+    outHandlers[ZesRasSetConfigRpcM::messageSubtype] = zesRasSetConfigHandler;
+    outHandlers[ZesRasGetStateRpcM::messageSubtype] = zesRasGetStateHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
@@ -2771,6 +2828,38 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM &apiCom
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesTemperatureGetState(
                                                 apiCommand.args.hTemperature, 
                                                 apiCommand.args.pTemperature
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumRasErrorSetsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumRasErrorSets(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phRas
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesRasGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetProperties(
+                                                apiCommand.args.hRas, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesRasGetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetConfig(
+                                                apiCommand.args.hRas, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesRasSetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasSetConfig(
+                                                apiCommand.args.hRas, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesRasGetStateRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesRasGetState(
+                                                apiCommand.args.hRas, 
+                                                apiCommand.args.clear, 
+                                                apiCommand.args.pState
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &apiCommand) {
@@ -4086,6 +4175,11 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetConfigRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureSetConfigRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesTemperatureGetStateRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumRasErrorSetsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumRasErrorSetsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesRasGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesRasGetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetConfigRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesRasSetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasSetConfigRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesRasGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesRasGetStateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;

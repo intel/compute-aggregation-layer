@@ -64,6 +64,11 @@ ze_result_t zesTemperatureGetProperties (zes_temp_handle_t hTemperature, zes_tem
 ze_result_t zesTemperatureGetConfig (zes_temp_handle_t hTemperature, zes_temp_config_t * pConfig);
 ze_result_t zesTemperatureSetConfig (zes_temp_handle_t hTemperature, const zes_temp_config_t* pConfig);
 ze_result_t zesTemperatureGetState (zes_temp_handle_t hTemperature, double* pTemperature);
+ze_result_t zesDeviceEnumRasErrorSets (zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas);
+ze_result_t zesRasGetProperties (zes_ras_handle_t hRas, zes_ras_properties_t* pProperties);
+ze_result_t zesRasGetConfig (zes_ras_handle_t hRas, zes_ras_config_t * pConfig);
+ze_result_t zesRasSetConfig (zes_ras_handle_t hRas, const zes_ras_config_t* pConfig);
+ze_result_t zesRasGetState (zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
@@ -490,26 +495,6 @@ inline void zeSamplerCreateUnimpl() {
 }
 inline void zeSamplerDestroyUnimpl() {
     log<Verbosity::critical>("Function Sampler.zeSamplerDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumRasErrorSetsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumRasErrorSets is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesRasGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Ras.zesRasGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesRasGetConfigUnimpl() {
-    log<Verbosity::critical>("Function Ras.zesRasGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesRasSetConfigUnimpl() {
-    log<Verbosity::critical>("Function Ras.zesRasSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesRasGetStateUnimpl() {
-    log<Verbosity::critical>("Function Ras.zesRasGetState is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumFansUnimpl() {
@@ -1417,6 +1402,11 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Temperature.pfnGetConfig = Cal::Client::Icd::LevelZero::zesTemperatureGetConfig;
     dt.Temperature.pfnSetConfig = Cal::Client::Icd::LevelZero::zesTemperatureSetConfig;
     dt.Temperature.pfnGetState = Cal::Client::Icd::LevelZero::zesTemperatureGetState;
+    dt.Device.pfnEnumRasErrorSets = Cal::Client::Icd::LevelZero::zesDeviceEnumRasErrorSets;
+    dt.Ras.pfnGetProperties = Cal::Client::Icd::LevelZero::zesRasGetProperties;
+    dt.Ras.pfnGetConfig = Cal::Client::Icd::LevelZero::zesRasGetConfig;
+    dt.Ras.pfnSetConfig = Cal::Client::Icd::LevelZero::zesRasSetConfig;
+    dt.Ras.pfnGetState = Cal::Client::Icd::LevelZero::zesRasGetState;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
@@ -1429,11 +1419,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnGetProperties = Cal::Client::Icd::LevelZero::zesDeviceGetProperties;
     dt.Device.pfnEnumMemoryModules = Cal::Client::Icd::LevelZero::zesDeviceEnumMemoryModules;
     // below are unimplemented, provided bindings are for easier debugging only
-    dt.Device.pfnEnumRasErrorSets = reinterpret_cast<decltype(dt.Device.pfnEnumRasErrorSets)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumRasErrorSetsUnimpl);
-    dt.Ras.pfnGetProperties = reinterpret_cast<decltype(dt.Ras.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesRasGetPropertiesUnimpl);
-    dt.Ras.pfnGetConfig = reinterpret_cast<decltype(dt.Ras.pfnGetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesRasGetConfigUnimpl);
-    dt.Ras.pfnSetConfig = reinterpret_cast<decltype(dt.Ras.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesRasSetConfigUnimpl);
-    dt.Ras.pfnGetState = reinterpret_cast<decltype(dt.Ras.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesRasGetStateUnimpl);
     dt.Device.pfnEnumFans = reinterpret_cast<decltype(dt.Device.pfnEnumFans)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFansUnimpl);
     dt.Fan.pfnGetProperties = reinterpret_cast<decltype(dt.Fan.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFanGetPropertiesUnimpl);
     dt.Fan.pfnGetConfig = reinterpret_cast<decltype(dt.Fan.pfnGetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFanGetConfigUnimpl);

@@ -200,6 +200,26 @@ size_t ZesDeviceEnumTemperatureSensorsRpcM::Captures::getCaptureDynMemSize() con
      return size;
 }
 
+ZesDeviceEnumRasErrorSetsRpcM::Captures::DynamicTraits ZesDeviceEnumRasErrorSetsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas) {
+    DynamicTraits ret = {};
+    ret.phRas.count = (pCount ? *pCount : 0);
+    ret.phRas.size = ret.phRas.count * sizeof(zes_ras_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phRas.offset + ret.phRas.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumRasErrorSetsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phRas) + Cal::Utils::alignUpPow2<8>(this->countPhRas * sizeof(zes_ras_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumRasErrorSetsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhRas * sizeof(zes_ras_handle_t));
+     return size;
+}
+
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     DynamicTraits ret = {};
     ret.phEngine.count = (pCount ? *pCount : 0);

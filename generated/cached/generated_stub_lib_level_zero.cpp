@@ -111,6 +111,26 @@ ze_result_t zesTemperatureGetState(zes_temp_handle_t hTemperature, double* pTemp
    return {};
 }
 
+ze_result_t zesDeviceEnumRasErrorSets(zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas){
+   return {};
+}
+
+ze_result_t zesRasGetProperties(zes_ras_handle_t hRas, zes_ras_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesRasGetConfig(zes_ras_handle_t hRas, zes_ras_config_t * pConfig){
+   return {};
+}
+
+ze_result_t zesRasSetConfig(zes_ras_handle_t hRas, const zes_ras_config_t* pConfig){
+   return {};
+}
+
+ze_result_t zesRasGetState(zes_ras_handle_t hRas, ze_bool_t clear, zes_ras_state_t* pState){
+   return {};
+}
+
 ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine){
    return {};
 }
