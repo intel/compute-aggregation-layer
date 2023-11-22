@@ -76,6 +76,15 @@ extern ze_result_t (*zesFrequencyOcSetIccMax)(zes_freq_handle_t hFrequency, doub
 extern ze_result_t (*zesFrequencyOcGetTjMax)(zes_freq_handle_t hFrequency, double* pOcTjMax);
 extern ze_result_t (*zesFrequencyOcSetTjMax)(zes_freq_handle_t hFrequency, double ocTjMax);
 extern ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
+extern ze_result_t (*zesDeviceEnumSchedulers)(zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler);
+extern ze_result_t (*zesSchedulerGetProperties)(zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties);
+extern ze_result_t (*zesSchedulerGetCurrentMode)(zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode);
+extern ze_result_t (*zesSchedulerGetTimeoutModeProperties)(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig);
+extern ze_result_t (*zesSchedulerGetTimesliceModeProperties)(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig);
+extern ze_result_t (*zesSchedulerSetTimeoutMode)(zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload);
+extern ze_result_t (*zesSchedulerSetTimesliceMode)(zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload);
+extern ze_result_t (*zesSchedulerSetExclusiveMode)(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload);
+extern ze_result_t (*zesSchedulerSetComputeUnitDebugMode)(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload);
 extern ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 extern ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
 extern ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState);
@@ -617,6 +626,92 @@ inline bool zesDeviceEnumEngineGroupsHandler(Provider &service, Cal::Rpc::Channe
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
                                                 apiCommand->args.phEngine ? apiCommand->captures.phEngine : nullptr
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumSchedulersHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumSchedulers");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumSchedulersRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumSchedulers(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phScheduler ? apiCommand->captures.phScheduler : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetProperties(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerGetCurrentModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerGetCurrentMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetCurrentModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetCurrentMode(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pMode ? &apiCommand->captures.pMode : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerGetTimeoutModePropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerGetTimeoutModeProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetTimeoutModePropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetTimeoutModeProperties(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.getDefaults, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerGetTimesliceModePropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerGetTimesliceModeProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetTimesliceModePropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetTimesliceModeProperties(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.getDefaults, 
+                                                apiCommand->args.pConfig ? &apiCommand->captures.pConfig : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerSetTimeoutModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerSetTimeoutMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetTimeoutModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetTimeoutMode(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr, 
+                                                apiCommand->args.pNeedReload ? &apiCommand->captures.pNeedReload : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerSetTimesliceModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerSetTimesliceMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetTimesliceModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetTimesliceMode(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr, 
+                                                apiCommand->args.pNeedReload ? &apiCommand->captures.pNeedReload : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerSetExclusiveModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerSetExclusiveMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetExclusiveModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetExclusiveMode(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pNeedReload ? &apiCommand->captures.pNeedReload : nullptr
+                                                );
+    return true;
+}
+inline bool zesSchedulerSetComputeUnitDebugModeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesSchedulerSetComputeUnitDebugMode");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetComputeUnitDebugModeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetComputeUnitDebugMode(
+                                                apiCommand->args.hScheduler, 
+                                                apiCommand->args.pNeedReload ? &apiCommand->captures.pNeedReload : nullptr
                                                 );
     return true;
 }
@@ -2706,6 +2801,15 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesFrequencyOcGetTjMaxRpcM::messageSubtype] = zesFrequencyOcGetTjMaxHandler;
     outHandlers[ZesFrequencyOcSetTjMaxRpcM::messageSubtype] = zesFrequencyOcSetTjMaxHandler;
     outHandlers[ZesDeviceEnumEngineGroupsRpcM::messageSubtype] = zesDeviceEnumEngineGroupsHandler;
+    outHandlers[ZesDeviceEnumSchedulersRpcM::messageSubtype] = zesDeviceEnumSchedulersHandler;
+    outHandlers[ZesSchedulerGetPropertiesRpcM::messageSubtype] = zesSchedulerGetPropertiesHandler;
+    outHandlers[ZesSchedulerGetCurrentModeRpcM::messageSubtype] = zesSchedulerGetCurrentModeHandler;
+    outHandlers[ZesSchedulerGetTimeoutModePropertiesRpcM::messageSubtype] = zesSchedulerGetTimeoutModePropertiesHandler;
+    outHandlers[ZesSchedulerGetTimesliceModePropertiesRpcM::messageSubtype] = zesSchedulerGetTimesliceModePropertiesHandler;
+    outHandlers[ZesSchedulerSetTimeoutModeRpcM::messageSubtype] = zesSchedulerSetTimeoutModeHandler;
+    outHandlers[ZesSchedulerSetTimesliceModeRpcM::messageSubtype] = zesSchedulerSetTimesliceModeHandler;
+    outHandlers[ZesSchedulerSetExclusiveModeRpcM::messageSubtype] = zesSchedulerSetExclusiveModeHandler;
+    outHandlers[ZesSchedulerSetComputeUnitDebugModeRpcM::messageSubtype] = zesSchedulerSetComputeUnitDebugModeHandler;
     outHandlers[ZesEngineGetPropertiesRpcM::messageSubtype] = zesEngineGetPropertiesHandler;
     outHandlers[ZesEngineGetActivityRpcM::messageSubtype] = zesEngineGetActivityHandler;
     outHandlers[ZesDeviceGetStateRpcM::messageSubtype] = zesDeviceGetStateHandler;
@@ -3147,6 +3251,65 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM &api
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.pCount, 
                                                 apiCommand.args.phEngine
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumSchedulersRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumSchedulers(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phScheduler
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetProperties(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerGetCurrentModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetCurrentMode(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pMode
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerGetTimeoutModePropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetTimeoutModeProperties(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.getDefaults, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerGetTimesliceModePropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerGetTimesliceModeProperties(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.getDefaults, 
+                                                apiCommand.args.pConfig
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerSetTimeoutModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetTimeoutMode(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pProperties, 
+                                                apiCommand.args.pNeedReload
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerSetTimesliceModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetTimesliceMode(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pProperties, 
+                                                apiCommand.args.pNeedReload
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerSetExclusiveModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetExclusiveMode(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pNeedReload
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesSchedulerSetComputeUnitDebugModeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesSchedulerSetComputeUnitDebugMode(
+                                                apiCommand.args.hScheduler, 
+                                                apiCommand.args.pNeedReload
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM &apiCommand) {
@@ -4477,6 +4640,15 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcGetTjMaxRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesFrequencyOcSetTjMaxRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumEngineGroupsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumSchedulersRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumSchedulersRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerGetCurrentModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetCurrentModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerGetTimeoutModePropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetTimeoutModePropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerGetTimesliceModePropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerGetTimesliceModePropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerSetTimeoutModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetTimeoutModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerSetTimesliceModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetTimesliceModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerSetExclusiveModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetExclusiveModeRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesSchedulerSetComputeUnitDebugModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesSchedulerSetComputeUnitDebugModeRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesEngineGetActivityRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM*>(command)); break;

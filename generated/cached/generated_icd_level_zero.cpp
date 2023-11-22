@@ -1021,6 +1021,215 @@ ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pC
 
     return ret;
 }
+ze_result_t zesDeviceEnumSchedulers (zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumSchedulers");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumSchedulersRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phScheduler);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phScheduler);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerGetProperties (zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerGetCurrentMode (zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerGetCurrentMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerGetCurrentModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pMode);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerGetTimeoutModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerGetTimeoutModeProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerGetTimeoutModePropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, getDefaults, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerGetTimesliceModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerGetTimesliceModeProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerGetTimesliceModePropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, getDefaults, pConfig);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerSetTimeoutMode (zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerSetTimeoutMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerSetTimeoutModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pProperties, pNeedReload);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerSetTimesliceMode (zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerSetTimesliceMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerSetTimesliceModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pProperties, pNeedReload);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerSetExclusiveMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerSetExclusiveMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerSetExclusiveModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pNeedReload);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesSchedulerSetComputeUnitDebugMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) {
+    log<Verbosity::bloat>("Establishing RPC for zesSchedulerSetComputeUnitDebugMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesSchedulerSetComputeUnitDebugModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hScheduler, pNeedReload);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) {
     log<Verbosity::bloat>("Establishing RPC for zesEngineGetProperties");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8524,6 +8733,33 @@ ze_result_t zesFrequencyOcSetTjMax (zes_freq_handle_t hFrequency, double ocTjMax
 }
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups(hDevice, pCount, phEngine);
+}
+ze_result_t zesDeviceEnumSchedulers (zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumSchedulers(hDevice, pCount, phScheduler);
+}
+ze_result_t zesSchedulerGetProperties (zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerGetProperties(hScheduler, pProperties);
+}
+ze_result_t zesSchedulerGetCurrentMode (zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerGetCurrentMode(hScheduler, pMode);
+}
+ze_result_t zesSchedulerGetTimeoutModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerGetTimeoutModeProperties(hScheduler, getDefaults, pConfig);
+}
+ze_result_t zesSchedulerGetTimesliceModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerGetTimesliceModeProperties(hScheduler, getDefaults, pConfig);
+}
+ze_result_t zesSchedulerSetTimeoutMode (zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerSetTimeoutMode(hScheduler, pProperties, pNeedReload);
+}
+ze_result_t zesSchedulerSetTimesliceMode (zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerSetTimesliceMode(hScheduler, pProperties, pNeedReload);
+}
+ze_result_t zesSchedulerSetExclusiveMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerSetExclusiveMode(hScheduler, pNeedReload);
+}
+ze_result_t zesSchedulerSetComputeUnitDebugMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) {
+    return Cal::Client::Icd::LevelZero::zesSchedulerSetComputeUnitDebugMode(hScheduler, pNeedReload);
 }
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) {
     return Cal::Client::Icd::LevelZero::zesEngineGetProperties(hEngine, pProperties);

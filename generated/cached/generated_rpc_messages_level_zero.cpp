@@ -280,6 +280,26 @@ size_t ZesDeviceEnumEngineGroupsRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDeviceEnumSchedulersRpcM::Captures::DynamicTraits ZesDeviceEnumSchedulersRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler) {
+    DynamicTraits ret = {};
+    ret.phScheduler.count = (pCount ? *pCount : 0);
+    ret.phScheduler.size = ret.phScheduler.count * sizeof(zes_sched_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phScheduler.offset + ret.phScheduler.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumSchedulersRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phScheduler) + Cal::Utils::alignUpPow2<8>(this->countPhScheduler * sizeof(zes_sched_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumSchedulersRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhScheduler * sizeof(zes_sched_handle_t));
+     return size;
+}
+
 ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     DynamicTraits ret = {};
     ret.pProcesses.count = (pCount ? *pCount : 0);

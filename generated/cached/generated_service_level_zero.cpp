@@ -67,6 +67,15 @@ ze_result_t (*zesFrequencyOcSetIccMax)(zes_freq_handle_t hFrequency, double ocIc
 ze_result_t (*zesFrequencyOcGetTjMax)(zes_freq_handle_t hFrequency, double* pOcTjMax) = nullptr;
 ze_result_t (*zesFrequencyOcSetTjMax)(zes_freq_handle_t hFrequency, double ocTjMax) = nullptr;
 ze_result_t (*zesDeviceEnumEngineGroups)(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) = nullptr;
+ze_result_t (*zesDeviceEnumSchedulers)(zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler) = nullptr;
+ze_result_t (*zesSchedulerGetProperties)(zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties) = nullptr;
+ze_result_t (*zesSchedulerGetCurrentMode)(zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode) = nullptr;
+ze_result_t (*zesSchedulerGetTimeoutModeProperties)(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig) = nullptr;
+ze_result_t (*zesSchedulerGetTimesliceModeProperties)(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig) = nullptr;
+ze_result_t (*zesSchedulerSetTimeoutMode)(zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload) = nullptr;
+ze_result_t (*zesSchedulerSetTimesliceMode)(zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload) = nullptr;
+ze_result_t (*zesSchedulerSetExclusiveMode)(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) = nullptr;
+ze_result_t (*zesSchedulerSetComputeUnitDebugMode)(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload) = nullptr;
 ze_result_t (*zesEngineGetProperties)(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties) = nullptr;
 ze_result_t (*zesEngineGetActivity)(zes_engine_handle_t hEngine, zes_engine_stats_t* pStats) = nullptr;
 ze_result_t (*zesDeviceGetState)(zes_device_handle_t hDevice, zes_device_state_t* pState) = nullptr;
@@ -490,6 +499,60 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesDeviceEnumEngineGroups = reinterpret_cast<decltype(zesDeviceEnumEngineGroups)>(dlsym(libraryHandle, "zesDeviceEnumEngineGroups"));
     if(nullptr == zesDeviceEnumEngineGroups){
         log<Verbosity::error>("Missing symbol zesDeviceEnumEngineGroups in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumSchedulers = reinterpret_cast<decltype(zesDeviceEnumSchedulers)>(dlsym(libraryHandle, "zesDeviceEnumSchedulers"));
+    if(nullptr == zesDeviceEnumSchedulers){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumSchedulers in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerGetProperties = reinterpret_cast<decltype(zesSchedulerGetProperties)>(dlsym(libraryHandle, "zesSchedulerGetProperties"));
+    if(nullptr == zesSchedulerGetProperties){
+        log<Verbosity::error>("Missing symbol zesSchedulerGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerGetCurrentMode = reinterpret_cast<decltype(zesSchedulerGetCurrentMode)>(dlsym(libraryHandle, "zesSchedulerGetCurrentMode"));
+    if(nullptr == zesSchedulerGetCurrentMode){
+        log<Verbosity::error>("Missing symbol zesSchedulerGetCurrentMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerGetTimeoutModeProperties = reinterpret_cast<decltype(zesSchedulerGetTimeoutModeProperties)>(dlsym(libraryHandle, "zesSchedulerGetTimeoutModeProperties"));
+    if(nullptr == zesSchedulerGetTimeoutModeProperties){
+        log<Verbosity::error>("Missing symbol zesSchedulerGetTimeoutModeProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerGetTimesliceModeProperties = reinterpret_cast<decltype(zesSchedulerGetTimesliceModeProperties)>(dlsym(libraryHandle, "zesSchedulerGetTimesliceModeProperties"));
+    if(nullptr == zesSchedulerGetTimesliceModeProperties){
+        log<Verbosity::error>("Missing symbol zesSchedulerGetTimesliceModeProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerSetTimeoutMode = reinterpret_cast<decltype(zesSchedulerSetTimeoutMode)>(dlsym(libraryHandle, "zesSchedulerSetTimeoutMode"));
+    if(nullptr == zesSchedulerSetTimeoutMode){
+        log<Verbosity::error>("Missing symbol zesSchedulerSetTimeoutMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerSetTimesliceMode = reinterpret_cast<decltype(zesSchedulerSetTimesliceMode)>(dlsym(libraryHandle, "zesSchedulerSetTimesliceMode"));
+    if(nullptr == zesSchedulerSetTimesliceMode){
+        log<Verbosity::error>("Missing symbol zesSchedulerSetTimesliceMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerSetExclusiveMode = reinterpret_cast<decltype(zesSchedulerSetExclusiveMode)>(dlsym(libraryHandle, "zesSchedulerSetExclusiveMode"));
+    if(nullptr == zesSchedulerSetExclusiveMode){
+        log<Verbosity::error>("Missing symbol zesSchedulerSetExclusiveMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesSchedulerSetComputeUnitDebugMode = reinterpret_cast<decltype(zesSchedulerSetComputeUnitDebugMode)>(dlsym(libraryHandle, "zesSchedulerSetComputeUnitDebugMode"));
+    if(nullptr == zesSchedulerSetComputeUnitDebugMode){
+        log<Verbosity::error>("Missing symbol zesSchedulerSetComputeUnitDebugMode in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1324,6 +1387,15 @@ void unloadLevelZeroLibrary() {
     zesFrequencyOcGetTjMax = nullptr;
     zesFrequencyOcSetTjMax = nullptr;
     zesDeviceEnumEngineGroups = nullptr;
+    zesDeviceEnumSchedulers = nullptr;
+    zesSchedulerGetProperties = nullptr;
+    zesSchedulerGetCurrentMode = nullptr;
+    zesSchedulerGetTimeoutModeProperties = nullptr;
+    zesSchedulerGetTimesliceModeProperties = nullptr;
+    zesSchedulerSetTimeoutMode = nullptr;
+    zesSchedulerSetTimesliceMode = nullptr;
+    zesSchedulerSetExclusiveMode = nullptr;
+    zesSchedulerSetComputeUnitDebugMode = nullptr;
     zesEngineGetProperties = nullptr;
     zesEngineGetActivity = nullptr;
     zesDeviceGetState = nullptr;

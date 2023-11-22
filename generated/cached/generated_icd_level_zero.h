@@ -86,6 +86,15 @@ ze_result_t zesFrequencyOcSetIccMax (zes_freq_handle_t hFrequency, double ocIccM
 ze_result_t zesFrequencyOcGetTjMax (zes_freq_handle_t hFrequency, double* pOcTjMax);
 ze_result_t zesFrequencyOcSetTjMax (zes_freq_handle_t hFrequency, double ocTjMax);
 ze_result_t zesDeviceEnumEngineGroups (zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine);
+ze_result_t zesDeviceEnumSchedulers (zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler);
+ze_result_t zesSchedulerGetProperties (zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties);
+ze_result_t zesSchedulerGetCurrentMode (zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode);
+ze_result_t zesSchedulerGetTimeoutModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig);
+ze_result_t zesSchedulerGetTimesliceModeProperties (zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig);
+ze_result_t zesSchedulerSetTimeoutMode (zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload);
+ze_result_t zesSchedulerSetTimesliceMode (zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload);
+ze_result_t zesSchedulerSetExclusiveMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload);
+ze_result_t zesSchedulerSetComputeUnitDebugMode (zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload);
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
@@ -603,42 +612,6 @@ inline void zesDeviceGetEccStateUnimpl() {
 }
 inline void zesDeviceSetEccStateUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEnumSchedulersUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumSchedulers is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerGetCurrentModeUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerGetCurrentMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerGetTimeoutModePropertiesUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerGetTimeoutModeProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerGetTimesliceModePropertiesUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerGetTimesliceModeProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerSetTimeoutModeUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerSetTimeoutMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerSetTimesliceModeUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerSetTimesliceMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerSetExclusiveModeUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerSetExclusiveMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesSchedulerSetComputeUnitDebugModeUnimpl() {
-    log<Verbosity::critical>("Function Scheduler.zesSchedulerSetComputeUnitDebugMode is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesMemoryGetPropertiesUnimpl() {
@@ -1408,6 +1381,15 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Frequency.pfnOcGetTjMax = Cal::Client::Icd::LevelZero::zesFrequencyOcGetTjMax;
     dt.Frequency.pfnOcSetTjMax = Cal::Client::Icd::LevelZero::zesFrequencyOcSetTjMax;
     dt.Device.pfnEnumEngineGroups = Cal::Client::Icd::LevelZero::zesDeviceEnumEngineGroups;
+    dt.Device.pfnEnumSchedulers = Cal::Client::Icd::LevelZero::zesDeviceEnumSchedulers;
+    dt.Scheduler.pfnGetProperties = Cal::Client::Icd::LevelZero::zesSchedulerGetProperties;
+    dt.Scheduler.pfnGetCurrentMode = Cal::Client::Icd::LevelZero::zesSchedulerGetCurrentMode;
+    dt.Scheduler.pfnGetTimeoutModeProperties = Cal::Client::Icd::LevelZero::zesSchedulerGetTimeoutModeProperties;
+    dt.Scheduler.pfnGetTimesliceModeProperties = Cal::Client::Icd::LevelZero::zesSchedulerGetTimesliceModeProperties;
+    dt.Scheduler.pfnSetTimeoutMode = Cal::Client::Icd::LevelZero::zesSchedulerSetTimeoutMode;
+    dt.Scheduler.pfnSetTimesliceMode = Cal::Client::Icd::LevelZero::zesSchedulerSetTimesliceMode;
+    dt.Scheduler.pfnSetExclusiveMode = Cal::Client::Icd::LevelZero::zesSchedulerSetExclusiveMode;
+    dt.Scheduler.pfnSetComputeUnitDebugMode = Cal::Client::Icd::LevelZero::zesSchedulerSetComputeUnitDebugMode;
     dt.Engine.pfnGetProperties = Cal::Client::Icd::LevelZero::zesEngineGetProperties;
     dt.Engine.pfnGetActivity = Cal::Client::Icd::LevelZero::zesEngineGetActivity;
     dt.Device.pfnGetState = Cal::Client::Icd::LevelZero::zesDeviceGetState;
@@ -1442,15 +1424,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
     dt.Device.pfnSetEccState = reinterpret_cast<decltype(dt.Device.pfnSetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceSetEccStateUnimpl);
-    dt.Device.pfnEnumSchedulers = reinterpret_cast<decltype(dt.Device.pfnEnumSchedulers)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumSchedulersUnimpl);
-    dt.Scheduler.pfnGetProperties = reinterpret_cast<decltype(dt.Scheduler.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetPropertiesUnimpl);
-    dt.Scheduler.pfnGetCurrentMode = reinterpret_cast<decltype(dt.Scheduler.pfnGetCurrentMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetCurrentModeUnimpl);
-    dt.Scheduler.pfnGetTimeoutModeProperties = reinterpret_cast<decltype(dt.Scheduler.pfnGetTimeoutModeProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetTimeoutModePropertiesUnimpl);
-    dt.Scheduler.pfnGetTimesliceModeProperties = reinterpret_cast<decltype(dt.Scheduler.pfnGetTimesliceModeProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerGetTimesliceModePropertiesUnimpl);
-    dt.Scheduler.pfnSetTimeoutMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetTimeoutMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerSetTimeoutModeUnimpl);
-    dt.Scheduler.pfnSetTimesliceMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetTimesliceMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerSetTimesliceModeUnimpl);
-    dt.Scheduler.pfnSetExclusiveMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetExclusiveMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerSetExclusiveModeUnimpl);
-    dt.Scheduler.pfnSetComputeUnitDebugMode = reinterpret_cast<decltype(dt.Scheduler.pfnSetComputeUnitDebugMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesSchedulerSetComputeUnitDebugModeUnimpl);
     dt.Memory.pfnGetProperties = reinterpret_cast<decltype(dt.Memory.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetPropertiesUnimpl);
     dt.Memory.pfnGetState = reinterpret_cast<decltype(dt.Memory.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetStateUnimpl);
     dt.Memory.pfnGetBandwidth = reinterpret_cast<decltype(dt.Memory.pfnGetBandwidth)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetBandwidthUnimpl);

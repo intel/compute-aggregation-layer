@@ -199,6 +199,42 @@ ze_result_t zesDeviceEnumEngineGroups(zes_device_handle_t hDevice, uint32_t* pCo
    return {};
 }
 
+ze_result_t zesDeviceEnumSchedulers(zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler){
+   return {};
+}
+
+ze_result_t zesSchedulerGetProperties(zes_sched_handle_t hScheduler, zes_sched_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesSchedulerGetCurrentMode(zes_sched_handle_t hScheduler, zes_sched_mode_t* pMode){
+   return {};
+}
+
+ze_result_t zesSchedulerGetTimeoutModeProperties(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeout_properties_t* pConfig){
+   return {};
+}
+
+ze_result_t zesSchedulerGetTimesliceModeProperties(zes_sched_handle_t hScheduler, ze_bool_t getDefaults, zes_sched_timeslice_properties_t* pConfig){
+   return {};
+}
+
+ze_result_t zesSchedulerSetTimeoutMode(zes_sched_handle_t hScheduler, zes_sched_timeout_properties_t* pProperties, ze_bool_t* pNeedReload){
+   return {};
+}
+
+ze_result_t zesSchedulerSetTimesliceMode(zes_sched_handle_t hScheduler, zes_sched_timeslice_properties_t* pProperties, ze_bool_t* pNeedReload){
+   return {};
+}
+
+ze_result_t zesSchedulerSetExclusiveMode(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload){
+   return {};
+}
+
+ze_result_t zesSchedulerSetComputeUnitDebugMode(zes_sched_handle_t hScheduler, ze_bool_t* pNeedReload){
+   return {};
+}
+
 ze_result_t zesEngineGetProperties(zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties){
    return {};
 }
