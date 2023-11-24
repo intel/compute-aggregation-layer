@@ -58,11 +58,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Standby.zesStandbyGetProperties");
     ret.push_back("Standby.zesStandbyGetMode");
     ret.push_back("Standby.zesStandbySetMode");
-    ret.push_back("Device.zesDeviceEnumTemperatureSensors");
-    ret.push_back("Temperature.zesTemperatureGetProperties");
-    ret.push_back("Temperature.zesTemperatureGetConfig");
-    ret.push_back("Temperature.zesTemperatureSetConfig");
-    ret.push_back("Temperature.zesTemperatureGetState");
     ret.push_back("Device.zesDeviceEccAvailable");
     ret.push_back("Device.zesDeviceEccConfigurable");
     ret.push_back("Device.zesDeviceGetEccState");
@@ -86,9 +81,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("FabricPort.zesFabricPortSetConfig");
     ret.push_back("FabricPort.zesFabricPortGetState");
     ret.push_back("FabricPort.zesFabricPortGetThroughput");
-    ret.push_back("Device.zesDeviceEventRegister");
-    ret.push_back("Driver.zesDriverEventListen");
-    ret.push_back("Driver.zesDriverEventListenEx");
     ret.push_back("Device.zesDeviceEnumDiagnosticTestSuites");
     ret.push_back("Diagnostics.zesDiagnosticsGetProperties");
     ret.push_back("Diagnostics.zesDiagnosticsGetTests");

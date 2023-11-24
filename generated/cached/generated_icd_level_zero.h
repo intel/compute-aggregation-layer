@@ -578,26 +578,6 @@ inline void zesStandbySetModeUnimpl() {
     log<Verbosity::critical>("Function Standby.zesStandbySetMode is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zesDeviceEnumTemperatureSensorsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumTemperatureSensors is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetConfigUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureSetConfigUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesTemperatureGetStateUnimpl() {
-    log<Verbosity::critical>("Function Temperature.zesTemperatureGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zesDeviceEccAvailableUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceEccAvailable is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -688,18 +668,6 @@ inline void zesFabricPortGetStateUnimpl() {
 }
 inline void zesFabricPortGetThroughputUnimpl() {
     log<Verbosity::critical>("Function FabricPort.zesFabricPortGetThroughput is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDeviceEventRegisterUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEventRegister is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDriverEventListenUnimpl() {
-    log<Verbosity::critical>("Function Driver.zesDriverEventListen is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesDriverEventListenExUnimpl() {
-    log<Verbosity::critical>("Function Driver.zesDriverEventListenEx is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumDiagnosticTestSuitesUnimpl() {
@@ -1415,11 +1383,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Standby.pfnGetProperties = reinterpret_cast<decltype(dt.Standby.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetPropertiesUnimpl);
     dt.Standby.pfnGetMode = reinterpret_cast<decltype(dt.Standby.pfnGetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbyGetModeUnimpl);
     dt.Standby.pfnSetMode = reinterpret_cast<decltype(dt.Standby.pfnSetMode)>(Cal::Client::Icd::LevelZero::Unimplemented::zesStandbySetModeUnimpl);
-    dt.Device.pfnEnumTemperatureSensors = reinterpret_cast<decltype(dt.Device.pfnEnumTemperatureSensors)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumTemperatureSensorsUnimpl);
-    dt.Temperature.pfnGetProperties = reinterpret_cast<decltype(dt.Temperature.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetPropertiesUnimpl);
-    dt.Temperature.pfnGetConfig = reinterpret_cast<decltype(dt.Temperature.pfnGetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetConfigUnimpl);
-    dt.Temperature.pfnSetConfig = reinterpret_cast<decltype(dt.Temperature.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureSetConfigUnimpl);
-    dt.Temperature.pfnGetState = reinterpret_cast<decltype(dt.Temperature.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesTemperatureGetStateUnimpl);
     dt.Device.pfnEccAvailable = reinterpret_cast<decltype(dt.Device.pfnEccAvailable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccAvailableUnimpl);
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
@@ -1443,9 +1406,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.FabricPort.pfnSetConfig = reinterpret_cast<decltype(dt.FabricPort.pfnSetConfig)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortSetConfigUnimpl);
     dt.FabricPort.pfnGetState = reinterpret_cast<decltype(dt.FabricPort.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetStateUnimpl);
     dt.FabricPort.pfnGetThroughput = reinterpret_cast<decltype(dt.FabricPort.pfnGetThroughput)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFabricPortGetThroughputUnimpl);
-    dt.Device.pfnEventRegister = reinterpret_cast<decltype(dt.Device.pfnEventRegister)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEventRegisterUnimpl);
-    dt.Driver.pfnEventListen = reinterpret_cast<decltype(dt.Driver.pfnEventListen)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenUnimpl);
-    dt.Driver.pfnEventListenEx = reinterpret_cast<decltype(dt.Driver.pfnEventListenEx)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDriverEventListenExUnimpl);
     dt.Device.pfnEnumDiagnosticTestSuites = reinterpret_cast<decltype(dt.Device.pfnEnumDiagnosticTestSuites)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumDiagnosticTestSuitesUnimpl);
     dt.Diagnostics.pfnGetProperties = reinterpret_cast<decltype(dt.Diagnostics.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetPropertiesUnimpl);
     dt.Diagnostics.pfnGetTests = reinterpret_cast<decltype(dt.Diagnostics.pfnGetTests)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDiagnosticsGetTestsUnimpl);
