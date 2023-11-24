@@ -1572,7 +1572,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (hContext != nullptr && phCommandList != nullptr) {
+    if (phCommandList != nullptr) {
         phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
     }
     return ret;

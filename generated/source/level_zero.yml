@@ -3895,7 +3895,7 @@ config:
             rpc:
               handler_prologue: "service.overrideCommandListDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
             icd:
-              handler_epilogue: "if (hContext != nullptr && phCommandList != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
+              handler_epilogue: "if (phCommandList != nullptr) {\n        phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t

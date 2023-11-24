@@ -472,6 +472,9 @@ class Provider {
         }
 
         std::optional<Cache::iterator> find(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t *desc) {
+            if (desc == nullptr) {
+                return std::nullopt;
+            }
             for (auto entry = cache.begin(); entry != cache.end(); ++entry) {
                 if (hDevice == entry->hDevice &&
                     compareDesc(desc, *entry)) {

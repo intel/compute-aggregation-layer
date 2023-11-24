@@ -164,8 +164,8 @@ class Barrier {
     Cal::Utils::CountingSemaphore entry;
     Cal::Utils::CountingSemaphore exit;
     std::vector<BarrierUserT *> *expectedBarrierUsers = nullptr;
-    std::atomic_uint32_t usersInBarrier;
-    std::atomic_bool barrierIsBroken;
+    std::atomic_uint32_t usersInBarrier = 0u;
+    std::atomic_bool barrierIsBroken = false;
 };
 
 } // namespace Utils
