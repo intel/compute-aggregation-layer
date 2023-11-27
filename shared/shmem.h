@@ -996,6 +996,10 @@ using MemoryBlocksManager = BasicMemoryBlocksManager<MemoryBlock>;
 
 class MallocShmemImporter {
   public:
+    MallocShmemImporter() = default;
+    MallocShmemImporter(const MallocShmemImporter &) = delete;
+    MallocShmemImporter &operator=(const MallocShmemImporter &) = delete;
+
     ~MallocShmemImporter() {
         if (localBaseAddress) {
             Cal::Sys::munmap(localBaseAddress, capacity);

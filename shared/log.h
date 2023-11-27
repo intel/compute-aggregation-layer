@@ -107,7 +107,7 @@ class Log {
     template <Verbosity V, typename... Args>
     int add(bool useLoggerName, bool appendPID, bool addCallStackDump, const char *formatString, Args &&...args) {
         isEmpty = false;
-        auto len = snprintf(nullptr, 0, formatString, std::forward<Args>(args)...);
+        auto len = snprintf(nullptr, 0, formatString, args...);
         if (len <= 0) {
             return len;
         }
@@ -164,7 +164,6 @@ class LogSstream : public Log {
             buff << to_cstring_pid();
         }
         buff << to_cstring_tag(verbosity) << " : " << logMessage << "\n";
-        fflush(stdout);
         return buff.tellp() - prevPos;
     }
 

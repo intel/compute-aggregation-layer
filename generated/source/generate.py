@@ -285,7 +285,7 @@ class Arg:
     def is_kind_complex(self) -> bool:
         return self.kind_details is not None
 
-    def get_calculated_elements_count(self, arg_prefix: str = ""):
+    def get_calculated_elements_count(self, arg_prefix: str = "", captures_prefix: str = ""):
         assert self.kind.is_pointer_to_array
         if self.kind_details.num_elements.is_nullterminated():
             return f"Cal::Utils::countNullterminated({arg_prefix}{self.name})"
@@ -296,18 +296,18 @@ class Arg:
         elif self.kind_details.is_num_elements_ptr_to_capturable_arg:
             return f"({arg_prefix}{self.kind_details.num_elements.str} ? *{arg_prefix}{self.kind_details.num_elements.str} : 0)"
         else:
-            if "{arg_prefix}" in self.kind_details.num_elements.str:
-                return self.kind_details.num_elements.str.format(arg_prefix=arg_prefix)
+            if ("{arg_prefix}" in self.kind_details.num_elements.str) or ("{captures_prefix}" in self.kind_details.num_elements.str):
+                return self.kind_details.num_elements.str.format(arg_prefix=arg_prefix, captures_prefix=captures_prefix)
             else:
                 return f"{arg_prefix}{self.kind_details.num_elements.str}"
 
-    def get_calculated_array_size(self, arg_prefix: str = "", count: str = None):
+    def get_calculated_array_size(self, arg_prefix: str = "", captures_prefix: str = "", count: str = None):
         assert self.kind.is_pointer_to_array
 
         mul = "" if self.kind_details.element.type.is_void() else f" * sizeof({self.kind_details.element.type.str})"
 
         if not count:
-            count = self.get_calculated_elements_count(arg_prefix)
+            count = self.get_calculated_elements_count(arg_prefix, captures_prefix)
         return f"{count}{mul}"
 
     def create_traits(self, parent_function, is_implicit_arg) -> None:
@@ -1787,7 +1787,7 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
     def is_unsupported(f):
         return f.special_handling and f.special_handling.icd and f.special_handling.icd.unsupported
 
-    icd_extensions = {group_name : [f for f in config.functions[group_name] if f.special_handling and f.special_handling.icd and f.special_handling and f.special_handling.icd.in_get_extension_function_address and not f.special_handling.is_variant()] for group_name in config.functions}
+    icd_extensions = {group_name : [f for f in config.functions[group_name] if f.special_handling and f.special_handling.icd and f.special_handling.icd.in_get_extension_function_address and not f.special_handling.is_variant()] for group_name in config.functions}
 
     def can_be_null(arg):
         return arg.kind_details and arg.kind_details.can_be_null

@@ -270,6 +270,7 @@ TEST(CommandsChannel, whenWaitOnClientSemparhoreIsCalledThenWaitsOnSemaphoreAndR
     EXPECT_TRUE(commandsChannel.waitOnClientSemaphore());
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_wait.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semClient));
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenWaitOnClientSemparhoreIsCalledAndSystemCallFailsThenReturnsFalseAndEmitsWarning) {
@@ -285,6 +286,7 @@ TEST(CommandsChannel, whenWaitOnClientSemparhoreIsCalledAndSystemCallFailsThenRe
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_wait.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semClient));
     EXPECT_FALSE(logs.empty());
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenSignalServiceSemparhoreIsCalledThenSignalsSemaphoreAndReturnsTrueOnlyIfSuccesfull) {
@@ -324,6 +326,7 @@ TEST(CommandsChannel, whenSignalClientSemparhoreIsCalledThenSignalsSemaphoreAndR
     EXPECT_TRUE(commandsChannel.signalClientSemaphore());
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_post.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semClient));
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenSignalClientSemparhoreIsCalledAndSystemCallFailsThenReturnsFalseAndEmitsWarning) {
@@ -339,6 +342,7 @@ TEST(CommandsChannel, whenSignalClientSemparhoreIsCalledAndSystemCallFailsThenRe
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_post.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semClient));
     EXPECT_FALSE(logs.empty());
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, givenChannelOffsetWhenGetAsLocalAddressIsCalledThenReturnsFragmentOfMappedShmemThatCorrespondsToThatOffset) {

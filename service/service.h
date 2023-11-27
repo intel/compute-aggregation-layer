@@ -1216,7 +1216,8 @@ class Provider {
         auto clientCtxLock = ctx.lock();
 
         Cal::Messages::RespImportAddressSpace response;
-        response.serviceBaseAddressForClientAddressSpace = reinterpret_cast<uintptr_t>(ctx.importClientAddressSpace(request.mallocShmemResourcePath, request.clientAddressSpaceSize, request.clientAddressSpaceBaseAddress));
+        response.serviceBaseAddressForClientAddressSpace = reinterpret_cast<uintptr_t>(ctx.importClientAddressSpace(std::string_view{request.mallocShmemResourcePath, sizeof(request.mallocShmemResourcePath)},
+                                                                                                                    request.clientAddressSpaceSize, request.clientAddressSpaceBaseAddress));
         response.successfullyImported = (0 != response.serviceBaseAddressForClientAddressSpace);
 
         if (response.successfullyImported) {

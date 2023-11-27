@@ -367,7 +367,6 @@ TEST(ShmemImporterRelease, givenAllocationWithMmappedPtrWhenFreeingAndMunmapFail
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.munmap.callCount);
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.close.callCount);
 
-    Cal::Sys::munmap(ptr, 4096U);
     EXPECT_FALSE(logs.empty());
 }
 

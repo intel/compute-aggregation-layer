@@ -147,7 +147,7 @@ cl_program linkProgram(cl_context context, cl_device_id device, cl_program progr
     auto linkedProgram = clLinkProgram(context, 1, &device, "-cl-take-global-address", 1, &program, nullptr, nullptr, &cl_err);
     if (CL_SUCCESS != cl_err || linkedProgram == nullptr) {
         log<Verbosity::error>("Link failed with error : %d", cl_err);
-        auto buildLog = Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, device);
+        auto buildLog = (linkedProgram ? Cal::Utils::OclApiWrapper::getBuildLog(linkedProgram, device) : "NULL linkedProgram\n");
         log<Verbosity::info>("Build log %s", buildLog.c_str());
         std::abort();
     }

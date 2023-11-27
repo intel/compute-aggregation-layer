@@ -46,6 +46,8 @@ inline int initializeSemaphore(sem_t *semaphore, unsigned int value = 0U) {
     return 0;
 }
 
+inline void sanitizeReceivedData(void *v){};
+
 class Connection {
   public:
     virtual ~Connection() = default;
@@ -66,7 +68,11 @@ class Connection {
 
     template <typename T>
     bool receive(T &v) {
-        return sizeof(v) == receive(&v, sizeof(v));
+        if (sizeof(v) == receive(&v, sizeof(v))) {
+            sanitizeReceivedData(&v);
+            return true;
+        }
+        return false;
     }
 
     template <typename T>
@@ -118,6 +124,9 @@ class Socket : public Connection {
   public:
     Socket(int socketFd) : socketFd(socketFd) {
     }
+
+    Socket(const Socket &) = delete;
+    Socket &operator=(const Socket &) = delete;
 
     ~Socket() override {
         this->Socket::close();
@@ -318,6 +327,10 @@ class NamedSocketClientConnectionFactory : public ClientConnectionFactory {
 
 class NamedSocketConnectionListener : public ConnectionListener {
   public:
+    NamedSocketConnectionListener() = default;
+    NamedSocketConnectionListener(const NamedSocketConnectionListener &) = delete;
+    NamedSocketConnectionListener &operator=(const NamedSocketConnectionListener &) = delete;
+
     ~NamedSocketConnectionListener() override {
         this->NamedSocketConnectionListener::close();
     }

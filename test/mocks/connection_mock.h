@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -23,6 +23,7 @@ class ConnectionMock : public Cal::Ipc::Connection {
     ConnectionMock() = default;
     ConnectionMock(const ConnectionMock &rhs) {
     }
+    ConnectionMock &operator=(ConnectionMock &) = delete;
 
     int send(const void *data, size_t dataSize) override {
         if (apiConfig.send.impl) {

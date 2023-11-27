@@ -25,14 +25,15 @@ int main(int argc, const char *argv[]) {
     int forkNum = 0;
     std::vector<pid_t> childProcesses;
     for (int i = 0; i < argc; ++i) {
-        if (0 == strcmp(argv[i], "--platform_ordinal")) {
+        auto argToCheck = std::string_view{};
+        if (argToCheck = "--platform_ordinal"; 0 == strncmp(argv[i], argToCheck.data(), argToCheck.size())) {
             if (i + 1 == argc) {
                 log<Verbosity::info>("Expected integer parameter after --platform_ordinal");
                 return -1;
             }
             platformOrd = atoi(argv[i + 1]);
             i++;
-        } else if (0 == strcmp(argv[i], "--fork")) {
+        } else if (argToCheck = "--fork"; 0 == strncmp(argv[i], argToCheck.data(), argToCheck.size())) {
             if (i + 1 == argc) {
                 log<Verbosity::info>("Expected integer parameter after --fork");
                 return -1;

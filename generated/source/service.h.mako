@@ -62,7 +62,7 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
 <%     op_end_marker_event_arg = None%>\
 %      for arg in rpc_func.args:
 %       if arg.kind.is_pointer_zero_copy_malloc_shmem():
-<%       arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.')%>\
+<%       arg_size = f"apiCommand->captures.{arg.name}.size" if arg.traits.uses_inline_dynamic_mem else arg.get_calculated_array_size('apiCommand->args.', 'apiCommand->captures.')%>\
     void *importedMallocPtr${to_pascal_case(arg.name)} = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(${get_arg_from_api_command_struct(rpc_func, arg)}), ${arg_size}, 0U);
     if((nullptr == importedMallocPtr${to_pascal_case(arg.name)})  && (nullptr != apiCommand->args.${arg.name})){
         log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", ${get_arg_from_api_command_struct(rpc_func, arg)}, ${arg_size});

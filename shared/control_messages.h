@@ -12,6 +12,7 @@
 #include "shared/utils.h"
 
 #include <limits.h>
+#include <linux/taskstats.h>
 #include <sys/types.h>
 #include <type_traits>
 #include <unistd.h>
@@ -59,9 +60,13 @@ struct ReqHandshake {
         return 0 != invalid;
     }
 
+    friend void sanitizeReceivedData(ReqHandshake *reqHandshake) {
+        reqHandshake->clientProcessName[TS_COMM_LEN - 1] = '\0';
+    }
+
     pid_t pid = 0;
     pid_t ppid = 0;
-    char clientProcessName[512] = {};
+    char clientProcessName[TS_COMM_LEN] = {};
 };
 static_assert(std::is_standard_layout<ReqHandshake>::value);
 
@@ -420,6 +425,10 @@ struct ReqImportAddressSpace {
 
     bool isInvalid() const {
         return false;
+    }
+
+    friend void sanitizeReceivedData(ReqImportAddressSpace *reqImportAddressSpace) {
+        reqImportAddressSpace->mallocShmemResourcePath[PATH_MAX - 1] = '\0';
     }
 
     char mallocShmemResourcePath[PATH_MAX] = {};

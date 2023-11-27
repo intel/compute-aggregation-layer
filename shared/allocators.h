@@ -703,6 +703,8 @@ class AllocatorWithGlobalMmapToFd {
     AllocatorWithGlobalMmapToFd(ThisT &&rhs)
         : underlyingAllocator(std::move(rhs.underlyingAllocator)), mmapConfig(std::move(rhs.mmapConfig)) {}
 
+    AllocatorWithGlobalMmapToFd &operator=(const AllocatorWithGlobalMmapToFd &) = delete;
+
     virtual ~AllocatorWithGlobalMmapToFd() = default;
 
     mockable AllocationT allocate(size_t size, size_t alignment) {
@@ -790,6 +792,8 @@ class AllocatorWithBoundedMmapToFd {
     template <typename T = ThisT, std::enable_if_t<false == T::isUsingSharedUnderlyingAllocator, int> = 0>
     AllocatorWithBoundedMmapToFd(ThisT &&rhs)
         : underlyingAllocator(std::move(rhs.underlyingAllocator)), mmapConfig(std::move(rhs.mmapConfig)), munmapConfig(std::move(rhs.munmapConfig)), rangeAllocator(std::move(rhs.rangeAllocator)) {}
+
+    AllocatorWithBoundedMmapToFd operator=(ThisT &) = delete;
 
     virtual ~AllocatorWithBoundedMmapToFd() = default;
 
@@ -949,6 +953,8 @@ class ArenaAllocator {
         : ArenaAllocator(rhs.underlyingAllocator, rhs.underlyingAllocationGranularity) {
     }
 
+    ArenaAllocator &operator=(const ThisT &) = delete;
+
     template <typename T = ThisT, std::enable_if_t<T::isUingSharedUnderlyingAllocator, int> = 0>
     ArenaAllocator(ThisT &&rhs)
         : underlyingAllocator(rhs.underlyingAllocator), underlyingAllocationGranularity(rhs.underlyingAllocationGranularity), standaloneAllocationThreshold(rhs.standaloneAllocationThreshold),
@@ -972,9 +978,7 @@ class ArenaAllocator {
             return AllocationT{};
         }
         auto baseAllocation = std::make_unique<UnderlyingAllocationT>(std::move(newSourceAlloc));
-        AllocationT fullSubAllocation{baseAllocation.get(), 0U, size};
-        baseAllocation.release();
-        return fullSubAllocation;
+        return AllocationT{baseAllocation.release(), 0U, size};
     }
 
     AllocationT allocateAsStandalone(size_t size) {

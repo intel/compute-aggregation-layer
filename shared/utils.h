@@ -357,8 +357,8 @@ class Regex {
     bool isCompiled = false;
 };
 
-inline size_t getBufferRectSizeInBytes(const size_t region[3], size_t rowPitch, size_t slicePitch) {
-    if ((0 == region[0]) || (0 == region[1]) || (0 == region[2])) {
+inline size_t getBufferRectSizeInBytes(const size_t *region, size_t rowPitch, size_t slicePitch) {
+    if ((nullptr == region) || (0 == region[0]) || (0 == region[1]) || (0 == region[2])) {
         return 0;
     }
 
@@ -741,6 +741,7 @@ class Lockable {
     using ThisT = Lockable<ObjT>;
 
     Lockable() = default;
+    Lockable &operator=(Lockable &) = delete;
 
     template <typename... Args>
     Lockable(Args &&...args)

@@ -3560,7 +3560,7 @@ config:
               name: ptr
               type: "const void*"
               kind_details:
-                num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
+                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -3762,7 +3762,7 @@ config:
               name: ptr
               type: "void*"
               kind_details:
-                num_elements: "Cal::Utils::getBufferRectSizeInBytes({arg_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
+                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
