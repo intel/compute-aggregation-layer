@@ -1479,6 +1479,44 @@ ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
 
     return ret;
 }
+ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryRangesBarrier");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryRangesBarrierRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, numRanges, pRangeSizes, pRanges, hSignalEvent, numWaitEvents, phWaitEvents);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, numRanges, pRangeSizes, pRanges, hSignalEvent, numWaitEvents, phWaitEvents);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    if(hSignalEvent)
+    {
+        command->args.hSignalEvent = hSignalEvent->asLocalObject()->asRemoteObject();
+    }
+    if(phWaitEvents)
+    {
+        auto base = command->captures.getPhWaitEvents();
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice) {
     log<Verbosity::bloat>("Establishing RPC for zeContextSystemBarrier");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -6610,6 +6648,30 @@ void *getL0ExtensionFuncionAddressRpcHelper(const char *funcName) {
     return nullptr;
 }
 
+ze_result_t zeCommandListAppendMemoryRangesBarrier_WithTracing(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryRangesBarrier,
+                                    hCommandList, numRanges, pRangeSizes, pRanges, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_memory_ranges_barrier_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pnumRanges = &numRanges;
+    tracerParams.ppRangeSizes = &pRangeSizes;
+    tracerParams.ppRanges = &pRanges;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemoryRangesBarrierCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemoryRangesBarrierCb_t, CommandList, pfnAppendMemoryRangesBarrierCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryRangesBarrier,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pnumRanges, *tracerParams.ppRangeSizes, *tracerParams.ppRanges, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
 ze_result_t zeContextSystemBarrier_WithTracing(ze_context_handle_t hContext, ze_device_handle_t hDevice) {
     ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeContextSystemBarrier,
                                     hContext, hDevice);
@@ -8964,6 +9026,9 @@ ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* p
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Client::Icd::LevelZero::zeInit(flags);
+}
+ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    return Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryRangesBarrier(hCommandList, numRanges, pRangeSizes, pRanges, hSignalEvent, numWaitEvents, phWaitEvents);
 }
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice) {
     return Cal::Client::Icd::LevelZero::zeContextSystemBarrier(hContext, hDevice);

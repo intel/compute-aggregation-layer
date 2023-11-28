@@ -106,6 +106,8 @@ ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* 
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
+ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryRangesBarrier_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeContextSystemBarrier (ze_context_handle_t hContext, ze_device_handle_t hDevice);
 ze_result_t zeContextSystemBarrier_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice);
 ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_list_desc_t* desc, ze_command_list_handle_t* phCommandList);
@@ -425,10 +427,6 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 
 namespace Unimplemented {
-inline void zeCommandListAppendMemoryRangesBarrierUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryRangesBarrier is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryCopyRegion is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -817,6 +815,10 @@ inline void zetMetricQueryGetDataUnimpl() {
 
 inline void initL0Ddi(ze_dditable_t &dt){
     dt.Global.pfnInit = Cal::Client::Icd::LevelZero::zeInit;
+    dt.CommandList.pfnAppendMemoryRangesBarrier = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryRangesBarrier;
+    if (tracingEnabled) {
+        dt.CommandList.pfnAppendMemoryRangesBarrier = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryRangesBarrier_WithTracing;
+    }
     dt.Context.pfnSystemBarrier = Cal::Client::Icd::LevelZero::zeContextSystemBarrier;
     if (tracingEnabled) {
         dt.Context.pfnSystemBarrier = Cal::Client::Icd::LevelZero::zeContextSystemBarrier_WithTracing;
@@ -1265,7 +1267,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
         dt.VirtualMem.pfnGetAccessAttribute = Cal::Client::Icd::LevelZero::zeVirtualMemGetAccessAttribute_WithTracing;
     }
     // below are unimplemented, provided bindings are for easier debugging only
-    dt.CommandList.pfnAppendMemoryRangesBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryRangesBarrier)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryRangesBarrierUnimpl);
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
     dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);

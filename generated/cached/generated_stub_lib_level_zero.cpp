@@ -279,6 +279,10 @@ ze_result_t zeInit(ze_init_flags_t flags){
    return {};
 }
 
+ze_result_t zeCommandListAppendMemoryRangesBarrier(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 ze_result_t zeContextSystemBarrier(ze_context_handle_t hContext, ze_device_handle_t hDevice){
    return {};
 }

@@ -340,6 +340,40 @@ size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.pRangeSizes.count = numRanges;
+    ret.pRangeSizes.size = ret.pRangeSizes.count * sizeof(size_t);
+
+    ret.pRanges.offset = alignUpPow2<8>(ret.pRangeSizes.offset + ret.pRangeSizes.size);
+    ret.pRanges.count = numRanges;
+    ret.pRanges.size = ret.pRanges.count * sizeof(const void*);
+
+    ret.phWaitEvents.offset = alignUpPow2<8>(ret.pRanges.offset + ret.pRanges.size);
+    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPhWaitEvents;
+     const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
     ret.phWaitEvents.count = numWaitEvents;

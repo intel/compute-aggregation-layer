@@ -1825,7 +1825,6 @@ config:
     - name: "core"
       members:
         [
-          CommandList.zeCommandListAppendMemoryRangesBarrier,
           CommandList.zeCommandListAppendMemoryCopyRegion,
           CommandList.zeCommandListAppendMemoryCopyFromContext,
           CommandList.zeCommandListAppendImageCopy,
@@ -3708,42 +3707,69 @@ config:
               type: ze_init_flags_t
               kind: scalar
 
-        #        - name : zeCommandListAppendMemoryRangesBarrier
-        #          ddi_category :  CommandList
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hCommandList
-        #                    type : ze_command_list_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : numRanges
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : pRangeSizes
-        #                    type : const size_t*
-        #                    kind : pointer
-        #                 3 :
-        #                    name : pRanges
-        #                    type : const void**
-        #                    kind : pointer
-        #                 4 :
-        #                    name : hSignalEvent
-        #                    type : ze_event_handle_t
-        #                    kind : scalar
-        #                 5 :
-        #                    name : numWaitEvents
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 6 :
-        #                    name : phWaitEvents
-        #                    type : ze_event_handle_t*
-        #                    kind : pointer
-        #
+        - name: zeCommandListAppendMemoryRangesBarrier
+          latency: 0.0
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: numRanges
+              type: uint32_t
+              kind: scalar
+            2:
+              name: pRangeSizes
+              type: const size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numRanges
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read
+            3:
+              name: pRanges
+              type: const void**
+              kind: ptr_array
+              kind_details:
+                num_elements: numRanges
+                can_be_null: True
+                element:
+                  type: const void*
+                  kind: pointer
+                server_access: read
+            4:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            5:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            6:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+
         - name : zeContextSystemBarrier
           latency : 0.0
           ddi_category :  Context
