@@ -1760,6 +1760,66 @@ config:
           name: pUserData
           type: void*
           kind: pointer
+    - name: ze_fabric_vertex_pci_exp_address_t
+      members:
+        0:
+          name: domain
+          type: uint32_t
+          kind: scalar
+        1:
+          name: bus
+          type: uint32_t
+          kind: scalar
+        2:
+          name: device
+          type: uint32_t
+          kind: scalar
+        3:
+          name: function
+          type: uint32_t
+          kind: scalar
+    - name: ze_uuid_t
+      members:
+        0:
+          name: id
+          type: char*
+          kind: ptr_array
+          kind_details:
+            num_elements: "ZE_MAX_UUID_SIZE"
+            can_be_null: False
+            element:
+              type: char
+              kind: scalar
+            server_access: read_write
+    - name: ze_fabric_vertex_exp_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+        2:
+          name: uuid
+          type: ze_uuid_t
+          kind: struct
+        3:
+          name: type
+          type: ze_fabric_vertex_exp_type_t
+          kind: scalar
+        4:
+          name: remote
+          type: ze_bool_t
+          kind: scalar
+        5:
+          name: address
+          type: ze_fabric_vertex_pci_exp_address_t
+          kind: struct
 
   unimplemented:
     - name: "core"
@@ -1772,13 +1832,6 @@ config:
           CommandList.zeCommandListAppendImageCopyRegion,
           CommandList.zeCommandListAppendImageCopyToMemory,
           CommandList.zeCommandListAppendImageCopyFromMemory,
-          FabricVertexExp.zeFabricVertexGetExp,
-          FabricVertexExp.zeFabricVertexGetSubVerticesExp,
-          FabricVertexExp.zeFabricVertexGetPropertiesExp,
-          FabricVertexExp.zeFabricVertexGetDeviceExp,
-          DeviceExp.zeDeviceGetFabricVertexExp,
-          FabricEdgeExp.zeFabricEdgeGetExp,
-          FabricEdgeExp.zeFabricEdgeGetVerticesExp,
           FabricEdgeExp.zeFabricEdgeGetPropertiesExp,
           CommandList.zeCommandListAppendImageCopyToMemoryExt,
           CommandList.zeCommandListAppendImageCopyFromMemoryExt,
@@ -6487,138 +6540,238 @@ config:
                   type: ze_synchronized_timestamp_result_ext_t
                   kind: scalar
                 server_access: write
-        #
-        #        - name : zeFabricVertexGetExp
-        #          ddi_category :  FabricVertexExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hDriver
-        #                    type : ze_driver_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pCount
-        #                    type : uint32_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : phVertices
-        #                    type : ze_fabric_vertex_handle_t*
-        #                    kind : pointer
-        #
-        #        - name : zeFabricVertexGetSubVerticesExp
-        #          ddi_category :  FabricVertexExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hVertex
-        #                    type : ze_fabric_vertex_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pCount
-        #                    type : uint32_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : phSubvertices
-        #                    type : ze_fabric_vertex_handle_t*
-        #                    kind : pointer
-        #
-        #        - name : zeFabricVertexGetPropertiesExp
-        #          ddi_category :  FabricVertexExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hVertex
-        #                    type : ze_fabric_vertex_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pVertexProperties
-        #                    type : ze_fabric_vertex_exp_properties_t*
-        #                    kind : pointer
-        #
-        #        - name : zeFabricVertexGetDeviceExp
-        #          ddi_category :  FabricVertexExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hVertex
-        #                    type : ze_fabric_vertex_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pDevice
-        #                    type : ze_device_handle_t*
-        #                    kind : pointer
-        #
-        #        - name : zeDeviceGetFabricVertexExp
-        #          ddi_category :  DeviceExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hVertex
-        #                    type : ze_device_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pVertex
-        #                    type : ze_fabric_vertex_handle_t*
-        #                    kind : pointer
-        #
-        #        - name : zeFabricEdgeGetExp
-        #          ddi_category :  FabricEdgeExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hVertexA
-        #                    type : ze_fabric_vertex_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : hVertexB
-        #                    type : ze_fabric_vertex_handle_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : pCount
-        #                    type : uint32_t*
-        #                    kind : pointer
-        #                 3 :
-        #                    name : phEdges
-        #                    type : ze_fabric_edge_handle_t*
-        #                    kind : pointer
-        #
-        #        - name : zeFabricEdgeGetVerticesExp
-        #          ddi_category :  FabricEdgeExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hEdge
-        #                    type : ze_fabric_edge_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : phVertexA
-        #                    type : ze_fabric_vertex_handle_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : phVertexB
-        #                    type : ze_fabric_vertex_handle_t*
-        #                    kind : pointer
+
+        - name : zeFabricVertexGetExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category : FabricVertexExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hDriver
+              type : ze_driver_handle_t
+              kind : scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1 :
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2 :
+              name: phVertices
+              type: ze_fabric_vertex_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_handle_t
+                  kind: scalar
+                server_access: write
+        - name : zeFabricVertexGetSubVerticesExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category : FabricVertexExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hVertex
+              type : ze_fabric_vertex_handle_t
+              kind : scalar
+            1 :
+              name : pCount
+              type : uint32_t*
+              kind : ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2 :
+              name : phSubvertices
+              type : ze_fabric_vertex_handle_t*
+              kind : pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_handle_t
+                  kind: scalar
+                server_access: write
+        - name : zeFabricVertexGetPropertiesExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category : FabricVertexExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hVertex
+              type : ze_fabric_vertex_handle_t
+              kind : scalar
+            1 :
+              name : pVertexProperties
+              type: ze_fabric_vertex_exp_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_exp_properties_t
+                  kind: struct
+                server_access: read_write
+        - name : zeFabricVertexGetDeviceExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category : FabricVertexExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hVertex
+              type : ze_fabric_vertex_handle_t
+              kind : scalar
+            1 :
+              name : pDevice
+              type : ze_device_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_device_handle_t
+                  kind: pointer
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, static_cast<ze_device_handle_t>(nullptr))"
+                server_access: read_write
+        - name : zeDeviceGetFabricVertexExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category :  DeviceExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hDevice
+              type : ze_device_handle_t
+              kind : scalar
+              translate_before: "{dst} = ({arg})->asLocalObject()->asRemoteObject()"
+            1 :
+              name : pVertex
+              type : ze_fabric_vertex_handle_t*
+              kind : pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_handle_t
+                  kind: pointer
+                server_access: read_write
+        - name : zeFabricEdgeGetExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category :  FabricEdgeExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hVertexA
+              type : ze_fabric_vertex_handle_t
+              kind : scalar
+            1 :
+              name : hVertexB
+              type : ze_fabric_vertex_handle_t
+              kind : scalar
+            2 :
+              name : pCount
+              type : uint32_t*
+              kind : ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            3 :
+              name : phEdges
+              type : ze_fabric_edge_handle_t*
+              kind : pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: ze_fabric_edge_handle_t
+                  kind: scalar
+                server_access: write
+        - name : zeFabricEdgeGetVerticesExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category :  FabricEdgeExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hEdge
+              type : ze_fabric_edge_handle_t
+              kind : scalar
+            1 :
+              name : phVertexA
+              type : ze_fabric_vertex_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_handle_t
+                  kind: scalar
+            2 :
+              name : phVertexB
+              type : ze_fabric_vertex_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_fabric_vertex_handle_t
+                  kind: scalar
+                server_access: write
         #
         #        - name : zeFabricEdgeGetPropertiesExp
         #          ddi_category :  FabricEdgeExp

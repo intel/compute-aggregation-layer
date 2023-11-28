@@ -3416,6 +3416,177 @@ ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, 
 
     return ret;
 }
+ze_result_t zeFabricVertexGetExp (ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricVertexGetExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricVertexGetExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, pCount, phVertices);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, pCount, phVertices);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeFabricVertexGetSubVerticesExp (ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricVertexGetSubVerticesExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricVertexGetSubVerticesExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hVertex, pCount, phSubvertices);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hVertex, pCount, phSubvertices);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeFabricVertexGetPropertiesExp (ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricVertexGetPropertiesExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricVertexGetPropertiesExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hVertex, pVertexProperties);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hVertex, pVertexProperties);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeFabricVertexGetDeviceExp (ze_fabric_vertex_handle_t hVertex, ze_device_handle_t* pDevice) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricVertexGetDeviceExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricVertexGetDeviceExpRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hVertex, pDevice);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    if(pDevice)
+    {
+        pDevice[0] = globalPlatform->translateNewRemoteObjectToLocalObject(pDevice[0], static_cast<ze_device_handle_t>(nullptr));
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeDeviceGetFabricVertexExp (ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex) {
+    log<Verbosity::bloat>("Establishing RPC for zeDeviceGetFabricVertexExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDeviceGetFabricVertexExpRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDevice, pVertex);
+    command->copyFromCaller();
+    command->args.hDevice = (hDevice)->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeFabricEdgeGetExp (ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricEdgeGetExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricEdgeGetExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hVertexA, hVertexB, pCount, phEdges);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hVertexA, hVertexB, pCount, phEdges);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricEdgeGetVerticesExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricEdgeGetVerticesExpRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hEdge, phVertexA, phVertexB);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceCreate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8976,6 +9147,27 @@ ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handl
 }
 ze_result_t zeEventQueryKernelTimestampsExt (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults) {
     return Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestampsExt(hEvent, hDevice, pCount, pResults);
+}
+ze_result_t zeFabricVertexGetExp (ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices) {
+    return Cal::Client::Icd::LevelZero::zeFabricVertexGetExp(hDriver, pCount, phVertices);
+}
+ze_result_t zeFabricVertexGetSubVerticesExp (ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices) {
+    return Cal::Client::Icd::LevelZero::zeFabricVertexGetSubVerticesExp(hVertex, pCount, phSubvertices);
+}
+ze_result_t zeFabricVertexGetPropertiesExp (ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties) {
+    return Cal::Client::Icd::LevelZero::zeFabricVertexGetPropertiesExp(hVertex, pVertexProperties);
+}
+ze_result_t zeFabricVertexGetDeviceExp (ze_fabric_vertex_handle_t hVertex, ze_device_handle_t* pDevice) {
+    return Cal::Client::Icd::LevelZero::zeFabricVertexGetDeviceExp(hVertex, pDevice);
+}
+ze_result_t zeDeviceGetFabricVertexExp (ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex) {
+    return Cal::Client::Icd::LevelZero::zeDeviceGetFabricVertexExp(hDevice, pVertex);
+}
+ze_result_t zeFabricEdgeGetExp (ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) {
+    return Cal::Client::Icd::LevelZero::zeFabricEdgeGetExp(hVertexA, hVertexB, pCount, phEdges);
+}
+ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB) {
+    return Cal::Client::Icd::LevelZero::zeFabricEdgeGetVerticesExp(hEdge, phVertexA, phVertexB);
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     return Cal::Client::Icd::LevelZero::zeFenceCreate(hCommandQueue, desc, phFence);

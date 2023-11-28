@@ -148,6 +148,13 @@ ze_result_t (*zeEventQueryKernelTimestamp)(ze_event_handle_t hEvent, ze_kernel_t
 ze_result_t (*zeCommandListAppendQueryKernelTimestamps)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeEventQueryTimestampsExp)(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) = nullptr;
 ze_result_t (*zeEventQueryKernelTimestampsExt)(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults) = nullptr;
+ze_result_t (*zeFabricVertexGetExp)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices) = nullptr;
+ze_result_t (*zeFabricVertexGetSubVerticesExp)(ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices) = nullptr;
+ze_result_t (*zeFabricVertexGetPropertiesExp)(ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties) = nullptr;
+ze_result_t (*zeFabricVertexGetDeviceExp)(ze_fabric_vertex_handle_t hVertex, ze_device_handle_t* pDevice) = nullptr;
+ze_result_t (*zeDeviceGetFabricVertexExp)(ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex) = nullptr;
+ze_result_t (*zeFabricEdgeGetExp)(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) = nullptr;
+ze_result_t (*zeFabricEdgeGetVerticesExp)(ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB) = nullptr;
 ze_result_t (*zeFenceCreate)(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) = nullptr;
 ze_result_t (*zeFenceDestroy)(ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t timeout) = nullptr;
@@ -988,6 +995,48 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeFabricVertexGetExp = reinterpret_cast<decltype(zeFabricVertexGetExp)>(dlsym(libraryHandle, "zeFabricVertexGetExp"));
+    if(nullptr == zeFabricVertexGetExp){
+        log<Verbosity::error>("Missing symbol zeFabricVertexGetExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeFabricVertexGetSubVerticesExp = reinterpret_cast<decltype(zeFabricVertexGetSubVerticesExp)>(dlsym(libraryHandle, "zeFabricVertexGetSubVerticesExp"));
+    if(nullptr == zeFabricVertexGetSubVerticesExp){
+        log<Verbosity::error>("Missing symbol zeFabricVertexGetSubVerticesExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeFabricVertexGetPropertiesExp = reinterpret_cast<decltype(zeFabricVertexGetPropertiesExp)>(dlsym(libraryHandle, "zeFabricVertexGetPropertiesExp"));
+    if(nullptr == zeFabricVertexGetPropertiesExp){
+        log<Verbosity::error>("Missing symbol zeFabricVertexGetPropertiesExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeFabricVertexGetDeviceExp = reinterpret_cast<decltype(zeFabricVertexGetDeviceExp)>(dlsym(libraryHandle, "zeFabricVertexGetDeviceExp"));
+    if(nullptr == zeFabricVertexGetDeviceExp){
+        log<Verbosity::error>("Missing symbol zeFabricVertexGetDeviceExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeDeviceGetFabricVertexExp = reinterpret_cast<decltype(zeDeviceGetFabricVertexExp)>(dlsym(libraryHandle, "zeDeviceGetFabricVertexExp"));
+    if(nullptr == zeDeviceGetFabricVertexExp){
+        log<Verbosity::error>("Missing symbol zeDeviceGetFabricVertexExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeFabricEdgeGetExp = reinterpret_cast<decltype(zeFabricEdgeGetExp)>(dlsym(libraryHandle, "zeFabricEdgeGetExp"));
+    if(nullptr == zeFabricEdgeGetExp){
+        log<Verbosity::error>("Missing symbol zeFabricEdgeGetExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeFabricEdgeGetVerticesExp = reinterpret_cast<decltype(zeFabricEdgeGetVerticesExp)>(dlsym(libraryHandle, "zeFabricEdgeGetVerticesExp"));
+    if(nullptr == zeFabricEdgeGetVerticesExp){
+        log<Verbosity::error>("Missing symbol zeFabricEdgeGetVerticesExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeFenceCreate = reinterpret_cast<decltype(zeFenceCreate)>(dlsym(libraryHandle, "zeFenceCreate"));
     if(nullptr == zeFenceCreate){
         log<Verbosity::error>("Missing symbol zeFenceCreate in %s", loadPath.c_str());
@@ -1468,6 +1517,13 @@ void unloadLevelZeroLibrary() {
     zeCommandListAppendQueryKernelTimestamps = nullptr;
     zeEventQueryTimestampsExp = nullptr;
     zeEventQueryKernelTimestampsExt = nullptr;
+    zeFabricVertexGetExp = nullptr;
+    zeFabricVertexGetSubVerticesExp = nullptr;
+    zeFabricVertexGetPropertiesExp = nullptr;
+    zeFabricVertexGetDeviceExp = nullptr;
+    zeDeviceGetFabricVertexExp = nullptr;
+    zeFabricEdgeGetExp = nullptr;
+    zeFabricEdgeGetVerticesExp = nullptr;
     zeFenceCreate = nullptr;
     zeFenceDestroy = nullptr;
     zeFenceHostSynchronize = nullptr;

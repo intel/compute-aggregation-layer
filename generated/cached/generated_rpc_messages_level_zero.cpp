@@ -1131,6 +1131,110 @@ size_t ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::getCaptureDynMemS
      return size;
 }
 
+ZeFabricVertexGetExpRpcM::Captures::DynamicTraits ZeFabricVertexGetExpRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices) {
+    DynamicTraits ret = {};
+    ret.phVertices.count = (pCount ? *pCount : 0);
+    ret.phVertices.size = ret.phVertices.count * sizeof(ze_fabric_vertex_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phVertices.offset + ret.phVertices.size);
+
+
+    return ret;
+}
+
+size_t ZeFabricVertexGetExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phVertices) + Cal::Utils::alignUpPow2<8>(this->countPhVertices * sizeof(ze_fabric_vertex_handle_t));
+     return size;
+}
+
+size_t ZeFabricVertexGetExpRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhVertices * sizeof(ze_fabric_vertex_handle_t));
+     return size;
+}
+
+ZeFabricVertexGetSubVerticesExpRpcM::Captures::DynamicTraits ZeFabricVertexGetSubVerticesExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices) {
+    DynamicTraits ret = {};
+    ret.phSubvertices.count = (pCount ? *pCount : 0);
+    ret.phSubvertices.size = ret.phSubvertices.count * sizeof(ze_fabric_vertex_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phSubvertices.offset + ret.phSubvertices.size);
+
+
+    return ret;
+}
+
+size_t ZeFabricVertexGetSubVerticesExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phSubvertices) + Cal::Utils::alignUpPow2<8>(this->countPhSubvertices * sizeof(ze_fabric_vertex_handle_t));
+     return size;
+}
+
+size_t ZeFabricVertexGetSubVerticesExpRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhSubvertices * sizeof(ze_fabric_vertex_handle_t));
+     return size;
+}
+
+ZeFabricVertexGetPropertiesExpRpcM::Captures::DynamicTraits ZeFabricVertexGetPropertiesExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pVertexProperties) {
+        ret.pVertexPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pVertexPropertiesNestedTraits.count = 1;
+        ret.pVertexPropertiesNestedTraits.size = ret.pVertexPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_fabric_vertex_exp_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pVertexPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pVertexPropertiesNestedTraits.count; ++i) {
+            const auto& pVertexPropertiesPNext = pVertexProperties[i].pNext;
+            if(!pVertexPropertiesPNext){
+                continue;
+            }
+
+            const auto pVertexPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pVertexProperties[i].pNext)));
+            if(!pVertexPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pVertexPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pVertexPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pVertexProperties[i].pNext);
+            for(uint32_t j = 0; j < pVertexPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pVertexPropertiesPNextListElement));
+                pVertexPropertiesPNextListElement = getNext(pVertexPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeFabricVertexGetPropertiesExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeFabricVertexGetPropertiesExpRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
+ZeFabricEdgeGetExpRpcM::Captures::DynamicTraits ZeFabricEdgeGetExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) {
+    DynamicTraits ret = {};
+    ret.phEdges.count = (pCount ? *pCount : 0);
+    ret.phEdges.size = ret.phEdges.count * sizeof(ze_fabric_edge_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phEdges.offset + ret.phEdges.size);
+
+
+    return ret;
+}
+
+size_t ZeFabricEdgeGetExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phEdges) + Cal::Utils::alignUpPow2<8>(this->countPhEdges * sizeof(ze_fabric_edge_handle_t));
+     return size;
+}
+
+size_t ZeFabricEdgeGetExpRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhEdges * sizeof(ze_fabric_edge_handle_t));
+     return size;
+}
+
 ZeImageGetPropertiesRpcM::Captures::DynamicTraits ZeImageGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
     DynamicTraits ret = {};
 

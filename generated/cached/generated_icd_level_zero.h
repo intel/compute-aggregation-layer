@@ -239,6 +239,13 @@ ze_result_t zeEventQueryTimestampsExp (ze_event_handle_t hEvent, ze_device_handl
 ze_result_t zeEventQueryKernelTimestampsExt (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_event_query_kernel_timestamps_results_ext_properties_t* pResults);
 ze_result_t zeEventQueryKernelTimestampsExtRpcHelper (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps);
 ze_result_t zeEventQueryKernelTimestampsExtRpcHelper_WithTracing (ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps);
+ze_result_t zeFabricVertexGetExp (ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices);
+ze_result_t zeFabricVertexGetSubVerticesExp (ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices);
+ze_result_t zeFabricVertexGetPropertiesExp (ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties);
+ze_result_t zeFabricVertexGetDeviceExp (ze_fabric_vertex_handle_t hVertex, ze_device_handle_t* pDevice);
+ze_result_t zeDeviceGetFabricVertexExp (ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex);
+ze_result_t zeFabricEdgeGetExp (ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges);
+ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB);
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceCreate_WithTracing (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence);
@@ -444,34 +451,6 @@ inline void zeCommandListAppendImageCopyToMemoryUnimpl() {
 }
 inline void zeCommandListAppendImageCopyFromMemoryUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyFromMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricVertexGetExpUnimpl() {
-    log<Verbosity::critical>("Function FabricVertexExp.zeFabricVertexGetExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricVertexGetSubVerticesExpUnimpl() {
-    log<Verbosity::critical>("Function FabricVertexExp.zeFabricVertexGetSubVerticesExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricVertexGetPropertiesExpUnimpl() {
-    log<Verbosity::critical>("Function FabricVertexExp.zeFabricVertexGetPropertiesExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricVertexGetDeviceExpUnimpl() {
-    log<Verbosity::critical>("Function FabricVertexExp.zeFabricVertexGetDeviceExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeDeviceGetFabricVertexExpUnimpl() {
-    log<Verbosity::critical>("Function DeviceExp.zeDeviceGetFabricVertexExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricEdgeGetExpUnimpl() {
-    log<Verbosity::critical>("Function FabricEdgeExp.zeFabricEdgeGetExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricEdgeGetVerticesExpUnimpl() {
-    log<Verbosity::critical>("Function FabricEdgeExp.zeFabricEdgeGetVerticesExp is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeFabricEdgeGetPropertiesExpUnimpl() {
@@ -1061,6 +1040,13 @@ inline void initL0Ddi(ze_dditable_t &dt){
     }
     dt.EventExp.pfnQueryTimestampsExp = Cal::Client::Icd::LevelZero::zeEventQueryTimestampsExp;
     dt.Event.pfnQueryKernelTimestampsExt = Cal::Client::Icd::LevelZero::zeEventQueryKernelTimestampsExt;
+    dt.FabricVertexExp.pfnGetExp = Cal::Client::Icd::LevelZero::zeFabricVertexGetExp;
+    dt.FabricVertexExp.pfnGetSubVerticesExp = Cal::Client::Icd::LevelZero::zeFabricVertexGetSubVerticesExp;
+    dt.FabricVertexExp.pfnGetPropertiesExp = Cal::Client::Icd::LevelZero::zeFabricVertexGetPropertiesExp;
+    dt.FabricVertexExp.pfnGetDeviceExp = Cal::Client::Icd::LevelZero::zeFabricVertexGetDeviceExp;
+    dt.DeviceExp.pfnGetFabricVertexExp = Cal::Client::Icd::LevelZero::zeDeviceGetFabricVertexExp;
+    dt.FabricEdgeExp.pfnGetExp = Cal::Client::Icd::LevelZero::zeFabricEdgeGetExp;
+    dt.FabricEdgeExp.pfnGetVerticesExp = Cal::Client::Icd::LevelZero::zeFabricEdgeGetVerticesExp;
     dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate;
     if (tracingEnabled) {
         dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate_WithTracing;
@@ -1286,13 +1272,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendImageCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyRegionUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemory)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemory)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryUnimpl);
-    dt.FabricVertexExp.pfnGetExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricVertexGetExpUnimpl);
-    dt.FabricVertexExp.pfnGetSubVerticesExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetSubVerticesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricVertexGetSubVerticesExpUnimpl);
-    dt.FabricVertexExp.pfnGetPropertiesExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricVertexGetPropertiesExpUnimpl);
-    dt.FabricVertexExp.pfnGetDeviceExp = reinterpret_cast<decltype(dt.FabricVertexExp.pfnGetDeviceExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricVertexGetDeviceExpUnimpl);
-    dt.DeviceExp.pfnGetFabricVertexExp = reinterpret_cast<decltype(dt.DeviceExp.pfnGetFabricVertexExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeDeviceGetFabricVertexExpUnimpl);
-    dt.FabricEdgeExp.pfnGetExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricEdgeGetExpUnimpl);
-    dt.FabricEdgeExp.pfnGetVerticesExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetVerticesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricEdgeGetVerticesExpUnimpl);
     dt.FabricEdgeExp.pfnGetPropertiesExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricEdgeGetPropertiesExpUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemoryExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryExtUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemoryExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryExtUnimpl);

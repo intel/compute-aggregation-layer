@@ -523,6 +523,34 @@ ze_result_t zeEventQueryKernelTimestampsExt(ze_event_handle_t hEvent, ze_device_
    return {};
 }
 
+ze_result_t zeFabricVertexGetExp(ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices){
+   return {};
+}
+
+ze_result_t zeFabricVertexGetSubVerticesExp(ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices){
+   return {};
+}
+
+ze_result_t zeFabricVertexGetPropertiesExp(ze_fabric_vertex_handle_t hVertex, ze_fabric_vertex_exp_properties_t* pVertexProperties){
+   return {};
+}
+
+ze_result_t zeFabricVertexGetDeviceExp(ze_fabric_vertex_handle_t hVertex, ze_device_handle_t* pDevice){
+   return {};
+}
+
+ze_result_t zeDeviceGetFabricVertexExp(ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex){
+   return {};
+}
+
+ze_result_t zeFabricEdgeGetExp(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges){
+   return {};
+}
+
+ze_result_t zeFabricEdgeGetVerticesExp(ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB){
+   return {};
+}
+
 ze_result_t zeFenceCreate(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence){
    return {};
 }
