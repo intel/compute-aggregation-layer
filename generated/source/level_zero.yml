@@ -1791,6 +1791,19 @@ config:
               type: char
               kind: scalar
             server_access: read_write
+    - name: model_t
+      members:
+        0:
+          name: model
+          type: char*
+          kind: ptr_array
+          kind_details:
+            num_elements: "ZE_MAX_FABRIC_EDGE_MODEL_EXP_SIZE"
+            can_be_null: False
+            element:
+              type: char
+              kind: scalar
+            server_access: read_write
     - name: ze_fabric_vertex_exp_properties_t
       members:
         0:
@@ -1820,6 +1833,47 @@ config:
           name: address
           type: ze_fabric_vertex_pci_exp_address_t
           kind: struct
+    - name: ze_fabric_edge_exp_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+        2:
+          name: uuid
+          type: ze_uuid_t
+          kind: struct
+        3:
+          name: model
+          type: model_t
+          kind: struct
+        4:
+          name: bandwidth
+          type: uint32_t
+          kind: scalar
+        5:
+          name: bandwidthUnit
+          type: ze_bandwidth_unit_t
+          kind: scalar
+        6:
+          name: latency
+          type: uint32_t
+          kind: scalar
+        7:
+          name: latencyUnit
+          type: ze_latency_unit_t
+          kind: scalar
+        8:
+          name: duplexity
+          type: ze_fabric_edge_exp_duplexity_t
+          kind: scalar
 
   unimplemented:
     - name: "core"
@@ -1831,7 +1885,6 @@ config:
           CommandList.zeCommandListAppendImageCopyRegion,
           CommandList.zeCommandListAppendImageCopyToMemory,
           CommandList.zeCommandListAppendImageCopyFromMemory,
-          FabricEdgeExp.zeFabricEdgeGetPropertiesExp,
           CommandList.zeCommandListAppendImageCopyToMemoryExt,
           CommandList.zeCommandListAppendImageCopyFromMemoryExt,
           ImageExp.zeImageGetMemoryPropertiesExp,
@@ -6798,23 +6851,32 @@ config:
                   type: ze_fabric_vertex_handle_t
                   kind: scalar
                 server_access: write
-        #
-        #        - name : zeFabricEdgeGetPropertiesExp
-        #          ddi_category :  FabricEdgeExp
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hEdge
-        #                    type : ze_fabric_edge_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pEdgeProperties
-        #                    type : ze_fabric_edge_exp_properties_t*
-        #                    kind : pointer
-        #
+        - name : zeFabricEdgeGetPropertiesExp
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category : FabricEdgeExp
+          returns :
+              type : ze_result_t
+              kind : scalar
+              default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hEdge
+              type : ze_fabric_edge_handle_t
+              kind : scalar
+            1 :
+              name : pEdgeProperties
+              type : ze_fabric_edge_exp_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_fabric_edge_exp_properties_t
+                  kind: struct
+                server_access: read_write
+
         - name: zeFenceCreate
           latency: 1.0
           ddi_category: Fence

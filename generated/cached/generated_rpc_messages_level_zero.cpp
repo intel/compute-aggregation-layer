@@ -1269,6 +1269,50 @@ size_t ZeFabricEdgeGetExpRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeFabricEdgeGetPropertiesExpRpcM::Captures::DynamicTraits ZeFabricEdgeGetPropertiesExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pEdgeProperties) {
+        ret.pEdgePropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pEdgePropertiesNestedTraits.count = 1;
+        ret.pEdgePropertiesNestedTraits.size = ret.pEdgePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_fabric_edge_exp_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pEdgePropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pEdgePropertiesNestedTraits.count; ++i) {
+            const auto& pEdgePropertiesPNext = pEdgeProperties[i].pNext;
+            if(!pEdgePropertiesPNext){
+                continue;
+            }
+
+            const auto pEdgePropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pEdgeProperties[i].pNext)));
+            if(!pEdgePropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pEdgePropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pEdgePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pEdgeProperties[i].pNext);
+            for(uint32_t j = 0; j < pEdgePropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pEdgePropertiesPNextListElement));
+                pEdgePropertiesPNextListElement = getNext(pEdgePropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZeFabricEdgeGetPropertiesExpRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZeFabricEdgeGetPropertiesExpRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZeImageGetPropertiesRpcM::Captures::DynamicTraits ZeImageGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_properties_t* pImageProperties) {
     DynamicTraits ret = {};
 

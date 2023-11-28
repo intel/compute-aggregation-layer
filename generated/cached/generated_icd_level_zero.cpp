@@ -3625,6 +3625,30 @@ ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric
 
     return ret;
 }
+ze_result_t zeFabricEdgeGetPropertiesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zeFabricEdgeGetPropertiesExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeFabricEdgeGetPropertiesExpRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hEdge, pEdgeProperties);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hEdge, pEdgeProperties);
+    command->copyFromCaller(dynMemTraits);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceCreate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9233,6 +9257,9 @@ ze_result_t zeFabricEdgeGetExp (ze_fabric_vertex_handle_t hVertexA, ze_fabric_ve
 }
 ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB) {
     return Cal::Client::Icd::LevelZero::zeFabricEdgeGetVerticesExp(hEdge, phVertexA, phVertexB);
+}
+ze_result_t zeFabricEdgeGetPropertiesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties) {
+    return Cal::Client::Icd::LevelZero::zeFabricEdgeGetPropertiesExp(hEdge, pEdgeProperties);
 }
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) {
     return Cal::Client::Icd::LevelZero::zeFenceCreate(hCommandQueue, desc, phFence);

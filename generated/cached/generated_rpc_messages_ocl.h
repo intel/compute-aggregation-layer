@@ -40,6 +40,7 @@ inline void forcePointerWrite(Ptr& p, void* value) {
     const_cast<WritablePtr&>(p) = static_cast<WritablePtr>(value);
 }
 
+
 struct DynamicArgTraits {
     uint32_t offset;
     uint32_t count;

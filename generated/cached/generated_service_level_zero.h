@@ -165,6 +165,7 @@ extern ze_result_t (*zeFabricVertexGetDeviceExp)(ze_fabric_vertex_handle_t hVert
 extern ze_result_t (*zeDeviceGetFabricVertexExp)(ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex);
 extern ze_result_t (*zeFabricEdgeGetExp)(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges);
 extern ze_result_t (*zeFabricEdgeGetVerticesExp)(ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB);
+extern ze_result_t (*zeFabricEdgeGetPropertiesExp)(ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties);
 extern ze_result_t (*zeFenceCreate)(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 extern ze_result_t (*zeFenceDestroy)(ze_fence_handle_t hFence);
 extern ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t timeout);
@@ -1555,6 +1556,16 @@ inline bool zeFabricEdgeGetVerticesExpHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.hEdge, 
                                                 apiCommand->args.phVertexA ? &apiCommand->captures.phVertexA : nullptr, 
                                                 apiCommand->args.phVertexB ? &apiCommand->captures.phVertexB : nullptr
+                                                );
+    return true;
+}
+inline bool zeFabricEdgeGetPropertiesExpHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeFabricEdgeGetPropertiesExp");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeFabricEdgeGetPropertiesExpRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFabricEdgeGetPropertiesExp(
+                                                apiCommand->args.hEdge, 
+                                                apiCommand->args.pEdgeProperties ? &apiCommand->captures.pEdgeProperties : nullptr
                                                 );
     return true;
 }
@@ -2985,6 +2996,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDeviceGetFabricVertexExpRpcM::messageSubtype] = zeDeviceGetFabricVertexExpHandler;
     outHandlers[ZeFabricEdgeGetExpRpcM::messageSubtype] = zeFabricEdgeGetExpHandler;
     outHandlers[ZeFabricEdgeGetVerticesExpRpcM::messageSubtype] = zeFabricEdgeGetVerticesExpHandler;
+    outHandlers[ZeFabricEdgeGetPropertiesExpRpcM::messageSubtype] = zeFabricEdgeGetPropertiesExpHandler;
     outHandlers[ZeFenceCreateRpcM::messageSubtype] = zeFenceCreateHandler;
     outHandlers[ZeFenceDestroyRpcM::messageSubtype] = zeFenceDestroyHandler;
     outHandlers[ZeFenceHostSynchronizeRpcM::messageSubtype] = zeFenceHostSynchronizeHandler;
@@ -3985,6 +3997,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeFabricEdgeGetVerticesExpRpcM &ap
                                                 apiCommand.args.phVertexB
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeFabricEdgeGetPropertiesExpRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFabricEdgeGetPropertiesExp(
+                                                apiCommand.args.hEdge, 
+                                                apiCommand.args.pEdgeProperties
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeFenceCreateRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeFenceCreate(
                                                 apiCommand.args.hCommandQueue, 
@@ -4888,6 +4906,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeDeviceGetFabricVertexExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDeviceGetFabricVertexExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFabricEdgeGetExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFabricEdgeGetExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFabricEdgeGetVerticesExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFabricEdgeGetVerticesExpRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeFabricEdgeGetPropertiesExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFabricEdgeGetPropertiesExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFenceCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFenceDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeFenceHostSynchronizeRpcM*>(command)); break;

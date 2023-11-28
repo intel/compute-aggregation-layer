@@ -44,6 +44,12 @@ inline void forcePointerWrite(Ptr& p, void* value) {
     const_cast<WritablePtr&>(p) = static_cast<WritablePtr>(value);
 }
 
+% if config.api_name == 'level_zero':
+typedef struct _model_t {
+    char model[ZE_MAX_FABRIC_EDGE_MODEL_EXP_SIZE];
+} model_t;
+% endif
+
 struct DynamicArgTraits {
     uint32_t offset;
     uint32_t count;

@@ -555,6 +555,10 @@ ze_result_t zeFabricEdgeGetVerticesExp(ze_fabric_edge_handle_t hEdge, ze_fabric_
    return {};
 }
 
+ze_result_t zeFabricEdgeGetPropertiesExp(ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties){
+   return {};
+}
+
 ze_result_t zeFenceCreate(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence){
    return {};
 }

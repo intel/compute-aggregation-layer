@@ -248,6 +248,7 @@ ze_result_t zeFabricVertexGetDeviceExp (ze_fabric_vertex_handle_t hVertex, ze_de
 ze_result_t zeDeviceGetFabricVertexExp (ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex);
 ze_result_t zeFabricEdgeGetExp (ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges);
 ze_result_t zeFabricEdgeGetVerticesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB);
+ze_result_t zeFabricEdgeGetPropertiesExp (ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties);
 ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceCreate_WithTracing (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence);
@@ -449,10 +450,6 @@ inline void zeCommandListAppendImageCopyToMemoryUnimpl() {
 }
 inline void zeCommandListAppendImageCopyFromMemoryUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyFromMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeFabricEdgeGetPropertiesExpUnimpl() {
-    log<Verbosity::critical>("Function FabricEdgeExp.zeFabricEdgeGetPropertiesExp is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendImageCopyToMemoryExtUnimpl() {
@@ -1049,6 +1046,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.DeviceExp.pfnGetFabricVertexExp = Cal::Client::Icd::LevelZero::zeDeviceGetFabricVertexExp;
     dt.FabricEdgeExp.pfnGetExp = Cal::Client::Icd::LevelZero::zeFabricEdgeGetExp;
     dt.FabricEdgeExp.pfnGetVerticesExp = Cal::Client::Icd::LevelZero::zeFabricEdgeGetVerticesExp;
+    dt.FabricEdgeExp.pfnGetPropertiesExp = Cal::Client::Icd::LevelZero::zeFabricEdgeGetPropertiesExp;
     dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate;
     if (tracingEnabled) {
         dt.Fence.pfnCreate = Cal::Client::Icd::LevelZero::zeFenceCreate_WithTracing;
@@ -1273,7 +1271,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.CommandList.pfnAppendImageCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyRegionUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemory)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemory)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryUnimpl);
-    dt.FabricEdgeExp.pfnGetPropertiesExp = reinterpret_cast<decltype(dt.FabricEdgeExp.pfnGetPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeFabricEdgeGetPropertiesExpUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemoryExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryExtUnimpl);
     dt.CommandList.pfnAppendImageCopyFromMemoryExt = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyFromMemoryExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyFromMemoryExtUnimpl);
     dt.ImageExp.pfnGetMemoryPropertiesExp = reinterpret_cast<decltype(dt.ImageExp.pfnGetMemoryPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetMemoryPropertiesExpUnimpl);

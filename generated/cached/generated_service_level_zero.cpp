@@ -156,6 +156,7 @@ ze_result_t (*zeFabricVertexGetDeviceExp)(ze_fabric_vertex_handle_t hVertex, ze_
 ze_result_t (*zeDeviceGetFabricVertexExp)(ze_device_handle_t hDevice, ze_fabric_vertex_handle_t* pVertex) = nullptr;
 ze_result_t (*zeFabricEdgeGetExp)(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) = nullptr;
 ze_result_t (*zeFabricEdgeGetVerticesExp)(ze_fabric_edge_handle_t hEdge, ze_fabric_vertex_handle_t* phVertexA, ze_fabric_vertex_handle_t* phVertexB) = nullptr;
+ze_result_t (*zeFabricEdgeGetPropertiesExp)(ze_fabric_edge_handle_t hEdge, ze_fabric_edge_exp_properties_t* pEdgeProperties) = nullptr;
 ze_result_t (*zeFenceCreate)(ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence) = nullptr;
 ze_result_t (*zeFenceDestroy)(ze_fence_handle_t hFence) = nullptr;
 ze_result_t (*zeFenceHostSynchronize)(ze_fence_handle_t hFence, uint64_t timeout) = nullptr;
@@ -1044,6 +1045,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeFabricEdgeGetPropertiesExp = reinterpret_cast<decltype(zeFabricEdgeGetPropertiesExp)>(dlsym(libraryHandle, "zeFabricEdgeGetPropertiesExp"));
+    if(nullptr == zeFabricEdgeGetPropertiesExp){
+        log<Verbosity::error>("Missing symbol zeFabricEdgeGetPropertiesExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeFenceCreate = reinterpret_cast<decltype(zeFenceCreate)>(dlsym(libraryHandle, "zeFenceCreate"));
     if(nullptr == zeFenceCreate){
         log<Verbosity::error>("Missing symbol zeFenceCreate in %s", loadPath.c_str());
@@ -1532,6 +1539,7 @@ void unloadLevelZeroLibrary() {
     zeDeviceGetFabricVertexExp = nullptr;
     zeFabricEdgeGetExp = nullptr;
     zeFabricEdgeGetVerticesExp = nullptr;
+    zeFabricEdgeGetPropertiesExp = nullptr;
     zeFenceCreate = nullptr;
     zeFenceDestroy = nullptr;
     zeFenceHostSynchronize = nullptr;
