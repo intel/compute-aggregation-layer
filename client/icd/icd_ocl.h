@@ -1144,7 +1144,6 @@ class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform
 };
 
 inline IcdOclMem::~IcdOclMem() {
-    Cal::Client::Icd::icdGlobalState.getOclPlatform()->destroyUsmDescriptor(hostPtr);
 }
 
 template <typename T1, typename T2>
