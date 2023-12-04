@@ -289,7 +289,9 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
+%   if not should_skip_message_generation(rpc_func):
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpc${to_pascal_case(config.api_name)}, ${rpc_func.message_name}::messageSubtype).id, "${rpc_func.name}"),
+%   endif # should_skip_message_generation(rpc_func)
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
     };
@@ -306,7 +308,9 @@ inline auto getRpcCallId(const std::string &funcName) {
     static const std::unordered_map<std::string, RetT> options = {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
+%   if not should_skip_message_generation(rpc_func):
         std::pair<std::string, RetT>("${rpc_func.name}", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpc${to_pascal_case(config.api_name)}, ${rpc_func.message_name}::messageSubtype)),
+%   endif # should_skip_message_generation(rpc_func)
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
     };
@@ -321,7 +325,9 @@ inline auto getRpcCallId(const std::string &funcName) {
 namespace RpcCallIds {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
+%   if not should_skip_message_generation(rpc_func):
 static constexpr RpcCallId ${rpc_func.name} = {Cal::Rpc::RpcMessageHeader::messageTypeRpc${to_pascal_case(config.api_name)}, ${rpc_func.message_name}::messageSubtype};
+%   endif # should_skip_message_generation(rpc_func)
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 } // namespace RpcCallIds
@@ -329,7 +335,9 @@ static constexpr RpcCallId ${rpc_func.name} = {Cal::Rpc::RpcMessageHeader::messa
 namespace RpcCallMessageTypes {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
+%   if not should_skip_message_generation(rpc_func):
 using ${rpc_func.name} = ${rpc_func.message_name};
+%   endif # should_skip_message_generation(rpc_func)
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 }

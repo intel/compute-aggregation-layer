@@ -52,7 +52,7 @@ bool isSuccessful(${config.result_type} result);
 %   if get_rpc_handler_suffix(rpc_func) or use_rpc_custom_handler(rpc_func):
 bool ${rpc_func.name}Handler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 %   endif
-%   if not use_rpc_custom_handler(rpc_func):
+%   if not (use_rpc_custom_handler(rpc_func) or should_skip_message_generation(rpc_func)):
 inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for ${rpc_func.name}");
 %     for prologue_line in prologue(rpc_func):
@@ -157,7 +157,7 @@ ${", " if not loop.last else ""}
 %     endfor # epilogue(rpc_func)
     return true;
 }
-%   endif # not use_rpc_custom_handler
+%   endif # not (use_rpc_custom_handler or should_skip_message_generation)
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 
@@ -169,7 +169,9 @@ inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}(Cal::Ser
     outHandlers.resize(${last_function_with_message.message_name}::messageSubtype + 1);
 %  for group_name in rpc_functions:
 %   for rpc_func in rpc_functions[group_name]:
+%    if not should_skip_message_generation(rpc_func):
     outHandlers[${rpc_func.message_name}::messageSubtype] = ${rpc_func.name}Handler;
+%    endif # not should_skip_message_generation(rpc_func)
 %   endfor # rpc_functions[group_name]
 %  endfor # rpc_functions
 % endif # rpc_functions
@@ -179,6 +181,7 @@ inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}(Cal::Ser
 %  for rpc_func in rpc_functions[group_name]:
 \
 %  if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
+%   if not should_skip_message_generation(rpc_func):
 inline void callDirectly(${'::'.join(config.rpc_namespace + [rpc_func.message_name])} &apiCommand) {
 %     if rpc_func.returns.type.is_void():
     ${get_rpc_func_fqfn(rpc_func)}(
@@ -191,6 +194,7 @@ ${", " if not loop.last else ""}
 %     endfor # rpc_func.args
                                                 );
 }
+%   endif # not should_skip_message_generation(rpc_func)
 %  endif
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
@@ -211,7 +215,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
 %    if not (rpc_func.special_handling and rpc_func.special_handling.rpc and rpc_func.special_handling.rpc.dont_generate_call_directly):
+%     if not should_skip_message_generation(rpc_func):
         case ${'::'.join(config.rpc_namespace + [rpc_func.message_name])}::messageSubtype : callDirectly(*reinterpret_cast<${'::'.join(config.rpc_namespace + [rpc_func.message_name])}*>(command)); break;
+%     endif # not should_skip_message_generation(rpc_func)
 %   endif
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions

@@ -1555,7 +1555,11 @@ def load(fname: str) -> Config:
 
 def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> str:
     def should_skip_message_generation(func):
-        return func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message
+        if func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message:
+            return True
+        if config.api_name == 'level_zero' and len(func.redirections):
+            return True
+        return False
 
     functions_with_messages = {group_name : [f for f in config.functions[group_name] if not should_skip_message_generation(f)] for group_name in config.functions}
     flat_functions_with_messages = []
@@ -1608,7 +1612,11 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
 
 def generate_rpc_messages_cpp(config: Config, additional_file_headers: list) -> str:
     def should_skip_message_generation(func):
-        return func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message
+        if func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message:
+            return True
+        if config.api_name == 'level_zero' and len(func.redirections):
+            return True
+        return False
 
     with open("rpc_messages.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
@@ -1833,7 +1841,11 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         template = f.read()
 
     def should_skip_message_generation(func):
-        return func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message
+        if func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message:
+            return True
+        if config.api_name == 'level_zero' and len(func.redirections):
+            return True
+        return False
 
     functions_with_messages = {group_name : [f for f in config.functions[group_name] if not should_skip_message_generation(f)] for group_name in config.functions}
     last_function_with_message_group = list(functions_with_messages.keys())[-1]
@@ -1913,7 +1925,8 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
             f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_prologue) else "",
         epilogue=lambda f: f.special_handling.rpc.handler_epilogue if (
             f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "",
-        last_function_with_message=last_function_with_message)
+        last_function_with_message=last_function_with_message,
+        should_skip_message_generation=should_skip_message_generation)
 
 
 def generate_service_cpp(config: Config, additional_file_headers: list) -> str:
