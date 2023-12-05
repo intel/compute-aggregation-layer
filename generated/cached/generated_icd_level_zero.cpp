@@ -1458,6 +1458,97 @@ ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* p
 
     return ret;
 }
+ze_result_t zesDeviceEnumStandbyDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) {
+    log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumStandbyDomains");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesDeviceEnumStandbyDomainsRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phStandby);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phStandby);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesStandbyGetProperties (zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesStandbyGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesStandbyGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hStandby, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode) {
+    log<Verbosity::bloat>("Establishing RPC for zesStandbyGetMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesStandbyGetModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hStandby, pMode);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) {
+    log<Verbosity::bloat>("Establishing RPC for zesStandbySetMode");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesStandbySetModeRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hStandby, mode);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeInit");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9050,6 +9141,18 @@ ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_prop
 }
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumMemoryModules(hDevice, pCount, phMemory);
+}
+ze_result_t zesDeviceEnumStandbyDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) {
+    return Cal::Client::Icd::LevelZero::zesDeviceEnumStandbyDomains(hDevice, pCount, phStandby);
+}
+ze_result_t zesStandbyGetProperties (zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesStandbyGetProperties(hStandby, pProperties);
+}
+ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode) {
+    return Cal::Client::Icd::LevelZero::zesStandbyGetMode(hStandby, pMode);
+}
+ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) {
+    return Cal::Client::Icd::LevelZero::zesStandbySetMode(hStandby, mode);
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Client::Icd::LevelZero::zeInit(flags);

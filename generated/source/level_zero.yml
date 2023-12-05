@@ -1613,6 +1613,28 @@ config:
           name: yieldTimeout
           type: uint64_t
           kind: scalar
+    - name: zes_standby_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+        2:
+          name: type
+          type: zes_standby_type_t
+          kind: scalar
+        3:
+          name: onSubdevice
+          type: ze_bool_t
+          kind: scalar
+        4:
+          name: subdeviceId
+          type: uint32_t
+          kind: scalar
     - name: zes_pci_address_t
       members:
         0:
@@ -1911,10 +1933,6 @@ config:
           Device.zesDeviceEnumFirmwares,
           Firmware.zesFirmwareGetProperties,
           Firmware.zesFirmwareFlash,
-          Device.zesDeviceEnumStandbyDomains,
-          Standby.zesStandbyGetProperties,
-          Standby.zesStandbyGetMode,
-          Standby.zesStandbySetMode,
           Device.zesDeviceEccAvailable,
           Device.zesDeviceEccConfigurable,
           Device.zesDeviceGetEccState,
@@ -3736,6 +3754,105 @@ config:
                   type: zes_mem_handle_t
                   kind: scalar
                 server_access: read_write
+
+        - name: zesDeviceEnumStandbyDomains
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phStandby
+              type: zes_standby_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_standby_handle_t
+                  kind: scalar
+                server_access: read_write
+        - name: zesStandbyGetProperties
+          latency: 1.0
+          ddi_category: Standby
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hStandby
+              type: zes_standby_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_standby_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_standby_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zesStandbyGetMode
+          latency: 1.0
+          ddi_category: Standby
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hStandby
+              type: zes_standby_handle_t
+              kind: scalar
+            1:
+              name: pMode
+              type: zes_standby_promo_mode_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zes_standby_promo_mode_t
+                  kind: scalar
+                server_access: write
+        - name: zesStandbySetMode
+          latency: 1.0
+          ddi_category: Standby
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hStandby
+              type: zes_standby_handle_t
+              kind: scalar
+            1:
+              name: mode
+              type: zes_standby_promo_mode_t
+              kind: scalar
 
     - name: "core"
       prefix: "ze"

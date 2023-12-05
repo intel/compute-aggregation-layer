@@ -340,6 +340,26 @@ size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) {
+    DynamicTraits ret = {};
+    ret.phStandby.count = (pCount ? *pCount : 0);
+    ret.phStandby.size = ret.phStandby.count * sizeof(zes_standby_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phStandby.offset + ret.phStandby.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumStandbyDomainsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phStandby) + Cal::Utils::alignUpPow2<8>(this->countPhStandby * sizeof(zes_standby_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumStandbyDomainsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhStandby * sizeof(zes_standby_handle_t));
+     return size;
+}
+
 ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
     ret.pRangeSizes.count = numRanges;
