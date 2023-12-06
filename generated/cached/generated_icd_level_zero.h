@@ -279,6 +279,7 @@ ze_result_t zeImageCreate_WithTracing (ze_context_handle_t hContext, ze_device_h
 ze_result_t zeImageDestroy (ze_image_handle_t hImage);
 ze_result_t zeImageDestroy_WithTracing (ze_image_handle_t hImage);
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint);
+ze_result_t zeModuleInspectLinkageExt (ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog);
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM);
 ze_result_t zeMemAllocShared_WithTracing (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 ze_result_t zeMemAllocDevice (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
@@ -487,10 +488,6 @@ inline void zeImageGetAllocPropertiesExtUnimpl() {
 }
 inline void zeImageViewCreateExpUnimpl() {
     log<Verbosity::critical>("Function ImageExp.zeImageViewCreateExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeModuleInspectLinkageExtUnimpl() {
-    log<Verbosity::critical>("Function Module.zeModuleInspectLinkageExt is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeKernelGetSourceAttributesUnimpl() {
@@ -1067,6 +1064,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
         dt.Image.pfnDestroy = Cal::Client::Icd::LevelZero::zeImageDestroy_WithTracing;
     }
     dt.KernelExp.pfnSchedulingHintExp = Cal::Client::Icd::LevelZero::zeKernelSchedulingHintExp;
+    dt.Module.pfnInspectLinkageExt = Cal::Client::Icd::LevelZero::zeModuleInspectLinkageExt;
     dt.Mem.pfnAllocShared = Cal::Client::Icd::LevelZero::zeMemAllocShared;
     if (tracingEnabled) {
         dt.Mem.pfnAllocShared = Cal::Client::Icd::LevelZero::zeMemAllocShared_WithTracing;
@@ -1261,7 +1259,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.ImageExp.pfnGetMemoryPropertiesExp = reinterpret_cast<decltype(dt.ImageExp.pfnGetMemoryPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetMemoryPropertiesExpUnimpl);
     dt.Image.pfnGetAllocPropertiesExt = reinterpret_cast<decltype(dt.Image.pfnGetAllocPropertiesExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetAllocPropertiesExtUnimpl);
     dt.ImageExp.pfnViewCreateExp = reinterpret_cast<decltype(dt.ImageExp.pfnViewCreateExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageViewCreateExpUnimpl);
-    dt.Module.pfnInspectLinkageExt = reinterpret_cast<decltype(dt.Module.pfnInspectLinkageExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeModuleInspectLinkageExtUnimpl);
     dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Client::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
     dt.Context.pfnMakeImageResident = reinterpret_cast<decltype(dt.Context.pfnMakeImageResident)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextMakeImageResidentUnimpl);
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);

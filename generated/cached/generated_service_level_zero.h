@@ -185,6 +185,7 @@ extern ze_result_t (*zeImageGetProperties)(ze_device_handle_t hDevice, const ze_
 extern ze_result_t (*zeImageCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage);
 extern ze_result_t (*zeImageDestroy)(ze_image_handle_t hImage);
 extern ze_result_t (*zeKernelSchedulingHintExp)(ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint);
+extern ze_result_t (*zeModuleInspectLinkageExt)(ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog);
 extern ze_result_t (*zeMemAllocShared)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 extern ze_result_t (*zeMemAllocDevice)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr);
 extern ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr);
@@ -1703,6 +1704,23 @@ inline bool zeKernelSchedulingHintExpHandler(Provider &service, Cal::Rpc::Channe
                                                 apiCommand->args.hKernel, 
                                                 apiCommand->args.pHint ? &apiCommand->captures.pHint : nullptr
                                                 );
+    return true;
+}
+inline bool zeModuleInspectLinkageExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeModuleInspectLinkageExt");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleInspectLinkageExtRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleInspectLinkageExt(
+                                                apiCommand->args.pInspectDesc ? &apiCommand->captures.pInspectDesc : nullptr, 
+                                                apiCommand->args.numModules, 
+                                                apiCommand->args.phModules ? apiCommand->captures.phModules : nullptr, 
+                                                apiCommand->args.phLog ? &apiCommand->captures.phLog : nullptr
+                                                );
+    {
+        const auto& resource = apiCommand->args.phLog ? &apiCommand->captures.phLog : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+        }
+    }
     return true;
 }
 bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
@@ -3237,6 +3255,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeImageCreateRpcM::messageSubtype] = zeImageCreateHandler;
     outHandlers[ZeImageDestroyRpcM::messageSubtype] = zeImageDestroyHandler;
     outHandlers[ZeKernelSchedulingHintExpRpcM::messageSubtype] = zeKernelSchedulingHintExpHandler;
+    outHandlers[ZeModuleInspectLinkageExtRpcM::messageSubtype] = zeModuleInspectLinkageExtHandler;
     outHandlers[ZeMemAllocSharedRpcM::messageSubtype] = zeMemAllocSharedHandler;
     outHandlers[ZeMemAllocDeviceRpcM::messageSubtype] = zeMemAllocDeviceHandler;
     outHandlers[ZeMemAllocHostRpcM::messageSubtype] = zeMemAllocHostHandler;
@@ -4321,6 +4340,14 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeKernelSchedulingHintExpRpcM &api
                                                 apiCommand.args.pHint
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleInspectLinkageExtRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleInspectLinkageExt(
+                                                apiCommand.args.pInspectDesc, 
+                                                apiCommand.args.numModules, 
+                                                apiCommand.args.phModules, 
+                                                apiCommand.args.phLog
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemAllocShared(
                                                 apiCommand.args.hContext, 
@@ -5286,6 +5313,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeImageCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeImageCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeImageDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeImageDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeKernelSchedulingHintExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelSchedulingHintExpRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeModuleInspectLinkageExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleInspectLinkageExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocDeviceRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemAllocHostRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocHostRpcM*>(command)); break;

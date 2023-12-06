@@ -635,6 +635,10 @@ ze_result_t zeKernelSchedulingHintExp(ze_kernel_handle_t hKernel, ze_scheduling_
    return {};
 }
 
+ze_result_t zeModuleInspectLinkageExt(ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog){
+   return {};
+}
+
 ze_result_t zeMemAllocShared(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr){
    return {};
 }

@@ -4150,6 +4150,44 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
 
     return ret;
 }
+ze_result_t zeModuleInspectLinkageExt (ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog) {
+    log<Verbosity::bloat>("Establishing RPC for zeModuleInspectLinkageExt");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeModuleInspectLinkageExtRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(pInspectDesc, numModules, phModules, phLog);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, pInspectDesc, numModules, phModules, phLog);
+    command->copyFromCaller(dynMemTraits);
+    if(phModules)
+    {
+        auto base = command->captures.phModules;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phModules.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(phLog)
+    {
+        phLog[0] = globalPlatform->translateNewRemoteObjectToLocalObject(phLog[0]);
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeMemAllocSharedRpcHelper (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr, Cal::Rpc::LevelZero::ZeMemAllocSharedRpcMImplicitArgs &implArgsForZeMemAllocSharedRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemAllocShared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9969,6 +10007,9 @@ ze_result_t zeImageDestroy (ze_image_handle_t hImage) {
 }
 ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) {
     return Cal::Client::Icd::LevelZero::zeKernelSchedulingHintExp(hKernel, pHint);
+}
+ze_result_t zeModuleInspectLinkageExt (ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog) {
+    return Cal::Client::Icd::LevelZero::zeModuleInspectLinkageExt(pInspectDesc, numModules, phModules, phLog);
 }
 ze_result_t zeMemAllocShared (ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     return Cal::Client::Icd::LevelZero::zeMemAllocShared(hContext, device_desc, host_desc, size, alignment, hDevice, pptr);

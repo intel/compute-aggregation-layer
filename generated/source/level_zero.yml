@@ -881,7 +881,6 @@ config:
           type: ze_driver_memory_free_policy_ext_flags_t
           kind: scalar
 
-
     - name: ze_module_properties_t
       members:
         0:
@@ -1082,6 +1081,21 @@ config:
         2:
           name: preferredMultiple
           type: uint32_t
+          kind: scalar
+
+    - name: ze_linkage_inspection_ext_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: flags
+          type: ze_linkage_inspection_ext_flags_t
           kind: scalar
 
     - name: ze_module_program_exp_desc_t
@@ -1979,7 +1993,6 @@ config:
           ImageExp.zeImageGetMemoryPropertiesExp,
           Image.zeImageGetAllocPropertiesExt,
           ImageExp.zeImageViewCreateExp,
-          Module.zeModuleInspectLinkageExt,
           Kernel.zeKernelGetSourceAttributes,
           Context.zeContextMakeImageResident,
           Context.zeContextEvictImage,
@@ -7810,30 +7823,59 @@ config:
                   type: ze_scheduling_hint_exp_desc_t
                   kind: struct
                 server_access: read
-        #        - name : zeModuleInspectLinkageExt
-        #          ddi_category :  Module
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : pInspectDesc
-        #                    type : ze_linkage_inspection_ext_desc_t*
-        #                    kind : pointer
-        #                 1 :
-        #                    name : numModules
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 2 :
-        #                    name : phModules
-        #                    type : ze_module_handle_t*
-        #                    kind : pointer
-        #                 3 :
-        #                    name : phLog
-        #                    type : ze_module_build_log_handle_t*
-        #                    kind : pointer
-        #
+        
+        - name: zeModuleInspectLinkageExt
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Module
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: pInspectDesc
+              type: ze_linkage_inspection_ext_desc_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_linkage_inspection_ext_desc_t
+                  kind: struct
+                server_access: read
+            1:
+              name: numModules
+              type: uint32_t
+              kind: scalar
+            2:
+              name: phModules
+              type: ze_module_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numModules
+                can_be_null: True
+                element:
+                  type: ze_module_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+            3:
+              name: phLog
+              type: ze_module_build_log_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_module_build_log_handle_t
+                  kind: scalar
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
+                server_access: write
+              daemon_action_at_end: "ctx.trackAllocatedResource({arg})"
+        
         - name: zeMemAllocShared
           latency: 1.0
           special_handling:

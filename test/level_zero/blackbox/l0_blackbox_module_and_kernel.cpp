@@ -568,13 +568,12 @@ bool queryTimestampsExp(ze_event_handle_t event, ze_device_handle_t device) {
 }
 
 bool queryKernelTimestampsExt(ze_event_handle_t event, ze_device_handle_t device) {
-    bool ret = false;
     uint32_t count = 0;
     auto zeEventQueryKernelTimestampsExtResult = zeEventQueryKernelTimestampsExt(event, device, &count, nullptr);
     if (zeEventQueryKernelTimestampsExtResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeEventQueryKernelTimestampsExt() call has failed! Error code = %d",
                               static_cast<int>(zeEventQueryKernelTimestampsExtResult));
-        return ret;
+        return false;
     }
 
     log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful, count = %d", count);
@@ -601,13 +600,28 @@ bool queryKernelTimestampsExt(ze_event_handle_t event, ze_device_handle_t device
     if (zeEventQueryKernelTimestampsExtResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zeEventQueryKernelTimestampsExt() call has failed! Error code = %d",
                               static_cast<int>(zeEventQueryKernelTimestampsExtResult));
-        ret = false;
-    } else {
-        log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful");
-        ret = true;
+        return false;
     }
+
     log<Verbosity::info>("zeEventQueryKernelTimestampsExt() call was successful");
-    return ret;
+    return true;
+}
+
+bool inspectModulesLinkage(uint32_t numModules, ze_module_handle_t *modules, ze_linkage_inspection_ext_flags_t flags, ze_module_build_log_handle_t *inspectionLog) {
+    ze_linkage_inspection_ext_desc_t linkageInspectionDesc{};
+    linkageInspectionDesc.pNext = nullptr;
+    linkageInspectionDesc.stype = ZE_STRUCTURE_TYPE_LINKAGE_INSPECTION_EXT_DESC;
+    linkageInspectionDesc.flags = flags;
+
+    auto zeModuleInspectLinkageExtResult = zeModuleInspectLinkageExt(&linkageInspectionDesc, numModules, modules, inspectionLog);
+    if (zeModuleInspectLinkageExtResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeModuleInspectLinkageExt() call has failed! Error code = %d",
+                              static_cast<int>(zeModuleInspectLinkageExtResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeModuleInspectLinkageExt() call was successful");
+    return true;
 }
 
 int main(int argc, const char *argv[]) {
@@ -641,6 +655,11 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getModuleProperties(module));
     RUN_REQUIRED_STEP(getNonexistentFunctionPointer(module));
     RUN_REQUIRED_STEP(getNonexistentGlobalVariable(module));
+
+    ze_module_handle_t modules[2] = {module, anotherModule};
+    ze_module_build_log_handle_t inspectionLog;
+    RUN_REQUIRED_STEP(inspectModulesLinkage(2, modules, ZE_LINKAGE_INSPECTION_EXT_FLAG_EXPORTS, &inspectionLog));
+    RUN_REQUIRED_STEP(checkBuildLog(inspectionLog));
 
     ze_kernel_handle_t copyBufferKernel{};
     RUN_REQUIRED_STEP(createKernel(module, copyBufferKernel, "CopyBuffer"));

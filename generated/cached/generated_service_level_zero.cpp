@@ -176,6 +176,7 @@ ze_result_t (*zeImageGetProperties)(ze_device_handle_t hDevice, const ze_image_d
 ze_result_t (*zeImageCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_image_desc_t* desc, ze_image_handle_t* phImage) = nullptr;
 ze_result_t (*zeImageDestroy)(ze_image_handle_t hImage) = nullptr;
 ze_result_t (*zeKernelSchedulingHintExp)(ze_kernel_handle_t hKernel, ze_scheduling_hint_exp_desc_t* pHint) = nullptr;
+ze_result_t (*zeModuleInspectLinkageExt)(ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog) = nullptr;
 ze_result_t (*zeMemAllocShared)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) = nullptr;
 ze_result_t (*zeMemAllocDevice)(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) = nullptr;
 ze_result_t (*zeMemAllocHost)(ze_context_handle_t hContext, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, void** pptr) = nullptr;
@@ -1174,6 +1175,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeModuleInspectLinkageExt = reinterpret_cast<decltype(zeModuleInspectLinkageExt)>(dlsym(libraryHandle, "zeModuleInspectLinkageExt"));
+    if(nullptr == zeModuleInspectLinkageExt){
+        log<Verbosity::error>("Missing symbol zeModuleInspectLinkageExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeMemAllocShared = reinterpret_cast<decltype(zeMemAllocShared)>(dlsym(libraryHandle, "zeMemAllocShared"));
     if(nullptr == zeMemAllocShared){
         log<Verbosity::error>("Missing symbol zeMemAllocShared in %s", loadPath.c_str());
@@ -1622,6 +1629,7 @@ void unloadLevelZeroLibrary() {
     zeImageCreate = nullptr;
     zeImageDestroy = nullptr;
     zeKernelSchedulingHintExp = nullptr;
+    zeModuleInspectLinkageExt = nullptr;
     zeMemAllocShared = nullptr;
     zeMemAllocDevice = nullptr;
     zeMemAllocHost = nullptr;

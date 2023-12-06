@@ -1381,6 +1381,26 @@ size_t ZeImageCreateRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
 }
 
+ZeModuleInspectLinkageExtRpcM::Captures::DynamicTraits ZeModuleInspectLinkageExtRpcM::Captures::DynamicTraits::calculate(ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog) {
+    DynamicTraits ret = {};
+    ret.phModules.count = numModules;
+    ret.phModules.size = ret.phModules.count * sizeof(ze_module_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phModules.offset + ret.phModules.size);
+
+
+    return ret;
+}
+
+size_t ZeModuleInspectLinkageExtRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phModules) + Cal::Utils::alignUpPow2<8>(this->countPhModules * sizeof(ze_module_handle_t));
+     return size;
+}
+
+size_t ZeModuleInspectLinkageExtRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhModules * sizeof(ze_module_handle_t));
+     return size;
+}
+
 ZeMemAllocSharedRpcM::Captures::DynamicTraits ZeMemAllocSharedRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_device_mem_alloc_desc_t* device_desc, const ze_host_mem_alloc_desc_t* host_desc, size_t size, size_t alignment, ze_device_handle_t hDevice, void** pptr) {
     DynamicTraits ret = {};
 
