@@ -46,6 +46,15 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       uint32_t waitEventsCount = 0,
                       ze_event_handle_t *waitEvents = nullptr);
 
+bool appendMemoryCopyFromContext(ze_command_list_handle_t cmdList,
+                                 void *destination,
+                                 ze_context_handle_t sourceContext,
+                                 const void *source,
+                                 size_t size,
+                                 ze_event_handle_t signalEvent = nullptr,
+                                 uint32_t waitEventsCount = 0,
+                                 ze_event_handle_t *waitEvents = nullptr);
+
 bool appendMemoryFill(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *pattern,
@@ -54,14 +63,14 @@ bool appendMemoryFill(ze_command_list_handle_t cmdList,
                       ze_event_handle_t signalEvent = nullptr,
                       uint32_t waitEventsCount = 0,
                       ze_event_handle_t *waitEvents = nullptr);
-
+bool appendMemoryPrefetch(ze_command_list_handle_t commandList, const void *sharedPtr, size_t size);
 bool closeCommandList(ze_command_list_handle_t list);
 bool resetCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
 
 bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer, const void *descPNext = nullptr);
 bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
-                          void *&usmSharedBuffer);
+                          void *&usmSharedBuffer, uint32_t ordinal = 0u);
 bool allocateDeviceMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,
                           void *&usmDeviceBuffer, const void *descPNext = nullptr);
 bool freeMemory(ze_context_handle_t context, void *&buffer);

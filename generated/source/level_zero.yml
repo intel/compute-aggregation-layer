@@ -1902,7 +1902,6 @@ config:
       members:
         [
           CommandList.zeCommandListAppendMemoryCopyRegion,
-          CommandList.zeCommandListAppendMemoryCopyFromContext,
           CommandList.zeCommandListAppendImageCopy,
           CommandList.zeCommandListAppendImageCopyRegion,
           CommandList.zeCommandListAppendImageCopyToMemory,
@@ -5136,46 +5135,299 @@ config:
         #                    type : ze_event_handle_t*
         #                    kind : pointer
         #
-        #        - name : zeCommandListAppendMemoryCopyFromContext
-        #          ddi_category :  CommandList
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hCommandList
-        #                    type : ze_command_list_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : dstptr
-        #                    type : void*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : hContextSrc
-        #                    type : ze_context_handle_t
-        #                    kind : scalar
-        #                 3 :
-        #                    name : srcptr
-        #                    type : const void*
-        #                    kind : pointer
-        #                 4 :
-        #                    name : size
-        #                    type : size_t
-        #                    kind : scalar
-        #                 5 :
-        #                    name : hSignalEvent
-        #                    type : ze_event_handle_t
-        #                    kind : scalar
-        #                 6 :
-        #                    name : numWaitEvents
-        #                    type : uint32_t
-        #                    kind : scalar
-        #                 7 :
-        #                    name : phWaitEvents
-        #                    type : ze_event_handle_t*
-        #                    kind : pointer
-        #
+        - name : zeCommandListAppendMemoryCopyFromContext
+          latency: 0.0
+          special_handling:
+            icd:
+              dont_generate_handler: True
+              tracable: False               # temporary
+            rpc:
+              dont_generate_rpc_message: True
+          ddi_category :  CommandList
+          returns :
+            type : ze_result_t
+            kind : scalar
+            default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args :
+            0 :
+              name : hCommandList
+              type : ze_command_list_handle_t
+              kind : scalar
+            1 :
+              name : dstptr
+              type : void*
+              kind : pointer
+            2 :
+              name : hContextSrc
+              type : ze_context_handle_t
+              kind : scalar
+            3 :
+              name : srcptr
+              type : const void*
+              kind : pointer
+            4 :
+              name : size
+              type : size_t
+              kind : scalar
+            5 :
+              name : hSignalEvent
+              type : ze_event_handle_t
+              kind : scalar
+            6 :
+              name : numWaitEvents
+              type : uint32_t
+              kind : scalar
+            7 :
+              name : phWaitEvents
+              type : ze_event_handle_t*
+              kind : pointer
+
+        - name: zeCommandListAppendMemoryCopyFromContextDeferred
+          latency: 0.0
+          special_handling:
+            variant_of: "zeCommandListAppendMemoryCopyFromContext"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+              tracable: False               # temporary
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: dstptr
+              type: void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: write
+              kind_variants:
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
+                - kind: ptr_remapped_va
+                  capture_details:
+                    replayable_command: True
+            2 :
+              name : hContextSrc
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: srcptr
+              type: const void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: read
+              kind_variants:
+                - kind: ptr_usm_va
+
+            4:
+              name: size
+              type: size_t
+              kind: scalar
+            5:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+                op_end_event: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            6:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            7:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+
+        - name: zeCommandListAppendMemoryCopyFromContextImmediateSynchronous
+          latency: 0.0
+          call_async: true
+          special_handling:
+            variant_of: "zeCommandListAppendMemoryCopyFromContext"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+              tracable: False               # temporary
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: dstptr
+              type: void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: write
+              kind_variants:
+                - kind: ptr_array
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
+            2 :
+              name : hContextSrc
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: srcptr
+              type: const void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: read
+              kind_variants:
+                - kind: ptr_usm_va
+            4:
+              name: size
+              type: size_t
+              kind: scalar
+            5:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+                op_end_event: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            6:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            7:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+
+        - name: zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous
+          latency: 0.0
+          call_async: true
+          special_handling:
+            variant_of: "zeCommandListAppendMemoryCopyFromContext"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+              tracable: False               # temporary
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hCommandList
+              type: ze_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: dstptr
+              type: void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: write
+              kind_variants:
+                - kind: ptr_va
+                  capture_details:
+                    replayable_command: false
+                    mode: staging_usm
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
+            2 :
+              name : hContextSrc
+              type : ze_context_handle_t
+              kind : scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: srcptr
+              type: const void*
+              kind_details:
+                num_elements: "size"
+                can_be_null: True
+                element:
+                  type: "void"
+                  kind: "scalar"
+                server_access: read
+              kind_variants:
+                - kind: ptr_usm_va
+            4:
+              name: size
+              type: size_t
+              kind: scalar
+            5:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+                op_end_event: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            6:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            7:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+
         #        - name : zeCommandListAppendImageCopy
         #          ddi_category :  CommandList
         #          returns :

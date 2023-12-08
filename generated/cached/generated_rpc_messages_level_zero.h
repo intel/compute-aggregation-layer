@@ -7053,6 +7053,10 @@ struct ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM>);
+ // zeCommandListAppendMemoryCopyFromContext ignored in generator - based on dont_generate_rpc_message flag
+ // zeCommandListAppendMemoryCopyFromContextDeferred ignored in generator - based on dont_generate_rpc_message flag
+ // zeCommandListAppendMemoryCopyFromContextImmediateSynchronous ignored in generator - based on dont_generate_rpc_message flag
+ // zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous ignored in generator - based on dont_generate_rpc_message flag
 struct ZeCommandListAppendMemoryPrefetchRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 87;
@@ -20871,6 +20875,918 @@ struct ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 227;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 228;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 229;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 230;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits dstptr = {};          
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t offsetPhWaitEvents = 0;
+        uint32_t countDstptr = 0;
+        uint32_t countPhWaitEvents = 0;
+        void* getDstptr() {
+            auto offset = 0;
+            return reinterpret_cast<void*>(dynMem + offset);
+        }
+
+        ze_event_handle_t* getPhWaitEvents() {
+            auto offset = offsetPhWaitEvents;
+            return reinterpret_cast<ze_event_handle_t*>(dynMem + offset);
+        }
+
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        offsetPhWaitEvents = dynamicTraits.phWaitEvents.offset;
+        countDstptr = dynamicTraits.dstptr.count;
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        alignas(8) char dynMem[];
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.getPhWaitEvents()), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.dstptr){
+            memcpy(args.dstptr, captures.getDstptr(), dynMemTraits.dstptr.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 231;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 232;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 233;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 234;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM>);
+struct ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM {
+    Cal::Rpc::RpcMessageHeader header;
+    static constexpr uint16_t messageSubtype = 235;
+    static constexpr float latency = 0.0;
+    static constexpr CallCategory category = CallCategory::Other;
+
+
+    using ReturnValueT = ze_result_t;
+
+    struct Args {
+        ze_command_list_handle_t hCommandList = {};
+        void* dstptr = {};
+        ze_context_handle_t hContextSrc = {};
+        const void* srcptr = {};
+        size_t size = {};
+        ze_event_handle_t hSignalEvent = {};
+        uint32_t numWaitEvents = {};
+        ze_event_handle_t* phWaitEvents = {};
+
+        bool shallowCompareEquals(const Args &rhs) const {
+            bool equal = true;
+            equal &= this->hCommandList == rhs.hCommandList;
+            equal &= this->dstptr == rhs.dstptr;
+            equal &= this->hContextSrc == rhs.hContextSrc;
+            equal &= this->srcptr == rhs.srcptr;
+            equal &= this->size == rhs.size;
+            equal &= this->hSignalEvent == rhs.hSignalEvent;
+            equal &= this->numWaitEvents == rhs.numWaitEvents;
+            equal &= this->phWaitEvents == rhs.phWaitEvents;
+            return equal;
+        }
+    }args;
+
+    struct Captures {
+
+        struct DynamicTraits {
+            static DynamicTraits calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits phWaitEvents = {};          
+        };
+
+        ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t countPhWaitEvents = 0;
+        ze_event_handle_t phWaitEvents[];
+
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPhWaitEvents = dynamicTraits.phWaitEvents.count;
+        }
+        
+        Captures() = default;
+        Captures(const Captures &) = delete;
+        Captures& operator=(const Captures& rhs) = delete;
+        size_t getCaptureTotalSize() const;
+        size_t getCaptureDynMemSize() const;
+
+    }captures;
+    
+
+    ze_result_t returnValue(){
+        return captures.ret;
+    }
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM() = default;
+
+    ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        header.subtype = messageSubtype;
+        args.hCommandList = hCommandList;
+        args.dstptr = dstptr;
+        args.hContextSrc = hContextSrc;
+        args.srcptr = srcptr;
+        args.size = size;
+        args.hSignalEvent = hSignalEvent;
+        args.numWaitEvents = numWaitEvents;
+        args.phWaitEvents = phWaitEvents;
+        captures.adjustCaptureLayout(dynamicTraits);
+    }
+    
+    static void fillWithoutCapture(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM &message, ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+        message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
+        message.header.subtype = messageSubtype;
+        message.args.hCommandList = hCommandList;
+        message.args.dstptr = dstptr;
+        message.args.hContextSrc = hContextSrc;
+        message.args.srcptr = srcptr;
+        message.args.size = size;
+        message.args.hSignalEvent = hSignalEvent;
+        message.args.numWaitEvents = numWaitEvents;
+        message.args.phWaitEvents = phWaitEvents;
+    }
+    
+
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.phWaitEvents){
+            memcpy(asMemcpyDstT(captures.phWaitEvents), args.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        }
+    }
+};
+static_assert(std::is_standard_layout_v<ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM>);
 
 inline const char *getRpcCallFname(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
@@ -21101,6 +22017,15 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm"),
         std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm"),
+        std::pair<RpcMessageHeader::MessageUniqueIdT, std::string>(RpcCallId(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype).id, "zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm"),
     };
 
     auto it = options.find(callId.id);
@@ -21340,6 +22265,15 @@ inline auto getRpcCallId(const std::string &funcName) {
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::messageSubtype)),
         std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM::messageSubtype)),
+        std::pair<std::string, RetT>("zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm", RetT(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype)),
     };
 
     auto it = options.find(funcName);
@@ -21577,6 +22511,15 @@ static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediateSynchronous_Usm
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::messageSubtype};
 static constexpr RpcCallId zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM::messageSubtype};
+static constexpr RpcCallId zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm = {Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero, ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype};
 } // namespace RpcCallIds
 
 namespace RpcCallMessageTypes {
@@ -21807,6 +22750,15 @@ using zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared = ZeCommandLi
 using zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local = ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM;
 using zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm = ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM;
 using zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared = ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM;
+using zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm = ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm = ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm = ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM;
+using zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm = ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM;
 }
 
 } // namespace LevelZero

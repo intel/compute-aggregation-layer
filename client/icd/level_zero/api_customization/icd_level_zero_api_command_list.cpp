@@ -144,6 +144,38 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
     }
 }
 
+ze_result_t zeCommandListAppendMemoryCopyFromContext(ze_command_list_handle_t hCommandList,
+                                                     void *dstptr,
+                                                     ze_context_handle_t hContextSrc,
+                                                     const void *srcptr,
+                                                     size_t size,
+                                                     ze_event_handle_t hSignalEvent,
+                                                     uint32_t numWaitEvents,
+                                                     ze_event_handle_t *phWaitEvents) {
+
+    const auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
+    const auto icdContextSrc = static_cast<IcdL0Context *>(hContextSrc);
+    if (icdCommandList == nullptr || icdContextSrc == nullptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
+
+    if (dstptr == nullptr || srcptr == nullptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
+    }
+
+    icdCommandList->moveSharedAllocationsToGpu(dstptr, srcptr);
+
+    if (icdCommandList->isImmediate()) {
+        if (icdCommandList->isImmediateSynchronous()) {
+            return zeCommandListAppendMemoryCopyFromContextImmediateSynchronous(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        } else {
+            return zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
+    } else {
+        return zeCommandListAppendMemoryCopyFromContextDeferred(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+    }
+}
+
 ze_result_t zeCommandListAppendMemAdvise(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void *ptr, size_t size, ze_memory_advice_t advice) {
     log<Verbosity::debug>("zeCommandListAppendMemAdvise(): Ignoring passed advice!");
     return ZE_RESULT_SUCCESS;

@@ -161,6 +161,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc_WithTracing (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContext (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryPrefetch (ze_command_list_handle_t hCommandList, const void* ptr, size_t size);
 ze_result_t zeCommandListAppendMemoryPrefetch_WithTracing (ze_command_list_handle_t hCommandList, const void* ptr, size_t size);
 ze_result_t zeCommandListAppendMemAdvise (ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice);
@@ -430,14 +434,19 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 
 namespace Unimplemented {
 inline void zeCommandListAppendMemoryCopyRegionUnimpl() {
     log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryCopyRegion is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeCommandListAppendMemoryCopyFromContextUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendMemoryCopyFromContext is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeCommandListAppendImageCopyUnimpl() {
@@ -869,6 +878,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
     if (tracingEnabled) {
         dt.CommandList.pfnAppendMemoryFill = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryFill_WithTracing;
     }
+    dt.CommandList.pfnAppendMemoryCopyFromContext = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopyFromContext;
     dt.CommandList.pfnAppendMemoryPrefetch = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch;
     if (tracingEnabled) {
         dt.CommandList.pfnAppendMemoryPrefetch = Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch_WithTracing;
@@ -1254,7 +1264,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     }
     // below are unimplemented, provided bindings are for easier debugging only
     dt.CommandList.pfnAppendMemoryCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyRegionUnimpl);
-    dt.CommandList.pfnAppendMemoryCopyFromContext = reinterpret_cast<decltype(dt.CommandList.pfnAppendMemoryCopyFromContext)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendMemoryCopyFromContextUnimpl);
     dt.CommandList.pfnAppendImageCopy = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopy)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyUnimpl);
     dt.CommandList.pfnAppendImageCopyRegion = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyRegion)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyRegionUnimpl);
     dt.CommandList.pfnAppendImageCopyToMemory = reinterpret_cast<decltype(dt.CommandList.pfnAppendImageCopyToMemory)>(Cal::Client::Icd::LevelZero::Unimplemented::zeCommandListAppendImageCopyToMemoryUnimpl);

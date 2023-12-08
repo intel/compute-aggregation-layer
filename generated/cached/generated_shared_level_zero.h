@@ -19,7 +19,6 @@ namespace LevelZero {
 inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     std::vector<std::string> ret;
     ret.push_back("CommandList.zeCommandListAppendMemoryCopyRegion");
-    ret.push_back("CommandList.zeCommandListAppendMemoryCopyFromContext");
     ret.push_back("CommandList.zeCommandListAppendImageCopy");
     ret.push_back("CommandList.zeCommandListAppendImageCopyRegion");
     ret.push_back("CommandList.zeCommandListAppendImageCopyToMemory");

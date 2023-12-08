@@ -295,6 +295,26 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
     return true;
 }
 
+bool appendMemoryCopyFromContext(ze_command_list_handle_t cmdList,
+                                 void *destination,
+                                 ze_context_handle_t sourceContext,
+                                 const void *source,
+                                 size_t size,
+                                 ze_event_handle_t signalEvent,
+                                 uint32_t waitEventsCount,
+                                 ze_event_handle_t *waitEvents) {
+    log<Verbosity::info>("Appending memory copy operation to command list!");
+
+    if (const auto ret = zeCommandListAppendMemoryCopyFromContext(cmdList, destination, sourceContext, source, size, signalEvent, waitEventsCount, waitEvents);
+        ret != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopyFromContext() call has failed! Error code = %d", static_cast<int>(ret));
+        return false;
+    } else {
+        log<Verbosity::info>("Memory copy operation appended successfuly!");
+        return true;
+    }
+}
+
 bool appendMemoryFill(ze_command_list_handle_t cmdList,
                       void *destination,
                       const void *pattern,
@@ -319,6 +339,19 @@ bool appendMemoryFill(ze_command_list_handle_t cmdList,
     }
 
     log<Verbosity::info>("Memory fill operation appended successfully!");
+    return true;
+}
+
+bool appendMemoryPrefetch(ze_command_list_handle_t commandList, const void *sharedPtr, size_t size) {
+    log<Verbosity::info>("Appending memory prefetch operation to command list (%p)!", static_cast<void *>(commandList));
+
+    const auto zeCommandListAppendMemoryPrefetchResult = zeCommandListAppendMemoryPrefetch(commandList, sharedPtr, size);
+    if (zeCommandListAppendMemoryPrefetchResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("Error! zeCommandListAppendMemoryPrefetch() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryPrefetchResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Success! Memory prefetch operation has been appended!");
     return true;
 }
 
@@ -381,7 +414,7 @@ bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t a
     return true;
 }
 
-bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer) {
+bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device, void *&usmSharedBuffer, uint32_t ordinal) {
     ze_host_mem_alloc_desc_t hostMemAllocDesc = {ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC};
 
     ze_device_mem_alloc_desc_t deviceMemAllocDesc = {ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC};

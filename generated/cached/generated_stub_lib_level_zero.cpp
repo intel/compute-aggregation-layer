@@ -367,6 +367,10 @@ ze_result_t zeCommandListAppendMemoryFill(ze_command_list_handle_t hCommandList,
    return {};
 }
 
+ze_result_t zeCommandListAppendMemoryCopyFromContext(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 ze_result_t zeCommandListAppendMemoryPrefetch(ze_command_list_handle_t hCommandList, const void* ptr, size_t size){
    return {};
 }

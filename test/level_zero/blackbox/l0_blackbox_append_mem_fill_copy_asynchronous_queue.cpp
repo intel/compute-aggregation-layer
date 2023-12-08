@@ -23,19 +23,6 @@
 #include <string>
 #include <vector>
 
-bool appendMemoryPrefetch(ze_command_list_handle_t commandList, const void *sharedPtr, size_t size) {
-    log<Verbosity::info>("Appending memory prefetch operation to command list (%p)!", static_cast<void *>(commandList));
-
-    const auto zeCommandListAppendMemoryPrefetchResult = zeCommandListAppendMemoryPrefetch(commandList, sharedPtr, size);
-    if (zeCommandListAppendMemoryPrefetchResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("Error! zeCommandListAppendMemoryPrefetch() call has failed! Error code = %d", static_cast<int>(zeCommandListAppendMemoryPrefetchResult));
-        return false;
-    }
-
-    log<Verbosity::info>("Success! Memory prefetch operation has been appended!");
-    return true;
-}
-
 int main(int argc, const char *argv[]) {
     using namespace Cal::Testing::Utils::LevelZero;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -11,7 +11,7 @@
 
 #define RUN_REQUIRED_STEP(step)                                                                       \
     std::cout << "================= Running required step: " #step " =================" << std::endl; \
-    if (!step) {                                                                                      \
+    if (!(step)) {                                                                                    \
         std::cout << "================= Required step: " #step " failed! =================\n"         \
                   << std::endl;                                                                       \
         return -1;                                                                                    \
@@ -21,7 +21,7 @@
 
 #define RUN_OPTIONAL_STEP(step)                                                                        \
     std::cout << "================= Running optional step: " #step " =================" << std::endl;  \
-    if (!step) {                                                                                       \
+    if (!(step)) {                                                                                     \
         std::cout << "================= Optional step: " #step " failed! =================\n"          \
                   << std::endl;                                                                        \
     } else {                                                                                           \

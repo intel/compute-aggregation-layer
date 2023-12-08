@@ -109,6 +109,7 @@ ze_result_t (*zeContextDestroy)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeContextGetStatus)(ze_context_handle_t hContext) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryCopy)(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryFill)(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
+ze_result_t (*zeCommandListAppendMemoryCopyFromContext)(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryPrefetch)(ze_command_list_handle_t hCommandList, const void* ptr, size_t size) = nullptr;
 ze_result_t (*zeCommandListAppendMemAdvise)(ze_command_list_handle_t hCommandList, ze_device_handle_t hDevice, const void* ptr, size_t size, ze_memory_advice_t advice) = nullptr;
 ze_result_t (*zeDeviceGet)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) = nullptr;
@@ -764,6 +765,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeCommandListAppendMemoryFill = reinterpret_cast<decltype(zeCommandListAppendMemoryFill)>(dlsym(libraryHandle, "zeCommandListAppendMemoryFill"));
     if(nullptr == zeCommandListAppendMemoryFill){
         log<Verbosity::error>("Missing symbol zeCommandListAppendMemoryFill in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeCommandListAppendMemoryCopyFromContext = reinterpret_cast<decltype(zeCommandListAppendMemoryCopyFromContext)>(dlsym(libraryHandle, "zeCommandListAppendMemoryCopyFromContext"));
+    if(nullptr == zeCommandListAppendMemoryCopyFromContext){
+        log<Verbosity::error>("Missing symbol zeCommandListAppendMemoryCopyFromContext in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1520,6 +1527,7 @@ void unloadLevelZeroLibrary() {
     zeContextGetStatus = nullptr;
     zeCommandListAppendMemoryCopy = nullptr;
     zeCommandListAppendMemoryFill = nullptr;
+    zeCommandListAppendMemoryCopyFromContext = nullptr;
     zeCommandListAppendMemoryPrefetch = nullptr;
     zeCommandListAppendMemAdvise = nullptr;
     zeDeviceGet = nullptr;
