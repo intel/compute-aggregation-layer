@@ -1205,6 +1205,28 @@ config:
           name: driverVersion
           type: char[ZES_STRING_PROPERTY_SIZE]
           kind: scalar
+    - name: zes_perf_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "void*"
+          kind: scalar
+        2:
+          name: onSubdevice
+          type: ze_bool_t
+          kind: scalar
+        3:
+          name: subdeviceId
+          type: uint32_t
+          kind: scalar
+        4:
+          name: engines
+          type: zes_engine_type_flags_t
+          kind: scalar
     - name: zes_process_state_t
       members:
         0:
@@ -1985,10 +2007,6 @@ config:
           Memory.zesMemoryGetProperties,
           Memory.zesMemoryGetState,
           Memory.zesMemoryGetBandwidth,
-          Device.zesDeviceEnumPerformanceFactorDomains,
-          PerformanceFactor.zesPerformanceFactorGetProperties,
-          PerformanceFactor.zesPerformanceFactorGetConfig,
-          PerformanceFactor.zesPerformanceFactorSetConfig,
           Device.zesDeviceEnumLeds,
           Led.zesLedGetProperties,
           Led.zesLedGetState,
@@ -3799,6 +3817,105 @@ config:
                   type: zes_mem_handle_t
                   kind: scalar
                 server_access: read_write
+
+        - name: zesDeviceEnumPerformanceFactorDomains
+          latency: 1.0
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: zes_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phPerf
+              type: zes_perf_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zes_perf_handle_t
+                  kind: pointer
+                server_access: read_write
+        - name: zesPerformanceFactorGetProperties
+          latency: 1.0
+          ddi_category: PerformanceFactor
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hPerf
+              type: zes_perf_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_perf_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_perf_properties_t
+                  kind: struct
+                server_access: read_write                
+        - name: zesPerformanceFactorGetConfig
+          latency: 1.0
+          ddi_category: PerformanceFactor
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPerf
+              type: zes_perf_handle_t
+              kind: scalar
+            1:
+              name: pFactor
+              type: double*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: double
+                  kind: scalar
+                server_access: read_write
+        - name: zesPerformanceFactorSetConfig
+          latency: 1.0
+          ddi_category: PerformanceFactor
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hPerf
+              type: zes_perf_handle_t
+              kind: scalar
+            1:
+              name: pFactor
+              type: double
+              kind: scalar
 
         - name: zesDeviceEnumStandbyDomains
           latency: 1.0

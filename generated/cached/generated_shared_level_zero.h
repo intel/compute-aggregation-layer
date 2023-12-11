@@ -51,10 +51,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Memory.zesMemoryGetProperties");
     ret.push_back("Memory.zesMemoryGetState");
     ret.push_back("Memory.zesMemoryGetBandwidth");
-    ret.push_back("Device.zesDeviceEnumPerformanceFactorDomains");
-    ret.push_back("PerformanceFactor.zesPerformanceFactorGetProperties");
-    ret.push_back("PerformanceFactor.zesPerformanceFactorGetConfig");
-    ret.push_back("PerformanceFactor.zesPerformanceFactorSetConfig");
     ret.push_back("Device.zesDeviceEnumLeds");
     ret.push_back("Led.zesLedGetProperties");
     ret.push_back("Led.zesLedGetState");

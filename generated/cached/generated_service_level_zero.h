@@ -95,6 +95,10 @@ extern ze_result_t (*zesDevicePciGetBars)(zes_device_handle_t hDevice, uint32_t*
 extern ze_result_t (*zesDevicePciGetStats)(zes_device_handle_t hDevice, zes_pci_stats_t* pStats);
 extern ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 extern ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
+extern ze_result_t (*zesDeviceEnumPerformanceFactorDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf);
+extern ze_result_t (*zesPerformanceFactorGetProperties)(zes_perf_handle_t hPerf, zes_perf_properties_t* pProperties);
+extern ze_result_t (*zesPerformanceFactorGetConfig)(zes_perf_handle_t hPerf, double* pFactor);
+extern ze_result_t (*zesPerformanceFactorSetConfig)(zes_perf_handle_t hPerf, double pFactor);
 extern ze_result_t (*zesDeviceEnumStandbyDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby);
 extern ze_result_t (*zesStandbyGetProperties)(zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties);
 extern ze_result_t (*zesStandbyGetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode);
@@ -819,6 +823,43 @@ inline bool zesDeviceEnumMemoryModulesHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount, 
                                                 apiCommand->args.phMemory ? apiCommand->captures.phMemory : nullptr
+                                                );
+    return true;
+}
+inline bool zesDeviceEnumPerformanceFactorDomainsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesDeviceEnumPerformanceFactorDomains");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumPerformanceFactorDomainsRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumPerformanceFactorDomains(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
+                                                apiCommand->args.phPerf ? apiCommand->captures.phPerf : nullptr
+                                                );
+    return true;
+}
+inline bool zesPerformanceFactorGetPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPerformanceFactorGetProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorGetPropertiesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorGetProperties(
+                                                apiCommand->args.hPerf, 
+                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zesPerformanceFactorGetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPerformanceFactorGetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorGetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorGetConfig(
+                                                apiCommand->args.hPerf, 
+                                                apiCommand->args.pFactor ? &apiCommand->captures.pFactor : nullptr
+                                                );
+    return true;
+}
+inline bool zesPerformanceFactorSetConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zesPerformanceFactorSetConfig");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorSetConfigRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorSetConfig(
+                                                apiCommand->args.hPerf, 
+                                                apiCommand->args.pFactor
                                                 );
     return true;
 }
@@ -3106,6 +3147,10 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZesDevicePciGetStatsRpcM::messageSubtype] = zesDevicePciGetStatsHandler;
     outHandlers[ZesDeviceGetPropertiesRpcM::messageSubtype] = zesDeviceGetPropertiesHandler;
     outHandlers[ZesDeviceEnumMemoryModulesRpcM::messageSubtype] = zesDeviceEnumMemoryModulesHandler;
+    outHandlers[ZesDeviceEnumPerformanceFactorDomainsRpcM::messageSubtype] = zesDeviceEnumPerformanceFactorDomainsHandler;
+    outHandlers[ZesPerformanceFactorGetPropertiesRpcM::messageSubtype] = zesPerformanceFactorGetPropertiesHandler;
+    outHandlers[ZesPerformanceFactorGetConfigRpcM::messageSubtype] = zesPerformanceFactorGetConfigHandler;
+    outHandlers[ZesPerformanceFactorSetConfigRpcM::messageSubtype] = zesPerformanceFactorSetConfigHandler;
     outHandlers[ZesDeviceEnumStandbyDomainsRpcM::messageSubtype] = zesDeviceEnumStandbyDomainsHandler;
     outHandlers[ZesStandbyGetPropertiesRpcM::messageSubtype] = zesStandbyGetPropertiesHandler;
     outHandlers[ZesStandbyGetModeRpcM::messageSubtype] = zesStandbyGetModeHandler;
@@ -3678,6 +3723,31 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM &ap
                                                 apiCommand.args.hDevice, 
                                                 apiCommand.args.pCount, 
                                                 apiCommand.args.phMemory
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumPerformanceFactorDomainsRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumPerformanceFactorDomains(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pCount, 
+                                                apiCommand.args.phPerf
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPerformanceFactorGetPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorGetProperties(
+                                                apiCommand.args.hPerf, 
+                                                apiCommand.args.pProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPerformanceFactorGetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorGetConfig(
+                                                apiCommand.args.hPerf, 
+                                                apiCommand.args.pFactor
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZesPerformanceFactorSetConfigRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesPerformanceFactorSetConfig(
+                                                apiCommand.args.hPerf, 
+                                                apiCommand.args.pFactor
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceEnumStandbyDomainsRpcM &apiCommand) {
@@ -5128,6 +5198,10 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZesDevicePciGetStatsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetStatsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesDeviceEnumPerformanceFactorDomainsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumPerformanceFactorDomainsRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPerformanceFactorGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorGetPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPerformanceFactorGetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorGetConfigRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZesPerformanceFactorSetConfigRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesPerformanceFactorSetConfigRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumStandbyDomainsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumStandbyDomainsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesStandbyGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesStandbyGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesStandbyGetModeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesStandbyGetModeRpcM*>(command)); break;

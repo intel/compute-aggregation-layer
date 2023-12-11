@@ -86,6 +86,10 @@ ze_result_t (*zesDevicePciGetBars)(zes_device_handle_t hDevice, uint32_t* pCount
 ze_result_t (*zesDevicePciGetStats)(zes_device_handle_t hDevice, zes_pci_stats_t* pStats) = nullptr;
 ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) = nullptr;
+ze_result_t (*zesDeviceEnumPerformanceFactorDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) = nullptr;
+ze_result_t (*zesPerformanceFactorGetProperties)(zes_perf_handle_t hPerf, zes_perf_properties_t* pProperties) = nullptr;
+ze_result_t (*zesPerformanceFactorGetConfig)(zes_perf_handle_t hPerf, double* pFactor) = nullptr;
+ze_result_t (*zesPerformanceFactorSetConfig)(zes_perf_handle_t hPerf, double pFactor) = nullptr;
 ze_result_t (*zesDeviceEnumStandbyDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) = nullptr;
 ze_result_t (*zesStandbyGetProperties)(zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties) = nullptr;
 ze_result_t (*zesStandbyGetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode) = nullptr;
@@ -627,6 +631,30 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesDeviceEnumMemoryModules = reinterpret_cast<decltype(zesDeviceEnumMemoryModules)>(dlsym(libraryHandle, "zesDeviceEnumMemoryModules"));
     if(nullptr == zesDeviceEnumMemoryModules){
         log<Verbosity::error>("Missing symbol zesDeviceEnumMemoryModules in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesDeviceEnumPerformanceFactorDomains = reinterpret_cast<decltype(zesDeviceEnumPerformanceFactorDomains)>(dlsym(libraryHandle, "zesDeviceEnumPerformanceFactorDomains"));
+    if(nullptr == zesDeviceEnumPerformanceFactorDomains){
+        log<Verbosity::error>("Missing symbol zesDeviceEnumPerformanceFactorDomains in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesPerformanceFactorGetProperties = reinterpret_cast<decltype(zesPerformanceFactorGetProperties)>(dlsym(libraryHandle, "zesPerformanceFactorGetProperties"));
+    if(nullptr == zesPerformanceFactorGetProperties){
+        log<Verbosity::error>("Missing symbol zesPerformanceFactorGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesPerformanceFactorGetConfig = reinterpret_cast<decltype(zesPerformanceFactorGetConfig)>(dlsym(libraryHandle, "zesPerformanceFactorGetConfig"));
+    if(nullptr == zesPerformanceFactorGetConfig){
+        log<Verbosity::error>("Missing symbol zesPerformanceFactorGetConfig in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesPerformanceFactorSetConfig = reinterpret_cast<decltype(zesPerformanceFactorSetConfig)>(dlsym(libraryHandle, "zesPerformanceFactorSetConfig"));
+    if(nullptr == zesPerformanceFactorSetConfig){
+        log<Verbosity::error>("Missing symbol zesPerformanceFactorSetConfig in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1504,6 +1532,10 @@ void unloadLevelZeroLibrary() {
     zesDevicePciGetStats = nullptr;
     zesDeviceGetProperties = nullptr;
     zesDeviceEnumMemoryModules = nullptr;
+    zesDeviceEnumPerformanceFactorDomains = nullptr;
+    zesPerformanceFactorGetProperties = nullptr;
+    zesPerformanceFactorGetConfig = nullptr;
+    zesPerformanceFactorSetConfig = nullptr;
     zesDeviceEnumStandbyDomains = nullptr;
     zesStandbyGetProperties = nullptr;
     zesStandbyGetMode = nullptr;

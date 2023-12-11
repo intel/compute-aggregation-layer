@@ -340,6 +340,26 @@ size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) {
+    DynamicTraits ret = {};
+    ret.phPerf.count = (pCount ? *pCount : 0);
+    ret.phPerf.size = ret.phPerf.count * sizeof(zes_perf_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phPerf.offset + ret.phPerf.size);
+
+
+    return ret;
+}
+
+size_t ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phPerf) + Cal::Utils::alignUpPow2<8>(this->countPhPerf * sizeof(zes_perf_handle_t));
+     return size;
+}
+
+size_t ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhPerf * sizeof(zes_perf_handle_t));
+     return size;
+}
+
 ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) {
     DynamicTraits ret = {};
     ret.phStandby.count = (pCount ? *pCount : 0);

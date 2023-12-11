@@ -275,6 +275,22 @@ ze_result_t zesDeviceEnumMemoryModules(zes_device_handle_t hDevice, uint32_t* pC
    return {};
 }
 
+ze_result_t zesDeviceEnumPerformanceFactorDomains(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf){
+   return {};
+}
+
+ze_result_t zesPerformanceFactorGetProperties(zes_perf_handle_t hPerf, zes_perf_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesPerformanceFactorGetConfig(zes_perf_handle_t hPerf, double* pFactor){
+   return {};
+}
+
+ze_result_t zesPerformanceFactorSetConfig(zes_perf_handle_t hPerf, double pFactor){
+   return {};
+}
+
 ze_result_t zesDeviceEnumStandbyDomains(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby){
    return {};
 }
