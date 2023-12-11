@@ -767,13 +767,30 @@ class FunctionCaptureLayout:
 
                 copy_to_caller += f"\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
                 copy_to_caller += f"\n{spaces}    if (!isReadOnly(extensionType)) {{"
-                copy_to_caller += f"\n{spaces}        auto originalNextOpaqueElement = getNext({list_element_name});"
-                copy_to_caller += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
-                copy_to_caller += f"\n{spaces}        auto destination = const_cast<{iterator_type}*>({list_element_name});"
-                copy_to_caller += f"\n{spaces}        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);\n"
-                copy_to_caller += f"\n{spaces}        getNextField(*destination) = originalNextOpaqueElement;"
-                copy_to_caller += f"\n{spaces}    }}\n"
+                if self.children:
+                    children_per_ext_dict = self.get_children_per_extension()
+                    for enum_value, ext_children in children_per_ext_dict.items():
+                        extension_type = ext_children[0].extension_data.type_name
+                        copy_to_caller += f"\n{spaces}        if (extensionType == static_cast<int>({enum_value})) {{"
+                        copy_to_caller += f"\n{spaces}            auto& extension = *reinterpret_cast<const {extension_type}*>({list_element_name});"
+                        copy_to_caller += f"\n{spaces}            auto* extensionTraits = reinterpret_cast<DynamicStructTraits<{extension_type}>*>(dynMem + {current_offset_var});"
+                        copy_to_caller += f"\n{spaces}            {current_offset_var} += alignUpPow2<8>(sizeof(DynamicStructTraits<{extension_type}>));"
+                        for child in ext_children:
+                            next_it_2 = str(chr(ord(next_it) + 1))
+                            copy_to_caller += f"\n\n{spaces}            for(int32_t {next_it_2} = 0; {next_it_2} < 1; ++{next_it_2}) {{"
+                            copy_to_caller += "\n" + child.create_copy_from_caller(current_offset_var, formatter, spaces_count + 16, next_it_2)
+                            copy_to_caller += f"\n    {spaces}        }}"
+                        copy_to_caller += f"\n{spaces}        }}"
+                        copy_to_caller += f"\n{spaces}        else"
+                copy_to_caller += f"\n{spaces}        {{"
+                copy_to_caller += f"\n{spaces}            auto originalNextOpaqueElement = getNext({list_element_name});"
+                copy_to_caller += f"\n{spaces}            const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
+                copy_to_caller += f"\n{spaces}            auto destination = const_cast<{iterator_type}*>({list_element_name});"
+                copy_to_caller += f"\n{spaces}            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);\n"
+                copy_to_caller += f"\n{spaces}            getNextField(*destination) = originalNextOpaqueElement;"
+                copy_to_caller += f"\n{spaces}        }}\n"
 
+                copy_to_caller += f"\n{spaces}    }}\n"
                 copy_to_caller += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"
                 copy_to_caller += f"\n{spaces}}}\n"
 

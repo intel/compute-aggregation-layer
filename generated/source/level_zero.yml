@@ -1261,6 +1261,52 @@ config:
           name: haveReplayCounters
           type: ze_bool_t
           kind: scalar
+    - name: zes_power_limit_ext_desc_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: level
+          type: zes_power_level_t
+          kind: scalar
+        3:
+          name: source
+          type: zes_power_source_t
+          kind: scalar
+        4:
+          name: limitUnit
+          type: zes_limit_unit_t
+          kind: scalar
+        5:
+          name: enabledStateLocked
+          type: ze_bool_t
+          kind: scalar
+        6:
+          name: enabled
+          type: ze_bool_t
+          kind: scalar
+        7:
+          name: intervalValueLocked
+          type: ze_bool_t
+          kind: scalar
+        8:
+          name: interval
+          type: int32_t
+          kind: scalar
+        9:
+          name: limitValueLocked
+          type: ze_bool_t
+          kind: scalar
+        10:
+          name: limit
+          type: int32_t
+          kind: scalar
     - name: zes_power_ext_properties_t
       members:
         0:
@@ -2402,7 +2448,7 @@ config:
                 can_be_null: True
                 element:
                   type: zes_power_limit_ext_desc_t
-                  kind: pointer
+                  kind: struct
                 server_access: read_write
         - name: zesPowerSetLimitsExt
           latency: 1.0
@@ -2437,7 +2483,7 @@ config:
                 can_be_null: True
                 element:
                   type: zes_power_limit_ext_desc_t
-                  kind: pointer
+                  kind: struct
                 server_access: read
         - name: zesPowerGetEnergyThreshold
           latency: 1.0
