@@ -4433,9 +4433,6 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    {
-        globalPlatform->destroyUsmDescriptor(const_cast<void*>(ptr));
-    }
     ze_result_t ret = command->captures.ret;
 
     return ret;

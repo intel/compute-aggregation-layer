@@ -8266,7 +8266,6 @@ config:
               name: ptr
               type: const void*
               kind: pointer
-              translate_after: "globalPlatform->destroyUsmDescriptor(const_cast<void*>({arg}))"
         - name: zexMemGetIpcHandles
           latency: 0.0
           special_handling:

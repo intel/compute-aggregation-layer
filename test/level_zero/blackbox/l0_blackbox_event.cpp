@@ -37,7 +37,7 @@ bool testIpcFunctionality(ze_context_handle_t context, ze_event_pool_handle_t ev
         log<Verbosity::info>("Events IPC features are not supported on this device. Skipping...");
         return true;
     } else if (zeEventPoolGetIpcHandleResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventPoolGetIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolGetIpcHandleResult));
+        log<Verbosity::error>("zeEventPoolGetIpcHandle() call has failed! Error code: %x", static_cast<int>(zeEventPoolGetIpcHandleResult));
         return false;
     }
 
@@ -49,7 +49,7 @@ bool testIpcFunctionality(ze_context_handle_t context, ze_event_pool_handle_t ev
     ze_event_pool_handle_t eventPoolOpenedFromIpcHandle{};
     const auto zeEventPoolOpenIpcHandleResult = zeEventPoolOpenIpcHandle(context, eventPoolIpcHandle, &eventPoolOpenedFromIpcHandle);
     if (zeEventPoolOpenIpcHandleResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventPoolOpenIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolOpenIpcHandleResult));
+        log<Verbosity::error>("zeEventPoolOpenIpcHandle() call has failed! Error code: %x", static_cast<int>(zeEventPoolOpenIpcHandleResult));
         return false;
     }
     log<Verbosity::info>("Successfully opened IPC handle! Event pool handle = %p", static_cast<void *>(eventPoolOpenedFromIpcHandle));
@@ -57,7 +57,7 @@ bool testIpcFunctionality(ze_context_handle_t context, ze_event_pool_handle_t ev
     log<Verbosity::info>("Closing ze_ipc_event_pool_handle_t via zeEventPoolCloseIpcHandle()");
     const auto zeEventPoolCloseIpcHandleResult = zeEventPoolCloseIpcHandle(eventPoolOpenedFromIpcHandle);
     if (zeEventPoolCloseIpcHandleResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventPoolCloseIpcHandle() call has failed! Error code: %d", static_cast<int>(zeEventPoolCloseIpcHandleResult));
+        log<Verbosity::error>("zeEventPoolCloseIpcHandle() call has failed! Error code: %x", static_cast<int>(zeEventPoolCloseIpcHandleResult));
         return false;
     }
     eventPoolOpenedFromIpcHandle = nullptr;
@@ -80,7 +80,7 @@ bool signalEventFromHost(ze_event_handle_t event) {
 
     const auto zeEventHostSignalResult = zeEventHostSignal(event);
     if (zeEventHostSignalResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeEventHostSignal() call has failed! Error code: %d", static_cast<int>(zeEventHostSignalResult));
+        log<Verbosity::error>("zeEventHostSignal() call has failed! Error code: %x", static_cast<int>(zeEventHostSignalResult));
         return false;
     }
 
@@ -113,7 +113,7 @@ bool appendSignalEvent(ze_command_list_handle_t cmdList, ze_event_handle_t event
 
     const auto zeCommandListAppendSignalEventResult = zeCommandListAppendSignalEvent(cmdList, event);
     if (zeCommandListAppendSignalEventResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListAppendSignalEvent() call has failed! Error code: %d", static_cast<int>(zeCommandListAppendSignalEventResult));
+        log<Verbosity::error>("zeCommandListAppendSignalEvent() call has failed! Error code: %x", static_cast<int>(zeCommandListAppendSignalEventResult));
         return false;
     }
 
@@ -126,7 +126,7 @@ bool appendResetEvent(ze_command_list_handle_t cmdList, ze_event_handle_t event)
 
     const auto zeCommandListAppendEventResetResult = zeCommandListAppendEventReset(cmdList, event);
     if (zeCommandListAppendEventResetResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::error>("zeCommandListAppendEventReset() call has failed! Error code: %d", static_cast<int>(zeCommandListAppendEventResetResult));
+        log<Verbosity::error>("zeCommandListAppendEventReset() call has failed! Error code: %x", static_cast<int>(zeCommandListAppendEventResetResult));
         return false;
     }
 
