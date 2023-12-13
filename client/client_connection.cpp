@@ -19,7 +19,7 @@ namespace Cal::Client {
 
 ClientConnection::ClientConnection() {
     Cal::Utils::initDynamicVerbosity();
-    this->usesSharedVaForRpcChannel = Cal::Utils::getCalEnvFlag(calUseSharedVaForRpcChannel, false);
+    this->usesSharedVaForRpcChannel = Cal::Utils::getCalEnvFlag(calUseSharedVaForRpcChannel, true);
     auto cpuInfoOpt = cpuInfo.read();
     if (cpuInfoOpt) {
         this->cpuInfo = cpuInfoOpt.value();
