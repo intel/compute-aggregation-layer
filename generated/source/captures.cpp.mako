@@ -8,13 +8,13 @@ ${function.message_name}::Captures::DynamicTraits ${function.message_name}::Capt
     DynamicTraits ret = {};
 %  if inline_dyn_array_args:
 %   if emit_per_arg_dynamic_traits:
-    ret.${inline_dyn_array_args[0].name}.count = ${inline_dyn_array_args[0].get_calculated_elements_count()};
+    ret.${inline_dyn_array_args[0].name}.count = ${inline_dyn_array_args[0].name} ? (${inline_dyn_array_args[0].get_calculated_elements_count()}) : 0;
     ret.${inline_dyn_array_args[0].name}.size = ${cl.get_dynamic_array_size_str(inline_dyn_array_args[0], f"ret.{inline_dyn_array_args[0].name}.count")};
 <% prev = inline_dyn_array_args[0] %>\
 %    for arg in inline_dyn_array_args[1:]:
 
     ret.${arg.name}.offset = alignUpPow2<8>(ret.${prev.name}.offset + ret.${prev.name}.size);
-    ret.${arg.name}.count = ${arg.get_calculated_elements_count()};
+    ret.${arg.name}.count = ${arg.name} ? (${arg.get_calculated_elements_count()}) : 0;
     ret.${arg.name}.size = ${cl.get_dynamic_array_size_str(arg, f"ret.{arg.name}.count")};
 <% prev = arg %>\
 %    endfor # inline_dyn_array_args[1:]
@@ -30,7 +30,7 @@ ${function.message_name}::Captures::DynamicTraits ${function.message_name}::Capt
     for(uint32_t i = 0; i < ret.${arg.name}.count; ++i){
         DynamicArgTraits nested;
         nested.offset = ret.totalDynamicSize;
-        nested.count = ${arg.kind_details.element.get_calculated_elements_count(arg.name, 'i')};
+        nested.count = ${arg.name} ? (${arg.kind_details.element.get_calculated_elements_count(arg.name, 'i')}) : 0;
         nested.size = ${arg.kind_details.element.get_calculated_array_size(count = "nested.count")};
         ret.totalDynamicSize += alignUpPow2<8>(nested.size);
         ret.${arg.name}.nested.push_back(nested);
@@ -43,7 +43,7 @@ ${function.message_name}::Captures::DynamicTraits ${function.message_name}::Capt
 %   if member_layouts:
     if (${arg.name}) {
         ret.${arg.name}NestedTraits.offset = ret.totalDynamicSize;
-        ret.${arg.name}NestedTraits.count = ${arg.get_calculated_elements_count()};
+        ret.${arg.name}NestedTraits.count = ${arg.name} ? (${arg.get_calculated_elements_count()}) : 0;
         ret.${arg.name}NestedTraits.size = ret.${arg.name}NestedTraits.count * sizeof(DynamicStructTraits<${arg.kind_details.element.type.str}>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.${arg.name}NestedTraits.size);
 %   endif

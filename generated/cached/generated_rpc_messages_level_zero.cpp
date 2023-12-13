@@ -18,7 +18,7 @@ using namespace Cal::Utils;
 
 ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower) {
     DynamicTraits ret = {};
-    ret.phPower.count = (pCount ? *pCount : 0);
+    ret.phPower.count = phPower ? ((pCount ? *pCount : 0)) : 0;
     ret.phPower.size = ret.phPower.count * sizeof(zes_pwr_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phPower.offset + ret.phPower.size);
 
@@ -42,7 +42,7 @@ ZesPowerGetPropertiesRpcM::Captures::DynamicTraits ZesPowerGetPropertiesRpcM::Ca
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pProperties) {
         ret.pPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pPropertiesNestedTraits.count = 1;
+        ret.pPropertiesNestedTraits.count = pProperties ? (1) : 0;
         ret.pPropertiesNestedTraits.size = ret.pPropertiesNestedTraits.count * sizeof(DynamicStructTraits<zes_power_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pPropertiesNestedTraits.size);
 
@@ -102,7 +102,7 @@ size_t ZesPowerGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesPowerGetLimitsExtRpcM::Captures::DynamicTraits ZesPowerGetLimitsExtRpcM::Captures::DynamicTraits::calculate(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
     DynamicTraits ret = {};
-    ret.pSustained.count = (pCount ? *pCount : 0);
+    ret.pSustained.count = pSustained ? ((pCount ? *pCount : 0)) : 0;
     ret.pSustained.size = ret.pSustained.count * sizeof(zes_power_limit_ext_desc_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pSustained.offset + ret.pSustained.size);
 
@@ -122,7 +122,7 @@ size_t ZesPowerGetLimitsExtRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesPowerSetLimitsExtRpcM::Captures::DynamicTraits ZesPowerSetLimitsExtRpcM::Captures::DynamicTraits::calculate(zes_pwr_handle_t hPower, uint32_t* pCount, zes_power_limit_ext_desc_t* pSustained) {
     DynamicTraits ret = {};
-    ret.pSustained.count = (pCount ? *pCount : 0);
+    ret.pSustained.count = pSustained ? ((pCount ? *pCount : 0)) : 0;
     ret.pSustained.size = ret.pSustained.count * sizeof(zes_power_limit_ext_desc_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pSustained.offset + ret.pSustained.size);
 
@@ -142,7 +142,7 @@ size_t ZesPowerSetLimitsExtRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDriverEventListenRpcM::Captures::DynamicTraits ZesDriverEventListenRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t timeout, uint32_t count, ze_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
     DynamicTraits ret = {};
-    ret.phDevices.count = count;
+    ret.phDevices.count = phDevices ? (count) : 0;
     ret.phDevices.size = ret.phDevices.count * sizeof(zes_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
@@ -162,7 +162,7 @@ size_t ZesDriverEventListenRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDriverEventListenExRpcM::Captures::DynamicTraits ZesDriverEventListenExRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint64_t timeout, uint32_t count, zes_device_handle_t* phDevices, uint32_t* pNumDeviceEvents, zes_event_type_flags_t* pEvents) {
     DynamicTraits ret = {};
-    ret.phDevices.count = count;
+    ret.phDevices.count = phDevices ? (count) : 0;
     ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
@@ -182,7 +182,7 @@ size_t ZesDriverEventListenExRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceEnumTemperatureSensorsRpcM::Captures::DynamicTraits ZesDeviceEnumTemperatureSensorsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_temp_handle_t* phTemperature) {
     DynamicTraits ret = {};
-    ret.phTemperature.count = (pCount ? *pCount : 0);
+    ret.phTemperature.count = phTemperature ? ((pCount ? *pCount : 0)) : 0;
     ret.phTemperature.size = ret.phTemperature.count * sizeof(zes_temp_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phTemperature.offset + ret.phTemperature.size);
 
@@ -202,7 +202,7 @@ size_t ZesDeviceEnumTemperatureSensorsRpcM::Captures::getCaptureDynMemSize() con
 
 ZesDeviceEnumRasErrorSetsRpcM::Captures::DynamicTraits ZesDeviceEnumRasErrorSetsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_ras_handle_t* phRas) {
     DynamicTraits ret = {};
-    ret.phRas.count = (pCount ? *pCount : 0);
+    ret.phRas.count = phRas ? ((pCount ? *pCount : 0)) : 0;
     ret.phRas.size = ret.phRas.count * sizeof(zes_ras_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phRas.offset + ret.phRas.size);
 
@@ -222,7 +222,7 @@ size_t ZesDeviceEnumRasErrorSetsRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceEnumFrequencyDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumFrequencyDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_freq_handle_t* phFrequency) {
     DynamicTraits ret = {};
-    ret.phFrequency.count = (pCount ? *pCount : 0);
+    ret.phFrequency.count = phFrequency ? ((pCount ? *pCount : 0)) : 0;
     ret.phFrequency.size = ret.phFrequency.count * sizeof(zes_freq_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phFrequency.offset + ret.phFrequency.size);
 
@@ -242,7 +242,7 @@ size_t ZesDeviceEnumFrequencyDomainsRpcM::Captures::getCaptureDynMemSize() const
 
 ZesFrequencyGetAvailableClocksRpcM::Captures::DynamicTraits ZesFrequencyGetAvailableClocksRpcM::Captures::DynamicTraits::calculate(zes_freq_handle_t hFrequency, uint32_t* pCount, double* phFrequency) {
     DynamicTraits ret = {};
-    ret.phFrequency.count = (pCount ? *pCount : 0);
+    ret.phFrequency.count = phFrequency ? ((pCount ? *pCount : 0)) : 0;
     ret.phFrequency.size = ret.phFrequency.count * sizeof(double);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phFrequency.offset + ret.phFrequency.size);
 
@@ -262,7 +262,7 @@ size_t ZesFrequencyGetAvailableClocksRpcM::Captures::getCaptureDynMemSize() cons
 
 ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits ZesDeviceEnumEngineGroupsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_engine_handle_t* phEngine) {
     DynamicTraits ret = {};
-    ret.phEngine.count = (pCount ? *pCount : 0);
+    ret.phEngine.count = phEngine ? ((pCount ? *pCount : 0)) : 0;
     ret.phEngine.size = ret.phEngine.count * sizeof(zes_engine_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phEngine.offset + ret.phEngine.size);
 
@@ -282,7 +282,7 @@ size_t ZesDeviceEnumEngineGroupsRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceEnumSchedulersRpcM::Captures::DynamicTraits ZesDeviceEnumSchedulersRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_sched_handle_t* phScheduler) {
     DynamicTraits ret = {};
-    ret.phScheduler.count = (pCount ? *pCount : 0);
+    ret.phScheduler.count = phScheduler ? ((pCount ? *pCount : 0)) : 0;
     ret.phScheduler.size = ret.phScheduler.count * sizeof(zes_sched_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phScheduler.offset + ret.phScheduler.size);
 
@@ -302,7 +302,7 @@ size_t ZesDeviceEnumSchedulersRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits ZesDeviceProcessesGetStateRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     DynamicTraits ret = {};
-    ret.pProcesses.count = (pCount ? *pCount : 0);
+    ret.pProcesses.count = pProcesses ? ((pCount ? *pCount : 0)) : 0;
     ret.pProcesses.size = ret.pProcesses.count * sizeof(zes_process_state_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pProcesses.offset + ret.pProcesses.size);
 
@@ -322,7 +322,7 @@ size_t ZesDeviceProcessesGetStateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
     DynamicTraits ret = {};
-    ret.phMemory.count = (pCount ? *pCount : 0);
+    ret.phMemory.count = phMemory ? ((pCount ? *pCount : 0)) : 0;
     ret.phMemory.size = ret.phMemory.count * sizeof(zes_mem_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phMemory.offset + ret.phMemory.size);
 
@@ -342,7 +342,7 @@ size_t ZesDeviceEnumMemoryModulesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) {
     DynamicTraits ret = {};
-    ret.phPerf.count = (pCount ? *pCount : 0);
+    ret.phPerf.count = phPerf ? ((pCount ? *pCount : 0)) : 0;
     ret.phPerf.size = ret.phPerf.count * sizeof(zes_perf_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phPerf.offset + ret.phPerf.size);
 
@@ -362,7 +362,7 @@ size_t ZesDeviceEnumPerformanceFactorDomainsRpcM::Captures::getCaptureDynMemSize
 
 ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumStandbyDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_standby_handle_t* phStandby) {
     DynamicTraits ret = {};
-    ret.phStandby.count = (pCount ? *pCount : 0);
+    ret.phStandby.count = phStandby ? ((pCount ? *pCount : 0)) : 0;
     ret.phStandby.size = ret.phStandby.count * sizeof(zes_standby_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phStandby.offset + ret.phStandby.size);
 
@@ -382,15 +382,15 @@ size_t ZesDeviceEnumStandbyDomainsRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.pRangeSizes.count = numRanges;
+    ret.pRangeSizes.count = pRangeSizes ? (numRanges) : 0;
     ret.pRangeSizes.size = ret.pRangeSizes.count * sizeof(size_t);
 
     ret.pRanges.offset = alignUpPow2<8>(ret.pRangeSizes.offset + ret.pRangeSizes.size);
-    ret.pRanges.count = numRanges;
+    ret.pRanges.count = pRanges ? (numRanges) : 0;
     ret.pRanges.size = ret.pRanges.count * sizeof(const void*);
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.pRanges.offset + ret.pRanges.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -416,7 +416,7 @@ size_t ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::getCaptureDynMemSiz
 
 ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -436,7 +436,7 @@ size_t ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::getCaptureDynMemSi
 
 ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits::calculate(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
     DynamicTraits ret = {};
-    ret.phCommandLists.count = numCommandLists;
+    ret.phCommandLists.count = phCommandLists ? (numCommandLists) : 0;
     ret.phCommandLists.size = ret.phCommandLists.count * sizeof(ze_command_list_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phCommandLists.offset + ret.phCommandLists.size);
 
@@ -456,11 +456,11 @@ size_t ZeCommandQueueExecuteCommandListsRpcM::Captures::getCaptureDynMemSize() c
 
 ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsCopyMemoryRpcHelperRpcM::Captures::DynamicTraits::calculate(uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs) {
     DynamicTraits ret = {};
-    ret.chunks.count = chunksCount;
+    ret.chunks.count = chunks ? (chunksCount) : 0;
     ret.chunks.size = ret.chunks.count * sizeof(Cal::Rpc::MemChunk);
 
     ret.transferDescs.offset = alignUpPow2<8>(ret.chunks.offset + ret.chunks.size);
-    ret.transferDescs.count = (transferDescsCount ? *transferDescsCount : 0);
+    ret.transferDescs.count = transferDescs ? ((transferDescsCount ? *transferDescsCount : 0)) : 0;
     ret.transferDescs.size = ret.transferDescs.count * sizeof(Cal::Rpc::TransferDesc);
     ret.totalDynamicSize = alignUpPow2<8>(ret.transferDescs.offset + ret.transferDescs.size);
 
@@ -490,7 +490,7 @@ ZeContextCreateRpcM::Captures::DynamicTraits ZeContextCreateRpcM::Captures::Dyna
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_context_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -530,14 +530,14 @@ size_t ZeContextCreateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeContextCreateExRpcM::Captures::DynamicTraits ZeContextCreateExRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, const ze_context_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_context_handle_t* phContext) {
     DynamicTraits ret = {};
-    ret.phDevices.count = numDevices;
+    ret.phDevices.count = phDevices ? (numDevices) : 0;
     ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_context_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -577,7 +577,7 @@ size_t ZeContextCreateExRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -597,7 +597,7 @@ size_t ZeCommandListAppendMemoryFillRpcHelperUsm2UsmRpcM::Captures::getCaptureDy
 
 ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -617,11 +617,11 @@ size_t ZeCommandListAppendMemoryFillRpcHelperUsm2MallocRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.pattern.count = pattern_size;
+    ret.pattern.count = pattern ? (pattern_size) : 0;
     ret.pattern.size = ret.pattern.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.pattern.offset + ret.pattern.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -647,11 +647,11 @@ size_t ZeCommandListAppendMemoryFillRpcHelperMalloc2UsmRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.pattern.count = pattern_size;
+    ret.pattern.count = pattern ? (pattern_size) : 0;
     ret.pattern.size = ret.pattern.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.pattern.offset + ret.pattern.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -677,7 +677,7 @@ size_t ZeCommandListAppendMemoryFillRpcHelperMalloc2MallocRpcM::Captures::getCap
 
 ZeDeviceGetRpcM::Captures::DynamicTraits ZeDeviceGetRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t* pCount, ze_device_handle_t* phDevices) {
     DynamicTraits ret = {};
-    ret.phDevices.count = (pCount ? *pCount : 0);
+    ret.phDevices.count = phDevices ? ((pCount ? *pCount : 0)) : 0;
     ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
@@ -697,7 +697,7 @@ size_t ZeDeviceGetRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeDeviceGetSubDevicesRpcM::Captures::DynamicTraits ZeDeviceGetSubDevicesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_handle_t* phSubdevices) {
     DynamicTraits ret = {};
-    ret.phSubdevices.count = (pCount ? *pCount : 0);
+    ret.phSubdevices.count = phSubdevices ? ((pCount ? *pCount : 0)) : 0;
     ret.phSubdevices.size = ret.phSubdevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phSubdevices.offset + ret.phSubdevices.size);
 
@@ -721,7 +721,7 @@ ZeDeviceGetPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetPropertiesRpcM::Ca
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pDeviceProperties) {
         ret.pDevicePropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pDevicePropertiesNestedTraits.count = 1;
+        ret.pDevicePropertiesNestedTraits.count = pDeviceProperties ? (1) : 0;
         ret.pDevicePropertiesNestedTraits.size = ret.pDevicePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pDevicePropertiesNestedTraits.size);
 
@@ -765,7 +765,7 @@ ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetModuleProper
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pModuleProperties) {
         ret.pModulePropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pModulePropertiesNestedTraits.count = 1;
+        ret.pModulePropertiesNestedTraits.count = pModuleProperties ? (1) : 0;
         ret.pModulePropertiesNestedTraits.size = ret.pModulePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_module_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pModulePropertiesNestedTraits.size);
 
@@ -805,7 +805,7 @@ size_t ZeDeviceGetModulePropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeDeviceGetCommandQueueGroupPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetCommandQueueGroupPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_command_queue_group_properties_t* pCommandQueueGroupProperties) {
     DynamicTraits ret = {};
-    ret.pCommandQueueGroupProperties.count = (pCount ? *pCount : 0);
+    ret.pCommandQueueGroupProperties.count = pCommandQueueGroupProperties ? ((pCount ? *pCount : 0)) : 0;
     ret.pCommandQueueGroupProperties.size = ret.pCommandQueueGroupProperties.count * sizeof(ze_command_queue_group_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pCommandQueueGroupProperties.offset + ret.pCommandQueueGroupProperties.size);
 
@@ -825,14 +825,14 @@ size_t ZeDeviceGetCommandQueueGroupPropertiesRpcM::Captures::getCaptureDynMemSiz
 
 ZeDeviceGetMemoryPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetMemoryPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_memory_properties_t* pMemProperties) {
     DynamicTraits ret = {};
-    ret.pMemProperties.count = (pCount ? *pCount : 0);
+    ret.pMemProperties.count = pMemProperties ? ((pCount ? *pCount : 0)) : 0;
     ret.pMemProperties.size = ret.pMemProperties.count * sizeof(ze_device_memory_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pMemProperties.offset + ret.pMemProperties.size);
 
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pMemProperties) {
         ret.pMemPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pMemPropertiesNestedTraits.count = (pCount ? *pCount : 0);
+        ret.pMemPropertiesNestedTraits.count = pMemProperties ? ((pCount ? *pCount : 0)) : 0;
         ret.pMemPropertiesNestedTraits.size = ret.pMemPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_memory_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pMemPropertiesNestedTraits.size);
 
@@ -872,14 +872,14 @@ size_t ZeDeviceGetMemoryPropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeDeviceGetCachePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetCachePropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {
     DynamicTraits ret = {};
-    ret.pCacheProperties.count = (pCount ? *pCount : 0);
+    ret.pCacheProperties.count = pCacheProperties ? ((pCount ? *pCount : 0)) : 0;
     ret.pCacheProperties.size = ret.pCacheProperties.count * sizeof(ze_device_cache_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pCacheProperties.offset + ret.pCacheProperties.size);
 
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pCacheProperties) {
         ret.pCachePropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pCachePropertiesNestedTraits.count = (pCount ? *pCount : 0);
+        ret.pCachePropertiesNestedTraits.count = pCacheProperties ? ((pCount ? *pCount : 0)) : 0;
         ret.pCachePropertiesNestedTraits.size = ret.pCachePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_cache_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pCachePropertiesNestedTraits.size);
 
@@ -923,7 +923,7 @@ ZeDeviceGetP2PPropertiesRpcM::Captures::DynamicTraits ZeDeviceGetP2PPropertiesRp
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pP2PProperties) {
         ret.pP2PPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pP2PPropertiesNestedTraits.count = 1;
+        ret.pP2PPropertiesNestedTraits.count = pP2PProperties ? (1) : 0;
         ret.pP2PPropertiesNestedTraits.size = ret.pP2PPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_device_p2p_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pP2PPropertiesNestedTraits.size);
 
@@ -963,7 +963,7 @@ size_t ZeDeviceGetP2PPropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeDriverGetRpcM::Captures::DynamicTraits ZeDriverGetRpcM::Captures::DynamicTraits::calculate(uint32_t* pCount, ze_driver_handle_t* phDrivers) {
     DynamicTraits ret = {};
-    ret.phDrivers.count = (pCount ? *pCount : 0);
+    ret.phDrivers.count = phDrivers ? ((pCount ? *pCount : 0)) : 0;
     ret.phDrivers.size = ret.phDrivers.count * sizeof(ze_driver_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDrivers.offset + ret.phDrivers.size);
 
@@ -983,7 +983,7 @@ size_t ZeDriverGetRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeDriverGetExtensionPropertiesRpcM::Captures::DynamicTraits ZeDriverGetExtensionPropertiesRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) {
     DynamicTraits ret = {};
-    ret.pExtensionProperties.count = (pCount ? *pCount : 0);
+    ret.pExtensionProperties.count = pExtensionProperties ? ((pCount ? *pCount : 0)) : 0;
     ret.pExtensionProperties.size = ret.pExtensionProperties.count * sizeof(ze_driver_extension_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pExtensionProperties.offset + ret.pExtensionProperties.size);
 
@@ -1003,7 +1003,7 @@ size_t ZeDriverGetExtensionPropertiesRpcM::Captures::getCaptureDynMemSize() cons
 
 ZeEventPoolCreateRpcM::Captures::DynamicTraits ZeEventPoolCreateRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
     DynamicTraits ret = {};
-    ret.phDevices.count = numDevices;
+    ret.phDevices.count = phDevices ? (numDevices) : 0;
     ret.phDevices.size = ret.phDevices.count * sizeof(ze_device_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phDevices.offset + ret.phDevices.size);
 
@@ -1023,7 +1023,7 @@ size_t ZeEventPoolCreateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeCommandListAppendBarrierRpcM::Captures::DynamicTraits ZeCommandListAppendBarrierRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -1043,7 +1043,7 @@ size_t ZeCommandListAppendBarrierRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeCommandListAppendWaitOnEventsRpcM::Captures::DynamicTraits ZeCommandListAppendWaitOnEventsRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
     DynamicTraits ret = {};
-    ret.phEvents.count = numEvents;
+    ret.phEvents.count = phEvents ? (numEvents) : 0;
     ret.phEvents.size = ret.phEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phEvents.offset + ret.phEvents.size);
 
@@ -1063,15 +1063,15 @@ size_t ZeCommandListAppendWaitOnEventsRpcM::Captures::getCaptureDynMemSize() con
 
 ZeCommandListAppendQueryKernelTimestampsRpcM::Captures::DynamicTraits ZeCommandListAppendQueryKernelTimestampsRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phEvents.count = numEvents;
+    ret.phEvents.count = phEvents ? (numEvents) : 0;
     ret.phEvents.size = ret.phEvents.count * sizeof(ze_event_handle_t);
 
     ret.dstptr.offset = alignUpPow2<8>(ret.phEvents.offset + ret.phEvents.size);
-    ret.dstptr.count = numEvents;
+    ret.dstptr.count = dstptr ? (numEvents) : 0;
     ret.dstptr.size = ret.dstptr.count * sizeof(ze_kernel_timestamp_result_t);
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.dstptr.offset + ret.dstptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -1097,7 +1097,7 @@ size_t ZeCommandListAppendQueryKernelTimestampsRpcM::Captures::getCaptureDynMemS
 
 ZeEventQueryTimestampsExpRpcM::Captures::DynamicTraits ZeEventQueryTimestampsExpRpcM::Captures::DynamicTraits::calculate(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pTimestamps) {
     DynamicTraits ret = {};
-    ret.pTimestamps.count = (pCount ? *pCount : 0);
+    ret.pTimestamps.count = pTimestamps ? ((pCount ? *pCount : 0)) : 0;
     ret.pTimestamps.size = ret.pTimestamps.count * sizeof(ze_kernel_timestamp_result_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pTimestamps.offset + ret.pTimestamps.size);
 
@@ -1117,11 +1117,11 @@ size_t ZeEventQueryTimestampsExpRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::DynamicTraits ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::DynamicTraits::calculate(ze_event_handle_t hEvent, ze_device_handle_t hDevice, uint32_t* pCount, ze_kernel_timestamp_result_t* pResultsTimestamps, ze_synchronized_timestamp_result_ext_t* pResultsSynchronizedTimestamps) {
     DynamicTraits ret = {};
-    ret.pResultsTimestamps.count = (pCount ? *pCount : 0);
+    ret.pResultsTimestamps.count = pResultsTimestamps ? ((pCount ? *pCount : 0)) : 0;
     ret.pResultsTimestamps.size = ret.pResultsTimestamps.count * sizeof(ze_kernel_timestamp_result_t);
 
     ret.pResultsSynchronizedTimestamps.offset = alignUpPow2<8>(ret.pResultsTimestamps.offset + ret.pResultsTimestamps.size);
-    ret.pResultsSynchronizedTimestamps.count = (pCount ? *pCount : 0);
+    ret.pResultsSynchronizedTimestamps.count = pResultsSynchronizedTimestamps ? ((pCount ? *pCount : 0)) : 0;
     ret.pResultsSynchronizedTimestamps.size = ret.pResultsSynchronizedTimestamps.count * sizeof(ze_synchronized_timestamp_result_ext_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pResultsSynchronizedTimestamps.offset + ret.pResultsSynchronizedTimestamps.size);
 
@@ -1147,7 +1147,7 @@ size_t ZeEventQueryKernelTimestampsExtRpcHelperRpcM::Captures::getCaptureDynMemS
 
 ZeFabricVertexGetExpRpcM::Captures::DynamicTraits ZeFabricVertexGetExpRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, uint32_t* pCount, ze_fabric_vertex_handle_t* phVertices) {
     DynamicTraits ret = {};
-    ret.phVertices.count = (pCount ? *pCount : 0);
+    ret.phVertices.count = phVertices ? ((pCount ? *pCount : 0)) : 0;
     ret.phVertices.size = ret.phVertices.count * sizeof(ze_fabric_vertex_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phVertices.offset + ret.phVertices.size);
 
@@ -1167,7 +1167,7 @@ size_t ZeFabricVertexGetExpRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeFabricVertexGetSubVerticesExpRpcM::Captures::DynamicTraits ZeFabricVertexGetSubVerticesExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_vertex_handle_t hVertex, uint32_t* pCount, ze_fabric_vertex_handle_t* phSubvertices) {
     DynamicTraits ret = {};
-    ret.phSubvertices.count = (pCount ? *pCount : 0);
+    ret.phSubvertices.count = phSubvertices ? ((pCount ? *pCount : 0)) : 0;
     ret.phSubvertices.size = ret.phSubvertices.count * sizeof(ze_fabric_vertex_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phSubvertices.offset + ret.phSubvertices.size);
 
@@ -1191,7 +1191,7 @@ ZeFabricVertexGetPropertiesExpRpcM::Captures::DynamicTraits ZeFabricVertexGetPro
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pVertexProperties) {
         ret.pVertexPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pVertexPropertiesNestedTraits.count = 1;
+        ret.pVertexPropertiesNestedTraits.count = pVertexProperties ? (1) : 0;
         ret.pVertexPropertiesNestedTraits.size = ret.pVertexPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_fabric_vertex_exp_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pVertexPropertiesNestedTraits.size);
 
@@ -1231,7 +1231,7 @@ size_t ZeFabricVertexGetPropertiesExpRpcM::Captures::getCaptureDynMemSize() cons
 
 ZeFabricEdgeGetExpRpcM::Captures::DynamicTraits ZeFabricEdgeGetExpRpcM::Captures::DynamicTraits::calculate(ze_fabric_vertex_handle_t hVertexA, ze_fabric_vertex_handle_t hVertexB, uint32_t* pCount, ze_fabric_edge_handle_t* phEdges) {
     DynamicTraits ret = {};
-    ret.phEdges.count = (pCount ? *pCount : 0);
+    ret.phEdges.count = phEdges ? ((pCount ? *pCount : 0)) : 0;
     ret.phEdges.size = ret.phEdges.count * sizeof(ze_fabric_edge_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phEdges.offset + ret.phEdges.size);
 
@@ -1255,7 +1255,7 @@ ZeFabricEdgeGetPropertiesExpRpcM::Captures::DynamicTraits ZeFabricEdgeGetPropert
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pEdgeProperties) {
         ret.pEdgePropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pEdgePropertiesNestedTraits.count = 1;
+        ret.pEdgePropertiesNestedTraits.count = pEdgeProperties ? (1) : 0;
         ret.pEdgePropertiesNestedTraits.size = ret.pEdgePropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_fabric_edge_exp_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pEdgePropertiesNestedTraits.size);
 
@@ -1299,7 +1299,7 @@ ZeImageGetPropertiesRpcM::Captures::DynamicTraits ZeImageGetPropertiesRpcM::Capt
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_image_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -1343,7 +1343,7 @@ ZeImageCreateRpcM::Captures::DynamicTraits ZeImageCreateRpcM::Captures::DynamicT
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_image_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -1383,7 +1383,7 @@ size_t ZeImageCreateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleInspectLinkageExtRpcM::Captures::DynamicTraits ZeModuleInspectLinkageExtRpcM::Captures::DynamicTraits::calculate(ze_linkage_inspection_ext_desc_t* pInspectDesc, uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLog) {
     DynamicTraits ret = {};
-    ret.phModules.count = numModules;
+    ret.phModules.count = phModules ? (numModules) : 0;
     ret.phModules.size = ret.phModules.count * sizeof(ze_module_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phModules.offset + ret.phModules.size);
 
@@ -1407,7 +1407,7 @@ ZeMemAllocSharedRpcM::Captures::DynamicTraits ZeMemAllocSharedRpcM::Captures::Dy
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (device_desc) {
         ret.device_descNestedTraits.offset = ret.totalDynamicSize;
-        ret.device_descNestedTraits.count = 1;
+        ret.device_descNestedTraits.count = device_desc ? (1) : 0;
         ret.device_descNestedTraits.size = ret.device_descNestedTraits.count * sizeof(DynamicStructTraits<ze_device_mem_alloc_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.device_descNestedTraits.size);
 
@@ -1434,7 +1434,7 @@ ZeMemAllocSharedRpcM::Captures::DynamicTraits ZeMemAllocSharedRpcM::Captures::Dy
     }
     if (host_desc) {
         ret.host_descNestedTraits.offset = ret.totalDynamicSize;
-        ret.host_descNestedTraits.count = 1;
+        ret.host_descNestedTraits.count = host_desc ? (1) : 0;
         ret.host_descNestedTraits.size = ret.host_descNestedTraits.count * sizeof(DynamicStructTraits<ze_host_mem_alloc_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.host_descNestedTraits.size);
 
@@ -1478,7 +1478,7 @@ ZeMemAllocDeviceRpcM::Captures::DynamicTraits ZeMemAllocDeviceRpcM::Captures::Dy
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (device_desc) {
         ret.device_descNestedTraits.offset = ret.totalDynamicSize;
-        ret.device_descNestedTraits.count = 1;
+        ret.device_descNestedTraits.count = device_desc ? (1) : 0;
         ret.device_descNestedTraits.size = ret.device_descNestedTraits.count * sizeof(DynamicStructTraits<ze_device_mem_alloc_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.device_descNestedTraits.size);
 
@@ -1522,7 +1522,7 @@ ZeMemAllocHostRpcM::Captures::DynamicTraits ZeMemAllocHostRpcM::Captures::Dynami
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (host_desc) {
         ret.host_descNestedTraits.offset = ret.totalDynamicSize;
-        ret.host_descNestedTraits.count = 1;
+        ret.host_descNestedTraits.count = host_desc ? (1) : 0;
         ret.host_descNestedTraits.size = ret.host_descNestedTraits.count * sizeof(DynamicStructTraits<ze_host_mem_alloc_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.host_descNestedTraits.size);
 
@@ -1566,7 +1566,7 @@ ZeMemGetAllocPropertiesRpcM::Captures::DynamicTraits ZeMemGetAllocPropertiesRpcM
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pMemAllocProperties) {
         ret.pMemAllocPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pMemAllocPropertiesNestedTraits.count = 1;
+        ret.pMemAllocPropertiesNestedTraits.count = pMemAllocProperties ? (1) : 0;
         ret.pMemAllocPropertiesNestedTraits.size = ret.pMemAllocPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_memory_allocation_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pMemAllocPropertiesNestedTraits.size);
 
@@ -1606,7 +1606,7 @@ size_t ZeMemGetAllocPropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits ZexMemGetIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     DynamicTraits ret = {};
-    ret.pIpcHandles.count = (numIpcHandles ? *numIpcHandles : 0);
+    ret.pIpcHandles.count = pIpcHandles ? ((numIpcHandles ? *numIpcHandles : 0)) : 0;
     ret.pIpcHandles.size = ret.pIpcHandles.count * sizeof(ze_ipc_mem_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pIpcHandles.offset + ret.pIpcHandles.size);
 
@@ -1626,7 +1626,7 @@ size_t ZexMemGetIpcHandlesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZexMemOpenIpcHandlesRpcM::Captures::DynamicTraits ZexMemOpenIpcHandlesRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr) {
     DynamicTraits ret = {};
-    ret.pIpcHandles.count = numIpcHandles;
+    ret.pIpcHandles.count = pIpcHandles ? (numIpcHandles) : 0;
     ret.pIpcHandles.size = ret.pIpcHandles.count * sizeof(ze_ipc_mem_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pIpcHandles.offset + ret.pIpcHandles.size);
 
@@ -1650,7 +1650,7 @@ ZeMemFreeExtRpcM::Captures::DynamicTraits ZeMemFreeExtRpcM::Captures::DynamicTra
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pMemFreeDesc) {
         ret.pMemFreeDescNestedTraits.offset = ret.totalDynamicSize;
-        ret.pMemFreeDescNestedTraits.count = 1;
+        ret.pMemFreeDescNestedTraits.count = pMemFreeDesc ? (1) : 0;
         ret.pMemFreeDescNestedTraits.size = ret.pMemFreeDescNestedTraits.count * sizeof(DynamicStructTraits<ze_memory_free_ext_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pMemFreeDescNestedTraits.size);
 
@@ -1694,7 +1694,7 @@ ZeModuleCreateRpcM::Captures::DynamicTraits ZeModuleCreateRpcM::Captures::Dynami
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_module_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -1967,7 +1967,7 @@ size_t ZeModuleCreateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleDynamicLinkRpcM::Captures::DynamicTraits ZeModuleDynamicLinkRpcM::Captures::DynamicTraits::calculate(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) {
     DynamicTraits ret = {};
-    ret.phModules.count = numModules;
+    ret.phModules.count = phModules ? (numModules) : 0;
     ret.phModules.size = ret.phModules.count * sizeof(ze_module_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phModules.offset + ret.phModules.size);
 
@@ -1987,7 +1987,7 @@ size_t ZeModuleDynamicLinkRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleBuildLogGetStringRpcM::Captures::DynamicTraits ZeModuleBuildLogGetStringRpcM::Captures::DynamicTraits::calculate(ze_module_build_log_handle_t hModuleBuildLog, size_t* pSize, char* pBuildLog) {
     DynamicTraits ret = {};
-    ret.pBuildLog.count = (pSize ? *pSize : 0);
+    ret.pBuildLog.count = pBuildLog ? ((pSize ? *pSize : 0)) : 0;
     ret.pBuildLog.size = ret.pBuildLog.count * sizeof(char);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pBuildLog.offset + ret.pBuildLog.size);
 
@@ -2007,7 +2007,7 @@ size_t ZeModuleBuildLogGetStringRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleGetNativeBinaryRpcM::Captures::DynamicTraits ZeModuleGetNativeBinaryRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, size_t* pSize, uint8_t* pModuleNativeBinary) {
     DynamicTraits ret = {};
-    ret.pModuleNativeBinary.count = (pSize ? *pSize : 0);
+    ret.pModuleNativeBinary.count = pModuleNativeBinary ? ((pSize ? *pSize : 0)) : 0;
     ret.pModuleNativeBinary.size = ret.pModuleNativeBinary.count * sizeof(uint8_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pModuleNativeBinary.offset + ret.pModuleNativeBinary.size);
 
@@ -2027,7 +2027,7 @@ size_t ZeModuleGetNativeBinaryRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleGetGlobalPointerRpcM::Captures::DynamicTraits ZeModuleGetGlobalPointerRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, const char* pGlobalName, size_t* pSize, void** pptr) {
     DynamicTraits ret = {};
-    ret.pGlobalName.count = Cal::Utils::countNullterminated(pGlobalName);
+    ret.pGlobalName.count = pGlobalName ? (Cal::Utils::countNullterminated(pGlobalName)) : 0;
     ret.pGlobalName.size = ret.pGlobalName.count * sizeof(char);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pGlobalName.offset + ret.pGlobalName.size);
 
@@ -2047,7 +2047,7 @@ size_t ZeModuleGetGlobalPointerRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleGetKernelNamesRpcHelperRpcM::Captures::DynamicTraits ZeModuleGetKernelNamesRpcHelperRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, uint32_t* totalLength, char* namesBuffer) {
     DynamicTraits ret = {};
-    ret.namesBuffer.count = (totalLength ? *totalLength : 0);
+    ret.namesBuffer.count = namesBuffer ? ((totalLength ? *totalLength : 0)) : 0;
     ret.namesBuffer.size = ret.namesBuffer.count * sizeof(char);
     ret.totalDynamicSize = alignUpPow2<8>(ret.namesBuffer.offset + ret.namesBuffer.size);
 
@@ -2071,7 +2071,7 @@ ZeKernelCreateRpcM::Captures::DynamicTraits ZeKernelCreateRpcM::Captures::Dynami
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (desc) {
         ret.descNestedTraits.offset = ret.totalDynamicSize;
-        ret.descNestedTraits.count = 1;
+        ret.descNestedTraits.count = desc ? (1) : 0;
         ret.descNestedTraits.size = ret.descNestedTraits.count * sizeof(DynamicStructTraits<ze_kernel_desc_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.descNestedTraits.size);
 
@@ -2104,7 +2104,7 @@ size_t ZeKernelCreateRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeModuleGetFunctionPointerRpcM::Captures::DynamicTraits ZeModuleGetFunctionPointerRpcM::Captures::DynamicTraits::calculate(ze_module_handle_t hModule, const char* pFunctionName, void** pfnFunction) {
     DynamicTraits ret = {};
-    ret.pFunctionName.count = Cal::Utils::countNullterminated(pFunctionName);
+    ret.pFunctionName.count = pFunctionName ? (Cal::Utils::countNullterminated(pFunctionName)) : 0;
     ret.pFunctionName.size = ret.pFunctionName.count * sizeof(char);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pFunctionName.offset + ret.pFunctionName.size);
 
@@ -2124,7 +2124,7 @@ size_t ZeModuleGetFunctionPointerRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeKernelSetArgumentValueRpcM::Captures::DynamicTraits ZeKernelSetArgumentValueRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) {
     DynamicTraits ret = {};
-    ret.pArgValue.count = argSize;
+    ret.pArgValue.count = pArgValue ? (argSize) : 0;
     ret.pArgValue.size = ret.pArgValue.count;
     ret.totalDynamicSize = alignUpPow2<8>(ret.pArgValue.offset + ret.pArgValue.size);
 
@@ -2148,7 +2148,7 @@ ZeKernelGetPropertiesRpcM::Captures::DynamicTraits ZeKernelGetPropertiesRpcM::Ca
     ret.dynamicStructMembersOffset = ret.totalDynamicSize;
     if (pKernelProperties) {
         ret.pKernelPropertiesNestedTraits.offset = ret.totalDynamicSize;
-        ret.pKernelPropertiesNestedTraits.count = 1;
+        ret.pKernelPropertiesNestedTraits.count = pKernelProperties ? (1) : 0;
         ret.pKernelPropertiesNestedTraits.size = ret.pKernelPropertiesNestedTraits.count * sizeof(DynamicStructTraits<ze_kernel_properties_t>);
         ret.totalDynamicSize += alignUpPow2<8>(ret.pKernelPropertiesNestedTraits.size);
 
@@ -2188,7 +2188,7 @@ size_t ZeKernelGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeKernelGetNameRpcM::Captures::DynamicTraits ZeKernelGetNameRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, size_t* pSize, char* pName) {
     DynamicTraits ret = {};
-    ret.pName.count = (pSize ? *pSize : 0);
+    ret.pName.count = pName ? ((pSize ? *pSize : 0)) : 0;
     ret.pName.size = ret.pName.count * sizeof(char);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pName.offset + ret.pName.size);
 
@@ -2208,7 +2208,7 @@ size_t ZeKernelGetNameRpcM::Captures::getCaptureDynMemSize() const {
 
 ZeCommandListAppendLaunchKernelRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchKernelRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2228,7 +2228,7 @@ size_t ZeCommandListAppendLaunchKernelRpcM::Captures::getCaptureDynMemSize() con
 
 ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2248,7 +2248,7 @@ size_t ZeCommandListAppendLaunchCooperativeKernelRpcM::Captures::getCaptureDynMe
 
 ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2268,11 +2268,11 @@ size_t ZeCommandListAppendLaunchKernelIndirectRpcM::Captures::getCaptureDynMemSi
 
 ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::DynamicTraits ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phKernels.count = numKernels;
+    ret.phKernels.count = phKernels ? (numKernels) : 0;
     ret.phKernels.size = ret.phKernels.count * sizeof(ze_kernel_handle_t);
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.phKernels.offset + ret.phKernels.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2298,7 +2298,7 @@ size_t ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2318,7 +2318,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::Captures::getCaptureDy
 
 ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2338,7 +2338,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2358,7 +2358,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::Captures::getCapt
 
 ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2378,7 +2378,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2398,7 +2398,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM::Captures::getCap
 
 ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2418,7 +2418,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM::Captures::getC
 
 ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2438,7 +2438,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Remapped_UsmRpcM::Captures::getCapt
 
 ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2458,7 +2458,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM::Captures::getC
 
 ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2478,7 +2478,7 @@ size_t ZeCommandListAppendMemoryCopyDeferred_Remapped_RemappedRpcM::Captures::ge
 
 ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2498,7 +2498,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Local_LocalRpcM::Captures::getCapt
 
 ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2518,7 +2518,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Local_UsmRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2538,7 +2538,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM::Captures::getCap
 
 ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2558,7 +2558,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Usm_LocalRpcM::Captures::getCaptur
 
 ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2578,7 +2578,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Usm_UsmRpcM::Captures::getCaptureD
 
 ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2598,7 +2598,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM::Captures::getCaptu
 
 ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2618,7 +2618,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM::Captures::getCap
 
 ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2638,7 +2638,7 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM::Captures::getCaptu
 
 ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2658,15 +2658,15 @@ size_t ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM::Captures::getCa
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.dstptr.count = size;
+    ret.dstptr.count = dstptr ? (size) : 0;
     ret.dstptr.size = ret.dstptr.count;
 
     ret.srcptr.offset = alignUpPow2<8>(ret.dstptr.offset + ret.dstptr.size);
-    ret.srcptr.count = size;
+    ret.srcptr.count = srcptr ? (size) : 0;
     ret.srcptr.size = ret.srcptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.srcptr.offset + ret.srcptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2692,11 +2692,11 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_LocalRpcM::Captur
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.dstptr.count = size;
+    ret.dstptr.count = dstptr ? (size) : 0;
     ret.dstptr.size = ret.dstptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.dstptr.offset + ret.dstptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2722,11 +2722,11 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_UsmRpcM::Captures
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.dstptr.count = size;
+    ret.dstptr.count = dstptr ? (size) : 0;
     ret.dstptr.size = ret.dstptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.dstptr.offset + ret.dstptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2752,11 +2752,11 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM::Captu
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.srcptr.count = size;
+    ret.srcptr.count = srcptr ? (size) : 0;
     ret.srcptr.size = ret.srcptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.srcptr.offset + ret.srcptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2782,7 +2782,7 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_LocalRpcM::Captures
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2802,7 +2802,7 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_UsmRpcM::Captures::
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2822,11 +2822,11 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM::Capture
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.srcptr.count = size;
+    ret.srcptr.count = srcptr ? (size) : 0;
     ret.srcptr.size = ret.srcptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.srcptr.offset + ret.srcptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2852,7 +2852,7 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM::Captu
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2872,7 +2872,7 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM::Capture
 
 ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2892,7 +2892,7 @@ size_t ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM::Capt
 
 ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2912,7 +2912,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextDeferred_Usm_UsmRpcM::Captures::g
 
 ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2932,7 +2932,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM::Captures
 
 ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2952,11 +2952,11 @@ size_t ZeCommandListAppendMemoryCopyFromContextDeferred_Remapped_UsmRpcM::Captur
 
 ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.dstptr.count = size;
+    ret.dstptr.count = dstptr ? (size) : 0;
     ret.dstptr.size = ret.dstptr.count;
 
     ret.phWaitEvents.offset = alignUpPow2<8>(ret.dstptr.offset + ret.dstptr.size);
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -2982,7 +2982,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Local_UsmRpc
 
 ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -3002,7 +3002,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Usm_UsmRpcM:
 
 ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -3022,7 +3022,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRp
 
 ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -3042,7 +3042,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_UsmRp
 
 ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
@@ -3062,7 +3062,7 @@ size_t ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_UsmRpcM
 
 ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     DynamicTraits ret = {};
-    ret.phWaitEvents.count = numWaitEvents;
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
     ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
 
