@@ -46,6 +46,42 @@ bool getZesDeviceProperties(const ze_device_handle_t device) {
     return true;
 }
 
+bool getZesEngineProperties(zes_device_handle_t device) {
+    uint32_t count = 0;
+    auto result = zesDeviceEnumEngineGroups(device, &count, nullptr);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumEngineGroups() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+    if (count == 0) {
+        log<Verbosity::error>("zesDeviceEnumEngineGroups() returned no handles! Error code = %x", static_cast<int>(result));
+        return false;
+    }
+
+    std::vector<zes_engine_handle_t> engineHandles(count);
+    result = zesDeviceEnumEngineGroups(device, &count, engineHandles.data());
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumEngineGroups() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+
+    zes_engine_properties_t properties = {ZES_STRUCTURE_TYPE_ENGINE_PROPERTIES, nullptr};
+    result = zesEngineGetProperties(engineHandles[0], &properties);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesEngineGetProperties() call has failed! Error code = %x", static_cast<int>(result));
+        return false;
+    }
+
+    zes_engine_stats_t stats = {};
+    result = zesEngineGetActivity(engineHandles[0], &stats);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesEngineGetActivity() call has failed! Error code = %x", static_cast<int>(result));
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDevices;
     using Cal::Testing::Utils::LevelZero::getDrivers;
@@ -66,15 +102,5 @@ int main(int argc, const char *argv[]) {
 
     RUN_REQUIRED_STEP(getZesDeviceProperties(devices[0]));
 
-    uint32_t count = 0;
-    RUN_REQUIRED_STEP(zesDeviceEnumEngineGroups(devices[0], &count, nullptr));
-
-    std::vector<zes_engine_handle_t> engineHandles(count);
-    RUN_REQUIRED_STEP(zesDeviceEnumEngineGroups(devices[0], &count, engineHandles.data()));
-
-    zes_engine_properties_t properties = {ZES_STRUCTURE_TYPE_ENGINE_PROPERTIES, nullptr};
-    RUN_REQUIRED_STEP(zesEngineGetProperties(engineHandles[0], &properties));
-
-    zes_engine_stats_t stats = {};
-    RUN_REQUIRED_STEP(zesEngineGetActivity(engineHandles[0], &stats));
+    RUN_REQUIRED_STEP(getZesEngineProperties(devices[0]));
 }

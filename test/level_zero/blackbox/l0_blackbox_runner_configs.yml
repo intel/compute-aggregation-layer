@@ -182,3 +182,7 @@ hw_test:
     blackbox_event:
         test_binary: "l0_blackbox_event"
         preserve_logs: False
+
+    sysman:
+        test_binary: "l0_blackbox_sysman"
+        preserve_logs: False
