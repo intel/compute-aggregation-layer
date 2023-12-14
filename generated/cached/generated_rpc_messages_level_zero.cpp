@@ -16,6 +16,26 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
+ZetMetricGroupGetRpcM::Captures::DynamicTraits ZetMetricGroupGetRpcM::Captures::DynamicTraits::calculate(zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) {
+    DynamicTraits ret = {};
+    ret.phMetricGroups.count = phMetricGroups ? ((pCount ? *pCount : 0)) : 0;
+    ret.phMetricGroups.size = ret.phMetricGroups.count * sizeof(zet_metric_group_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phMetricGroups.offset + ret.phMetricGroups.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricGroupGetRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phMetricGroups) + Cal::Utils::alignUpPow2<8>(this->countPhMetricGroups * sizeof(zet_metric_group_handle_t));
+     return size;
+}
+
+size_t ZetMetricGroupGetRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhMetricGroups * sizeof(zet_metric_group_handle_t));
+     return size;
+}
+
 ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
     DynamicTraits ret = {};
 

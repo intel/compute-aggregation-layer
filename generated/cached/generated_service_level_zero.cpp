@@ -20,6 +20,7 @@ namespace Apis {
 namespace LevelZero {
 
 namespace Standard {
+ze_result_t (*zetMetricGroupGet)(zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) = nullptr;
 ze_result_t (*zetTracerExpCreate)(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) = nullptr;
 ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer) = nullptr;
 ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
@@ -245,6 +246,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         return false;
     }
 
+    zetMetricGroupGet = reinterpret_cast<decltype(zetMetricGroupGet)>(dlsym(libraryHandle, "zetMetricGroupGet"));
+    if(nullptr == zetMetricGroupGet){
+        log<Verbosity::error>("Missing symbol zetMetricGroupGet in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zetTracerExpCreate = reinterpret_cast<decltype(zetTracerExpCreate)>(dlsym(libraryHandle, "zetTracerExpCreate"));
     if(nullptr == zetTracerExpCreate){
         log<Verbosity::error>("Missing symbol zetTracerExpCreate in %s", loadPath.c_str());
@@ -1501,6 +1508,7 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 }
 
 void unloadLevelZeroLibrary() {
+    zetMetricGroupGet = nullptr;
     zetTracerExpCreate = nullptr;
     zetTracerExpDestroy = nullptr;
     zetTracerExpSetPrologues = nullptr;

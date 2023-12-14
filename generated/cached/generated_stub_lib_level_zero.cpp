@@ -11,6 +11,10 @@
 #include "level_zero/zes_api.h"
 #include "level_zero/zet_ddi.h"
 
+ze_result_t zetMetricGroupGet(zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups){
+   return {};
+}
+
 ze_result_t zetTracerExpCreate(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer){
    return {};
 }

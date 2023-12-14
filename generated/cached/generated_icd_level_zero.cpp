@@ -41,6 +41,31 @@ auto mutable_element_cast(const T **el) {
     return reinterpret_cast<NonVoidT>(nonConst);
 };
 
+ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) {
+    log<Verbosity::bloat>("Establishing RPC for zetMetricGroupGet");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetMetricGroupGetRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, phMetricGroups);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phMetricGroups);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
  // zetTracerExpCreate ignored in generator - based on dont_generate_handler flag
  // zetTracerExpDestroy ignored in generator - based on dont_generate_handler flag
  // zetTracerExpSetPrologues ignored in generator - based on dont_generate_handler flag
@@ -10978,6 +11003,9 @@ ze_result_t zeVirtualMemGetAccessAttribute_WithTracing(ze_context_handle_t hCont
 
 
 extern "C" {
+ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) {
+    return Cal::Client::Icd::LevelZero::zetMetricGroupGet(hDevice, pCount, phMetricGroups);
+}
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) {
     return Cal::Client::Icd::LevelZero::zetTracerExpCreate(hContext, desc, phTracer);
 }

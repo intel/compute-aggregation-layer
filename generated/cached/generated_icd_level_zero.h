@@ -39,6 +39,7 @@ namespace Cal {
 namespace Client {
 namespace Icd {
 namespace LevelZero {
+ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups);
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer);
 ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer);
 ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
@@ -771,10 +772,6 @@ inline void zetModuleGetDebugInfoUnimpl() {
     log<Verbosity::critical>("Function Module.zetModuleGetDebugInfo is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetMetricGroupGetUnimpl() {
-    log<Verbosity::critical>("Function MetricGroup.zetMetricGroupGet is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zetMetricGroupGetPropertiesUnimpl() {
     log<Verbosity::critical>("Function MetricGroup.zetMetricGroupGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -1434,6 +1431,7 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Psu.pfnGetState = reinterpret_cast<decltype(dt.Psu.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesPsuGetStateUnimpl);
 }
 inline void initL0ToolsDdi(zet_dditable_t &dt){
+    dt.MetricGroup.pfnGet = Cal::Client::Icd::LevelZero::zetMetricGroupGet;
     dt.TracerExp.pfnCreate = Cal::Client::Icd::LevelZero::zetTracerExpCreate;
     dt.TracerExp.pfnDestroy = Cal::Client::Icd::LevelZero::zetTracerExpDestroy;
     dt.TracerExp.pfnSetPrologues = Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues;
@@ -1457,7 +1455,6 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.Debug.pfnReadRegisters = reinterpret_cast<decltype(dt.Debug.pfnReadRegisters)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugReadRegistersUnimpl);
     dt.Debug.pfnWriteRegisters = reinterpret_cast<decltype(dt.Debug.pfnWriteRegisters)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugWriteRegistersUnimpl);
     dt.Module.pfnGetDebugInfo = reinterpret_cast<decltype(dt.Module.pfnGetDebugInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetModuleGetDebugInfoUnimpl);
-    dt.MetricGroup.pfnGet = reinterpret_cast<decltype(dt.MetricGroup.pfnGet)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupGetUnimpl);
     dt.MetricGroup.pfnGetProperties = reinterpret_cast<decltype(dt.MetricGroup.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupGetPropertiesUnimpl);
     dt.MetricGroup.pfnCalculateMetricValues = reinterpret_cast<decltype(dt.MetricGroup.pfnCalculateMetricValues)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMetricValuesUnimpl);
     dt.Metric.pfnGet = reinterpret_cast<decltype(dt.Metric.pfnGet)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGetUnimpl);
