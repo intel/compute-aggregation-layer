@@ -782,6 +782,12 @@ struct ZesPowerGetPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
+                        auto originalNextOpaqueElement = getNext(pPropertiesPNextListElement);
+                        const auto extensionOffset = pPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+
+                        getNextField(*destination) = originalNextOpaqueElement;
                         if (extensionType == static_cast<int>(ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES)) {
                             auto& extension = *reinterpret_cast<const zes_power_ext_properties_t*>(pPropertiesPNextListElement);
                             auto* extensionTraits = reinterpret_cast<DynamicStructTraits<zes_power_ext_properties_t>*>(dynMem + currentOffset);
@@ -809,16 +815,6 @@ struct ZesPowerGetPropertiesRpcM {
                                 currentOffset += alignUpPow2<8>(pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
                             }
                         }
-                        else
-                        {
-                            auto originalNextOpaqueElement = getNext(pPropertiesPNextListElement);
-                            const auto extensionOffset = pPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
-
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
                     }
 
                     pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
@@ -7816,15 +7812,12 @@ struct ZeDeviceGetPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pDevicePropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pDevicePropertiesPNextListElement);
-                            const auto extensionOffset = pDevicePropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pDevicePropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pDevicePropertiesPNextListElement);
+                        const auto extensionOffset = pDevicePropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pDevicePropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pDevicePropertiesPNextListElement = getNext(pDevicePropertiesPNextListElement);
@@ -8107,15 +8100,12 @@ struct ZeDeviceGetModulePropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pModulePropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pModulePropertiesPNextListElement);
-                            const auto extensionOffset = pModulePropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pModulePropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pModulePropertiesPNextListElement);
+                        const auto extensionOffset = pModulePropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pModulePropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pModulePropertiesPNextListElement = getNext(pModulePropertiesPNextListElement);
@@ -8439,15 +8429,12 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pMemPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pMemPropertiesPNextListElement);
-                            const auto extensionOffset = pMemPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pMemPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pMemPropertiesPNextListElement);
+                        const auto extensionOffset = pMemPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pMemPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pMemPropertiesPNextListElement = getNext(pMemPropertiesPNextListElement);
@@ -8748,15 +8735,12 @@ struct ZeDeviceGetCachePropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pCachePropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pCachePropertiesPNextListElement);
-                            const auto extensionOffset = pCachePropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pCachePropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pCachePropertiesPNextListElement);
+                        const auto extensionOffset = pCachePropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pCachePropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pCachePropertiesPNextListElement = getNext(pCachePropertiesPNextListElement);
@@ -9112,15 +9096,12 @@ struct ZeDeviceGetP2PPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pP2PPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pP2PPropertiesPNextListElement);
-                            const auto extensionOffset = pP2PPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pP2PPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pP2PPropertiesPNextListElement);
+                        const auto extensionOffset = pP2PPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pP2PPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pP2PPropertiesPNextListElement = getNext(pP2PPropertiesPNextListElement);
@@ -11554,15 +11535,12 @@ struct ZeFabricVertexGetPropertiesExpRpcM {
 
                     const auto extensionType = getExtensionType(pVertexPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pVertexPropertiesPNextListElement);
-                            const auto extensionOffset = pVertexPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pVertexPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pVertexPropertiesPNextListElement);
+                        const auto extensionOffset = pVertexPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pVertexPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pVertexPropertiesPNextListElement = getNext(pVertexPropertiesPNextListElement);
@@ -12084,15 +12062,12 @@ struct ZeFabricEdgeGetPropertiesExpRpcM {
 
                     const auto extensionType = getExtensionType(pEdgePropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pEdgePropertiesPNextListElement);
-                            const auto extensionOffset = pEdgePropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pEdgePropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pEdgePropertiesPNextListElement);
+                        const auto extensionOffset = pEdgePropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pEdgePropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pEdgePropertiesPNextListElement = getNext(pEdgePropertiesPNextListElement);
@@ -14002,15 +13977,12 @@ struct ZeMemGetAllocPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pMemAllocPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pMemAllocPropertiesPNextListElement);
-                            const auto extensionOffset = pMemAllocPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pMemAllocPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pMemAllocPropertiesPNextListElement);
+                        const auto extensionOffset = pMemAllocPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pMemAllocPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pMemAllocPropertiesPNextListElement = getNext(pMemAllocPropertiesPNextListElement);
@@ -17066,15 +17038,12 @@ struct ZeKernelGetPropertiesRpcM {
 
                     const auto extensionType = getExtensionType(pKernelPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
-                        {
-                            auto originalNextOpaqueElement = getNext(pKernelPropertiesPNextListElement);
-                            const auto extensionOffset = pKernelPropertiesPNextListElementTraits[j].extensionOffset;
-                            auto destination = const_cast<ze_base_desc_t*>(pKernelPropertiesPNextListElement);
-                            std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+                        auto originalNextOpaqueElement = getNext(pKernelPropertiesPNextListElement);
+                        const auto extensionOffset = pKernelPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pKernelPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
-                            getNextField(*destination) = originalNextOpaqueElement;
-                        }
-
+                        getNextField(*destination) = originalNextOpaqueElement;
                     }
 
                     pKernelPropertiesPNextListElement = getNext(pKernelPropertiesPNextListElement);
