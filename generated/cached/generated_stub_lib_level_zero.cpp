@@ -31,6 +31,18 @@ ze_result_t zetTracerExpSetEnabled(zet_tracer_exp_handle_t hTracer, ze_bool_t en
    return {};
 }
 
+ze_result_t zetDeviceGetDebugProperties(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties){
+   return {};
+}
+
+ze_result_t zetDebugAttach(ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug){
+   return {};
+}
+
+ze_result_t zetDebugDetach(zet_debug_session_handle_t hDebug){
+   return {};
+}
+
 ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
    return {};
 }

@@ -25,6 +25,9 @@ ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer) = nullptr;
 ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
 ze_result_t (*zetTracerExpSetEpilogues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
 ze_result_t (*zetTracerExpSetEnabled)(zet_tracer_exp_handle_t hTracer, ze_bool_t enable) = nullptr;
+ze_result_t (*zetDeviceGetDebugProperties)(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) = nullptr;
+ze_result_t (*zetDebugAttach)(ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug) = nullptr;
+ze_result_t (*zetDebugDetach)(zet_debug_session_handle_t hDebug) = nullptr;
 ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force) = nullptr;
 ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumPowerDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower) = nullptr;
@@ -268,6 +271,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zetTracerExpSetEnabled = reinterpret_cast<decltype(zetTracerExpSetEnabled)>(dlsym(libraryHandle, "zetTracerExpSetEnabled"));
     if(nullptr == zetTracerExpSetEnabled){
         log<Verbosity::error>("Missing symbol zetTracerExpSetEnabled in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetDeviceGetDebugProperties = reinterpret_cast<decltype(zetDeviceGetDebugProperties)>(dlsym(libraryHandle, "zetDeviceGetDebugProperties"));
+    if(nullptr == zetDeviceGetDebugProperties){
+        log<Verbosity::error>("Missing symbol zetDeviceGetDebugProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetDebugAttach = reinterpret_cast<decltype(zetDebugAttach)>(dlsym(libraryHandle, "zetDebugAttach"));
+    if(nullptr == zetDebugAttach){
+        log<Verbosity::error>("Missing symbol zetDebugAttach in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetDebugDetach = reinterpret_cast<decltype(zetDebugDetach)>(dlsym(libraryHandle, "zetDebugDetach"));
+    if(nullptr == zetDebugDetach){
+        log<Verbosity::error>("Missing symbol zetDebugDetach in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1478,6 +1499,9 @@ void unloadLevelZeroLibrary() {
     zetTracerExpSetPrologues = nullptr;
     zetTracerExpSetEpilogues = nullptr;
     zetTracerExpSetEnabled = nullptr;
+    zetDeviceGetDebugProperties = nullptr;
+    zetDebugAttach = nullptr;
+    zetDebugDetach = nullptr;
     zesDeviceReset = nullptr;
     zesDeviceResetExt = nullptr;
     zesDeviceEnumPowerDomains = nullptr;

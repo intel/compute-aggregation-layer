@@ -44,6 +44,9 @@ ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer);
 ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
 ze_result_t zetTracerExpSetEpilogues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
 ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
+ze_result_t zetDeviceGetDebugProperties (ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties);
+ze_result_t zetDebugAttach (ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug);
+ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug);
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 ze_result_t zesDeviceEnumPowerDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower);
@@ -660,10 +663,6 @@ inline void zetKernelGetProfileInfoUnimpl() {
 }
 inline void zetMetricGroupCalculateMultipleMetricValuesExpUnimpl() {
     log<Verbosity::critical>("Function MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetDeviceGetDebugPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Device.zetDeviceGetDebugProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zetDebugAttachUnimpl() {
@@ -1379,10 +1378,12 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.TracerExp.pfnSetPrologues = Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues;
     dt.TracerExp.pfnSetEpilogues = Cal::Client::Icd::LevelZero::zetTracerExpSetEpilogues;
     dt.TracerExp.pfnSetEnabled = Cal::Client::Icd::LevelZero::zetTracerExpSetEnabled;
+    dt.Device.pfnGetDebugProperties = Cal::Client::Icd::LevelZero::zetDeviceGetDebugProperties;
+    dt.Debug.pfnAttach = Cal::Client::Icd::LevelZero::zetDebugAttach;
+    dt.Debug.pfnDetach = Cal::Client::Icd::LevelZero::zetDebugDetach;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Kernel.pfnGetProfileInfo = reinterpret_cast<decltype(dt.Kernel.pfnGetProfileInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetKernelGetProfileInfoUnimpl);
     dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp = reinterpret_cast<decltype(dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMultipleMetricValuesExpUnimpl);
-    dt.Device.pfnGetDebugProperties = reinterpret_cast<decltype(dt.Device.pfnGetDebugProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDeviceGetDebugPropertiesUnimpl);
     dt.Debug.pfnAttach = reinterpret_cast<decltype(dt.Debug.pfnAttach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugAttachUnimpl);
     dt.Debug.pfnDetach = reinterpret_cast<decltype(dt.Debug.pfnDetach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugDetachUnimpl);
     dt.Debug.pfnReadEvent = reinterpret_cast<decltype(dt.Debug.pfnReadEvent)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugReadEventUnimpl);

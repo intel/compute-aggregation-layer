@@ -615,7 +615,6 @@ config:
           kind_details:
             iterator_type: ze_base_desc_t
             opaque_traits_name: NestedPNextTraits
-
         2:
           name: flags
           type: ze_device_cache_property_flags_t
@@ -623,6 +622,30 @@ config:
         3:
           name: cacheSize
           type: size_t
+          kind: scalar
+
+    - name: zet_device_debug_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+        2:
+          name: flags
+          type: zet_device_debug_property_flags_t
+          kind: scalar
+    - name: zet_debug_config_t
+      members:
+        0:
+          name: pid
+          type: uint32_t
           kind: scalar
 
     - name: ze_device_image_properties_t
@@ -2046,7 +2069,6 @@ config:
         [
           Kernel.zetKernelGetProfileInfo,
           MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp,
-          Device.zetDeviceGetDebugProperties,
           Debug.zetDebugAttach,
           Debug.zetDebugDetach,
           Debug.zetDebugReadEvent,
@@ -2210,6 +2232,87 @@ config:
               name: enable
               type: ze_bool_t
               kind: scalar
+        - name: zetDeviceGetDebugProperties
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Device
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pDebugProperties
+              type: zet_device_debug_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_device_debug_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zetDebugAttach
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Debug
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDevice
+              type: ze_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: config
+              type: const zet_debug_config_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_debug_config_t
+                  kind: struct
+                server_access: read
+            2:
+              name: phDebug
+              type: zet_debug_session_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_debug_session_handle_t
+                  kind: pointer
+                server_access: write
+        - name: zetDebugDetach
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Debug
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hDebug
+              type: zet_debug_session_handle_t
+              kind: scalar
+
     - name: "sysman"
       prefix: "zes"
       tracable_default: False

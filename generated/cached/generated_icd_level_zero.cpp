@@ -46,6 +46,76 @@ auto mutable_element_cast(const T **el) {
  // zetTracerExpSetPrologues ignored in generator - based on dont_generate_handler flag
  // zetTracerExpSetEpilogues ignored in generator - based on dont_generate_handler flag
  // zetTracerExpSetEnabled ignored in generator - based on dont_generate_handler flag
+ze_result_t zetDeviceGetDebugProperties (ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zetDeviceGetDebugProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pDebugProperties);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pDebugProperties);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zetDebugAttach (ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug) {
+    log<Verbosity::bloat>("Establishing RPC for zetDebugAttach");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetDebugAttachRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDevice, config, phDebug);
+    command->copyFromCaller();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug) {
+    log<Verbosity::bloat>("Establishing RPC for zetDebugDetach");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetDebugDetachRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDebug);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceReset");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9551,6 +9621,15 @@ ze_result_t zetTracerExpSetEpilogues (zet_tracer_exp_handle_t hTracer, zet_core_
 }
 ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t enable) {
     return Cal::Client::Icd::LevelZero::zetTracerExpSetEnabled(hTracer, enable);
+}
+ze_result_t zetDeviceGetDebugProperties (ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
+    return Cal::Client::Icd::LevelZero::zetDeviceGetDebugProperties(hDevice, pDebugProperties);
+}
+ze_result_t zetDebugAttach (ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug) {
+    return Cal::Client::Icd::LevelZero::zetDebugAttach(hDevice, config, phDebug);
+}
+ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug) {
+    return Cal::Client::Icd::LevelZero::zetDebugDetach(hDebug);
 }
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     return Cal::Client::Icd::LevelZero::zesDeviceReset(hDevice, force);

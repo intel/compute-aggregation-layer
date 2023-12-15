@@ -16,6 +16,50 @@ namespace LevelZero {
 
 using namespace Cal::Utils;
 
+ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pDebugProperties) {
+        ret.pDebugPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pDebugPropertiesNestedTraits.count = pDebugProperties ? (1) : 0;
+        ret.pDebugPropertiesNestedTraits.size = ret.pDebugPropertiesNestedTraits.count * sizeof(DynamicStructTraits<zet_device_debug_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pDebugPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pDebugPropertiesNestedTraits.count; ++i) {
+            const auto& pDebugPropertiesPNext = pDebugProperties[i].pNext;
+            if(!pDebugPropertiesPNext){
+                continue;
+            }
+
+            const auto pDebugPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pDebugProperties[i].pNext)));
+            if(!pDebugPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pDebugPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pDebugPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pDebugProperties[i].pNext);
+            for(uint32_t j = 0; j < pDebugPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pDebugPropertiesPNextListElement));
+                pDebugPropertiesPNextListElement = getNext(pDebugPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZetDeviceGetDebugPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZetDeviceGetDebugPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits ZesDeviceEnumPowerDomainsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower) {
     DynamicTraits ret = {};
     ret.phPower.count = phPower ? ((pCount ? *pCount : 0)) : 0;

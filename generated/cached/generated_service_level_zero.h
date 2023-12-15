@@ -34,6 +34,9 @@ extern ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer);
 extern ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
 extern ze_result_t (*zetTracerExpSetEpilogues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
 extern ze_result_t (*zetTracerExpSetEnabled)(zet_tracer_exp_handle_t hTracer, ze_bool_t enable);
+extern ze_result_t (*zetDeviceGetDebugProperties)(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties);
+extern ze_result_t (*zetDebugAttach)(ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug);
+extern ze_result_t (*zetDebugDetach)(zet_debug_session_handle_t hDebug);
 extern ze_result_t (*zesDeviceReset)(zes_device_handle_t hDevice, ze_bool_t force);
 extern ze_result_t (*zesDeviceResetExt)(zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 extern ze_result_t (*zesDeviceEnumPowerDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower);
@@ -246,6 +249,34 @@ extern ze_result_t (*zexDriverGetHostPointerBaseAddress)(ze_driver_handle_t hDri
 
 bool isSuccessful(ze_result_t result);
 
+inline bool zetDeviceGetDebugPropertiesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetDeviceGetDebugProperties");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDeviceGetDebugProperties(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.pDebugProperties ? &apiCommand->captures.pDebugProperties : nullptr
+                                                );
+    return true;
+}
+inline bool zetDebugAttachHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetDebugAttach");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugAttachRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDebugAttach(
+                                                apiCommand->args.hDevice, 
+                                                apiCommand->args.config ? &apiCommand->captures.config : nullptr, 
+                                                apiCommand->args.phDebug ? &apiCommand->captures.phDebug : nullptr
+                                                );
+    return true;
+}
+inline bool zetDebugDetachHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetDebugDetach");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugDetachRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDebugDetach(
+                                                apiCommand->args.hDebug
+                                                );
+    return true;
+}
 inline bool zesDeviceResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zesDeviceReset");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetRpcM*>(command);
@@ -3104,6 +3135,9 @@ inline bool zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
     outHandlers.resize(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype + 1);
+    outHandlers[ZetDeviceGetDebugPropertiesRpcM::messageSubtype] = zetDeviceGetDebugPropertiesHandler;
+    outHandlers[ZetDebugAttachRpcM::messageSubtype] = zetDebugAttachHandler;
+    outHandlers[ZetDebugDetachRpcM::messageSubtype] = zetDebugDetachHandler;
     outHandlers[ZesDeviceResetRpcM::messageSubtype] = zesDeviceResetHandler;
     outHandlers[ZesDeviceResetExtRpcM::messageSubtype] = zesDeviceResetExtHandler;
     outHandlers[ZesDeviceEnumPowerDomainsRpcM::messageSubtype] = zesDeviceEnumPowerDomainsHandler;
@@ -3347,6 +3381,24 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmHandler;
 }
 
+inline void callDirectly(Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDeviceGetDebugProperties(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.pDebugProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZetDebugAttachRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDebugAttach(
+                                                apiCommand.args.hDevice, 
+                                                apiCommand.args.config, 
+                                                apiCommand.args.phDebug
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZetDebugDetachRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetDebugDetach(
+                                                apiCommand.args.hDebug
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZesDeviceResetRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceReset(
                                                 apiCommand.args.hDevice, 
@@ -5164,6 +5216,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         default:
             log<Verbosity::debug>("Tried to call directly unknown message subtype %d", command->subtype);
             return false;
+        case Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetDebugAttachRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugAttachRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetDebugDetachRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugDetachRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumPowerDomainsRpcM*>(command)); break;
