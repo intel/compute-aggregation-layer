@@ -62,6 +62,41 @@ ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, ze
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
+    if(phMetricGroups)
+    {
+        auto baseMutable = mutable_element_cast(phMetricGroups);
+
+        auto numEntries = command->captures.pCount;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = globalPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i]);
+        }
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zetMetricGroupGetProperties (zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zetMetricGroupGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetMetricGroupGetPropertiesRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hMetricGroup, pProperties);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hMetricGroup, pProperties);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hMetricGroup = hMetricGroup->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -11030,6 +11065,9 @@ ze_result_t zeVirtualMemGetAccessAttribute_WithTracing(ze_context_handle_t hCont
 extern "C" {
 ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) {
     return Cal::Client::Icd::LevelZero::zetMetricGroupGet(hDevice, pCount, phMetricGroups);
+}
+ze_result_t zetMetricGroupGetProperties (zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zetMetricGroupGetProperties(hMetricGroup, pProperties);
 }
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) {
     return Cal::Client::Icd::LevelZero::zetTracerExpCreate(hContext, desc, phTracer);

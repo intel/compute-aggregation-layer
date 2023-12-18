@@ -9,6 +9,7 @@
 
 #include "client/icd/level_zero/api_type_wrapper/wrapper_base.h"
 #include "level_zero/ze_api.h"
+#include "level_zero/zet_api.h"
 
 namespace Cal::Client::Icd::LevelZero {
 
@@ -24,6 +25,7 @@ struct IcdL0Kernel;
 struct IcdL0EventPool;
 struct IcdL0Event;
 struct IcdL0Image;
+struct IcdL0MetricGroup;
 
 } // namespace Cal::Client::Icd::LevelZero
 
@@ -39,3 +41,4 @@ struct _ze_event_pool_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapp
 struct _ze_event_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Event> {};
 struct _ze_fence_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Fence> {};
 struct _ze_image_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Image> {};
+struct _zet_metric_group_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0MetricGroup> {};

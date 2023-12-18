@@ -15,6 +15,10 @@ ze_result_t zetMetricGroupGet(zet_device_handle_t hDevice, uint32_t* pCount, zet
    return {};
 }
 
+ze_result_t zetMetricGroupGetProperties(zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties){
+   return {};
+}
+
 ze_result_t zetTracerExpCreate(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer){
    return {};
 }

@@ -39,6 +39,21 @@ bool getMetricGroup(ze_device_handle_t hDevice, std::vector<zet_metric_group_han
     return !metricGroups.empty();
 }
 
+bool getMetricGroupProperties(zet_metric_group_handle_t metricGroup) {
+    zet_metric_group_properties_t properties{};
+    properties.stype = ZET_STRUCTURE_TYPE_METRIC_GROUP_PROPERTIES;
+    auto zetMetricGroupGetPropertiesResult = zetMetricGroupGetProperties(metricGroup, &properties);
+    if (zetMetricGroupGetPropertiesResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zetMetricGroupGetProperties() call has failed! Error code = %d",
+                              static_cast<int>(zetMetricGroupGetPropertiesResult));
+        return false;
+    }
+
+    log<Verbosity::info>("Successfully got properties of metric group name: %s metricCount: %d",
+                         properties.name, static_cast<int>(properties.metricCount));
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
@@ -55,6 +70,10 @@ int main(int argc, const char *argv[]) {
 
     std::vector<zet_metric_group_handle_t> metricGroups;
     RUN_REQUIRED_STEP(getMetricGroup(devices[0], metricGroups));
+
+    for (auto metricGroup : metricGroups) {
+        RUN_REQUIRED_STEP(getMetricGroupProperties(metricGroup));
+    }
 
     return 0;
 }

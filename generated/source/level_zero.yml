@@ -648,6 +648,40 @@ config:
           type: uint32_t
           kind: scalar
 
+    - name: zet_metric_group_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+        2:
+          name: name
+          type: char[ZET_MAX_METRIC_GROUP_NAME]
+          kind: scalar
+        3:
+          name: description
+          type: char[ZET_MAX_METRIC_GROUP_DESCRIPTION]
+          kind: scalar
+        4:
+          name: samplingType
+          type: zet_metric_group_sampling_type_flags_t
+          kind: scalar
+        5:
+          name: domain
+          type: uint32_t
+          kind: scalar
+        6:
+          name: metricCount
+          type: uint32_t
+          kind: scalar
+
     - name: ze_device_image_properties_t
       members:
         0:
@@ -2106,7 +2140,6 @@ config:
           Debug.zetDebugReadRegisters,
           Debug.zetDebugWriteRegisters,
           Module.zetModuleGetDebugInfo,
-          MetricGroup.zetMetricGroupGetProperties,
           MetricGroup.zetMetricGroupCalculateMetricValues,
           Metric.zetMetricGet,
           Metric.zetMetricGetProperties,
@@ -2165,8 +2198,33 @@ config:
                 can_be_null: True
                 element:
                   type: zet_metric_group_handle_t
-                  kind: scalar
+                  kind: pointer
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
+        - name: zetMetricGroupGetProperties
+          latency: 0.0
+          ddi_category: MetricGroup
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pProperties
+              type: zet_metric_group_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_group_properties_t
+                  kind: struct
+                server_access: read_write
         - name: zetTracerExpCreate
           special_handling:
             icd:

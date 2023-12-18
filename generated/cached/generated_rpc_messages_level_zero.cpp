@@ -36,6 +36,50 @@ size_t ZetMetricGroupGetRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZetMetricGroupGetPropertiesRpcM::Captures::DynamicTraits ZetMetricGroupGetPropertiesRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties) {
+    DynamicTraits ret = {};
+
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pProperties) {
+        ret.pPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pPropertiesNestedTraits.count = pProperties ? (1) : 0;
+        ret.pPropertiesNestedTraits.size = ret.pPropertiesNestedTraits.count * sizeof(DynamicStructTraits<zet_metric_group_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pPropertiesNestedTraits.count; ++i) {
+            const auto& pPropertiesPNext = pProperties[i].pNext;
+            if(!pPropertiesPNext){
+                continue;
+            }
+
+            const auto pPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pProperties[i].pNext)));
+            if(!pPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pProperties[i].pNext);
+            for(uint32_t j = 0; j < pPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pPropertiesPNextListElement));
+                pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+size_t ZetMetricGroupGetPropertiesRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
+     return size;
+}
+
+size_t ZetMetricGroupGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
+     return dynMemSize;
+}
+
 ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
     DynamicTraits ret = {};
 

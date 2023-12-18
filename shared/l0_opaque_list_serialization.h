@@ -9,6 +9,7 @@
 
 #include "level_zero/ze_api.h"
 #include "level_zero/zes_api.h"
+#include "level_zero/zet_api.h"
 #include "shared/log.h"
 
 #include <array>
@@ -104,6 +105,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
     }
 
     auto stypeInt = static_cast<int>(desc->stype);
+
+    if (ZET_STRUCTURE_TYPE_METRIC_GLOBAL_TIMESTAMPS_RESOLUTION_EXP == stypeInt) {
+        return sizeof(zet_metric_global_timestamps_resolution_exp_t);
+    }
 
     if (ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES == stypeInt) {
         return sizeof(zes_power_ext_properties_t);

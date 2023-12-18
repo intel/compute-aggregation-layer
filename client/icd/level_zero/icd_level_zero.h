@@ -21,6 +21,8 @@
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"
 #include "level_zero/zes_ddi.h"
+#include "level_zero/zet_api.h"
+#include "level_zero/zet_ddi.h"
 #include "shared/ref_counted.h"
 #include "shared/shmem_transfer_desc.h"
 #include "shared/staging_area_manager.h"
@@ -247,6 +249,10 @@ struct IcdL0Image : Cal::Shared::RefCountedWithParent<_ze_image_handle_t, Logic:
     using RefCountedWithParent::RefCountedWithParent;
 };
 
+struct IcdL0MetricGroup : Cal::Shared::RefCountedWithParent<_zet_metric_group_handle_t, Logic::IcdL0TypePrinter> {
+    using RefCountedWithParent::RefCountedWithParent;
+};
+
 class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
@@ -362,6 +368,14 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
 
     void removeObjectFromMap(ze_image_handle_t remoteHandle, IcdL0Image *localHandle) {
         removeObjectFromMap(remoteHandle, localHandle, imagesMap, imagesMapMutex);
+    }
+
+    zet_metric_group_handle_t translateNewRemoteObjectToLocalObject(zet_metric_group_handle_t remoteHandle) {
+        return translateNewRemoteObjectToLocalObject<IcdL0MetricGroup>(remoteHandle, static_cast<zet_metric_group_handle_t>(nullptr), metricGroupsMap, metricGroupsMapMutex);
+    }
+
+    void removeObjectFromMap(zet_metric_group_handle_t remoteHandle, IcdL0MetricGroup *localHandle) {
+        removeObjectFromMap(remoteHandle, localHandle, metricGroupsMap, metricGroupsMapMutex);
     }
 
     ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle) {
@@ -482,6 +496,9 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
 
     std::mutex imagesMapMutex;
     std::map<ze_image_handle_t, IcdL0Image *> imagesMap;
+
+    std::mutex metricGroupsMapMutex;
+    std::map<zet_metric_group_handle_t, IcdL0MetricGroup *> metricGroupsMap;
 
     std::mutex fencesMapMutex;
     std::map<ze_fence_handle_t, IcdL0Fence *> fencesMap;
