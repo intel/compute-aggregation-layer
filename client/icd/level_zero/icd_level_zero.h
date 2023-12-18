@@ -37,6 +37,9 @@ namespace Cal {
 namespace Client::Icd {
 namespace LevelZero {
 
+extern void *l0RedirectLibary;
+void initializeL0RedirectionLibraryIfNeeded();
+
 template <typename RemoteL0ObjectT, typename LocalL0ObjectT>
 void objectCleanup(void *remote, void *local);
 

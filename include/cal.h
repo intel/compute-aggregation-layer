@@ -23,6 +23,8 @@ constexpr std::string_view calListenerSocketPathEnvName = "CAL_LISTENER_SOCKET_P
 constexpr std::string_view calEnableL0InCalrunEnvName = "CAL_ENABLE_L0_IN_CALRUN";
 // Controls whether OpenCL API calls should go through CAL
 constexpr std::string_view calEnableOclInCalrunEnvName = "CAL_ENABLE_OCL_IN_CALRUN";
+// Controls whether CAL should redirect L0 to libze_integl_gpu
+constexpr std::string_view calRedirectL0EnvName = "CAL_REDIRECT_L0";
 
 // Controls whether CAL should override chosen command queue gruop indices
 constexpr std::string_view calUseComputeRoundRobin = "CAL_USE_COMPUTE_ROUND_ROBIN";

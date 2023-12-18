@@ -21,6 +21,43 @@ namespace Cal {
 namespace Client::Icd {
 namespace LevelZero {
 
+bool checkIfL0RedirectIsNeeded() {
+    bool redirectBecauseOfEnv = Cal::Utils::getCalEnvFlag(calRedirectL0EnvName, false);
+    if (redirectBecauseOfEnv) {
+        return true;
+    }
+
+    return false;
+}
+
+void *l0RedirectLibary = nullptr;
+void initializeL0RedirectionLibraryIfNeeded() {
+    if (l0RedirectLibary) {
+        return;
+    }
+
+    static bool isL0RedirectNeded = checkIfL0RedirectIsNeeded();
+    if (false == isL0RedirectNeded) {
+        return;
+    }
+
+    static std::mutex crit;
+    std::lock_guard lg{crit};
+
+    if (l0RedirectLibary) {
+        return;
+    }
+
+    const char *l0LibName = "libze_intel_gpu.so.1";
+    l0RedirectLibary = dlopen(l0LibName, RTLD_LAZY | RTLD_LOCAL);
+    if (nullptr == l0RedirectLibary) {
+        log<Verbosity::error>("Could not load %s for L0 redirection", l0LibName);
+        return;
+    }
+
+    log<Verbosity::info>("Loaded %s for redirection", l0LibName);
+}
+
 IcdL0Context::IcdL0Context(ze_context_handle_t remoteObject, Cal::Shared::SingleReference &&parent, CleanupFuncT cleanupFunc)
     : Cal::Shared::RefCountedWithParent<_ze_context_handle_t, Logic::IcdL0TypePrinter>(remoteObject, std::move(parent), cleanupFunc),
       stagingAreaManager([this](size_t size) { return this->allocateStagingArea(size); },

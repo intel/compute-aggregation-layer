@@ -16,6 +16,7 @@
 namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeInit(ze_init_flags_t flags) {
+    Cal::Client::Icd::LevelZero::initializeL0RedirectionLibraryIfNeeded();
     const auto platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     if (!platform) {
         log<Verbosity::error>("CAL service not available. zeInit() cannot be performed!");
