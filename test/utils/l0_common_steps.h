@@ -46,6 +46,19 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
                       uint32_t waitEventsCount = 0,
                       ze_event_handle_t *waitEvents = nullptr);
 
+bool appendMemoryCopyRegion(ze_command_list_handle_t cmdList,
+                            void *destination,
+                            const ze_copy_region_t *destinationRegion,
+                            uint32_t destinationPitch,
+                            uint32_t destinationSlicePitch,
+                            const void *source,
+                            const ze_copy_region_t *sourceRegion,
+                            uint32_t sourcePitch,
+                            uint32_t sourceSlicePitch,
+                            ze_event_handle_t signalEvent = nullptr,
+                            uint32_t waitEventsCount = 0,
+                            ze_event_handle_t *waitEvents = nullptr);
+
 bool appendMemoryCopyFromContext(ze_command_list_handle_t cmdList,
                                  void *destination,
                                  ze_context_handle_t sourceContext,

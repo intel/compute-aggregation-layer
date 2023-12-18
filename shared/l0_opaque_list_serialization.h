@@ -152,6 +152,23 @@ inline bool isReadOnly(ze_structure_type_t stype) {
     return false;
 }
 
+inline size_t getTotalSizeForCopyRegion(const ze_copy_region_t &region, uint32_t pitch, uint32_t slicePitch) {
+    if (region.depth > 1) {
+        uint32_t offset = region.originX + ((region.originY) * pitch) + ((region.originZ) * slicePitch);
+        return (region.width * region.height * region.depth) + offset;
+    } else {
+        uint32_t offset = region.originX + ((region.originY) * pitch);
+        return (region.width * region.height) + offset;
+    }
+}
+
+inline size_t getTotalSizeForCopyRegion(const ze_copy_region_t *region, uint32_t pitch, uint32_t slicePitch) {
+    if (region == nullptr) {
+        return 0;
+    }
+    return getTotalSizeForCopyRegion(*region, pitch, slicePitch);
+}
+
 struct NestedPNextTraits {
     ze_structure_type_t extensionType{};
     int32_t extensionOffset{};

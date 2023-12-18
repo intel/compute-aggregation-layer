@@ -144,6 +144,41 @@ ze_result_t zeCommandListAppendMemoryCopy(ze_command_list_handle_t hCommandList,
     }
 }
 
+ze_result_t zeCommandListAppendMemoryCopyRegion(ze_command_list_handle_t hCommandList,
+                                                void *dstptr,
+                                                const ze_copy_region_t *dstRegion,
+                                                uint32_t dstPitch,
+                                                uint32_t dstSlicePitch,
+                                                const void *srcptr,
+                                                const ze_copy_region_t *srcRegion,
+                                                uint32_t srcPitch,
+                                                uint32_t srcSlicePitch,
+                                                ze_event_handle_t hSignalEvent,
+                                                uint32_t numWaitEvents,
+                                                ze_event_handle_t *phWaitEvents) {
+
+    const auto icdCommandList = static_cast<IcdL0CommandList *>(hCommandList);
+    if (icdCommandList == nullptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
+
+    if (dstptr == nullptr || srcptr == nullptr) {
+        return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
+    }
+
+    icdCommandList->moveSharedAllocationsToGpu(dstptr, srcptr);
+
+    if (icdCommandList->isImmediate()) {
+        if (icdCommandList->isImmediateSynchronous()) {
+            return zeCommandListAppendMemoryCopyRegionImmediateSynchronous(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
+        } else {
+            return zeCommandListAppendMemoryCopyRegionImmediateAsynchronous(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
+        }
+    } else {
+        return zeCommandListAppendMemoryCopyRegionDeferred(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
+    }
+}
+
 ze_result_t zeCommandListAppendMemoryCopyFromContext(ze_command_list_handle_t hCommandList,
                                                      void *dstptr,
                                                      ze_context_handle_t hContextSrc,

@@ -295,6 +295,31 @@ bool appendMemoryCopy(ze_command_list_handle_t cmdList,
     return true;
 }
 
+bool appendMemoryCopyRegion(ze_command_list_handle_t cmdList,
+                            void *destination,
+                            const ze_copy_region_t *destinationRegion,
+                            uint32_t destinationPitch,
+                            uint32_t destinationSlicePitch,
+                            const void *source,
+                            const ze_copy_region_t *sourceRegion,
+                            uint32_t sourcePitch,
+                            uint32_t sourceSlicePitch,
+                            ze_event_handle_t signalEvent,
+                            uint32_t waitEventsCount,
+                            ze_event_handle_t *waitEvents) {
+    log<Verbosity::info>("Appending memory copy region operation to command list!");
+
+    if (const auto ret = zeCommandListAppendMemoryCopyRegion(cmdList, destination, destinationRegion, destinationPitch, destinationSlicePitch,
+                                                             source, sourceRegion, sourcePitch, sourceSlicePitch, signalEvent, waitEventsCount, waitEvents);
+        ret != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListAppendMemoryCopyRegion() call has failed! Error code = %d", static_cast<int>(ret));
+        return false;
+    } else {
+        log<Verbosity::info>("Memory copy region operation appended successfuly!");
+        return true;
+    }
+}
+
 bool appendMemoryCopyFromContext(ze_command_list_handle_t cmdList,
                                  void *destination,
                                  ze_context_handle_t sourceContext,
