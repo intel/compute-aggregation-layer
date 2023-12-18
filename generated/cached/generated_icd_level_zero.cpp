@@ -9170,6 +9170,31 @@ ze_result_t zeCommandListAppendMemoryCopyRegion_WithTracing(ze_command_list_hand
                                                  apiCallbackData.epilogCallbacks,
                                                  *tracerParams.phCommandList, *tracerParams.pdstptr, *tracerParams.pdstRegion, *tracerParams.pdstPitch, *tracerParams.pdstSlicePitch, *tracerParams.psrcptr, *tracerParams.psrcRegion, *tracerParams.psrcPitch, *tracerParams.psrcSlicePitch, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
 }
+ze_result_t zeCommandListAppendMemoryCopyFromContext_WithTracing(ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopyFromContext,
+                                    hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
+
+    ze_command_list_append_memory_copy_from_context_params_t tracerParams;
+    tracerParams.phCommandList = &hCommandList;
+    tracerParams.pdstptr = &dstptr;
+    tracerParams.phContextSrc = &hContextSrc;
+    tracerParams.psrcptr = &srcptr;
+    tracerParams.psize = &size;
+    tracerParams.phSignalEvent = &hSignalEvent;
+    tracerParams.pnumWaitEvents = &numWaitEvents;
+    tracerParams.pphWaitEvents = &phWaitEvents;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnCommandListAppendMemoryCopyFromContextCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnCommandListAppendMemoryCopyFromContextCb_t, CommandList, pfnAppendMemoryCopyFromContextCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryCopyFromContext,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phCommandList, *tracerParams.pdstptr, *tracerParams.phContextSrc, *tracerParams.psrcptr, *tracerParams.psize, *tracerParams.phSignalEvent, *tracerParams.pnumWaitEvents, *tracerParams.pphWaitEvents);
+}
 ze_result_t zeCommandListAppendMemoryPrefetch_WithTracing(ze_command_list_handle_t hCommandList, const void* ptr, size_t size) {
     ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeCommandListAppendMemoryPrefetch,
                                     hCommandList, ptr, size);
