@@ -35,8 +35,8 @@ bool checkIfL0RedirectIsNeeded() {
     }
 
     auto processName = Cal::Utils::getProcessName();
-    bool redirectBecauseOfProcessName = (("gdb" == processName)                                                          // gdb needs to go directly to GPU driver
-                                         || ("test_debug_helper" == processName) || ("test_debug_helper" == processName) // L0 tests that mimnic gdb
+    bool redirectBecauseOfProcessName = (("gdb" == processName)                                                   // gdb needs to go directly to GPU driver
+                                         || ("test_debug" == processName) || ("test_debug_helper" == processName) // L0 tests that mimic gdb
     );
     if (redirectBecauseOfProcessName) {
         log<Verbosity::info>("Redirecting directly to GPU driver because of process name : %s", processName.c_str());

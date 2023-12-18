@@ -737,14 +737,6 @@ inline void zetMetricGroupCalculateMultipleMetricValuesExpUnimpl() {
     log<Verbosity::critical>("Function MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetDebugAttachUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugAttach is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetDebugDetachUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugDetach is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zetDebugReadEventUnimpl() {
     log<Verbosity::critical>("Function Debug.zetDebugReadEvent is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -1459,8 +1451,6 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Kernel.pfnGetProfileInfo = reinterpret_cast<decltype(dt.Kernel.pfnGetProfileInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetKernelGetProfileInfoUnimpl);
     dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp = reinterpret_cast<decltype(dt.MetricGroupExp.pfnCalculateMultipleMetricValuesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMultipleMetricValuesExpUnimpl);
-    dt.Debug.pfnAttach = reinterpret_cast<decltype(dt.Debug.pfnAttach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugAttachUnimpl);
-    dt.Debug.pfnDetach = reinterpret_cast<decltype(dt.Debug.pfnDetach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugDetachUnimpl);
     dt.Debug.pfnReadEvent = reinterpret_cast<decltype(dt.Debug.pfnReadEvent)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugReadEventUnimpl);
     dt.Debug.pfnAcknowledgeEvent = reinterpret_cast<decltype(dt.Debug.pfnAcknowledgeEvent)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugAcknowledgeEventUnimpl);
     dt.Debug.pfnInterrupt = reinterpret_cast<decltype(dt.Debug.pfnInterrupt)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugInterruptUnimpl);
