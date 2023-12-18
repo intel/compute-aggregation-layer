@@ -24,6 +24,22 @@ namespace LevelZero {
 bool checkIfL0RedirectIsNeeded() {
     bool redirectBecauseOfEnv = Cal::Utils::getCalEnvFlag(calRedirectL0EnvName, false);
     if (redirectBecauseOfEnv) {
+        log<Verbosity::info>("Redirecting directly to GPU driver because of env : %s", calRedirectL0EnvName.data());
+        return true;
+    }
+
+    bool redirectBecauseOfDebuggability = Cal::Utils::getCalEnvFlag("ZET_ENABLE_PROGRAM_DEBUGGING", false);
+    if (redirectBecauseOfDebuggability) {
+        log<Verbosity::info>("Redirecting directly to GPU driver because of env : %s", "ZET_ENABLE_PROGRAM_DEBUGGING");
+        return true;
+    }
+
+    auto processName = Cal::Utils::getProcessName();
+    bool redirectBecauseOfProcessName = (("gdb" == processName)                                                          // gdb needs to go directly to GPU driver
+                                         || ("test_debug_helper" == processName) || ("test_debug_helper" == processName) // L0 tests that mimnic gdb
+    );
+    if (redirectBecauseOfProcessName) {
+        log<Verbosity::info>("Redirecting directly to GPU driver because of process name : %s", processName.c_str());
         return true;
     }
 
