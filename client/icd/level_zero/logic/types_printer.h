@@ -69,6 +69,10 @@ struct IcdL0TypePrinter {
             return "zet_metric_group_handle_t";
         } else if constexpr (std::is_same_v<T, _zet_metric_group_handle_t>) {
             return "_zet_metric_group_handle_t";
+        } else if constexpr (std::is_same_v<T, zet_metric_handle_t>) {
+            return "zet_metric_handle_t";
+        } else if constexpr (std::is_same_v<T, _zet_metric_handle_t>) {
+            return "_zet_metric_handle_t";
         } else {
             static_assert(AlwaysFalse<T>::value, "Uknown type has been passed! Please insert the code to handle the new type!");
             return "unknown";

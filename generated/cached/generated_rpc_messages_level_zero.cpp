@@ -80,6 +80,26 @@ size_t ZetMetricGroupGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
 }
 
+ZetMetricGetRpcM::Captures::DynamicTraits ZetMetricGetRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) {
+    DynamicTraits ret = {};
+    ret.phMetrics.count = phMetrics ? ((pCount ? *pCount : 0)) : 0;
+    ret.phMetrics.size = ret.phMetrics.count * sizeof(zet_metric_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phMetrics.offset + ret.phMetrics.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricGetRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phMetrics) + Cal::Utils::alignUpPow2<8>(this->countPhMetrics * sizeof(zet_metric_handle_t));
+     return size;
+}
+
+size_t ZetMetricGetRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhMetrics * sizeof(zet_metric_handle_t));
+     return size;
+}
+
 ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
     DynamicTraits ret = {};
 

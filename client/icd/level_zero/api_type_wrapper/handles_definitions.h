@@ -26,6 +26,7 @@ struct IcdL0EventPool;
 struct IcdL0Event;
 struct IcdL0Image;
 struct IcdL0MetricGroup;
+struct IcdL0Metric;
 
 } // namespace Cal::Client::Icd::LevelZero
 
@@ -42,3 +43,4 @@ struct _ze_event_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Ca
 struct _ze_fence_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Fence> {};
 struct _ze_image_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Image> {};
 struct _zet_metric_group_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0MetricGroup> {};
+struct _zet_metric_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Metric> {};

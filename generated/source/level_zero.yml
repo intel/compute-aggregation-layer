@@ -681,6 +681,45 @@ config:
           name: metricCount
           type: uint32_t
           kind: scalar
+    - name: zet_metric_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+        2:
+          name: name
+          type: char[ZET_MAX_METRIC_NAME]
+          kind: scalar
+        3:
+          name: description
+          type: char[ZET_MAX_METRIC_DESCRIPTION]
+          kind: scalar
+        4:
+          name: component
+          type: char[ZET_MAX_METRIC_COMPONENT]
+          kind: scalar
+        5:
+          name: tierNumber
+          type: uint32_t
+          kind: scalar
+        6:
+          name: metricType
+          type: zet_metric_type_t
+          kind: scalar
+        7:
+          name: resultType
+          type: zet_value_type_t
+          kind: scalar
+        8:
+          name: resultUnits
+          type: char[ZET_MAX_METRIC_RESULT_UNITS]
+          kind: scalar
 
     - name: ze_device_image_properties_t
       members:
@@ -2141,8 +2180,6 @@ config:
           Debug.zetDebugWriteRegisters,
           Module.zetModuleGetDebugInfo,
           MetricGroup.zetMetricGroupCalculateMetricValues,
-          Metric.zetMetricGet,
-          Metric.zetMetricGetProperties,
           Context.zetContextActivateMetricGroups,
           MetricStreamer.zetMetricStreamerOpen,
           CommandList.zetCommandListAppendMetricStreamerMarker,
@@ -2223,6 +2260,67 @@ config:
                 can_be_null: True
                 element:
                   type: zet_metric_group_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zetMetricGet
+          latency: 0.0
+          ddi_category: Metric
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: phMetrics
+              type: zet_metric_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zet_metric_handle_t
+                  kind: pointer
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
+                server_access: write
+        - name: zetMetricGetProperties
+          latency: 0.0
+          ddi_category: Metric
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetric
+              type: zet_metric_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pProperties
+              type: zet_metric_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_properties_t
                   kind: struct
                 server_access: read_write
         - name: zetTracerExpCreate

@@ -83,8 +83,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Debug.zetDebugWriteRegisters");
     ret.push_back("Module.zetModuleGetDebugInfo");
     ret.push_back("MetricGroup.zetMetricGroupCalculateMetricValues");
-    ret.push_back("Metric.zetMetricGet");
-    ret.push_back("Metric.zetMetricGetProperties");
     ret.push_back("Context.zetContextActivateMetricGroups");
     ret.push_back("MetricStreamer.zetMetricStreamerOpen");
     ret.push_back("CommandList.zetCommandListAppendMetricStreamerMarker");

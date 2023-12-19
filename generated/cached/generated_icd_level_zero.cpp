@@ -101,6 +101,69 @@ ze_result_t zetMetricGroupGetProperties (zet_metric_group_handle_t hMetricGroup,
 
     return ret;
 }
+ze_result_t zetMetricGet (zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) {
+    log<Verbosity::bloat>("Establishing RPC for zetMetricGet");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetMetricGetRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hMetricGroup, pCount, phMetrics);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hMetricGroup, pCount, phMetrics);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hMetricGroup = hMetricGroup->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(phMetrics)
+    {
+        auto baseMutable = mutable_element_cast(phMetrics);
+
+        auto numEntries = command->captures.pCount;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = globalPlatform->translateNewRemoteObjectToLocalObject(baseMutable[i]);
+        }
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zetMetricGetProperties (zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zetMetricGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetMetricGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMetric, pProperties);
+    command->copyFromCaller();
+    command->args.hMetric = hMetric->asLocalObject()->asRemoteObject();
+    if(pProperties)
+    {
+        ensureNull("zetMetricGetProperties: pProperties->pNext", pProperties->pNext);
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
  // zetTracerExpCreate ignored in generator - based on dont_generate_handler flag
  // zetTracerExpDestroy ignored in generator - based on dont_generate_handler flag
  // zetTracerExpSetPrologues ignored in generator - based on dont_generate_handler flag
@@ -11068,6 +11131,12 @@ ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, ze
 }
 ze_result_t zetMetricGroupGetProperties (zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties) {
     return Cal::Client::Icd::LevelZero::zetMetricGroupGetProperties(hMetricGroup, pProperties);
+}
+ze_result_t zetMetricGet (zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) {
+    return Cal::Client::Icd::LevelZero::zetMetricGet(hMetricGroup, pCount, phMetrics);
+}
+ze_result_t zetMetricGetProperties (zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zetMetricGetProperties(hMetric, pProperties);
 }
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) {
     return Cal::Client::Icd::LevelZero::zetTracerExpCreate(hContext, desc, phTracer);

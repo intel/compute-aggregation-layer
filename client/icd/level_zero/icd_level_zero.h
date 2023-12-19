@@ -253,6 +253,10 @@ struct IcdL0MetricGroup : Cal::Shared::RefCountedWithParent<_zet_metric_group_ha
     using RefCountedWithParent::RefCountedWithParent;
 };
 
+struct IcdL0Metric : Cal::Shared::RefCountedWithParent<_zet_metric_handle_t, Logic::IcdL0TypePrinter> {
+    using RefCountedWithParent::RefCountedWithParent;
+};
+
 class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
@@ -378,6 +382,14 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         removeObjectFromMap(remoteHandle, localHandle, metricGroupsMap, metricGroupsMapMutex);
     }
 
+    zet_metric_handle_t translateNewRemoteObjectToLocalObject(zet_metric_handle_t remoteHandle) {
+        return translateNewRemoteObjectToLocalObject<IcdL0Metric>(remoteHandle, static_cast<zet_metric_handle_t>(nullptr), metricsMap, metricsMapMutex);
+    }
+
+    void removeObjectFromMap(zet_metric_handle_t remoteHandle, IcdL0Metric *localHandle) {
+        removeObjectFromMap(remoteHandle, localHandle, metricsMap, metricsMapMutex);
+    }
+
     ze_fence_handle_t translateNewRemoteObjectToLocalObject(ze_fence_handle_t remoteHandle) {
         return translateNewRemoteObjectToLocalObject<IcdL0Fence>(remoteHandle, static_cast<ze_fence_handle_t>(nullptr), fencesMap, fencesMapMutex);
     }
@@ -499,6 +511,9 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
 
     std::mutex metricGroupsMapMutex;
     std::map<zet_metric_group_handle_t, IcdL0MetricGroup *> metricGroupsMap;
+
+    std::mutex metricsMapMutex;
+    std::map<zet_metric_handle_t, IcdL0Metric *> metricsMap;
 
     std::mutex fencesMapMutex;
     std::map<ze_fence_handle_t, IcdL0Fence *> fencesMap;
