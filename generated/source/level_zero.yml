@@ -2094,6 +2094,8 @@ config:
         [
           Kernel.zetKernelGetProfileInfo,
           MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp,
+          Debug.zetDebugAttach,
+          Debug.zetDebugDetach,
           Debug.zetDebugReadEvent,
           Debug.zetDebugAcknowledgeEvent,
           Debug.zetDebugInterrupt,
