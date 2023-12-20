@@ -9,6 +9,7 @@
 
 #include "client/icd/icd_global_state.h"
 #include "client/icd/icd_page_fault_manager.h"
+#include "client/icd/level_zero/debugger/debugger.h"
 #include "generated_icd_level_zero.h"
 #include "include/cal.h"
 #include "shared/log.h"
@@ -35,9 +36,8 @@ bool checkIfL0RedirectIsNeeded() {
     }
 
     auto processName = Cal::Utils::getProcessName();
-    bool redirectBecauseOfProcessName = (("gdb" == processName)                                                                                        // gdb needs to go directly to GPU driver
-                                         || ("test_debug" == processName) || ("test_debug_helper" == processName) || ("child_debugger" == processName) // L0 tests that mimic gdb
-    );
+    bool redirectBecauseOfProcessName = std::find(std::begin(L0DebuggerProcessesNames), std::end(L0DebuggerProcessesNames), processName) != std::end(L0DebuggerProcessesNames);
+
     if (redirectBecauseOfProcessName) {
         log<Verbosity::info>("Redirecting directly to GPU driver because of process name : %s", processName.c_str());
         return true;

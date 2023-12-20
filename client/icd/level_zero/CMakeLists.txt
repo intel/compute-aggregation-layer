@@ -26,6 +26,8 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/device_wrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/module_wrapper.cpp
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/debugger/${BRANCH_DIR_SUFFIX}/debugger_imp.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/hostptr_copies_reader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/imported_host_pointers_manager.cpp
 
