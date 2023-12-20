@@ -82,6 +82,68 @@ bool getZesEngineProperties(zes_device_handle_t device) {
     return true;
 }
 
+bool getZesPowerProperties(zes_device_handle_t device) {
+    uint32_t count = 0;
+    auto result = zesDeviceEnumPowerDomains(device, &count, nullptr);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumPowerDomains() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+    if (count == 0) {
+        log<Verbosity::info>("zesDeviceEnumPowerDomains() returned no handles");
+        return true;
+    }
+
+    std::vector<zes_pwr_handle_t> powerHandles(count);
+    result = zesDeviceEnumPowerDomains(device, &count, powerHandles.data());
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumPowerDomains() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+
+    zes_power_properties_t pProperties = {ZES_STRUCTURE_TYPE_POWER_PROPERTIES, nullptr};
+    zes_power_ext_properties_t pExtProperties = {ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES, nullptr};
+    zes_power_limit_ext_desc_t default_limits = {};
+    pExtProperties.defaultLimit = &default_limits;
+    pProperties.pNext = &pExtProperties;
+
+    result = zesPowerGetProperties(powerHandles[0], &pProperties);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesPowerGetProperties() call with default limits has failed! Error code = %x", static_cast<int>(result));
+        return false;
+    }
+
+    if (pExtProperties.defaultLimit->level > ZES_POWER_LEVEL_INSTANTANEOUS) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for level value = %d", static_cast<int>(pExtProperties.defaultLimit->level));
+        return false;
+    }
+
+    if (pExtProperties.defaultLimit->source > ZES_POWER_SOURCE_BATTERY) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for source value = %d", static_cast<int>(pExtProperties.defaultLimit->source));
+        return false;
+    }
+
+    if (pExtProperties.defaultLimit->limitUnit > ZES_LIMIT_UNIT_POWER) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit unit value = %d", static_cast<int>(pExtProperties.defaultLimit->limitUnit));
+        return false;
+    }
+
+    if (!pExtProperties.defaultLimit->intervalValueLocked) {
+        if (pExtProperties.defaultLimit->interval > INT32_MAX) {
+            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for interval value = %d", static_cast<int>(pExtProperties.defaultLimit->interval));
+            return false;
+        }
+    }
+    if (!pExtProperties.defaultLimit->limitValueLocked) {
+        if (pExtProperties.defaultLimit->limit > INT32_MAX) {
+            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit value = %d", static_cast<int>(pExtProperties.defaultLimit->limit));
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDevices;
     using Cal::Testing::Utils::LevelZero::getDrivers;
@@ -103,4 +165,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getZesDeviceProperties(devices[0]));
 
     RUN_REQUIRED_STEP(getZesEngineProperties(devices[0]));
+
+    RUN_REQUIRED_STEP(getZesPowerProperties(devices[0]));
 }
