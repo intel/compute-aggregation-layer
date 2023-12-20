@@ -22,8 +22,14 @@ namespace LevelZero {
 namespace Standard {
 ze_result_t (*zetMetricGroupGet)(zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups) = nullptr;
 ze_result_t (*zetMetricGroupGetProperties)(zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties) = nullptr;
+ze_result_t (*zetMetricGroupGetGlobalTimestampsExp)(zet_metric_group_handle_t hMetricGroup, ze_bool_t synchronizedWithHost, uint64_t* globalTimestamp, uint64_t* metricTimestamp) = nullptr;
+ze_result_t (*zetMetricGroupGetExportDataExp)(zet_metric_group_handle_t hMetricGroup, const uint8_t * pRawData, size_t rawDataSize, size_t* pExportDataSize, uint8_t* pExportData) = nullptr;
 ze_result_t (*zetMetricGet)(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) = nullptr;
 ze_result_t (*zetMetricGetProperties)(zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties) = nullptr;
+ze_result_t (*zetContextActivateMetricGroups)(zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups) = nullptr;
+ze_result_t (*zetMetricStreamerOpen)(zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer) = nullptr;
+ze_result_t (*zetMetricStreamerReadData)(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) = nullptr;
+ze_result_t (*zetMetricStreamerClose)(zet_metric_streamer_handle_t hMetricStreamer) = nullptr;
 ze_result_t (*zetTracerExpCreate)(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) = nullptr;
 ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer) = nullptr;
 ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
@@ -261,6 +267,18 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zetMetricGroupGetGlobalTimestampsExp = reinterpret_cast<decltype(zetMetricGroupGetGlobalTimestampsExp)>(dlsym(libraryHandle, "zetMetricGroupGetGlobalTimestampsExp"));
+    if(nullptr == zetMetricGroupGetGlobalTimestampsExp){
+        log<Verbosity::error>("Missing symbol zetMetricGroupGetGlobalTimestampsExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricGroupGetExportDataExp = reinterpret_cast<decltype(zetMetricGroupGetExportDataExp)>(dlsym(libraryHandle, "zetMetricGroupGetExportDataExp"));
+    if(nullptr == zetMetricGroupGetExportDataExp){
+        log<Verbosity::error>("Missing symbol zetMetricGroupGetExportDataExp in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zetMetricGet = reinterpret_cast<decltype(zetMetricGet)>(dlsym(libraryHandle, "zetMetricGet"));
     if(nullptr == zetMetricGet){
         log<Verbosity::error>("Missing symbol zetMetricGet in %s", loadPath.c_str());
@@ -270,6 +288,30 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zetMetricGetProperties = reinterpret_cast<decltype(zetMetricGetProperties)>(dlsym(libraryHandle, "zetMetricGetProperties"));
     if(nullptr == zetMetricGetProperties){
         log<Verbosity::error>("Missing symbol zetMetricGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetContextActivateMetricGroups = reinterpret_cast<decltype(zetContextActivateMetricGroups)>(dlsym(libraryHandle, "zetContextActivateMetricGroups"));
+    if(nullptr == zetContextActivateMetricGroups){
+        log<Verbosity::error>("Missing symbol zetContextActivateMetricGroups in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricStreamerOpen = reinterpret_cast<decltype(zetMetricStreamerOpen)>(dlsym(libraryHandle, "zetMetricStreamerOpen"));
+    if(nullptr == zetMetricStreamerOpen){
+        log<Verbosity::error>("Missing symbol zetMetricStreamerOpen in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricStreamerReadData = reinterpret_cast<decltype(zetMetricStreamerReadData)>(dlsym(libraryHandle, "zetMetricStreamerReadData"));
+    if(nullptr == zetMetricStreamerReadData){
+        log<Verbosity::error>("Missing symbol zetMetricStreamerReadData in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricStreamerClose = reinterpret_cast<decltype(zetMetricStreamerClose)>(dlsym(libraryHandle, "zetMetricStreamerClose"));
+    if(nullptr == zetMetricStreamerClose){
+        log<Verbosity::error>("Missing symbol zetMetricStreamerClose in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1531,8 +1573,14 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
 void unloadLevelZeroLibrary() {
     zetMetricGroupGet = nullptr;
     zetMetricGroupGetProperties = nullptr;
+    zetMetricGroupGetGlobalTimestampsExp = nullptr;
+    zetMetricGroupGetExportDataExp = nullptr;
     zetMetricGet = nullptr;
     zetMetricGetProperties = nullptr;
+    zetContextActivateMetricGroups = nullptr;
+    zetMetricStreamerOpen = nullptr;
+    zetMetricStreamerReadData = nullptr;
+    zetMetricStreamerClose = nullptr;
     zetTracerExpCreate = nullptr;
     zetTracerExpDestroy = nullptr;
     zetTracerExpSetPrologues = nullptr;

@@ -80,6 +80,36 @@ size_t ZetMetricGroupGetPropertiesRpcM::Captures::getCaptureDynMemSize() const {
      return dynMemSize;
 }
 
+ZetMetricGroupGetExportDataExpRpcM::Captures::DynamicTraits ZetMetricGroupGetExportDataExpRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, const uint8_t * pRawData, size_t rawDataSize, size_t* pExportDataSize, uint8_t* pExportData) {
+    DynamicTraits ret = {};
+    ret.pRawData.count = pRawData ? (rawDataSize) : 0;
+    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
+
+    ret.pExportData.offset = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
+    ret.pExportData.count = pExportData ? ((pExportDataSize ? *pExportDataSize : 0)) : 0;
+    ret.pExportData.size = ret.pExportData.count * sizeof(uint8_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pExportData.offset + ret.pExportData.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricGroupGetExportDataExpRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPExportData;
+     const auto lastMemberArraySize = this->countPExportData * sizeof(uint8_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZetMetricGroupGetExportDataExpRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPExportData;
+     const auto lastMemberArraySize = this->countPExportData * sizeof(uint8_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ZetMetricGetRpcM::Captures::DynamicTraits ZetMetricGetRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) {
     DynamicTraits ret = {};
     ret.phMetrics.count = phMetrics ? ((pCount ? *pCount : 0)) : 0;
@@ -97,6 +127,46 @@ size_t ZetMetricGetRpcM::Captures::getCaptureTotalSize() const {
 
 size_t ZetMetricGetRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countPhMetrics * sizeof(zet_metric_handle_t));
+     return size;
+}
+
+ZetContextActivateMetricGroupsRpcM::Captures::DynamicTraits ZetContextActivateMetricGroupsRpcM::Captures::DynamicTraits::calculate(zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups) {
+    DynamicTraits ret = {};
+    ret.phMetricGroups.count = phMetricGroups ? (count) : 0;
+    ret.phMetricGroups.size = ret.phMetricGroups.count * sizeof(zet_metric_group_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phMetricGroups.offset + ret.phMetricGroups.size);
+
+
+    return ret;
+}
+
+size_t ZetContextActivateMetricGroupsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phMetricGroups) + Cal::Utils::alignUpPow2<8>(this->countPhMetricGroups * sizeof(zet_metric_group_handle_t));
+     return size;
+}
+
+size_t ZetContextActivateMetricGroupsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhMetricGroups * sizeof(zet_metric_group_handle_t));
+     return size;
+}
+
+ZetMetricStreamerReadDataRpcM::Captures::DynamicTraits ZetMetricStreamerReadDataRpcM::Captures::DynamicTraits::calculate(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) {
+    DynamicTraits ret = {};
+    ret.pRawData.count = pRawData ? ((pRawDataSize ? *pRawDataSize : 0)) : 0;
+    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pRawData) + Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
+     return size;
+}
+
+size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
      return size;
 }
 

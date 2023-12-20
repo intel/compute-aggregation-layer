@@ -720,6 +720,25 @@ config:
           name: resultUnits
           type: char[ZET_MAX_METRIC_RESULT_UNITS]
           kind: scalar
+    - name: zet_metric_streamer_desc_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+        2:
+          name: notifyEveryNReports
+          type: uint32_t
+          kind: scalar
+        3:
+          name: samplingPeriod
+          type: uint32_t
+          kind: scalar
 
     - name: ze_device_image_properties_t
       members:
@@ -2180,11 +2199,7 @@ config:
           Debug.zetDebugWriteRegisters,
           Module.zetModuleGetDebugInfo,
           MetricGroup.zetMetricGroupCalculateMetricValues,
-          Context.zetContextActivateMetricGroups,
-          MetricStreamer.zetMetricStreamerOpen,
           CommandList.zetCommandListAppendMetricStreamerMarker,
-          MetricStreamer.zetMetricStreamerClose,
-          MetricStreamer.zetMetricStreamerReadData,
           MetricQueryPool.zetMetricQueryPoolCreate,
           MetricQueryPool.zetMetricQueryPoolDestroy,
           MetricQuery.zetMetricQueryCreate,
@@ -2262,6 +2277,96 @@ config:
                   type: zet_metric_group_properties_t
                   kind: struct
                 server_access: read_write
+        - name: zetMetricGroupGetGlobalTimestampsExp
+          latency: 0.0
+          ddi_category: MetricGroupExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: synchronizedWithHost
+              type: ze_bool_t
+              kind: scalar
+            2:
+              name: globalTimestamp
+              type: uint64_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint64_t
+                  kind: scalar
+                server_access: write
+            3:
+              name: metricTimestamp
+              type: uint64_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint64_t
+                  kind: scalar
+                server_access: write
+        - name: zetMetricGroupGetExportDataExp
+          latency: 0.0
+          ddi_category: MetricGroupExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pRawData
+              type: "const uint8_t *"
+              kind: ptr_array
+              kind_details:
+                num_elements: rawDataSize
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: scalar
+                server_access: read
+            2:
+              name: rawDataSize
+              type: size_t
+              kind: scalar
+            3:
+              name: pExportDataSize
+              type: size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read_write
+            4:
+              name: pExportData
+              type: uint8_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pExportDataSize
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: scalar
+                server_access: read_write
         - name: zetMetricGet
           latency: 0.0
           ddi_category: Metric
@@ -2323,6 +2428,143 @@ config:
                   type: zet_metric_properties_t
                   kind: struct
                 server_access: read_write
+        - name: zetContextActivateMetricGroups
+          latency: 0.0
+          ddi_category: Context
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hContext
+              type: zet_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = ({arg})->asLocalObject()->asRemoteObject()"
+            1:
+              name: hDevice
+              type: zet_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            2:
+              name: count
+              type: uint32_t
+              kind: scalar
+            3:
+              name: phMetricGroups
+              type: zet_metric_group_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: count
+                can_be_null: True
+                element:
+                  type: zet_metric_group_handle_t
+                  kind: pointer
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+        - name: zetMetricStreamerOpen
+          latency: 0.0
+          ddi_category: MetricStreamer
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hContext
+              type: zet_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = ({arg})->asLocalObject()->asRemoteObject()"
+            1:
+              name: hDevice
+              type: zet_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            2:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: desc
+              type: zet_metric_streamer_desc_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_streamer_desc_t
+                  kind: struct
+                server_access: read_write
+            4:
+              name: hNotificationEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            5:
+              name: phMetricStreamer
+              type: zet_metric_streamer_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_streamer_handle_t
+                  kind: scalar
+                server_access: write
+        - name: zetMetricStreamerReadData
+          latency: 0.0
+          ddi_category: MetricStreamer
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricStreamer
+              type: zet_metric_streamer_handle_t 
+              kind: scalar
+            1:
+              name: maxReportCount
+              type: uint32_t
+              kind: scalar
+            2:
+              name: pRawDataSize
+              type: size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read_write
+            3:
+              name: pRawData
+              type: uint8_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pRawDataSize
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: scalar
+                server_access: read_write
+        - name: zetMetricStreamerClose
+          latency: 0.0
+          ddi_category: MetricStreamer
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricStreamer
+              type: zet_metric_streamer_handle_t 
+              kind: scalar
         - name: zetTracerExpCreate
           special_handling:
             icd:

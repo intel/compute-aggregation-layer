@@ -41,8 +41,14 @@ namespace Icd {
 namespace LevelZero {
 ze_result_t zetMetricGroupGet (zet_device_handle_t hDevice, uint32_t* pCount, zet_metric_group_handle_t* phMetricGroups);
 ze_result_t zetMetricGroupGetProperties (zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties);
+ze_result_t zetMetricGroupGetGlobalTimestampsExp (zet_metric_group_handle_t hMetricGroup, ze_bool_t synchronizedWithHost, uint64_t* globalTimestamp, uint64_t* metricTimestamp);
+ze_result_t zetMetricGroupGetExportDataExp (zet_metric_group_handle_t hMetricGroup, const uint8_t * pRawData, size_t rawDataSize, size_t* pExportDataSize, uint8_t* pExportData);
 ze_result_t zetMetricGet (zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics);
 ze_result_t zetMetricGetProperties (zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties);
+ze_result_t zetContextActivateMetricGroups (zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups);
+ze_result_t zetMetricStreamerOpen (zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer);
+ze_result_t zetMetricStreamerReadData (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData);
+ze_result_t zetMetricStreamerClose (zet_metric_streamer_handle_t hMetricStreamer);
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer);
 ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer);
 ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
@@ -792,24 +798,8 @@ inline void zetMetricGroupCalculateMetricValuesUnimpl() {
     log<Verbosity::critical>("Function MetricGroup.zetMetricGroupCalculateMetricValues is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetContextActivateMetricGroupsUnimpl() {
-    log<Verbosity::critical>("Function Context.zetContextActivateMetricGroups is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricStreamerOpenUnimpl() {
-    log<Verbosity::critical>("Function MetricStreamer.zetMetricStreamerOpen is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zetCommandListAppendMetricStreamerMarkerUnimpl() {
     log<Verbosity::critical>("Function CommandList.zetCommandListAppendMetricStreamerMarker is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricStreamerCloseUnimpl() {
-    log<Verbosity::critical>("Function MetricStreamer.zetMetricStreamerClose is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricStreamerReadDataUnimpl() {
-    log<Verbosity::critical>("Function MetricStreamer.zetMetricStreamerReadData is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zetMetricQueryPoolCreateUnimpl() {
@@ -1440,8 +1430,14 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
 inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.MetricGroup.pfnGet = Cal::Client::Icd::LevelZero::zetMetricGroupGet;
     dt.MetricGroup.pfnGetProperties = Cal::Client::Icd::LevelZero::zetMetricGroupGetProperties;
+    dt.MetricGroupExp.pfnGetGlobalTimestampsExp = Cal::Client::Icd::LevelZero::zetMetricGroupGetGlobalTimestampsExp;
+    dt.MetricGroupExp.pfnGetExportDataExp = Cal::Client::Icd::LevelZero::zetMetricGroupGetExportDataExp;
     dt.Metric.pfnGet = Cal::Client::Icd::LevelZero::zetMetricGet;
     dt.Metric.pfnGetProperties = Cal::Client::Icd::LevelZero::zetMetricGetProperties;
+    dt.Context.pfnActivateMetricGroups = Cal::Client::Icd::LevelZero::zetContextActivateMetricGroups;
+    dt.MetricStreamer.pfnOpen = Cal::Client::Icd::LevelZero::zetMetricStreamerOpen;
+    dt.MetricStreamer.pfnReadData = Cal::Client::Icd::LevelZero::zetMetricStreamerReadData;
+    dt.MetricStreamer.pfnClose = Cal::Client::Icd::LevelZero::zetMetricStreamerClose;
     dt.TracerExp.pfnCreate = Cal::Client::Icd::LevelZero::zetTracerExpCreate;
     dt.TracerExp.pfnDestroy = Cal::Client::Icd::LevelZero::zetTracerExpDestroy;
     dt.TracerExp.pfnSetPrologues = Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues;
@@ -1466,11 +1462,7 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.Debug.pfnWriteRegisters = reinterpret_cast<decltype(dt.Debug.pfnWriteRegisters)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugWriteRegistersUnimpl);
     dt.Module.pfnGetDebugInfo = reinterpret_cast<decltype(dt.Module.pfnGetDebugInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetModuleGetDebugInfoUnimpl);
     dt.MetricGroup.pfnCalculateMetricValues = reinterpret_cast<decltype(dt.MetricGroup.pfnCalculateMetricValues)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMetricValuesUnimpl);
-    dt.Context.pfnActivateMetricGroups = reinterpret_cast<decltype(dt.Context.pfnActivateMetricGroups)>(Cal::Client::Icd::LevelZero::Unimplemented::zetContextActivateMetricGroupsUnimpl);
-    dt.MetricStreamer.pfnOpen = reinterpret_cast<decltype(dt.MetricStreamer.pfnOpen)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricStreamerOpenUnimpl);
     dt.CommandList.pfnAppendMetricStreamerMarker = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricStreamerMarker)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricStreamerMarkerUnimpl);
-    dt.MetricStreamer.pfnClose = reinterpret_cast<decltype(dt.MetricStreamer.pfnClose)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricStreamerCloseUnimpl);
-    dt.MetricStreamer.pfnReadData = reinterpret_cast<decltype(dt.MetricStreamer.pfnReadData)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricStreamerReadDataUnimpl);
     dt.MetricQueryPool.pfnCreate = reinterpret_cast<decltype(dt.MetricQueryPool.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryPoolCreateUnimpl);
     dt.MetricQueryPool.pfnDestroy = reinterpret_cast<decltype(dt.MetricQueryPool.pfnDestroy)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryPoolDestroyUnimpl);
     dt.MetricQuery.pfnCreate = reinterpret_cast<decltype(dt.MetricQuery.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryCreateUnimpl);

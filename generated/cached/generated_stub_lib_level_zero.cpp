@@ -19,11 +19,35 @@ ze_result_t zetMetricGroupGetProperties(zet_metric_group_handle_t hMetricGroup, 
    return {};
 }
 
+ze_result_t zetMetricGroupGetGlobalTimestampsExp(zet_metric_group_handle_t hMetricGroup, ze_bool_t synchronizedWithHost, uint64_t* globalTimestamp, uint64_t* metricTimestamp){
+   return {};
+}
+
+ze_result_t zetMetricGroupGetExportDataExp(zet_metric_group_handle_t hMetricGroup, const uint8_t * pRawData, size_t rawDataSize, size_t* pExportDataSize, uint8_t* pExportData){
+   return {};
+}
+
 ze_result_t zetMetricGet(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics){
    return {};
 }
 
 ze_result_t zetMetricGetProperties(zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zetContextActivateMetricGroups(zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups){
+   return {};
+}
+
+ze_result_t zetMetricStreamerOpen(zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer){
+   return {};
+}
+
+ze_result_t zetMetricStreamerReadData(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData){
+   return {};
+}
+
+ze_result_t zetMetricStreamerClose(zet_metric_streamer_handle_t hMetricStreamer){
    return {};
 }
 
