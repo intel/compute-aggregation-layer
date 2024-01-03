@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -54,8 +54,8 @@ bool getZesEngineProperties(zes_device_handle_t device) {
         return false;
     }
     if (count == 0) {
-        log<Verbosity::error>("zesDeviceEnumEngineGroups() returned no handles! Error code = %x", static_cast<int>(result));
-        return false;
+        log<Verbosity::info>("zesDeviceEnumEngineGroups() returned no handles! Error code = %x", static_cast<int>(result));
+        return true;
     }
 
     std::vector<zes_engine_handle_t> engineHandles(count);
@@ -113,29 +113,29 @@ bool getZesPowerProperties(zes_device_handle_t device) {
         return false;
     }
 
-    if (pExtProperties.defaultLimit->level > ZES_POWER_LEVEL_INSTANTANEOUS) {
+    if ((pExtProperties.defaultLimit->level < ZES_POWER_LEVEL_UNKNOWN) || (pExtProperties.defaultLimit->level > ZES_POWER_LEVEL_INSTANTANEOUS)) {
         log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for level value = %d", static_cast<int>(pExtProperties.defaultLimit->level));
         return false;
     }
 
-    if (pExtProperties.defaultLimit->source > ZES_POWER_SOURCE_BATTERY) {
+    if ((pExtProperties.defaultLimit->source < ZES_POWER_SOURCE_ANY) || (pExtProperties.defaultLimit->source > ZES_POWER_SOURCE_BATTERY)) {
         log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for source value = %d", static_cast<int>(pExtProperties.defaultLimit->source));
         return false;
     }
 
-    if (pExtProperties.defaultLimit->limitUnit > ZES_LIMIT_UNIT_POWER) {
+    if ((pExtProperties.defaultLimit->limitUnit < ZES_LIMIT_UNIT_UNKNOWN) || (pExtProperties.defaultLimit->limitUnit > ZES_LIMIT_UNIT_POWER)) {
         log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit unit value = %d", static_cast<int>(pExtProperties.defaultLimit->limitUnit));
         return false;
     }
 
     if (!pExtProperties.defaultLimit->intervalValueLocked) {
-        if (pExtProperties.defaultLimit->interval > INT32_MAX) {
+        if (pExtProperties.defaultLimit->interval < 0) {
             log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for interval value = %d", static_cast<int>(pExtProperties.defaultLimit->interval));
             return false;
         }
     }
     if (!pExtProperties.defaultLimit->limitValueLocked) {
-        if (pExtProperties.defaultLimit->limit > INT32_MAX) {
+        if (pExtProperties.defaultLimit->limit < 0) {
             log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit value = %d", static_cast<int>(pExtProperties.defaultLimit->limit));
             return false;
         }
