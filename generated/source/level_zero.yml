@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -2787,6 +2787,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: force
               type: ze_bool_t
@@ -2806,6 +2807,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pProperties
               type: zes_reset_properties_t*
@@ -4194,6 +4196,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pState
               type: zes_device_state_t*
@@ -4218,10 +4221,18 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
             2:
               name: pProcesses
               type: zes_process_state_t*
@@ -4247,6 +4258,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pProperties
               type: zes_pci_properties_t*
@@ -4271,6 +4283,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pState
               type: zes_pci_state_t*
@@ -4295,10 +4308,18 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
             2:
               name: pProperties
               type: zes_pci_bar_properties_t*
@@ -4323,6 +4344,7 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pStats
               type: zes_pci_stats_t*
@@ -4375,10 +4397,18 @@ config:
               name: hDevice
               type: zes_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: pCount
               type: uint32_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
             2:
               name: phMemory
               type: zes_mem_handle_t*
@@ -7201,6 +7231,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: cacheLevel
               type: size_t
@@ -7223,6 +7254,7 @@ config:
               name: hDevice
               type: ze_device_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: ptr
               type: void*

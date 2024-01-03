@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -5730,6 +5730,7 @@ struct ZesDeviceProcessesGetStateRpcM {
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t pCount;
         uint32_t countPProcesses = 0;
         zes_process_state_t pProcesses[];
 
@@ -5771,12 +5772,18 @@ struct ZesDeviceProcessesGetStateRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.pCount){
+            captures.pCount = *args.pCount;
+        }
         if(args.pProcesses){
             memcpy(asMemcpyDstT(captures.pProcesses), args.pProcesses, dynMemTraits.pProcesses.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.pCount){
+            *args.pCount = captures.pCount;
+        }
         if(args.pProcesses){
             memcpy(args.pProcesses, captures.pProcesses, dynMemTraits.pProcesses.size);
         }
@@ -5935,6 +5942,7 @@ struct ZesDevicePciGetBarsRpcM {
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t pCount;
         zes_pci_bar_properties_t pProperties;
 
         Captures() = default;
@@ -5969,7 +5977,16 @@ struct ZesDevicePciGetBarsRpcM {
     }
     
 
+    void copyFromCaller(){
+        if(args.pCount){
+            captures.pCount = *args.pCount;
+        }
+    }
+
     void copyToCaller(){
+        if(args.pCount){
+            *args.pCount = captures.pCount;
+        }
         if(args.pProperties){
             *args.pProperties = captures.pProperties;
         }
@@ -6140,6 +6157,7 @@ struct ZesDeviceEnumMemoryModulesRpcM {
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint32_t pCount;
         uint32_t countPhMemory = 0;
         zes_mem_handle_t phMemory[];
 
@@ -6181,12 +6199,18 @@ struct ZesDeviceEnumMemoryModulesRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.pCount){
+            captures.pCount = *args.pCount;
+        }
         if(args.phMemory){
             memcpy(asMemcpyDstT(captures.phMemory), args.phMemory, dynMemTraits.phMemory.size);
         }
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
+        if(args.pCount){
+            *args.pCount = captures.pCount;
+        }
         if(args.phMemory){
             memcpy(args.phMemory, captures.phMemory, dynMemTraits.phMemory.size);
         }

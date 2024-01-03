@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -913,7 +913,7 @@ inline bool zesDeviceProcessesGetStateHandler(Provider &service, Cal::Rpc::Chann
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceProcessesGetStateRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceProcessesGetState(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pCount, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
                                                 apiCommand->args.pProcesses ? apiCommand->captures.pProcesses : nullptr
                                                 );
     return true;
@@ -941,7 +941,7 @@ inline bool zesDevicePciGetBarsHandler(Provider &service, Cal::Rpc::ChannelServe
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetBarsRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetBars(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pCount, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
                                                 apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
                                                 );
     return true;
@@ -969,7 +969,7 @@ inline bool zesDeviceEnumMemoryModulesHandler(Provider &service, Cal::Rpc::Chann
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDeviceEnumMemoryModulesRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDeviceEnumMemoryModules(
                                                 apiCommand->args.hDevice, 
-                                                apiCommand->args.pCount, 
+                                                apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
                                                 apiCommand->args.phMemory ? apiCommand->captures.phMemory : nullptr
                                                 );
     return true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -409,6 +409,7 @@ ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceResetRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, force);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -430,6 +431,7 @@ ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceResetExtRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pProperties);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1639,6 +1641,7 @@ ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* 
     using CommandT = Cal::Rpc::LevelZero::ZesDeviceGetStateRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pState);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1663,6 +1666,7 @@ ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* p
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, pProcesses);
     command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1685,6 +1689,7 @@ ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_prop
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetPropertiesRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pProperties);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1707,6 +1712,7 @@ ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* 
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetStateRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pState);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1729,6 +1735,8 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetBarsRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pCount, pProperties);
+    command->copyFromCaller();
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1751,6 +1759,7 @@ ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* 
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetStatsRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, pStats);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -1799,6 +1808,7 @@ ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* p
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, phMemory);
     command->copyFromCaller(dynMemTraits);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3368,6 +3378,7 @@ ze_result_t zeDeviceReserveCacheExt (ze_device_handle_t hDevice, size_t cacheLev
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceReserveCacheExtRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, cacheLevel, cacheReservationSize);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -3389,6 +3400,7 @@ ze_result_t zeDeviceSetCacheAdviceExt (ze_device_handle_t hDevice, void* ptr, si
     using CommandT = Cal::Rpc::LevelZero::ZeDeviceSetCacheAdviceExtRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hDevice, ptr, regionSize, cacheRegion);
+    command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

@@ -144,6 +144,28 @@ bool getZesPowerProperties(zes_device_handle_t device) {
     return true;
 }
 
+bool getZesMemProperties(zes_device_handle_t device) {
+    uint32_t count = 0;
+    auto result = zesDeviceEnumMemoryModules(device, &count, nullptr);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumMemoryModules() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+    if (count == 0) {
+        log<Verbosity::info>("zesDeviceEnumMemoryModules() returned no handles");
+        return true;
+    }
+
+    std::vector<zes_mem_handle_t> memHandles(count);
+    result = zesDeviceEnumMemoryModules(device, &count, memHandles.data());
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceEnumMemoryModules() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDevices;
     using Cal::Testing::Utils::LevelZero::getDrivers;
@@ -167,4 +189,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getZesEngineProperties(devices[0]));
 
     RUN_REQUIRED_STEP(getZesPowerProperties(devices[0]));
+
+    RUN_REQUIRED_STEP(getZesMemProperties(devices[0]));
 }
