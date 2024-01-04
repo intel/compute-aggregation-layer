@@ -107,6 +107,7 @@ ze_result_t (*zesDeviceEnumStandbyDomains)(zes_device_handle_t hDevice, uint32_t
 ze_result_t (*zesStandbyGetProperties)(zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties) = nullptr;
 ze_result_t (*zesStandbyGetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode) = nullptr;
 ze_result_t (*zesStandbySetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) = nullptr;
+ze_result_t (*zesMemoryGetProperties)(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryRangesBarrier)(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeContextSystemBarrier)(ze_context_handle_t hContext, ze_device_handle_t hDevice) = nullptr;
@@ -772,6 +773,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesStandbySetMode = reinterpret_cast<decltype(zesStandbySetMode)>(dlsym(libraryHandle, "zesStandbySetMode"));
     if(nullptr == zesStandbySetMode){
         log<Verbosity::error>("Missing symbol zesStandbySetMode in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesMemoryGetProperties = reinterpret_cast<decltype(zesMemoryGetProperties)>(dlsym(libraryHandle, "zesMemoryGetProperties"));
+    if(nullptr == zesMemoryGetProperties){
+        log<Verbosity::error>("Missing symbol zesMemoryGetProperties in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1658,6 +1665,7 @@ void unloadLevelZeroLibrary() {
     zesStandbyGetProperties = nullptr;
     zesStandbyGetMode = nullptr;
     zesStandbySetMode = nullptr;
+    zesMemoryGetProperties = nullptr;
     zeInit = nullptr;
     zeCommandListAppendMemoryRangesBarrier = nullptr;
     zeContextSystemBarrier = nullptr;

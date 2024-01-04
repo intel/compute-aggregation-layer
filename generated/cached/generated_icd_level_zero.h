@@ -126,6 +126,7 @@ ze_result_t zesDeviceEnumStandbyDomains (zes_device_handle_t hDevice, uint32_t* 
 ze_result_t zesStandbyGetProperties (zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties);
 ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode);
 ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode);
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryRangesBarrier_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
@@ -648,10 +649,6 @@ inline void zesDeviceGetEccStateUnimpl() {
 }
 inline void zesDeviceSetEccStateUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesMemoryGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Memory.zesMemoryGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesMemoryGetStateUnimpl() {
@@ -1389,6 +1386,7 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Standby.pfnGetProperties = Cal::Client::Icd::LevelZero::zesStandbyGetProperties;
     dt.Standby.pfnGetMode = Cal::Client::Icd::LevelZero::zesStandbyGetMode;
     dt.Standby.pfnSetMode = Cal::Client::Icd::LevelZero::zesStandbySetMode;
+    dt.Memory.pfnGetProperties = Cal::Client::Icd::LevelZero::zesMemoryGetProperties;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Device.pfnEnumFans = reinterpret_cast<decltype(dt.Device.pfnEnumFans)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFansUnimpl);
     dt.Fan.pfnGetProperties = reinterpret_cast<decltype(dt.Fan.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFanGetPropertiesUnimpl);
@@ -1404,7 +1402,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
     dt.Device.pfnSetEccState = reinterpret_cast<decltype(dt.Device.pfnSetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceSetEccStateUnimpl);
-    dt.Memory.pfnGetProperties = reinterpret_cast<decltype(dt.Memory.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetPropertiesUnimpl);
     dt.Memory.pfnGetState = reinterpret_cast<decltype(dt.Memory.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetStateUnimpl);
     dt.Memory.pfnGetBandwidth = reinterpret_cast<decltype(dt.Memory.pfnGetBandwidth)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetBandwidthUnimpl);
     dt.Device.pfnEnumLeds = reinterpret_cast<decltype(dt.Device.pfnEnumLeds)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumLedsUnimpl);

@@ -101,42 +101,42 @@ bool getZesPowerProperties(zes_device_handle_t device) {
         return false;
     }
 
-    zes_power_properties_t pProperties = {ZES_STRUCTURE_TYPE_POWER_PROPERTIES, nullptr};
-    zes_power_ext_properties_t pExtProperties = {ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES, nullptr};
+    zes_power_properties_t powerProperties = {ZES_STRUCTURE_TYPE_POWER_PROPERTIES, nullptr};
+    zes_power_ext_properties_t powerExtProperties = {ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES, nullptr};
     zes_power_limit_ext_desc_t default_limits = {};
-    pExtProperties.defaultLimit = &default_limits;
-    pProperties.pNext = &pExtProperties;
+    powerExtProperties.defaultLimit = &default_limits;
+    powerProperties.pNext = &powerExtProperties;
 
-    result = zesPowerGetProperties(powerHandles[0], &pProperties);
+    result = zesPowerGetProperties(powerHandles[0], &powerProperties);
     if (result != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zesPowerGetProperties() call with default limits has failed! Error code = %x", static_cast<int>(result));
         return false;
     }
 
-    if ((pExtProperties.defaultLimit->level < ZES_POWER_LEVEL_UNKNOWN) || (pExtProperties.defaultLimit->level > ZES_POWER_LEVEL_INSTANTANEOUS)) {
-        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for level value = %d", static_cast<int>(pExtProperties.defaultLimit->level));
+    if ((powerExtProperties.defaultLimit->level < ZES_POWER_LEVEL_UNKNOWN) || (powerExtProperties.defaultLimit->level > ZES_POWER_LEVEL_INSTANTANEOUS)) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for level value = %d", static_cast<int>(powerExtProperties.defaultLimit->level));
         return false;
     }
 
-    if ((pExtProperties.defaultLimit->source < ZES_POWER_SOURCE_ANY) || (pExtProperties.defaultLimit->source > ZES_POWER_SOURCE_BATTERY)) {
-        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for source value = %d", static_cast<int>(pExtProperties.defaultLimit->source));
+    if ((powerExtProperties.defaultLimit->source < ZES_POWER_SOURCE_ANY) || (powerExtProperties.defaultLimit->source > ZES_POWER_SOURCE_BATTERY)) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for source value = %d", static_cast<int>(powerExtProperties.defaultLimit->source));
         return false;
     }
 
-    if ((pExtProperties.defaultLimit->limitUnit < ZES_LIMIT_UNIT_UNKNOWN) || (pExtProperties.defaultLimit->limitUnit > ZES_LIMIT_UNIT_POWER)) {
-        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit unit value = %d", static_cast<int>(pExtProperties.defaultLimit->limitUnit));
+    if ((powerExtProperties.defaultLimit->limitUnit < ZES_LIMIT_UNIT_UNKNOWN) || (powerExtProperties.defaultLimit->limitUnit > ZES_LIMIT_UNIT_POWER)) {
+        log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit unit value = %d", static_cast<int>(powerExtProperties.defaultLimit->limitUnit));
         return false;
     }
 
-    if (!pExtProperties.defaultLimit->intervalValueLocked) {
-        if (pExtProperties.defaultLimit->interval < 0) {
-            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for interval value = %d", static_cast<int>(pExtProperties.defaultLimit->interval));
+    if (!powerExtProperties.defaultLimit->intervalValueLocked) {
+        if (powerExtProperties.defaultLimit->interval < 0) {
+            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for interval value = %d", static_cast<int>(powerExtProperties.defaultLimit->interval));
             return false;
         }
     }
-    if (!pExtProperties.defaultLimit->limitValueLocked) {
-        if (pExtProperties.defaultLimit->limit < 0) {
-            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit value = %d", static_cast<int>(pExtProperties.defaultLimit->limit));
+    if (!powerExtProperties.defaultLimit->limitValueLocked) {
+        if (powerExtProperties.defaultLimit->limit < 0) {
+            log<Verbosity::error>("zesPowerGetProperties() call has returned incorrect default limit for limit value = %d", static_cast<int>(powerExtProperties.defaultLimit->limit));
             return false;
         }
     }
@@ -145,8 +145,15 @@ bool getZesPowerProperties(zes_device_handle_t device) {
 }
 
 bool getZesMemProperties(zes_device_handle_t device) {
+    zes_device_properties_t deviceProperties = {ZES_STRUCTURE_TYPE_DEVICE_PROPERTIES, nullptr};
+    auto result = zesDeviceGetProperties(device, &deviceProperties);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceGetProperties() call has failed! Error code = %x", static_cast<int>(result));
+        return false;
+    }
+
     uint32_t count = 0;
-    auto result = zesDeviceEnumMemoryModules(device, &count, nullptr);
+    result = zesDeviceEnumMemoryModules(device, &count, nullptr);
     if (result != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zesDeviceEnumMemoryModules() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
         return false;
@@ -161,6 +168,37 @@ bool getZesMemProperties(zes_device_handle_t device) {
     if (result != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("zesDeviceEnumMemoryModules() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
         return false;
+    }
+
+    for (auto memHandle : memHandles) {
+        zes_mem_properties_t memProperties = {ZES_STRUCTURE_TYPE_MEM_PROPERTIES, nullptr};
+        result = zesMemoryGetProperties(memHandle, &memProperties);
+        if (result != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zesMemoryGetProperties() call has failed! Error code = %x", static_cast<int>(result));
+            return false;
+        }
+
+        if (memProperties.onSubdevice) {
+            if (memProperties.subdeviceId >= deviceProperties.numSubdevices) {
+                log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect subdeviceId value = %d", static_cast<int>(memProperties.subdeviceId));
+                return false;
+            }
+        }
+
+        if ((memProperties.location != ZES_MEM_LOC_SYSTEM) && (memProperties.location != ZES_MEM_LOC_DEVICE)) {
+            log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect location value = %d", static_cast<int>(memProperties.location));
+            return false;
+        }
+
+        if ((memProperties.busWidth != -1) && (memProperties.busWidth == 0)) {
+            log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect busWidth value = %d", static_cast<int>(memProperties.numChannels));
+            return false;
+        }
+
+        if ((memProperties.numChannels != -1) && (memProperties.numChannels == 0)) {
+            log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect numChannels value = %d", static_cast<int>(memProperties.numChannels));
+            return false;
+        }
     }
 
     return true;

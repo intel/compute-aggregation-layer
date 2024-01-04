@@ -2006,6 +2006,29 @@ ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_
 
     return ret;
 }
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesMemoryGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesMemoryGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMemory, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeInit");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -11560,6 +11583,9 @@ ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_
 }
 ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) {
     return Cal::Client::Icd::LevelZero::zesStandbySetMode(hStandby, mode);
+}
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesMemoryGetProperties(hMemory, pProperties);
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Client::Icd::LevelZero::zeInit(flags);

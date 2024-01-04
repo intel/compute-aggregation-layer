@@ -359,6 +359,10 @@ ze_result_t zesStandbySetMode(zes_standby_handle_t hStandby, zes_standby_promo_m
    return {};
 }
 
+ze_result_t zesMemoryGetProperties(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties){
+   return {};
+}
+
 ze_result_t zeInit(ze_init_flags_t flags){
    return {};
 }
