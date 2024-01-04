@@ -118,6 +118,9 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
 ze_result_t zesDevicePciGetStats (zes_device_handle_t hDevice, zes_pci_stats_t* pStats);
 ze_result_t zesDeviceGetPropertiesRpcHelper (zes_device_handle_t hDevice, zes_device_properties_t* pProperties);
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory);
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties);
+ze_result_t zesMemoryGetState (zes_mem_handle_t hMemory, zes_mem_state_t* pState);
+ze_result_t zesMemoryGetBandwidth (zes_mem_handle_t hMemory, zes_mem_bandwidth_t* pBandwidth);
 ze_result_t zesDeviceEnumPerformanceFactorDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf);
 ze_result_t zesPerformanceFactorGetProperties (zes_perf_handle_t hPerf, zes_perf_properties_t* pProperties);
 ze_result_t zesPerformanceFactorGetConfig (zes_perf_handle_t hPerf, double* pFactor);
@@ -126,7 +129,6 @@ ze_result_t zesDeviceEnumStandbyDomains (zes_device_handle_t hDevice, uint32_t* 
 ze_result_t zesStandbyGetProperties (zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties);
 ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode);
 ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode);
-ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties);
 ze_result_t zeInitRpcHelper (ze_init_flags_t flags);
 ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryRangesBarrier_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
@@ -649,14 +651,6 @@ inline void zesDeviceGetEccStateUnimpl() {
 }
 inline void zesDeviceSetEccStateUnimpl() {
     log<Verbosity::critical>("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesMemoryGetStateUnimpl() {
-    log<Verbosity::critical>("Function Memory.zesMemoryGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zesMemoryGetBandwidthUnimpl() {
-    log<Verbosity::critical>("Function Memory.zesMemoryGetBandwidth is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zesDeviceEnumLedsUnimpl() {
@@ -1378,6 +1372,9 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnPciGetStats = Cal::Client::Icd::LevelZero::zesDevicePciGetStats;
     dt.Device.pfnGetProperties = Cal::Client::Icd::LevelZero::zesDeviceGetProperties;
     dt.Device.pfnEnumMemoryModules = Cal::Client::Icd::LevelZero::zesDeviceEnumMemoryModules;
+    dt.Memory.pfnGetProperties = Cal::Client::Icd::LevelZero::zesMemoryGetProperties;
+    dt.Memory.pfnGetState = Cal::Client::Icd::LevelZero::zesMemoryGetState;
+    dt.Memory.pfnGetBandwidth = Cal::Client::Icd::LevelZero::zesMemoryGetBandwidth;
     dt.Device.pfnEnumPerformanceFactorDomains = Cal::Client::Icd::LevelZero::zesDeviceEnumPerformanceFactorDomains;
     dt.PerformanceFactor.pfnGetProperties = Cal::Client::Icd::LevelZero::zesPerformanceFactorGetProperties;
     dt.PerformanceFactor.pfnGetConfig = Cal::Client::Icd::LevelZero::zesPerformanceFactorGetConfig;
@@ -1386,7 +1383,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Standby.pfnGetProperties = Cal::Client::Icd::LevelZero::zesStandbyGetProperties;
     dt.Standby.pfnGetMode = Cal::Client::Icd::LevelZero::zesStandbyGetMode;
     dt.Standby.pfnSetMode = Cal::Client::Icd::LevelZero::zesStandbySetMode;
-    dt.Memory.pfnGetProperties = Cal::Client::Icd::LevelZero::zesMemoryGetProperties;
     // below are unimplemented, provided bindings are for easier debugging only
     dt.Device.pfnEnumFans = reinterpret_cast<decltype(dt.Device.pfnEnumFans)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumFansUnimpl);
     dt.Fan.pfnGetProperties = reinterpret_cast<decltype(dt.Fan.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesFanGetPropertiesUnimpl);
@@ -1402,8 +1398,6 @@ inline void initL0SysmanDdi(zes_dditable_t &dt){
     dt.Device.pfnEccConfigurable = reinterpret_cast<decltype(dt.Device.pfnEccConfigurable)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEccConfigurableUnimpl);
     dt.Device.pfnGetEccState = reinterpret_cast<decltype(dt.Device.pfnGetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceGetEccStateUnimpl);
     dt.Device.pfnSetEccState = reinterpret_cast<decltype(dt.Device.pfnSetEccState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceSetEccStateUnimpl);
-    dt.Memory.pfnGetState = reinterpret_cast<decltype(dt.Memory.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetStateUnimpl);
-    dt.Memory.pfnGetBandwidth = reinterpret_cast<decltype(dt.Memory.pfnGetBandwidth)>(Cal::Client::Icd::LevelZero::Unimplemented::zesMemoryGetBandwidthUnimpl);
     dt.Device.pfnEnumLeds = reinterpret_cast<decltype(dt.Device.pfnEnumLeds)>(Cal::Client::Icd::LevelZero::Unimplemented::zesDeviceEnumLedsUnimpl);
     dt.Led.pfnGetProperties = reinterpret_cast<decltype(dt.Led.pfnGetProperties)>(Cal::Client::Icd::LevelZero::Unimplemented::zesLedGetPropertiesUnimpl);
     dt.Led.pfnGetState = reinterpret_cast<decltype(dt.Led.pfnGetState)>(Cal::Client::Icd::LevelZero::Unimplemented::zesLedGetStateUnimpl);

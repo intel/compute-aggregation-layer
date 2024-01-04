@@ -99,6 +99,9 @@ ze_result_t (*zesDevicePciGetBars)(zes_device_handle_t hDevice, uint32_t* pCount
 ze_result_t (*zesDevicePciGetStats)(zes_device_handle_t hDevice, zes_pci_stats_t* pStats) = nullptr;
 ze_result_t (*zesDeviceGetProperties)(zes_device_handle_t hDevice, zes_device_properties_t* pProperties) = nullptr;
 ze_result_t (*zesDeviceEnumMemoryModules)(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) = nullptr;
+ze_result_t (*zesMemoryGetProperties)(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) = nullptr;
+ze_result_t (*zesMemoryGetState)(zes_mem_handle_t hMemory, zes_mem_state_t* pState) = nullptr;
+ze_result_t (*zesMemoryGetBandwidth)(zes_mem_handle_t hMemory, zes_mem_bandwidth_t* pBandwidth) = nullptr;
 ze_result_t (*zesDeviceEnumPerformanceFactorDomains)(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) = nullptr;
 ze_result_t (*zesPerformanceFactorGetProperties)(zes_perf_handle_t hPerf, zes_perf_properties_t* pProperties) = nullptr;
 ze_result_t (*zesPerformanceFactorGetConfig)(zes_perf_handle_t hPerf, double* pFactor) = nullptr;
@@ -107,7 +110,6 @@ ze_result_t (*zesDeviceEnumStandbyDomains)(zes_device_handle_t hDevice, uint32_t
 ze_result_t (*zesStandbyGetProperties)(zes_standby_handle_t hStandby, zes_standby_properties_t* pProperties) = nullptr;
 ze_result_t (*zesStandbyGetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t* pMode) = nullptr;
 ze_result_t (*zesStandbySetMode)(zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) = nullptr;
-ze_result_t (*zesMemoryGetProperties)(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) = nullptr;
 ze_result_t (*zeInit)(ze_init_flags_t flags) = nullptr;
 ze_result_t (*zeCommandListAppendMemoryRangesBarrier)(ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeContextSystemBarrier)(ze_context_handle_t hContext, ze_device_handle_t hDevice) = nullptr;
@@ -728,6 +730,24 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zesMemoryGetProperties = reinterpret_cast<decltype(zesMemoryGetProperties)>(dlsym(libraryHandle, "zesMemoryGetProperties"));
+    if(nullptr == zesMemoryGetProperties){
+        log<Verbosity::error>("Missing symbol zesMemoryGetProperties in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesMemoryGetState = reinterpret_cast<decltype(zesMemoryGetState)>(dlsym(libraryHandle, "zesMemoryGetState"));
+    if(nullptr == zesMemoryGetState){
+        log<Verbosity::error>("Missing symbol zesMemoryGetState in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zesMemoryGetBandwidth = reinterpret_cast<decltype(zesMemoryGetBandwidth)>(dlsym(libraryHandle, "zesMemoryGetBandwidth"));
+    if(nullptr == zesMemoryGetBandwidth){
+        log<Verbosity::error>("Missing symbol zesMemoryGetBandwidth in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zesDeviceEnumPerformanceFactorDomains = reinterpret_cast<decltype(zesDeviceEnumPerformanceFactorDomains)>(dlsym(libraryHandle, "zesDeviceEnumPerformanceFactorDomains"));
     if(nullptr == zesDeviceEnumPerformanceFactorDomains){
         log<Verbosity::error>("Missing symbol zesDeviceEnumPerformanceFactorDomains in %s", loadPath.c_str());
@@ -773,12 +793,6 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zesStandbySetMode = reinterpret_cast<decltype(zesStandbySetMode)>(dlsym(libraryHandle, "zesStandbySetMode"));
     if(nullptr == zesStandbySetMode){
         log<Verbosity::error>("Missing symbol zesStandbySetMode in %s", loadPath.c_str());
-        unloadLevelZeroLibrary();
-        return false;
-    }
-    zesMemoryGetProperties = reinterpret_cast<decltype(zesMemoryGetProperties)>(dlsym(libraryHandle, "zesMemoryGetProperties"));
-    if(nullptr == zesMemoryGetProperties){
-        log<Verbosity::error>("Missing symbol zesMemoryGetProperties in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1657,6 +1671,9 @@ void unloadLevelZeroLibrary() {
     zesDevicePciGetStats = nullptr;
     zesDeviceGetProperties = nullptr;
     zesDeviceEnumMemoryModules = nullptr;
+    zesMemoryGetProperties = nullptr;
+    zesMemoryGetState = nullptr;
+    zesMemoryGetBandwidth = nullptr;
     zesDeviceEnumPerformanceFactorDomains = nullptr;
     zesPerformanceFactorGetProperties = nullptr;
     zesPerformanceFactorGetConfig = nullptr;
@@ -1665,7 +1682,6 @@ void unloadLevelZeroLibrary() {
     zesStandbyGetProperties = nullptr;
     zesStandbyGetMode = nullptr;
     zesStandbySetMode = nullptr;
-    zesMemoryGetProperties = nullptr;
     zeInit = nullptr;
     zeCommandListAppendMemoryRangesBarrier = nullptr;
     zeContextSystemBarrier = nullptr;

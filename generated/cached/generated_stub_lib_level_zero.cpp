@@ -327,6 +327,18 @@ ze_result_t zesDeviceEnumMemoryModules(zes_device_handle_t hDevice, uint32_t* pC
    return {};
 }
 
+ze_result_t zesMemoryGetProperties(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties){
+   return {};
+}
+
+ze_result_t zesMemoryGetState(zes_mem_handle_t hMemory, zes_mem_state_t* pState){
+   return {};
+}
+
+ze_result_t zesMemoryGetBandwidth(zes_mem_handle_t hMemory, zes_mem_bandwidth_t* pBandwidth){
+   return {};
+}
+
 ze_result_t zesDeviceEnumPerformanceFactorDomains(zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf){
    return {};
 }
@@ -356,10 +368,6 @@ ze_result_t zesStandbyGetMode(zes_standby_handle_t hStandby, zes_standby_promo_m
 }
 
 ze_result_t zesStandbySetMode(zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode){
-   return {};
-}
-
-ze_result_t zesMemoryGetProperties(zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties){
    return {};
 }
 

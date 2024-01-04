@@ -1823,6 +1823,75 @@ ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* p
 
     return ret;
 }
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zesMemoryGetProperties");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesMemoryGetPropertiesRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMemory, pProperties);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesMemoryGetState (zes_mem_handle_t hMemory, zes_mem_state_t* pState) {
+    log<Verbosity::bloat>("Establishing RPC for zesMemoryGetState");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesMemoryGetStateRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMemory, pState);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zesMemoryGetBandwidth (zes_mem_handle_t hMemory, zes_mem_bandwidth_t* pBandwidth) {
+    log<Verbosity::bloat>("Establishing RPC for zesMemoryGetBandwidth");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZesMemoryGetBandwidthRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMemory, pBandwidth);
+    command->copyFromCaller();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceEnumPerformanceFactorDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceEnumPerformanceFactorDomains");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -2002,29 +2071,6 @@ ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    ze_result_t ret = command->captures.ret;
-
-    return ret;
-}
-ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
-    log<Verbosity::bloat>("Establishing RPC for zesMemoryGetProperties");
-    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
-    auto &channel = globalPlatform->getRpcChannel();
-    auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZesMemoryGetPropertiesRpcM;
-    auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace) CommandT(hMemory, pProperties);
-    command->copyFromCaller();
-
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
-        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
-
-    if(false == channel.callSynchronous(command)){
-        return command->returnValue();
-    }
-    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -11560,6 +11606,15 @@ ze_result_t zesDeviceGetProperties (zes_device_handle_t hDevice, zes_device_prop
 ze_result_t zesDeviceEnumMemoryModules (zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumMemoryModules(hDevice, pCount, phMemory);
 }
+ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
+    return Cal::Client::Icd::LevelZero::zesMemoryGetProperties(hMemory, pProperties);
+}
+ze_result_t zesMemoryGetState (zes_mem_handle_t hMemory, zes_mem_state_t* pState) {
+    return Cal::Client::Icd::LevelZero::zesMemoryGetState(hMemory, pState);
+}
+ze_result_t zesMemoryGetBandwidth (zes_mem_handle_t hMemory, zes_mem_bandwidth_t* pBandwidth) {
+    return Cal::Client::Icd::LevelZero::zesMemoryGetBandwidth(hMemory, pBandwidth);
+}
 ze_result_t zesDeviceEnumPerformanceFactorDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_perf_handle_t* phPerf) {
     return Cal::Client::Icd::LevelZero::zesDeviceEnumPerformanceFactorDomains(hDevice, pCount, phPerf);
 }
@@ -11583,9 +11638,6 @@ ze_result_t zesStandbyGetMode (zes_standby_handle_t hStandby, zes_standby_promo_
 }
 ze_result_t zesStandbySetMode (zes_standby_handle_t hStandby, zes_standby_promo_mode_t mode) {
     return Cal::Client::Icd::LevelZero::zesStandbySetMode(hStandby, mode);
-}
-ze_result_t zesMemoryGetProperties (zes_mem_handle_t hMemory, zes_mem_properties_t* pProperties) {
-    return Cal::Client::Icd::LevelZero::zesMemoryGetProperties(hMemory, pProperties);
 }
 ze_result_t zeInit (ze_init_flags_t flags) {
     return Cal::Client::Icd::LevelZero::zeInit(flags);

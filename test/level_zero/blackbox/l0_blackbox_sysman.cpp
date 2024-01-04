@@ -177,26 +177,43 @@ bool getZesMemProperties(zes_device_handle_t device) {
             log<Verbosity::error>("zesMemoryGetProperties() call has failed! Error code = %x", static_cast<int>(result));
             return false;
         }
-
         if (memProperties.onSubdevice) {
             if (memProperties.subdeviceId >= deviceProperties.numSubdevices) {
                 log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect subdeviceId value = %d", static_cast<int>(memProperties.subdeviceId));
                 return false;
             }
         }
-
         if ((memProperties.location != ZES_MEM_LOC_SYSTEM) && (memProperties.location != ZES_MEM_LOC_DEVICE)) {
             log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect location value = %d", static_cast<int>(memProperties.location));
             return false;
         }
-
         if ((memProperties.busWidth != -1) && (memProperties.busWidth == 0)) {
             log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect busWidth value = %d", static_cast<int>(memProperties.numChannels));
             return false;
         }
-
         if ((memProperties.numChannels != -1) && (memProperties.numChannels == 0)) {
             log<Verbosity::error>("zesMemoryGetProperties() call has returned incorrect numChannels value = %d", static_cast<int>(memProperties.numChannels));
+            return false;
+        }
+
+        zes_mem_state_t state = {ZES_STRUCTURE_TYPE_MEM_STATE, nullptr};
+        result = zesMemoryGetState(memHandle, &state);
+        if (result != ZE_RESULT_SUCCESS) {
+            log<Verbosity::error>("zesMemoryGetState()) call has failed! Error code = %x", static_cast<int>(result));
+            return false;
+        }
+        if ((state.health < ZES_MEM_HEALTH_UNKNOWN) || (state.health > ZES_MEM_HEALTH_REPLACE)) {
+            log<Verbosity::error>("zesMemoryGetState() call has returned incorrect health value = %d", static_cast<int>(state.health));
+            return false;
+        }
+        if (memProperties.physicalSize != 0) {
+            if (state.size > memProperties.physicalSize) {
+                log<Verbosity::error>("zesMemoryGetState() call has returned incorrect size value = %d", static_cast<int>(state.size));
+                return false;
+            }
+        }
+        if (state.free > state.size) {
+            log<Verbosity::error>("zesMemoryGetState() call has returned incorrect free value = %d", static_cast<int>(state.free));
             return false;
         }
     }

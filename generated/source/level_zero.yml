@@ -1892,6 +1892,46 @@ config:
           name: numChannels
           type: int32_t
           kind: scalar
+    - name: zes_mem_state_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+        2:
+          name: health
+          type: uint64_t
+          kind: scalar
+        3:
+          name: free
+          type: uint64_t
+          kind: scalar
+        4:
+          name: size
+          type: uint64_t
+          kind: scalar
+    - name: zes_mem_bandwidth_t
+      members:
+        1:
+          name: readCounter
+          type: uint64_t
+          kind: scalar
+        2:
+          name: writeCounter
+          type: uint64_t
+          kind: scalar
+        3:
+          name: maxBandwidth
+          type: uint64_t
+          kind: scalar
+        4:
+          name: timestamp
+          type: uint64_t
+          kind: scalar
     - name: zes_pci_address_t
       members:
         0:
@@ -2191,8 +2231,6 @@ config:
           Device.zesDeviceEccConfigurable,
           Device.zesDeviceGetEccState,
           Device.zesDeviceSetEccState,
-          Memory.zesMemoryGetState,
-          Memory.zesMemoryGetBandwidth,
           Device.zesDeviceEnumLeds,
           Led.zesLedGetProperties,
           Led.zesLedGetState,
@@ -4454,6 +4492,75 @@ config:
                   type: zes_mem_handle_t
                   kind: scalar
                 server_access: read_write
+        - name: zesMemoryGetProperties
+          latency: 1.0
+          ddi_category: Memory
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hMemory
+              type: zes_mem_handle_t
+              kind: scalar
+            1:
+              name: pProperties
+              type: zes_mem_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_mem_properties_t
+                  kind: struct
+                server_access: read_write
+        - name: zesMemoryGetState
+          latency: 1.0
+          ddi_category: Memory
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hMemory
+              type: zes_mem_handle_t
+              kind: scalar
+            1:
+              name: pState
+              type: zes_mem_state_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_mem_state_t
+                  kind: struct
+                server_access: read_write
+        - name: zesMemoryGetBandwidth
+          latency: 1.0
+          ddi_category: Memory
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hMemory
+              type: zes_mem_handle_t
+              kind: scalar
+            1:
+              name: pBandwidth
+              type: zes_mem_bandwidth_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: zes_mem_bandwidth_t
+                  kind: struct
+                server_access: read_write
 
         - name: zesDeviceEnumPerformanceFactorDomains
           latency: 1.0
@@ -4652,30 +4759,6 @@ config:
               name: mode
               type: zes_standby_promo_mode_t
               kind: scalar
-
-        - name: zesMemoryGetProperties
-          latency: 1.0
-          ddi_category: Memory
-          returns:
-            type: ze_result_t
-            kind: scalar
-            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-          args:
-            0:
-              name: hMemory
-              type: zes_mem_handle_t
-              kind: scalar
-            1:
-              name: pProperties
-              type: zes_mem_properties_t*
-              kind: ptr_array
-              kind_details:
-                num_elements: 1
-                can_be_null: True
-                element:
-                  type: zes_mem_properties_t
-                  kind: struct
-                server_access: read_write
 
     - name: "core"
       prefix: "ze"
