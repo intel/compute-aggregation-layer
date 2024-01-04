@@ -518,6 +518,26 @@ size_t ZesDeviceProcessesGetStateRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZesDevicePciGetBarsRpcM::Captures::DynamicTraits ZesDevicePciGetBarsRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
+    DynamicTraits ret = {};
+    ret.pProperties.count = pProperties ? ((pCount ? *pCount : 0)) : 0;
+    ret.pProperties.size = ret.pProperties.count * sizeof(zes_pci_bar_properties_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pProperties.offset + ret.pProperties.size);
+
+
+    return ret;
+}
+
+size_t ZesDevicePciGetBarsRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pProperties) + Cal::Utils::alignUpPow2<8>(this->countPProperties * sizeof(zes_pci_bar_properties_t));
+     return size;
+}
+
+size_t ZesDevicePciGetBarsRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPProperties * sizeof(zes_pci_bar_properties_t));
+     return size;
+}
+
 ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {
     DynamicTraits ret = {};
     ret.phMemory.count = phMemory ? ((pCount ? *pCount : 0)) : 0;

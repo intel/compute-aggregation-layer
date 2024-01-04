@@ -221,6 +221,54 @@ bool getZesMemProperties(zes_device_handle_t device) {
     return true;
 }
 
+bool getZesPciBars(zes_device_handle_t device) {
+    constexpr auto maxBarsNum = 6u;
+
+    uint32_t count = 0;
+    auto result = zesDevicePciGetBars(device, &count, nullptr);
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDevicePciGetBars() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+    if (count == 0) {
+        log<Verbosity::info>("zesDevicePciGetBars() returned no handles");
+        return true;
+    }
+
+    std::vector<zes_pci_bar_properties_t> pciBarProps(count);
+    for (uint32_t i = 0; i < count; i++) {
+        pciBarProps[i].stype = ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES;
+        pciBarProps[i].pNext = nullptr;
+    }
+
+    result = zesDevicePciGetBars(device, &count, pciBarProps.data());
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDevicePciGetBars() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+
+    for (auto pciBarProp : pciBarProps) {
+        if ((pciBarProp.type < ZES_PCI_BAR_TYPE_MMIO) || (pciBarProp.type > ZES_PCI_BAR_TYPE_MEM)) {
+            log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect type value = %d", static_cast<int>(pciBarProp.type));
+            return false;
+        }
+        if (UINT64_MAX - pciBarProp.base < pciBarProp.size) {
+            log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect base value = %d", static_cast<int>(pciBarProp.base));
+            return false;
+        }
+        if (pciBarProp.index > maxBarsNum) {
+            log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect index value = %d", static_cast<int>(pciBarProp.index));
+            return false;
+        }
+        if (pciBarProp.size == 0) {
+            log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect size value = %d", static_cast<int>(pciBarProp.size));
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDevices;
     using Cal::Testing::Utils::LevelZero::getDrivers;
@@ -246,4 +294,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getZesPowerProperties(devices[0]));
 
     RUN_REQUIRED_STEP(getZesMemProperties(devices[0]));
+
+    RUN_REQUIRED_STEP(getZesPciBars(devices[0]));
 }

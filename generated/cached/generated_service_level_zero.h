@@ -945,7 +945,7 @@ inline bool zesDevicePciGetBarsHandler(Provider &service, Cal::Rpc::ChannelServe
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetBars(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
-                                                apiCommand->args.pProperties ? &apiCommand->captures.pProperties : nullptr
+                                                apiCommand->args.pProperties ? apiCommand->captures.pProperties : nullptr
                                                 );
     return true;
 }

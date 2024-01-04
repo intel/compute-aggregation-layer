@@ -4396,12 +4396,13 @@ config:
               type: zes_pci_bar_properties_t*
               kind: ptr_array
               kind_details:
-                num_elements: "1"
+                num_elements: "pCount"
+                is_num_elements_ptr_to_capturable_arg: True
                 can_be_null: True
                 element:
                   type: zes_pci_bar_properties_t
                   kind: scalar
-                server_access: write
+                server_access: read_write
 
         - name: zesDevicePciGetStats
           latency: 1.0

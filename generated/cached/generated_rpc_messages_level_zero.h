@@ -5941,10 +5941,21 @@ struct ZesDevicePciGetBarsRpcM {
 
     struct Captures {
 
+        struct DynamicTraits {
+            static DynamicTraits calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties);
+            uint32_t totalDynamicSize = 0;
+            DynamicArgTraits pProperties = {};          
+        };
+
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         uint32_t pCount;
-        zes_pci_bar_properties_t pProperties;
+        uint32_t countPProperties = 0;
+        zes_pci_bar_properties_t pProperties[];
 
+        void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
+        countPProperties = dynamicTraits.pProperties.count;
+        }
+        
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
@@ -5960,12 +5971,13 @@ struct ZesDevicePciGetBarsRpcM {
 
     ZesDevicePciGetBarsRpcM() = default;
 
-    ZesDevicePciGetBarsRpcM(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
+    ZesDevicePciGetBarsRpcM(const Captures::DynamicTraits &dynamicTraits, zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero;
         header.subtype = messageSubtype;
         args.hDevice = hDevice;
         args.pCount = pCount;
         args.pProperties = pProperties;
+        captures.adjustCaptureLayout(dynamicTraits);
     }
     
     static void fillWithoutCapture(ZesDevicePciGetBarsRpcM &message, zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties) {
@@ -5977,18 +5989,21 @@ struct ZesDevicePciGetBarsRpcM {
     }
     
 
-    void copyFromCaller(){
+    void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pCount){
             captures.pCount = *args.pCount;
         }
+        if(args.pProperties){
+            memcpy(asMemcpyDstT(captures.pProperties), args.pProperties, dynMemTraits.pProperties.size);
+        }
     }
 
-    void copyToCaller(){
+    void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
         if(args.pCount){
             *args.pCount = captures.pCount;
         }
         if(args.pProperties){
-            *args.pProperties = captures.pProperties;
+            memcpy(args.pProperties, captures.pProperties, dynMemTraits.pProperties.size);
         }
     }
 };

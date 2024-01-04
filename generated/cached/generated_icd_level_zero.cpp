@@ -1733,9 +1733,10 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZesDevicePciGetBarsRpcM;
-    auto commandSpace = channel.getCmdSpace<CommandT>(0);
-    auto command = new(commandSpace) CommandT(hDevice, pCount, pProperties);
-    command->copyFromCaller();
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDevice, pCount, pProperties);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDevice, pCount, pProperties);
+    command->copyFromCaller(dynMemTraits);
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
 
 
@@ -1746,7 +1747,7 @@ ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller();
+    command->copyToCaller(dynMemTraits);
     ze_result_t ret = command->captures.ret;
 
     return ret;
