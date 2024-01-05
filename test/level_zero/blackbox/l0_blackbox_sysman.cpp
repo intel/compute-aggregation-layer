@@ -235,8 +235,8 @@ bool getZesPciBars(zes_device_handle_t device) {
         return true;
     }
 
-    std::vector<zes_pci_bar_properties_t> pciBarProps(count);
     std::vector<zes_pci_bar_properties_1_2_t> pciBarExtProps(count);
+    std::vector<zes_pci_bar_properties_t> pciBarProps(count);
     for (uint32_t i = 0; i < count; i++) {
         pciBarProps[i].stype = ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES;
         pciBarProps[i].pNext = static_cast<void *>(&pciBarExtProps[i]);
@@ -250,7 +250,7 @@ bool getZesPciBars(zes_device_handle_t device) {
         return false;
     }
 
-    for (auto pciBarProp : pciBarProps) {
+    for (auto &pciBarProp : pciBarProps) {
         if ((pciBarProp.type < ZES_PCI_BAR_TYPE_MMIO) || (pciBarProp.type > ZES_PCI_BAR_TYPE_MEM)) {
             log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect type value = %d", static_cast<int>(pciBarProp.type));
             return false;
