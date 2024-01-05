@@ -30,6 +30,14 @@ ze_result_t (*zetContextActivateMetricGroups)(zet_context_handle_t hContext, zet
 ze_result_t (*zetMetricStreamerOpen)(zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer) = nullptr;
 ze_result_t (*zetMetricStreamerReadData)(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) = nullptr;
 ze_result_t (*zetMetricStreamerClose)(zet_metric_streamer_handle_t hMetricStreamer) = nullptr;
+ze_result_t (*zetMetricQueryPoolCreate)(zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, const zet_metric_query_pool_desc_t * desc, zet_metric_query_pool_handle_t* phMetricQueryPool) = nullptr;
+ze_result_t (*zetMetricQueryPoolDestroy)(zet_metric_query_pool_handle_t hMetricQueryPool) = nullptr;
+ze_result_t (*zetMetricQueryCreate)(zet_metric_query_pool_handle_t hMetricQueryPool, uint32_t index, zet_metric_query_handle_t* phMetricQuery) = nullptr;
+ze_result_t (*zetMetricQueryDestroy)(zet_metric_query_handle_t hMetricQuery) = nullptr;
+ze_result_t (*zetMetricQueryReset)(zet_metric_query_handle_t hMetricQuery) = nullptr;
+ze_result_t (*zetCommandListAppendMetricQueryBegin)(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery) = nullptr;
+ze_result_t (*zetCommandListAppendMetricQueryEnd)(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
+ze_result_t (*zetCommandListAppendMetricMemoryBarrier)(zet_command_list_handle_t hCommandList) = nullptr;
 ze_result_t (*zetTracerExpCreate)(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer) = nullptr;
 ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer) = nullptr;
 ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs) = nullptr;
@@ -315,6 +323,54 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zetMetricStreamerClose = reinterpret_cast<decltype(zetMetricStreamerClose)>(dlsym(libraryHandle, "zetMetricStreamerClose"));
     if(nullptr == zetMetricStreamerClose){
         log<Verbosity::error>("Missing symbol zetMetricStreamerClose in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricQueryPoolCreate = reinterpret_cast<decltype(zetMetricQueryPoolCreate)>(dlsym(libraryHandle, "zetMetricQueryPoolCreate"));
+    if(nullptr == zetMetricQueryPoolCreate){
+        log<Verbosity::error>("Missing symbol zetMetricQueryPoolCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricQueryPoolDestroy = reinterpret_cast<decltype(zetMetricQueryPoolDestroy)>(dlsym(libraryHandle, "zetMetricQueryPoolDestroy"));
+    if(nullptr == zetMetricQueryPoolDestroy){
+        log<Verbosity::error>("Missing symbol zetMetricQueryPoolDestroy in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricQueryCreate = reinterpret_cast<decltype(zetMetricQueryCreate)>(dlsym(libraryHandle, "zetMetricQueryCreate"));
+    if(nullptr == zetMetricQueryCreate){
+        log<Verbosity::error>("Missing symbol zetMetricQueryCreate in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricQueryDestroy = reinterpret_cast<decltype(zetMetricQueryDestroy)>(dlsym(libraryHandle, "zetMetricQueryDestroy"));
+    if(nullptr == zetMetricQueryDestroy){
+        log<Verbosity::error>("Missing symbol zetMetricQueryDestroy in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetMetricQueryReset = reinterpret_cast<decltype(zetMetricQueryReset)>(dlsym(libraryHandle, "zetMetricQueryReset"));
+    if(nullptr == zetMetricQueryReset){
+        log<Verbosity::error>("Missing symbol zetMetricQueryReset in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetCommandListAppendMetricQueryBegin = reinterpret_cast<decltype(zetCommandListAppendMetricQueryBegin)>(dlsym(libraryHandle, "zetCommandListAppendMetricQueryBegin"));
+    if(nullptr == zetCommandListAppendMetricQueryBegin){
+        log<Verbosity::error>("Missing symbol zetCommandListAppendMetricQueryBegin in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetCommandListAppendMetricQueryEnd = reinterpret_cast<decltype(zetCommandListAppendMetricQueryEnd)>(dlsym(libraryHandle, "zetCommandListAppendMetricQueryEnd"));
+    if(nullptr == zetCommandListAppendMetricQueryEnd){
+        log<Verbosity::error>("Missing symbol zetCommandListAppendMetricQueryEnd in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zetCommandListAppendMetricMemoryBarrier = reinterpret_cast<decltype(zetCommandListAppendMetricMemoryBarrier)>(dlsym(libraryHandle, "zetCommandListAppendMetricMemoryBarrier"));
+    if(nullptr == zetCommandListAppendMetricMemoryBarrier){
+        log<Verbosity::error>("Missing symbol zetCommandListAppendMetricMemoryBarrier in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1602,6 +1658,14 @@ void unloadLevelZeroLibrary() {
     zetMetricStreamerOpen = nullptr;
     zetMetricStreamerReadData = nullptr;
     zetMetricStreamerClose = nullptr;
+    zetMetricQueryPoolCreate = nullptr;
+    zetMetricQueryPoolDestroy = nullptr;
+    zetMetricQueryCreate = nullptr;
+    zetMetricQueryDestroy = nullptr;
+    zetMetricQueryReset = nullptr;
+    zetCommandListAppendMetricQueryBegin = nullptr;
+    zetCommandListAppendMetricQueryEnd = nullptr;
+    zetCommandListAppendMetricMemoryBarrier = nullptr;
     zetTracerExpCreate = nullptr;
     zetTracerExpDestroy = nullptr;
     zetTracerExpSetPrologues = nullptr;

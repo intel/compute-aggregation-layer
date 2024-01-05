@@ -49,6 +49,14 @@ ze_result_t zetContextActivateMetricGroups (zet_context_handle_t hContext, zet_d
 ze_result_t zetMetricStreamerOpen (zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer);
 ze_result_t zetMetricStreamerReadData (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData);
 ze_result_t zetMetricStreamerClose (zet_metric_streamer_handle_t hMetricStreamer);
+ze_result_t zetMetricQueryPoolCreate (zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, const zet_metric_query_pool_desc_t * desc, zet_metric_query_pool_handle_t* phMetricQueryPool);
+ze_result_t zetMetricQueryPoolDestroy (zet_metric_query_pool_handle_t hMetricQueryPool);
+ze_result_t zetMetricQueryCreate (zet_metric_query_pool_handle_t hMetricQueryPool, uint32_t index, zet_metric_query_handle_t* phMetricQuery);
+ze_result_t zetMetricQueryDestroy (zet_metric_query_handle_t hMetricQuery);
+ze_result_t zetMetricQueryReset (zet_metric_query_handle_t hMetricQuery);
+ze_result_t zetCommandListAppendMetricQueryBegin (zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery);
+ze_result_t zetCommandListAppendMetricQueryEnd (zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zetCommandListAppendMetricMemoryBarrier (zet_command_list_handle_t hCommandList);
 ze_result_t zetTracerExpCreate (zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer);
 ze_result_t zetTracerExpDestroy (zet_tracer_exp_handle_t hTracer);
 ze_result_t zetTracerExpSetPrologues (zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
@@ -793,38 +801,6 @@ inline void zetCommandListAppendMetricStreamerMarkerUnimpl() {
     log<Verbosity::critical>("Function CommandList.zetCommandListAppendMetricStreamerMarker is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetMetricQueryPoolCreateUnimpl() {
-    log<Verbosity::critical>("Function MetricQueryPool.zetMetricQueryPoolCreate is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricQueryPoolDestroyUnimpl() {
-    log<Verbosity::critical>("Function MetricQueryPool.zetMetricQueryPoolDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricQueryCreateUnimpl() {
-    log<Verbosity::critical>("Function MetricQuery.zetMetricQueryCreate is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricQueryDestroyUnimpl() {
-    log<Verbosity::critical>("Function MetricQuery.zetMetricQueryDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetMetricQueryResetUnimpl() {
-    log<Verbosity::critical>("Function MetricQuery.zetMetricQueryReset is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetCommandListAppendMetricQueryBeginUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zetCommandListAppendMetricQueryBegin is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetCommandListAppendMetricQueryEndUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zetCommandListAppendMetricQueryEnd is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zetCommandListAppendMetricMemoryBarrierUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zetCommandListAppendMetricMemoryBarrier is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zetMetricQueryGetDataUnimpl() {
     log<Verbosity::critical>("Function MetricQuery.zetMetricQueryGetData is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -1429,6 +1405,14 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.MetricStreamer.pfnOpen = Cal::Client::Icd::LevelZero::zetMetricStreamerOpen;
     dt.MetricStreamer.pfnReadData = Cal::Client::Icd::LevelZero::zetMetricStreamerReadData;
     dt.MetricStreamer.pfnClose = Cal::Client::Icd::LevelZero::zetMetricStreamerClose;
+    dt.MetricQueryPool.pfnCreate = Cal::Client::Icd::LevelZero::zetMetricQueryPoolCreate;
+    dt.MetricQueryPool.pfnDestroy = Cal::Client::Icd::LevelZero::zetMetricQueryPoolDestroy;
+    dt.MetricQuery.pfnCreate = Cal::Client::Icd::LevelZero::zetMetricQueryCreate;
+    dt.MetricQuery.pfnDestroy = Cal::Client::Icd::LevelZero::zetMetricQueryDestroy;
+    dt.MetricQuery.pfnReset = Cal::Client::Icd::LevelZero::zetMetricQueryReset;
+    dt.CommandList.pfnAppendMetricQueryBegin = Cal::Client::Icd::LevelZero::zetCommandListAppendMetricQueryBegin;
+    dt.CommandList.pfnAppendMetricQueryEnd = Cal::Client::Icd::LevelZero::zetCommandListAppendMetricQueryEnd;
+    dt.CommandList.pfnAppendMetricMemoryBarrier = Cal::Client::Icd::LevelZero::zetCommandListAppendMetricMemoryBarrier;
     dt.TracerExp.pfnCreate = Cal::Client::Icd::LevelZero::zetTracerExpCreate;
     dt.TracerExp.pfnDestroy = Cal::Client::Icd::LevelZero::zetTracerExpDestroy;
     dt.TracerExp.pfnSetPrologues = Cal::Client::Icd::LevelZero::zetTracerExpSetPrologues;
@@ -1454,14 +1438,6 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.Module.pfnGetDebugInfo = reinterpret_cast<decltype(dt.Module.pfnGetDebugInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetModuleGetDebugInfoUnimpl);
     dt.MetricGroup.pfnCalculateMetricValues = reinterpret_cast<decltype(dt.MetricGroup.pfnCalculateMetricValues)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricGroupCalculateMetricValuesUnimpl);
     dt.CommandList.pfnAppendMetricStreamerMarker = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricStreamerMarker)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricStreamerMarkerUnimpl);
-    dt.MetricQueryPool.pfnCreate = reinterpret_cast<decltype(dt.MetricQueryPool.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryPoolCreateUnimpl);
-    dt.MetricQueryPool.pfnDestroy = reinterpret_cast<decltype(dt.MetricQueryPool.pfnDestroy)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryPoolDestroyUnimpl);
-    dt.MetricQuery.pfnCreate = reinterpret_cast<decltype(dt.MetricQuery.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryCreateUnimpl);
-    dt.MetricQuery.pfnDestroy = reinterpret_cast<decltype(dt.MetricQuery.pfnDestroy)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryDestroyUnimpl);
-    dt.MetricQuery.pfnReset = reinterpret_cast<decltype(dt.MetricQuery.pfnReset)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryResetUnimpl);
-    dt.CommandList.pfnAppendMetricQueryBegin = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricQueryBegin)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricQueryBeginUnimpl);
-    dt.CommandList.pfnAppendMetricQueryEnd = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricQueryEnd)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricQueryEndUnimpl);
-    dt.CommandList.pfnAppendMetricMemoryBarrier = reinterpret_cast<decltype(dt.CommandList.pfnAppendMetricMemoryBarrier)>(Cal::Client::Icd::LevelZero::Unimplemented::zetCommandListAppendMetricMemoryBarrierUnimpl);
     dt.MetricQuery.pfnGetData = reinterpret_cast<decltype(dt.MetricQuery.pfnGetData)>(Cal::Client::Icd::LevelZero::Unimplemented::zetMetricQueryGetDataUnimpl);
 }
 

@@ -170,6 +170,26 @@ size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZetCommandListAppendMetricQueryEndRpcM::Captures::DynamicTraits ZetCommandListAppendMetricQueryEndRpcM::Captures::DynamicTraits::calculate(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZetCommandListAppendMetricQueryEndRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZetCommandListAppendMetricQueryEndRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
 ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits ZetDeviceGetDebugPropertiesRpcM::Captures::DynamicTraits::calculate(ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties) {
     DynamicTraits ret = {};
 

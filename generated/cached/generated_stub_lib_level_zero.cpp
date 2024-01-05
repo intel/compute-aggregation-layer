@@ -51,6 +51,38 @@ ze_result_t zetMetricStreamerClose(zet_metric_streamer_handle_t hMetricStreamer)
    return {};
 }
 
+ze_result_t zetMetricQueryPoolCreate(zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, const zet_metric_query_pool_desc_t * desc, zet_metric_query_pool_handle_t* phMetricQueryPool){
+   return {};
+}
+
+ze_result_t zetMetricQueryPoolDestroy(zet_metric_query_pool_handle_t hMetricQueryPool){
+   return {};
+}
+
+ze_result_t zetMetricQueryCreate(zet_metric_query_pool_handle_t hMetricQueryPool, uint32_t index, zet_metric_query_handle_t* phMetricQuery){
+   return {};
+}
+
+ze_result_t zetMetricQueryDestroy(zet_metric_query_handle_t hMetricQuery){
+   return {};
+}
+
+ze_result_t zetMetricQueryReset(zet_metric_query_handle_t hMetricQuery){
+   return {};
+}
+
+ze_result_t zetCommandListAppendMetricQueryBegin(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery){
+   return {};
+}
+
+ze_result_t zetCommandListAppendMetricQueryEnd(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
+ze_result_t zetCommandListAppendMetricMemoryBarrier(zet_command_list_handle_t hCommandList){
+   return {};
+}
+
 ze_result_t zetTracerExpCreate(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer){
    return {};
 }

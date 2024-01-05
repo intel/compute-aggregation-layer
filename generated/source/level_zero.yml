@@ -2312,14 +2312,6 @@ config:
           Module.zetModuleGetDebugInfo,
           MetricGroup.zetMetricGroupCalculateMetricValues,
           CommandList.zetCommandListAppendMetricStreamerMarker,
-          MetricQueryPool.zetMetricQueryPoolCreate,
-          MetricQueryPool.zetMetricQueryPoolDestroy,
-          MetricQuery.zetMetricQueryCreate,
-          MetricQuery.zetMetricQueryDestroy,
-          MetricQuery.zetMetricQueryReset,
-          CommandList.zetCommandListAppendMetricQueryBegin,
-          CommandList.zetCommandListAppendMetricQueryEnd,
-          CommandList.zetCommandListAppendMetricMemoryBarrier,
           MetricQuery.zetMetricQueryGetData,
         ]
 
@@ -2677,6 +2669,184 @@ config:
               name: hMetricStreamer
               type: zet_metric_streamer_handle_t 
               kind: scalar
+        - name: zetMetricQueryPoolCreate
+          latency: 0.0
+          ddi_category: MetricQueryPool
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hContext
+              type: zet_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: hDevice
+              type: zet_device_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            2:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: desc
+              type: "const zet_metric_query_pool_desc_t *"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_query_pool_desc_t
+                  kind: scalar
+                server_access: read
+            4:
+              name: phMetricQueryPool
+              type: zet_metric_query_pool_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_query_pool_handle_t
+                  kind: scalar
+                server_access: write
+        - name: zetMetricQueryPoolDestroy
+          latency: 0.0
+          ddi_category: MetricQueryPool
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricQueryPool
+              type: zet_metric_query_pool_handle_t
+              kind: scalar
+        - name: zetMetricQueryCreate
+          latency: 0.0
+          ddi_category: MetricQuery
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricQueryPool
+              type: zet_metric_query_pool_handle_t
+              kind: scalar
+            1:
+              name: index
+              type: uint32_t
+              kind: scalar
+            2:
+              name: phMetricQuery
+              type: zet_metric_query_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_metric_query_handle_t
+                  kind: scalar
+                server_access: write
+        - name: zetMetricQueryDestroy
+          latency: 0.0
+          ddi_category: MetricQuery
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricQuery
+              type: zet_metric_query_handle_t
+              kind: scalar
+        - name: zetMetricQueryReset
+          latency: 0.0
+          ddi_category: MetricQuery
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricQuery
+              type: zet_metric_query_handle_t
+              kind: scalar
+        - name: zetCommandListAppendMetricQueryBegin
+          latency: 0.0
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hCommandList
+              type: zet_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: hMetricQuery
+              type: zet_metric_query_handle_t
+              kind: scalar
+        - name: zetCommandListAppendMetricQueryEnd
+          latency: 0.0
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hCommandList
+              type: zet_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: hMetricQuery
+              type: zet_metric_query_handle_t
+              kind: scalar
+            2:
+              name: hSignalEvent
+              type: ze_event_handle_t
+              kind: scalar
+              kind_details:
+                can_be_null: True
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            3:
+              name: numWaitEvents
+              type: uint32_t
+              kind: scalar
+            4:
+              name: phWaitEvents
+              type: ze_event_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: numWaitEvents
+                can_be_null: True
+                element:
+                  type: ze_event_handle_t
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+        - name: zetCommandListAppendMetricMemoryBarrier
+          latency: 0.0
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hCommandList
+              type: zet_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
         - name: zetTracerExpCreate
           special_handling:
             icd:
