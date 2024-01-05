@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -15,6 +15,8 @@ import yaml
 from collections import defaultdict
 from mako.template import Template
 
+license_fname = "LICENSE.md"
+base_license = "../../LICENSE.md"
 
 class ServerAccess:
     def __init__(self, src: str):
@@ -1268,6 +1270,9 @@ class FunctionCaptureLayout:
                                          member_layout_formatter=MemberLayoutFormatter(),
                                          **vars(self), **Formater.get_all_formaters())
 
+def remove_prefix(text : str, prefix : str) -> str :
+    return text[len(prefix) : ] if text.startswith(prefix) else text
+
 class Redirection:
     def __init__(self, destination):
         self.destination = destination # Function
@@ -1476,19 +1481,91 @@ def create_condition_based_on_ptr_kind(var_name, required_kind):
     return cond
 
 class Config:
-    def __init__(self, src: dict):
-        self.api_name = src["api_name"]
-        self.loader_lib_names = src["loader_lib_names"]
-        self.supports_tracing = src["supports_tracing"]
+    def __init__(self, root_config: dict, child_configs : list):
+        self.parent_config = None
+        self.license = root_config["license"]
+        self.subconfig_name = ""
+        self.message_subtype_base = 0
+        self.api_name = root_config["api_name"]
+        self.loader_lib_names = root_config["loader_lib_names"]
+        self.supports_tracing = root_config["supports_tracing"]
 
-        self.structures = [Structure(s) for s in src.get("structures", [])]
+        self.structures = [Structure(s) for s in root_config.get("structures", [])]
         self.structures_by_name = {struct.name: struct for struct in self.structures}
         for s in self.structures:
             s.set_all_structures_description(self.structures_by_name)
 
-        self.tracable_group_defaults = {function_group["name"] : (function_group["tracable_default"] if "tracable_default" in function_group.keys() else False) for function_group in src.get("functions", [])}
-        self.functions = {function_group["name"] : [Function(self.structures_by_name, f, self.tracable_group_defaults[function_group["name"]]) for f in function_group["members"]] for function_group in src.get("functions", [])}
-        self.group_prefixes = {function_group["name"] : (function_group["prefix"] if "prefix" in function_group.keys() else "") for function_group in src.get("functions", [])}
+        self.tracable_group_defaults = {function_group["name"] : (function_group["tracable_default"] if "tracable_default" in function_group.keys() else False) for function_group in root_config.get("functions", [])}
+        self.functions = {function_group["name"] : [Function(self.structures_by_name, f, self.tracable_group_defaults[function_group["name"]]) for f in function_group["members"]] for function_group in root_config.get("functions", [])}
+        self.group_prefixes = {function_group["name"] : (function_group["prefix"] if "prefix" in function_group.keys() else "") for function_group in root_config.get("functions", [])}
+        
+        self.generate_variants()
+            
+        self.unimplemented = root_config.get("unimplemented", [])
+        self.functions_by_name = {group_name : {func.name: func for func in self.functions[group_name]} for group_name in self.functions.keys()}
+        self.icd_namespace = root_config.get("icd_namespace", "").split("::")
+        self.icd_dispatch_table_type = root_config.get("icd_dispatch_table_type", "DispatchTableT")
+        self.icd_init_dispatch_table_func_name_format = root_config.get("icd_init_dispatch_table_func_name_format", "initIcdDispatchTable")
+        self.icd_get_extenion_func_addr_func_name = root_config.get("icd_get_extenion_func_addr_func_name", None)
+        self.icd_acquire_global_object = root_config.get("icd_acquire_global_object", "")
+        self.icd_acquire_channel = root_config.get("icd_acquire_channel", "")
+        self.rpc_namespace = root_config.get("rpc_namespace", "").split("::")
+        self.daemon_namespace = root_config.get("daemon_namespace", "").split("::")
+        self.file_headers = FileHeaders(root_config.get("file_headers", {}))
+        self.ddi_format_regexp0 = FormatRegexp(root_config.get("ddi_format_regexp0", None))
+        self.ddi_format_regexp1_category = FormatRegexp(root_config.get("ddi_format_regexp1_category", None))
+        self.result_type = root_config.get("result_type", "int")
+        self.result_success = root_config.get("result_success", 0)
+
+        for group_name in self.functions:
+            for f in self.functions[group_name]:
+                if not (f.special_handling and f.special_handling.icd and f.special_handling.icd.alias_to):
+                    continue
+                f.aliased_function = self.functions_by_name[group_name][f.special_handling.icd.alias_to]
+
+        for func_category in self.unimplemented:
+            category_name = func_category["name"]
+            category_members = func_category["members"]
+            assert not any(f for f in self.functions[category_name] if f.name in category_members)
+
+        self.child_configs = dict()
+        if child_configs:
+            message_subtype_base = get_num_distinct_messages(self.functions, self.api_name)
+            for cc_name in child_configs.keys():
+                child_config_in = child_configs[cc_name]
+                config_base = Config(root_config, None)
+                child_config = config_base
+                child_config.subconfig_name = cc_name
+                child_config.functions = []
+                child_config.functions_by_name = dict()
+                child_config.structures = []
+                child_config.structures_by_name = dict()
+                child_config.unimplemented = []
+                child_config.icd_get_extenion_func_addr_func_name = child_config_in.get("icd_get_extenion_func_addr_func_name", None)
+
+                child_config.structures = [Structure(s) for s in child_config_in.get("structures", [])]
+                child_config.structures_by_name = {struct.name: struct for struct in child_config.structures}
+                for s in child_config.structures:
+                    s.set_all_structures_description(child_config.structures_by_name)
+
+                child_config.tracable_group_defaults = {function_group["name"] : (function_group["tracable_default"] if "tracable_default" in function_group.keys() else False) for function_group in child_config_in.get("functions", [])}
+                child_config.functions = {function_group["name"] : [Function(child_config.structures_by_name, f, child_config.tracable_group_defaults[function_group["name"]]) for f in function_group["members"]] for function_group in child_config_in.get("functions", [])}
+                child_config.group_prefixes = {function_group["name"] : (function_group["prefix"] if "prefix" in function_group.keys() else "") for function_group in child_config_in.get("functions", [])}
+                
+                child_config.generate_variants()
+                child_config.unimplemented = child_config_in.get("unimplemented", [])
+                child_config.functions_by_name = {group_name : {func.name: func for func in child_config.functions[group_name]} for group_name in child_config.functions.keys()}
+                child_config.icd_dispatch_table_type = []
+                child_config.parent_config = self
+                child_config.license = child_config_in["license"]
+                child_config.message_subtype_base = message_subtype_base
+                self.child_configs[cc_name] = child_config
+                message_subtype_base += get_num_distinct_messages(child_config.functions, child_config.api_name)
+
+    def get_extensions(self, include_variants=False):
+        return {group_name : [f for f in self.functions[group_name] if f.traits.is_extension and not f.special_handling.is_variant()] for group_name in self.functions}
+    
+    def generate_variants(self):
         generated_variants = []
         for group in self.functions.keys():
             for func in self.functions[group]:
@@ -1530,42 +1607,43 @@ class Config:
                 func.dont_generate_rpc_message = True
                 func.dont_generate_rpc_handler = True
             self.functions[group] = self.functions[group] + generated_variants
-            
-        self.unimplemented = src.get("unimplemented", [])
-        self.functions_by_name = {group_name : {func.name: func for func in self.functions[group_name]} for group_name in self.functions.keys()}
-        self.icd_namespace = src.get("icd_namespace", "").split("::")
-        self.icd_dispatch_table_type = src.get("icd_dispatch_table_type", "DispatchTableT")
-        self.icd_init_dispatch_table_func_name_format = src.get("icd_init_dispatch_table_func_name_format", "initIcdDispatchTable")
-        self.icd_get_extenion_func_addr_func_name = src.get("icd_get_extenion_func_addr_func_name", None)
-        self.icd_acquire_global_object = src.get("icd_acquire_global_object", "")
-        self.icd_acquire_channel = src.get("icd_acquire_channel", "")
-        self.rpc_namespace = src.get("rpc_namespace", "").split("::")
-        self.daemon_namespace = src.get("daemon_namespace", "").split("::")
-        self.file_headers = FileHeaders(src.get("file_headers", {}))
-        self.ddi_format_regexp0 = FormatRegexp(src.get("ddi_format_regexp0", None))
-        self.ddi_format_regexp1_category = FormatRegexp(src.get("ddi_format_regexp1_category", None))
-        self.result_type = src.get("result_type", "int")
-        self.result_success = src.get("result_success", 0)
 
-        for group_name in self.functions:
-            for f in self.functions[group_name]:
-                if not (f.special_handling and f.special_handling.icd and f.special_handling.icd.alias_to):
-                    continue
-                f.aliased_function = self.functions_by_name[group_name][f.special_handling.icd.alias_to]
+def get_configs(root_config : str) -> str:
+    configs = dict()
+    root_path = os.path.dirname(os.path.abspath(root_config))
+    fname = os.path.basename(root_config)
 
-        for func_category in self.unimplemented:
-            category_name = func_category["name"]
-            category_members = func_category["members"]
-            assert not any(f for f in self.functions[category_name] if f.name in category_members)
+    for root, dirs, files in os.walk(root_path, topdown=True):
+        for f in files:
+            if f == fname:
+                with open(os.path.join(root, f), "r", encoding="utf-8") as f:
+                    new_config = yaml.load(f, Loader=yaml.Loader)
+                    license_path = os.path.join(root, license_fname)
+                    if not os.path.exists(license_path):
+                        license_path = base_license
+                    with open(license_path, "r") as license:
+                        new_config["config"]["license"] = license.read()
+                    configs[remove_prefix(remove_prefix(remove_prefix(root, root_path), "/"), "\\")] = new_config
 
-    def get_extensions(self, include_variants=False):
-        return {group_name : [f for f in self.functions[group_name] if f.traits.is_extension and not f.special_handling.is_variant()] for group_name in self.functions}
-
+    return configs
 
 def load(fname: str) -> Config:
-    with open(fname, "r", encoding="utf-8") as f:
-        doc = yaml.load(f, Loader=yaml.Loader)
-    return Config(doc["config"])
+    configs = get_configs(fname)
+    root_config = configs[""]
+    return Config(root_config["config"], {name : configs[name]["config"] for name in configs.keys() if (name != "")})
+
+def get_num_distinct_messages(grouped_functions, api_name):
+    def should_skip_message_generation(func):
+        if func.special_handling and func.special_handling.rpc and func.special_handling.rpc.dont_generate_rpc_message:
+            return True
+        if api_name == 'level_zero' and len(func.redirections):
+            return True
+        return False
+    grouped_messages = [[f for f in grouped_functions[group_name] if not should_skip_message_generation(f)] for group_name in grouped_functions]
+    ret = 0
+    for group in grouped_messages:
+        ret += len(group)
+    return ret
 
 
 def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> str:
@@ -1582,7 +1660,7 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
         flat_functions_with_messages = flat_functions_with_messages + functions_with_messages[group_name]
 
     def get_message_subtype(func):
-        return flat_functions_with_messages.index(func)
+        return flat_functions_with_messages.index(func) + config.message_subtype_base
 
     def get_fq_message_name(func):
         return '::'.join(config.rpc_namespace + [func.message_name])
@@ -1807,8 +1885,6 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
     def can_be_null(arg):
         return arg.kind_details and arg.kind_details.can_be_null
     
-    def remove_prefix(text : str, prefix : str) -> str :
-        return text[len(prefix) : ] if text.startswith(prefix) else text
 
     with open("icd.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
@@ -1971,19 +2047,21 @@ def generate_shared_h(config: Config, additional_file_headers: list) -> str:
                                      daemon_namespace=config.daemon_namespace)
 
 
-def process_license(raw_text: str) -> str:
+def license_line_to_cpp_comment(line :str) -> str:
+    return f" * {line}" if line else " *"
+    
+
+def license_to_cpp_comment(raw_text: str) -> str:
     output = "/*\n"
-    output += "".join([" *" + (" " + line if line != "" else "") + "\n" for line in raw_text.splitlines()])
-    output += " *\n"
-    output += " */\n\n"
+    output += "\n".join([license_line_to_cpp_comment(line) for line in raw_text.splitlines()])
+    output += "\n */\n\n"
 
     return output
 
 
-def dump(data: str, fname: str) -> None:
+def dump(data: str, fname: str, license: str) -> None:
     print(f"Writing {fname}")
-    with open("../../LICENSE.md", "r", encoding="utf-8") as f:
-        cal_license = process_license(f.read())
+    cal_license = license_to_cpp_comment(license)
     with open(fname, "wb") as f:
         contents = cal_license
         contents += "#pragma once\n" if fname.endswith((".h", ".hpp")) else ""
@@ -1991,34 +2069,35 @@ def dump(data: str, fname: str) -> None:
         f.write(contents.encode("utf-8"))
 
 
-def generate(config: Config, out_dir: str) -> str:
-    fname_base = "generated"
+def generate(config: Config, out_dir: str, prefix:str) -> str:
+    os.makedirs(out_dir, exist_ok=True)
+    fname_base = "generated" + prefix
     fpath_base = os.path.join(out_dir, fname_base)
 
     icd_h = generate_icd_h(config, [])
-    dump(icd_h, fpath_base + f"_icd_{config.api_name}.h")
+    dump(icd_h, fpath_base + f"_icd_{config.api_name}.h", config.license)
 
     icd_cpp = generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"",
                                         f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(icd_cpp, fpath_base + f"_icd_{config.api_name}.cpp")
+    dump(icd_cpp, fpath_base + f"_icd_{config.api_name}.cpp", config.license)
 
     rpc_messages_h = generate_rpc_messages_h(config, [])
-    dump(rpc_messages_h, fpath_base + f"_rpc_messages_{config.api_name}.h")
+    dump(rpc_messages_h, fpath_base + f"_rpc_messages_{config.api_name}.h", config.license)
 
     rpc_messages_cpp = generate_rpc_messages_cpp(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(rpc_messages_cpp, fpath_base + f"_rpc_messages_{config.api_name}.cpp")
+    dump(rpc_messages_cpp, fpath_base + f"_rpc_messages_{config.api_name}.cpp", config.license)
 
     service_h = generate_service_h(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(service_h, fpath_base + f"_service_{config.api_name}.h")
+    dump(service_h, fpath_base + f"_service_{config.api_name}.h", config.license)
 
     service_cpp = generate_service_cpp(config, [f"#include \"{fname_base}_service_{config.api_name}.h\""])
-    dump(service_cpp, fpath_base + f"_service_{config.api_name}.cpp")
+    dump(service_cpp, fpath_base + f"_service_{config.api_name}.cpp", config.license)
 
     shared_h = generate_shared_h(config, [])
-    dump(shared_h, fpath_base + f"_shared_{config.api_name}.h")
+    dump(shared_h, fpath_base + f"_shared_{config.api_name}.h", config.license)
 
     stub_lib_cpp = generate_stub_lib_cpp(config)
-    dump(stub_lib_cpp, fpath_base + f"_stub_lib_{config.api_name}.cpp")
+    dump(stub_lib_cpp, fpath_base + f"_stub_lib_{config.api_name}.cpp", config.license)
 
 
 def main():
@@ -2028,10 +2107,12 @@ def main():
         path = sys.argv[1]
     
     print(f"output directory : {path}")
-    config = load("ocl.yml")
-    generate(config, path)
-    config = load("level_zero.yml")
-    generate(config, path)
+    for config_name in ["ocl.yml", 
+                                "level_zero.yml"]:
+        config = load(config_name)
+        generate(config, path, "")
+        for cc_name in config.child_configs.keys():
+            generate(config.child_configs[cc_name], os.path.join(path, cc_name), "_"+cc_name)
 
 
 if __name__ == "__main__":

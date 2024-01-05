@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -17,8 +17,6 @@ set_target_properties(ze_loader
                       PROPERTIES
                       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/stub_libs"
 )
-
-add_subdirectories()
 
 option(REQUIRE_CACHE_VERIFICATION_DEPENDENCIES "Causes failure of build when the verification of generated cache cannot be performed due to missing dependencies!" OFF)
 option(VERIFY_GENERATED_CACHE_IF_POSSIBLE "Verifies if cached generated files are up to date and in synch with source files" ON)
@@ -76,3 +74,37 @@ else()
     endif()
   endif()
 endif()
+
+set(GENERATED_ICD_SOURCES ${GENERATED_ICD_SOURCES}
+    "${generated_dir}/generated_icd_level_zero.cpp"
+    "${generated_dir}/generated_icd_ocl.cpp"
+)
+set(GENERATED_SERVICE_SOURCES ${GENERATED_SERVICE_SOURCES}
+    "${generated_dir}/generated_service_level_zero.cpp"
+    "${generated_dir}/generated_service_ocl.cpp"
+)
+set(GENERATED_SHARED_SOURCES ${GENERATED_SHARED_SOURCES}
+    "${generated_dir}/generated_rpc_messages_level_zero.cpp"
+    "${generated_dir}/generated_rpc_messages_ocl.cpp"
+)
+add_subdirectories()
+
+add_library(generated_icd OBJECT ${GENERATED_ICD_SOURCES} ${GENERATED_SHARED_SOURCES})
+set_property(TARGET generated_icd PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_compile_definitions(generated_icd PRIVATE -Dmockable= -DCAL_LOGGER_NAME=C)
+
+add_library(generated_service OBJECT ${GENERATED_SERVICE_SOURCES} ${GENERATED_SHARED_SOURCES})
+set_property(TARGET generated_service PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_compile_definitions(generated_service PRIVATE -Dmockable= -DCAL_LOGGER_NAME=S)
+
+add_library(generated_ult_icd OBJECT ${GENERATED_ICD_SOURCES} ${GENERATED_SHARED_SOURCES})
+set_property(TARGET generated_ult_icd PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_compile_definitions(generated_ult_icd PRIVATE -Dmockable=virtual -DCAL_LOGGER_NAME=U)
+
+add_library(generated_ult_service OBJECT ${GENERATED_SERVICE_SOURCES} ${GENERATED_SHARED_SOURCES})
+set_property(TARGET generated_ult_service PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_compile_definitions(generated_ult_service PRIVATE -Dmockable=virtual -DCAL_LOGGER_NAME=U)
+
+add_library(generated_ult OBJECT ${GENERATED_ICD_SOURCES} ${GENERATED_SERVICE_SOURCES} ${GENERATED_SHARED_SOURCES})
+set_property(TARGET generated_ult PROPERTY POSITION_INDEPENDENT_CODE OFF)
+target_compile_definitions(generated_ult PRIVATE -Dmockable=virtual -DCAL_LOGGER_NAME=U)

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -19,8 +19,7 @@ add_executable(calrun # SERVICE
                ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
-               ${generated_dir}/generated_service_ocl.cpp
-               ${generated_dir}/generated_service_level_zero.cpp
+               $<TARGET_OBJECTS:generated_service>
                $<TARGET_OBJECTS:service_l0_objects>
 )
 

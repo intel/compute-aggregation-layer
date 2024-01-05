@@ -1121,10 +1121,6 @@ cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const void* p
 cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clGetDeviceGlobalVariablePointerINTELLoad;
 } // namespace Extensions
 
-bool isSuccessful(cl_int result) {
-    return result == CL_SUCCESS;
-}
-
 } // namespace Ocl
 } // namespace Apis
 } // namespace Service

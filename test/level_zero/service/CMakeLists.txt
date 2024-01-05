@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -19,9 +19,11 @@ set(SERVICE_L0_TESTS_SOURCES
 )
 
 set(SERVICE_L0_TESTS_SHARED_DEPENDECIES
+    ${cal_source_root_dir}/shared/allocators.cpp
     ${cal_source_root_dir}/shared/callstack.cpp
     ${cal_source_root_dir}/shared/utils.cpp
-    ${generated_dir}/generated_service_level_zero.cpp
+    ${cal_source_root_dir}/service/service.cpp
+    $<TARGET_OBJECTS:generated_ult_service>
 )
 
 add_executable(l0_test_ult_service

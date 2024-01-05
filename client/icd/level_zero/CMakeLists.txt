@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -32,9 +32,6 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/logic/imported_host_pointers_manager.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/tracing/tracing_imp.cpp
-
-    ${generated_dir}/generated_icd_level_zero.cpp
-    ${generated_dir}/generated_rpc_messages_level_zero.cpp
 )
 
 set_property(GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY "${ICD_L0_OBJECTS_SOURCES}")

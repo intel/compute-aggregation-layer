@@ -160,7 +160,9 @@ extern cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const 
 extern cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 } // Extensions
 
-bool isSuccessful(cl_int result);
+inline bool isSuccessful(cl_int result) {
+    return result == CL_SUCCESS;
+}
 
 inline bool clGetPlatformInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetPlatformInfo");

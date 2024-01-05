@@ -1955,10 +1955,6 @@ ze_result_t (*zexDriverReleaseImportedPointer)(ze_driver_handle_t hDriver, void*
 ze_result_t (*zexDriverGetHostPointerBaseAddress)(ze_driver_handle_t hDriver, void* ptr, void** baseAddress) = Cal::Service::Apis::LevelZero::Extensions::LazyLoad::zexDriverGetHostPointerBaseAddressLoad;
 } // namespace Extensions
 
-bool isSuccessful(ze_result_t result) {
-    return result == ZE_RESULT_SUCCESS;
-}
-
 } // namespace LevelZero
 } // namespace Apis
 } // namespace Service

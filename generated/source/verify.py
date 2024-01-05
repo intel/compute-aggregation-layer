@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -17,14 +17,9 @@ def read_file(path):
     with open(path, "r") as f:
         return f.read()
 
-def main():
-    if len(sys.argv) < 3:
-        print("Expected exactly 2 arguments : reference_path and tested_path")
-        exit(-1)
-        
-    reference_path = sys.argv[1]
-    tested_path = sys.argv[2]
-    
+def compare_dir(ref_base, test_base, subdir):
+    reference_path = os.path.join(ref_base, subdir)
+    tested_path = os.path.join(test_base, subdir)
     print(f"Reference : {reference_path}")
     print(f"Tested : {tested_path}")
 
@@ -38,17 +33,36 @@ def main():
     assert_empty(not_in_tested, f"ERROR : Missing files in {tested_path} : {not_in_tested}")
     common_file_names = reference_file_names
     
-    dirs = [os.path.join(dir, file) for dir, file in itertools.product([reference_path, tested_path], common_file_names) if os.path.isdir(os.path.join(dir, file))]
-    assert_empty(dirs, f"ERROR : Unexpected directories : {dirs}")
-    
     for fname in common_file_names:
-        reference = read_file(os.path.join(reference_path, fname))
-        tested = read_file(os.path.join(tested_path, fname))
-        if tested != reference:
-            print(f"ERROR : File contents mismatch for {fname}")
+        ref_path = os.path.join(reference_path, fname)
+        test_path = os.path.join(tested_path, fname)
+        if os.path.isdir(ref_path) != os.path.isdir(test_path):
+            print(f"ERROR : File {'is' if os.path.isdir(ref_path) else 'is not'} supposed to be a directory for {test_path}")
             exit(-1)
+        if os.path.isdir(ref_path):
+            continue
+        reference = read_file(ref_path)
+        tested = read_file(test_path)      
+        if not os.path.isdir(reference) and (tested != reference):
+            print(f"ERROR : File contents mismatch for {os.path.join(subdir, fname)}")
+            exit(-1)
+
+    for fname in common_file_names:
+        ref_path = os.path.join(reference_path, fname)
+        if os.path.isdir(ref_path):
+            compare_dir(ref_base, test_base, os.path.join(subdir, fname))
             
     print(f"PASSED : Everything looks GOOD for {common_file_names}")
+
+def main():
+    if len(sys.argv) < 3:
+        print("Expected exactly 2 arguments : reference_path and tested_path")
+        exit(-1)
+        
+    reference_path = sys.argv[1]
+    tested_path = sys.argv[2]
+    compare_dir(reference_path, tested_path, "")
+
 
 if __name__ == "__main__":
     main()

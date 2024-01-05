@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -21,8 +21,7 @@ add_executable(l0_test_ult_icd
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/signal_utils.cpp
 
-               ${generated_dir}/generated_icd_ocl.cpp
-               ${generated_dir}/generated_rpc_messages_ocl.cpp
+               $<TARGET_OBJECTS:generated_ult_icd>
 
                ${ICD_L0_OBJECTS_SOURCES}
 
@@ -49,10 +48,7 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/signal_utils.cpp
 
-               ${generated_dir}/generated_icd_ocl.cpp
-               ${generated_dir}/generated_rpc_messages_ocl.cpp
-               ${generated_dir}/generated_service_level_zero.cpp
-               ${generated_dir}/generated_service_ocl.cpp
+               $<TARGET_OBJECTS:generated_ult>
 
                ${ICD_L0_OBJECTS_SOURCES}
                ${SERVICE_L0_OBJECTS_SOURCES}

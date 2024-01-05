@@ -23,9 +23,11 @@ namespace ${namespace_part} {
 % endfor
 
 namespace Standard {
+% if not config.parent_config:
 bool load${to_pascal_case(config.api_name)}Library(std::optional<std::string> path);
 void unload${to_pascal_case(config.api_name)}Library();
 bool is${to_pascal_case(config.api_name)}LibraryLoaded();
+% endif # not config.parent_config
 
 % for group_name in standard_functions:
 %  for f in standard_functions[group_name]:
@@ -44,7 +46,9 @@ extern ${ext.returns.type.str} (*${ext.name})(${ext.get_args_list_str()});
 } // Extensions
 % endif # extensions
 
-bool isSuccessful(${config.result_type} result);
+inline bool isSuccessful(${config.result_type} result) {
+    return result == ${config.result_success};
+}
 
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:

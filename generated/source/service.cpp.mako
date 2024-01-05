@@ -25,6 +25,7 @@ ${f.returns.type.str} (*${f.name})(${f.get_args_list_str()}) = nullptr;
 %  endfor # standard_functions[group_name]
 % endfor # standard_functions
 
+% if not config.parent_config:
 void *libraryHandle = nullptr;
 
 bool load${to_pascal_case(config.api_name)}Library(std::optional<std::string> path) {
@@ -78,6 +79,9 @@ void unload${to_pascal_case(config.api_name)}Library() {
 bool is${to_pascal_case(config.api_name)}LibraryLoaded() {
     return nullptr != libraryHandle;
 }
+% else : # not config.parent_config
+extern void *libraryHandle;
+% endif
 
 } // namespace Standard
 
@@ -107,10 +111,6 @@ ${ext.returns.type.str} (*${ext.name})(${ext.get_args_list_str()}) = ${daemon_na
 %  endfor # extensions
 } // namespace Extensions
 % endif
-
-bool isSuccessful(${config.result_type} result) {
-    return result == ${config.result_success};
-}
 
 % for namespace_part in reversed(daemon_namespace):
 } // namespace ${namespace_part}

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -20,9 +20,8 @@ add_library(cal SHARED # acts as ICD
             ${cal_source_root_dir}/shared/sys.cpp
             ${cal_source_root_dir}/shared/usm.cpp
             ${cal_source_root_dir}/shared/utils.cpp
-            ${generated_dir}/generated_icd_ocl.cpp
-            ${generated_dir}/generated_rpc_messages_ocl.cpp
             $<TARGET_OBJECTS:icd_l0_objects>
+            $<TARGET_OBJECTS:generated_icd>
 )
 
 target_link_libraries(cal ${common_library_dependencies})
