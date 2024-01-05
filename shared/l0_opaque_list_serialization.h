@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -111,6 +111,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
     }
 
     if (ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES == stypeInt) {
+        return sizeof(zes_power_ext_properties_t);
+    }
+
+    if (ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES_1_2 == stypeInt) {
         return sizeof(zes_power_ext_properties_t);
     }
 

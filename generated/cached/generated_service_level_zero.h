@@ -942,10 +942,11 @@ inline bool zesDevicePciGetStateHandler(Provider &service, Cal::Rpc::ChannelServ
 inline bool zesDevicePciGetBarsHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zesDevicePciGetBars");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZesDevicePciGetBarsRpcM*>(command);
+    apiCommand->captures.reassembleNestedStructs();
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zesDevicePciGetBars(
                                                 apiCommand->args.hDevice, 
                                                 apiCommand->args.pCount ? &apiCommand->captures.pCount : nullptr, 
-                                                apiCommand->args.pProperties ? apiCommand->captures.pProperties : nullptr
+                                                apiCommand->args.pProperties ? apiCommand->captures.getPProperties() : nullptr
                                                 );
     return true;
 }

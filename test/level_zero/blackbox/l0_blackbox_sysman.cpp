@@ -236,9 +236,12 @@ bool getZesPciBars(zes_device_handle_t device) {
     }
 
     std::vector<zes_pci_bar_properties_t> pciBarProps(count);
+    std::vector<zes_pci_bar_properties_1_2_t> pciBarExtProps(count);
     for (uint32_t i = 0; i < count; i++) {
         pciBarProps[i].stype = ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES;
-        pciBarProps[i].pNext = nullptr;
+        pciBarProps[i].pNext = static_cast<void *>(&pciBarExtProps[i]);
+        pciBarExtProps[i].stype = ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES_1_2;
+        pciBarExtProps[i].pNext = nullptr;
     }
 
     result = zesDevicePciGetBars(device, &count, pciBarProps.data());
@@ -262,6 +265,15 @@ bool getZesPciBars(zes_device_handle_t device) {
         }
         if (pciBarProp.size == 0) {
             log<Verbosity::error>("zesDevicePciGetBars() call has returned incorrect size value = %d", static_cast<int>(pciBarProp.size));
+            return false;
+        }
+        zes_pci_bar_properties_1_2_t *pBarPropsExt = static_cast<zes_pci_bar_properties_1_2_t *>(pciBarProp.pNext);
+        if ((pBarPropsExt->resizableBarSupported != 0) && (pBarPropsExt->resizableBarSupported != 1)) {
+            log<Verbosity::error>("zesDevicePciGetBars() call with extension has returned incorrect resizableBarSupported value = %d", static_cast<int>(pciBarProp.type));
+            return false;
+        }
+        if ((pBarPropsExt->resizableBarEnabled != 0) && (pBarPropsExt->resizableBarEnabled != 1)) {
+            log<Verbosity::error>("zesDevicePciGetBars() call with extension has returned incorrect resizableBarEnabled value = %d", static_cast<int>(pciBarProp.type));
             return false;
         }
     }

@@ -1990,7 +1990,7 @@ config:
           name: speed
           type: zes_pci_speed_t
           kind: scalar
-    - name: zes_pci_bar_properties_t
+    - name: zes_pci_bar_properties_1_2_t
       members:
         0:
           name: stype
@@ -2000,6 +2000,47 @@ config:
           name: pNext
           type: "void*"
           kind: scalar
+          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+        2:
+          name: type
+          type: zes_pci_bar_type_t
+          kind: scalar
+        3:
+          name: index
+          type: uint32_t
+          kind: scalar
+        4:
+          name: base
+          type: uint64_t
+          kind: scalar
+        5:
+          name: size
+          type: uint64_t
+          kind: scalar
+        6:
+          name: resizableBarSupported
+          type: ze_bool_t
+          kind: scalar
+        7:
+          name: resizableBarEnabled
+          type: ze_bool_t
+          kind: scalar
+    - name: zes_pci_bar_properties_t
+      members:
+        0:
+          name: stype
+          type: zes_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: opaque_list
+          kind_details:
+            iterator_type: ze_base_desc_t
+            opaque_traits_name: NestedPNextTraits
+            possible_nontrivial_nested_types:
+              - extension_type: zes_pci_bar_properties_1_2_t
+                extension_enum_value: ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES
         2:
           name: type
           type: zes_pci_bar_type_t
@@ -4401,7 +4442,7 @@ config:
                 can_be_null: True
                 element:
                   type: zes_pci_bar_properties_t
-                  kind: scalar
+                  kind: struct
                 server_access: read_write
 
         - name: zesDevicePciGetStats

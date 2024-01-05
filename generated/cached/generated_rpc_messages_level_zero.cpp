@@ -524,18 +524,45 @@ ZesDevicePciGetBarsRpcM::Captures::DynamicTraits ZesDevicePciGetBarsRpcM::Captur
     ret.pProperties.size = ret.pProperties.count * sizeof(zes_pci_bar_properties_t);
     ret.totalDynamicSize = alignUpPow2<8>(ret.pProperties.offset + ret.pProperties.size);
 
+    ret.dynamicStructMembersOffset = ret.totalDynamicSize;
+    if (pProperties) {
+        ret.pPropertiesNestedTraits.offset = ret.totalDynamicSize;
+        ret.pPropertiesNestedTraits.count = pProperties ? ((pCount ? *pCount : 0)) : 0;
+        ret.pPropertiesNestedTraits.size = ret.pPropertiesNestedTraits.count * sizeof(DynamicStructTraits<zes_pci_bar_properties_t>);
+        ret.totalDynamicSize += alignUpPow2<8>(ret.pPropertiesNestedTraits.size);
+
+        for (uint32_t i = 0; i < ret.pPropertiesNestedTraits.count; ++i) {
+            const auto& pPropertiesPNext = pProperties[i].pNext;
+            if(!pPropertiesPNext){
+                continue;
+            }
+
+            const auto pPropertiesPNextCount = static_cast<uint32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(pProperties[i].pNext)));
+            if(!pPropertiesPNextCount){
+                continue;
+            }
+
+            ret.totalDynamicSize += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+            auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pProperties[i].pNext);
+            for(uint32_t j = 0; j < pPropertiesPNextCount; ++j){
+                ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pPropertiesPNextListElement));
+                pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
+            }
+
+        }
+    }
 
     return ret;
 }
 
 size_t ZesDevicePciGetBarsRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, pProperties) + Cal::Utils::alignUpPow2<8>(this->countPProperties * sizeof(zes_pci_bar_properties_t));
+     auto size = offsetof(Captures, dynMem) + dynMemSize;
      return size;
 }
 
 size_t ZesDevicePciGetBarsRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPProperties * sizeof(zes_pci_bar_properties_t));
-     return size;
+     return dynMemSize;
 }
 
 ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits ZesDeviceEnumMemoryModulesRpcM::Captures::DynamicTraits::calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_mem_handle_t* phMemory) {

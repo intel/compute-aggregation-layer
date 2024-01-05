@@ -223,6 +223,13 @@ struct DynamicStructTraits<zes_ras_state_t> {
 };
 
 template <>
+struct DynamicStructTraits<zes_pci_bar_properties_t> {
+    int32_t pNextOffset{-1};
+    int32_t pNextCount{-1};
+    void* pNextFirstOriginalElement{nullptr};
+};
+
+template <>
 struct DynamicStructTraits<zet_tracer_exp_desc_t> {
     int32_t pNextOffset{-1};
     int32_t pNextCount{-1};
@@ -5945,22 +5952,81 @@ struct ZesDevicePciGetBarsRpcM {
             static DynamicTraits calculate(zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits pProperties = {};          
+            uint32_t dynamicStructMembersOffset = 0;
+            DynamicArgTraits pPropertiesNestedTraits = {};
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
         uint32_t pCount;
         uint32_t countPProperties = 0;
-        zes_pci_bar_properties_t pProperties[];
+        uint32_t dynamicStructMembersOffset = 0;
+        uint32_t pPropertiesNestedTraitsOffset = 0;
+        uint32_t pPropertiesNestedTraitsCount = 0;
+        zes_pci_bar_properties_t* getPProperties() {
+            auto offset = 0;
+            return reinterpret_cast<zes_pci_bar_properties_t*>(dynMem + offset);
+        }
+
 
         void adjustCaptureLayout(const DynamicTraits &dynamicTraits){
         countPProperties = dynamicTraits.pProperties.count;
+            dynamicStructMembersOffset = dynamicTraits.dynamicStructMembersOffset;
+            pPropertiesNestedTraitsOffset = dynamicTraits.pPropertiesNestedTraits.offset;
+            pPropertiesNestedTraitsCount = dynamicTraits.pPropertiesNestedTraits.count;
+            dynMemSize = dynamicTraits.totalDynamicSize;
         }
         
+        uint32_t dynMemSize = 0;
+        alignas(8) char dynMem[];
         Captures() = default;
         Captures(const Captures &) = delete;
         Captures& operator=(const Captures& rhs) = delete;
         size_t getCaptureTotalSize() const;
         size_t getCaptureDynMemSize() const;
+        void reassembleNestedStructs() {
+            using Cal::Utils::alignUpPow2;
+
+            uint32_t currentOffset = dynamicStructMembersOffset;
+
+            if(pPropertiesNestedTraitsCount > 0){
+                assert(currentOffset == pPropertiesNestedTraitsOffset);
+                auto* pPropertiesTraits = reinterpret_cast<DynamicStructTraits<zes_pci_bar_properties_t>*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<zes_pci_bar_properties_t>));
+                auto *destPProperties = getPProperties();
+
+                for (uint32_t i = 0; i < pPropertiesNestedTraitsCount; ++i) {
+                    if(pPropertiesTraits[i].pNextOffset == -1){
+                        forcePointerWrite(destPProperties[i].pNext, nullptr);
+                        continue;
+                    }
+
+                    auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                    currentOffset += alignUpPow2<8>(pPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                    assert(currentOffset == static_cast<uint32_t>(pPropertiesPNextListElementTraits[0].extensionOffset));
+                    forcePointerWrite(destPProperties[i].pNext, dynMem + pPropertiesPNextListElementTraits[0].extensionOffset);
+                    currentOffset += alignUpPow2<8>(getUnderlyingSize(static_cast<const ze_base_desc_t*>(destPProperties[i].pNext)));
+
+                    auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPProperties[i].pNext);
+                    for(int32_t j = 1; j <= pPropertiesTraits[i].pNextCount; ++j){
+                        if (j < pPropertiesTraits[i].pNextCount) {
+                            const auto extensionOffset = pPropertiesPNextListElementTraits[j].extensionOffset;
+                            forcePointerWrite(getNextField(*pPropertiesPNextListElement), dynMem + extensionOffset);
+                        }
+
+                        if (j < pPropertiesTraits[i].pNextCount) {
+                            const auto pNextElement = getNext(pPropertiesPNextListElement);
+                            const auto sizeInBytes = getUnderlyingSize(pNextElement);
+                            currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                            pPropertiesPNextListElement = pNextElement;
+                        }
+
+                    }
+
+                }
+        }
+    }
 
     }captures;
     
@@ -5994,7 +6060,52 @@ struct ZesDevicePciGetBarsRpcM {
             captures.pCount = *args.pCount;
         }
         if(args.pProperties){
-            memcpy(asMemcpyDstT(captures.pProperties), args.pProperties, dynMemTraits.pProperties.size);
+            memcpy(asMemcpyDstT(captures.getPProperties()), args.pProperties, dynMemTraits.pProperties.size);
+        }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pProperties){
+            assert(currentOffset == captures.pPropertiesNestedTraitsOffset);
+            auto* pPropertiesTraits = reinterpret_cast<DynamicStructTraits<zes_pci_bar_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<zes_pci_bar_properties_t>));
+
+            for (uint32_t i = 0; i < captures.pPropertiesNestedTraitsCount; ++i) {
+                const auto& pPropertiesPNext = args.pProperties[i].pNext;
+                if(!pPropertiesPNext){
+                    pPropertiesTraits[i].pNextOffset = -1;
+                    pPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                const auto pPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pProperties[i].pNext)));
+                if(!pPropertiesPNextCount){
+                    pPropertiesTraits[i].pNextOffset = -1;
+                    pPropertiesTraits[i].pNextCount = -1;
+                    continue;
+                }
+
+                pPropertiesTraits[i].pNextOffset = currentOffset;
+                pPropertiesTraits[i].pNextCount = pPropertiesPNextCount;
+                pPropertiesTraits[i].pNextFirstOriginalElement = args.pProperties[i].pNext;
+
+                auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
+
+                auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(args.pProperties[i].pNext);
+                for(int32_t j = 0; j < pPropertiesPNextCount; ++j){
+                    pPropertiesPNextListElementTraits[j].extensionType = getExtensionType(pPropertiesPNextListElement);
+                    pPropertiesPNextListElementTraits[j].extensionOffset = currentOffset;
+
+                    const auto sizeInBytes = getUnderlyingSize(pPropertiesPNextListElement);
+                    std::memcpy(dynMem + currentOffset, pPropertiesPNextListElement, sizeInBytes);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
+                }
+
+            }
         }
     }
 
@@ -6003,7 +6114,48 @@ struct ZesDevicePciGetBarsRpcM {
             *args.pCount = captures.pCount;
         }
         if(args.pProperties){
-            memcpy(args.pProperties, captures.pProperties, dynMemTraits.pProperties.size);
+            memcpy(args.pProperties, captures.getPProperties(), dynMemTraits.pProperties.size);
+        }
+        using Cal::Utils::alignUpPow2;
+
+        auto& dynMem = captures.dynMem;
+        uint32_t currentOffset = captures.dynamicStructMembersOffset;
+        if(args.pProperties) {
+            assert(currentOffset == captures.pPropertiesNestedTraitsOffset);
+            auto* pPropertiesTraits = reinterpret_cast<DynamicStructTraits<zes_pci_bar_properties_t>*>(dynMem + currentOffset);
+            currentOffset += alignUpPow2<8>(captures.pPropertiesNestedTraitsCount * sizeof(DynamicStructTraits<zes_pci_bar_properties_t>));
+
+            auto* destPProperties = args.pProperties;
+
+            for (uint32_t i = 0; i < captures.pPropertiesNestedTraitsCount; ++i) {
+                if(pPropertiesTraits[i].pNextOffset == -1){
+                    continue;
+                }
+
+                destPProperties[i].pNext = pPropertiesTraits[i].pNextFirstOriginalElement;
+
+                auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
+                currentOffset += alignUpPow2<8>(pPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+
+                auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPProperties[i].pNext);
+                for(int32_t j = 0; j < pPropertiesTraits[i].pNextCount; ++j){
+                    const auto sizeInBytes = getUnderlyingSize(pPropertiesPNextListElement);
+                    currentOffset += alignUpPow2<8>(sizeInBytes);
+
+                    const auto extensionType = getExtensionType(pPropertiesPNextListElement);
+                    if (!isReadOnly(extensionType)) {
+                        auto originalNextOpaqueElement = getNext(pPropertiesPNextListElement);
+                        const auto extensionOffset = pPropertiesPNextListElementTraits[j].extensionOffset;
+                        auto destination = const_cast<ze_base_desc_t*>(pPropertiesPNextListElement);
+                        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
+
+                        getNextField(*destination) = originalNextOpaqueElement;
+                    }
+
+                    pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
+                }
+
+            }
         }
     }
 };
