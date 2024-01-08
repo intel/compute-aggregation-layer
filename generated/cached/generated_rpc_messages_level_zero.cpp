@@ -110,6 +110,70 @@ size_t ZetMetricGroupGetExportDataExpRpcM::Captures::getCaptureDynMemSize() cons
      return size;
 }
 
+ZetMetricGroupCalculateMetricValuesRpcM::Captures::DynamicTraits ZetMetricGroupCalculateMetricValuesRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pMetricValueCount, zet_typed_value_t* pMetricValues) {
+    DynamicTraits ret = {};
+    ret.pRawData.count = pRawData ? (rawDataSize) : 0;
+    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
+
+    ret.pMetricValues.offset = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
+    ret.pMetricValues.count = pMetricValues ? ((pMetricValueCount ? *pMetricValueCount : 0)) : 0;
+    ret.pMetricValues.size = ret.pMetricValues.count * sizeof(zet_typed_value_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pMetricValues.offset + ret.pMetricValues.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricGroupCalculateMetricValuesRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPMetricValues;
+     const auto lastMemberArraySize = this->countPMetricValues * sizeof(zet_typed_value_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZetMetricGroupCalculateMetricValuesRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPMetricValues;
+     const auto lastMemberArraySize = this->countPMetricValues * sizeof(zet_typed_value_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::Captures::DynamicTraits ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pSetCount, uint32_t* pTotalMetricValueCount, uint32_t* pMetricCounts, zet_typed_value_t* pMetricValues) {
+    DynamicTraits ret = {};
+    ret.pRawData.count = pRawData ? (rawDataSize) : 0;
+    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
+
+    ret.pMetricCounts.offset = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
+    ret.pMetricCounts.count = pMetricCounts ? ((pSetCount ? *pSetCount : 0)) : 0;
+    ret.pMetricCounts.size = ret.pMetricCounts.count * sizeof(uint32_t);
+
+    ret.pMetricValues.offset = alignUpPow2<8>(ret.pMetricCounts.offset + ret.pMetricCounts.size);
+    ret.pMetricValues.count = pMetricValues ? ((pTotalMetricValueCount ? *pTotalMetricValueCount : 0)) : 0;
+    ret.pMetricValues.size = ret.pMetricValues.count * sizeof(zet_typed_value_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pMetricValues.offset + ret.pMetricValues.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetPMetricValues;
+     const auto lastMemberArraySize = this->countPMetricValues * sizeof(zet_typed_value_t);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetPMetricValues;
+     const auto lastMemberArraySize = this->countPMetricValues * sizeof(zet_typed_value_t);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ZetMetricGetRpcM::Captures::DynamicTraits ZetMetricGetRpcM::Captures::DynamicTraits::calculate(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics) {
     DynamicTraits ret = {};
     ret.phMetrics.count = phMetrics ? ((pCount ? *pCount : 0)) : 0;
@@ -166,6 +230,26 @@ size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureTotalSize() const {
 }
 
 size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
+     return size;
+}
+
+ZetMetricQueryGetDataRpcM::Captures::DynamicTraits ZetMetricQueryGetDataRpcM::Captures::DynamicTraits::calculate(zet_metric_query_handle_t hMetricQuery, size_t* pRawDataSize, uint8_t* pRawData) {
+    DynamicTraits ret = {};
+    ret.pRawData.count = pRawData ? ((pRawDataSize ? *pRawDataSize : 0)) : 0;
+    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
+
+
+    return ret;
+}
+
+size_t ZetMetricQueryGetDataRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pRawData) + Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
+     return size;
+}
+
+size_t ZetMetricQueryGetDataRpcM::Captures::getCaptureDynMemSize() const {
      auto size = Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
      return size;
 }

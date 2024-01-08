@@ -27,6 +27,14 @@ ze_result_t zetMetricGroupGetExportDataExp(zet_metric_group_handle_t hMetricGrou
    return {};
 }
 
+ze_result_t zetMetricGroupCalculateMetricValues(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pMetricValueCount, zet_typed_value_t* pMetricValues){
+   return {};
+}
+
+ze_result_t zetMetricGroupCalculateMultipleMetricValuesExp(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pSetCount, uint32_t* pTotalMetricValueCount, uint32_t* pMetricCounts, zet_typed_value_t* pMetricValues){
+   return {};
+}
+
 ze_result_t zetMetricGet(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics){
    return {};
 }
@@ -71,6 +79,10 @@ ze_result_t zetMetricQueryReset(zet_metric_query_handle_t hMetricQuery){
    return {};
 }
 
+ze_result_t zetMetricQueryGetData(zet_metric_query_handle_t hMetricQuery, size_t* pRawDataSize, uint8_t* pRawData){
+   return {};
+}
+
 ze_result_t zetCommandListAppendMetricQueryBegin(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery){
    return {};
 }
@@ -80,6 +92,10 @@ ze_result_t zetCommandListAppendMetricQueryEnd(zet_command_list_handle_t hComman
 }
 
 ze_result_t zetCommandListAppendMetricMemoryBarrier(zet_command_list_handle_t hCommandList){
+   return {};
+}
+
+ze_result_t zetCommandListAppendMetricStreamerMarker(zet_command_list_handle_t hCommandList, zet_metric_streamer_handle_t hMetricStreamer, uint32_t value){
    return {};
 }
 

@@ -66,7 +66,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Psu.zesPsuGetProperties");
     ret.push_back("Psu.zesPsuGetState");
     ret.push_back("Kernel.zetKernelGetProfileInfo");
-    ret.push_back("MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp");
     ret.push_back("Debug.zetDebugAttach");
     ret.push_back("Debug.zetDebugDetach");
     ret.push_back("Debug.zetDebugReadEvent");
@@ -79,9 +78,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Debug.zetDebugReadRegisters");
     ret.push_back("Debug.zetDebugWriteRegisters");
     ret.push_back("Module.zetModuleGetDebugInfo");
-    ret.push_back("MetricGroup.zetMetricGroupCalculateMetricValues");
-    ret.push_back("CommandList.zetCommandListAppendMetricStreamerMarker");
-    ret.push_back("MetricQuery.zetMetricQueryGetData");
     return ret;
 }
 

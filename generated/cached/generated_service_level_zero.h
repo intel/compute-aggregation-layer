@@ -33,6 +33,8 @@ extern ze_result_t (*zetMetricGroupGet)(zet_device_handle_t hDevice, uint32_t* p
 extern ze_result_t (*zetMetricGroupGetProperties)(zet_metric_group_handle_t hMetricGroup, zet_metric_group_properties_t* pProperties);
 extern ze_result_t (*zetMetricGroupGetGlobalTimestampsExp)(zet_metric_group_handle_t hMetricGroup, ze_bool_t synchronizedWithHost, uint64_t* globalTimestamp, uint64_t* metricTimestamp);
 extern ze_result_t (*zetMetricGroupGetExportDataExp)(zet_metric_group_handle_t hMetricGroup, const uint8_t * pRawData, size_t rawDataSize, size_t* pExportDataSize, uint8_t* pExportData);
+extern ze_result_t (*zetMetricGroupCalculateMetricValues)(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pMetricValueCount, zet_typed_value_t* pMetricValues);
+extern ze_result_t (*zetMetricGroupCalculateMultipleMetricValuesExp)(zet_metric_group_handle_t hMetricGroup, zet_metric_group_calculation_type_t type, size_t rawDataSize, const uint8_t * pRawData, uint32_t* pSetCount, uint32_t* pTotalMetricValueCount, uint32_t* pMetricCounts, zet_typed_value_t* pMetricValues);
 extern ze_result_t (*zetMetricGet)(zet_metric_group_handle_t hMetricGroup, uint32_t* pCount, zet_metric_handle_t* phMetrics);
 extern ze_result_t (*zetMetricGetProperties)(zet_metric_handle_t hMetric, zet_metric_properties_t* pProperties);
 extern ze_result_t (*zetContextActivateMetricGroups)(zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups);
@@ -44,9 +46,11 @@ extern ze_result_t (*zetMetricQueryPoolDestroy)(zet_metric_query_pool_handle_t h
 extern ze_result_t (*zetMetricQueryCreate)(zet_metric_query_pool_handle_t hMetricQueryPool, uint32_t index, zet_metric_query_handle_t* phMetricQuery);
 extern ze_result_t (*zetMetricQueryDestroy)(zet_metric_query_handle_t hMetricQuery);
 extern ze_result_t (*zetMetricQueryReset)(zet_metric_query_handle_t hMetricQuery);
+extern ze_result_t (*zetMetricQueryGetData)(zet_metric_query_handle_t hMetricQuery, size_t* pRawDataSize, uint8_t* pRawData);
 extern ze_result_t (*zetCommandListAppendMetricQueryBegin)(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery);
 extern ze_result_t (*zetCommandListAppendMetricQueryEnd)(zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 extern ze_result_t (*zetCommandListAppendMetricMemoryBarrier)(zet_command_list_handle_t hCommandList);
+extern ze_result_t (*zetCommandListAppendMetricStreamerMarker)(zet_command_list_handle_t hCommandList, zet_metric_streamer_handle_t hMetricStreamer, uint32_t value);
 extern ze_result_t (*zetTracerExpCreate)(zet_context_handle_t hContext, const zet_tracer_exp_desc_t* desc, zet_tracer_exp_handle_t* phTracer);
 extern ze_result_t (*zetTracerExpDestroy)(zet_tracer_exp_handle_t hTracer);
 extern ze_result_t (*zetTracerExpSetPrologues)(zet_tracer_exp_handle_t hTracer, zet_core_callbacks_t* pCoreCbs);
@@ -312,6 +316,34 @@ inline bool zetMetricGroupGetExportDataExpHandler(Provider &service, Cal::Rpc::C
                                                 );
     return true;
 }
+inline bool zetMetricGroupCalculateMetricValuesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetMetricGroupCalculateMetricValues");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupCalculateMetricValuesRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricGroupCalculateMetricValues(
+                                                apiCommand->args.hMetricGroup, 
+                                                apiCommand->args.type, 
+                                                apiCommand->args.rawDataSize, 
+                                                apiCommand->args.pRawData ? apiCommand->captures.getPRawData() : nullptr, 
+                                                apiCommand->args.pMetricValueCount ? &apiCommand->captures.pMetricValueCount : nullptr, 
+                                                apiCommand->args.pMetricValues ? apiCommand->captures.getPMetricValues() : nullptr
+                                                );
+    return true;
+}
+inline bool zetMetricGroupCalculateMultipleMetricValuesExpHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetMetricGroupCalculateMultipleMetricValuesExp");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupCalculateMultipleMetricValuesExpRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricGroupCalculateMultipleMetricValuesExp(
+                                                apiCommand->args.hMetricGroup, 
+                                                apiCommand->args.type, 
+                                                apiCommand->args.rawDataSize, 
+                                                apiCommand->args.pRawData ? apiCommand->captures.getPRawData() : nullptr, 
+                                                apiCommand->args.pSetCount ? &apiCommand->captures.pSetCount : nullptr, 
+                                                apiCommand->args.pTotalMetricValueCount ? &apiCommand->captures.pTotalMetricValueCount : nullptr, 
+                                                apiCommand->args.pMetricCounts ? apiCommand->captures.getPMetricCounts() : nullptr, 
+                                                apiCommand->args.pMetricValues ? apiCommand->captures.getPMetricValues() : nullptr
+                                                );
+    return true;
+}
 inline bool zetMetricGetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zetMetricGet");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGetRpcM*>(command);
@@ -420,6 +452,16 @@ inline bool zetMetricQueryResetHandler(Provider &service, Cal::Rpc::ChannelServe
                                                 );
     return true;
 }
+inline bool zetMetricQueryGetDataHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetMetricQueryGetData");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryGetDataRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricQueryGetData(
+                                                apiCommand->args.hMetricQuery, 
+                                                apiCommand->args.pRawDataSize ? &apiCommand->captures.pRawDataSize : nullptr, 
+                                                apiCommand->args.pRawData ? apiCommand->captures.pRawData : nullptr
+                                                );
+    return true;
+}
 inline bool zetCommandListAppendMetricQueryBeginHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zetCommandListAppendMetricQueryBegin");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryBeginRpcM*>(command);
@@ -446,6 +488,16 @@ inline bool zetCommandListAppendMetricMemoryBarrierHandler(Provider &service, Ca
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricMemoryBarrierRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetCommandListAppendMetricMemoryBarrier(
                                                 apiCommand->args.hCommandList
+                                                );
+    return true;
+}
+inline bool zetCommandListAppendMetricStreamerMarkerHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetCommandListAppendMetricStreamerMarker");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricStreamerMarkerRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetCommandListAppendMetricStreamerMarker(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.hMetricStreamer, 
+                                                apiCommand->args.value
                                                 );
     return true;
 }
@@ -4167,6 +4219,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZetMetricGroupGetPropertiesRpcM::messageSubtype] = zetMetricGroupGetPropertiesHandler;
     outHandlers[ZetMetricGroupGetGlobalTimestampsExpRpcM::messageSubtype] = zetMetricGroupGetGlobalTimestampsExpHandler;
     outHandlers[ZetMetricGroupGetExportDataExpRpcM::messageSubtype] = zetMetricGroupGetExportDataExpHandler;
+    outHandlers[ZetMetricGroupCalculateMetricValuesRpcM::messageSubtype] = zetMetricGroupCalculateMetricValuesHandler;
+    outHandlers[ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::messageSubtype] = zetMetricGroupCalculateMultipleMetricValuesExpHandler;
     outHandlers[ZetMetricGetRpcM::messageSubtype] = zetMetricGetHandler;
     outHandlers[ZetMetricGetPropertiesRpcM::messageSubtype] = zetMetricGetPropertiesHandler;
     outHandlers[ZetContextActivateMetricGroupsRpcM::messageSubtype] = zetContextActivateMetricGroupsHandler;
@@ -4178,9 +4232,11 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZetMetricQueryCreateRpcM::messageSubtype] = zetMetricQueryCreateHandler;
     outHandlers[ZetMetricQueryDestroyRpcM::messageSubtype] = zetMetricQueryDestroyHandler;
     outHandlers[ZetMetricQueryResetRpcM::messageSubtype] = zetMetricQueryResetHandler;
+    outHandlers[ZetMetricQueryGetDataRpcM::messageSubtype] = zetMetricQueryGetDataHandler;
     outHandlers[ZetCommandListAppendMetricQueryBeginRpcM::messageSubtype] = zetCommandListAppendMetricQueryBeginHandler;
     outHandlers[ZetCommandListAppendMetricQueryEndRpcM::messageSubtype] = zetCommandListAppendMetricQueryEndHandler;
     outHandlers[ZetCommandListAppendMetricMemoryBarrierRpcM::messageSubtype] = zetCommandListAppendMetricMemoryBarrierHandler;
+    outHandlers[ZetCommandListAppendMetricStreamerMarkerRpcM::messageSubtype] = zetCommandListAppendMetricStreamerMarkerHandler;
     outHandlers[ZetDeviceGetDebugPropertiesRpcM::messageSubtype] = zetDeviceGetDebugPropertiesHandler;
     outHandlers[ZetDebugAttachRpcM::messageSubtype] = zetDebugAttachHandler;
     outHandlers[ZetDebugDetachRpcM::messageSubtype] = zetDebugDetachHandler;
@@ -4487,6 +4543,28 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricGroupGetExportDataExpRpcM
                                                 apiCommand.args.pExportData
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricGroupCalculateMetricValuesRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricGroupCalculateMetricValues(
+                                                apiCommand.args.hMetricGroup, 
+                                                apiCommand.args.type, 
+                                                apiCommand.args.rawDataSize, 
+                                                apiCommand.args.pRawData, 
+                                                apiCommand.args.pMetricValueCount, 
+                                                apiCommand.args.pMetricValues
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricGroupCalculateMultipleMetricValuesExpRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricGroupCalculateMultipleMetricValuesExp(
+                                                apiCommand.args.hMetricGroup, 
+                                                apiCommand.args.type, 
+                                                apiCommand.args.rawDataSize, 
+                                                apiCommand.args.pRawData, 
+                                                apiCommand.args.pSetCount, 
+                                                apiCommand.args.pTotalMetricValueCount, 
+                                                apiCommand.args.pMetricCounts, 
+                                                apiCommand.args.pMetricValues
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricGetRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricGet(
                                                 apiCommand.args.hMetricGroup, 
@@ -4562,6 +4640,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricQueryResetRpcM &apiComman
                                                 apiCommand.args.hMetricQuery
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricQueryGetDataRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricQueryGetData(
+                                                apiCommand.args.hMetricQuery, 
+                                                apiCommand.args.pRawDataSize, 
+                                                apiCommand.args.pRawData
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryBeginRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetCommandListAppendMetricQueryBegin(
                                                 apiCommand.args.hCommandList, 
@@ -4580,6 +4665,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryEnd
 inline void callDirectly(Cal::Rpc::LevelZero::ZetCommandListAppendMetricMemoryBarrierRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetCommandListAppendMetricMemoryBarrier(
                                                 apiCommand.args.hCommandList
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZetCommandListAppendMetricStreamerMarkerRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetCommandListAppendMetricStreamerMarker(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.hMetricStreamer, 
+                                                apiCommand.args.value
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM &apiCommand) {
@@ -6871,6 +6963,8 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZetMetricGroupGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricGroupGetGlobalTimestampsExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupGetGlobalTimestampsExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricGroupGetExportDataExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupGetExportDataExpRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetMetricGroupCalculateMetricValuesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupCalculateMetricValuesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetMetricGroupCalculateMultipleMetricValuesExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupCalculateMultipleMetricValuesExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricGetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGetRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetContextActivateMetricGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetContextActivateMetricGroupsRpcM*>(command)); break;
@@ -6882,9 +6976,11 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZetMetricQueryCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricQueryDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricQueryResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryResetRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetMetricQueryGetDataRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryGetDataRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryBeginRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryBeginRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryEndRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricQueryEndRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetCommandListAppendMetricMemoryBarrierRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricMemoryBarrierRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetCommandListAppendMetricStreamerMarkerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetCommandListAppendMetricStreamerMarkerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDeviceGetDebugPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetDebugAttachRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugAttachRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetDebugDetachRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetDebugDetachRpcM*>(command)); break;

@@ -624,6 +624,17 @@ config:
           type: size_t
           kind: scalar
 
+    - name: zet_typed_value_t
+      members:
+        0:
+          name: type
+          type: zet_value_type_t
+          kind: scalar
+        1:
+          name: value
+          type: zet_value_t
+          kind: scalar
+
     - name: zet_device_debug_properties_t
       members:
         0:
@@ -2297,7 +2308,6 @@ config:
       members:
         [
           Kernel.zetKernelGetProfileInfo,
-          MetricGroupExp.zetMetricGroupCalculateMultipleMetricValuesExp,
           Debug.zetDebugAttach,
           Debug.zetDebugDetach,
           Debug.zetDebugReadEvent,
@@ -2310,9 +2320,6 @@ config:
           Debug.zetDebugReadRegisters,
           Debug.zetDebugWriteRegisters,
           Module.zetModuleGetDebugInfo,
-          MetricGroup.zetMetricGroupCalculateMetricValues,
-          CommandList.zetCommandListAppendMetricStreamerMarker,
-          MetricQuery.zetMetricQueryGetData,
         ]
 
   functions:
@@ -2470,6 +2477,139 @@ config:
                 element:
                   type: uint8_t
                   kind: scalar
+                server_access: read_write
+        - name: zetMetricGroupCalculateMetricValues
+          latency: 0.0
+          ddi_category: MetricGroup
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: type
+              type: zet_metric_group_calculation_type_t
+              kind: scalar
+            2:
+              name: rawDataSize
+              type: size_t
+              kind: scalar
+            3:
+              name: pRawData
+              type: "const uint8_t *"
+              kind: ptr_array
+              kind_details:
+                num_elements: rawDataSize
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: pointer
+                server_access: read
+            4:
+              name: pMetricValueCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            5:
+              name: pMetricValues
+              type: zet_typed_value_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pMetricValueCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zet_typed_value_t
+                  kind: struct
+                server_access: read_write
+        - name: zetMetricGroupCalculateMultipleMetricValuesExp
+          latency: 0.0
+          ddi_category: MetricGroupExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricGroup
+              type: zet_metric_group_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: type
+              type: zet_metric_group_calculation_type_t
+              kind: scalar
+            2:
+              name: rawDataSize
+              type: size_t
+              kind: scalar
+            3:
+              name: pRawData
+              type: "const uint8_t *"
+              kind: ptr_array
+              kind_details:
+                num_elements: rawDataSize
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: pointer
+                server_access: read
+            4:
+              name: pSetCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            5:
+              name: pTotalMetricValueCount
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            6:
+              name: pMetricCounts
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pSetCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            7:
+              name: pMetricValues
+              type: zet_typed_value_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pTotalMetricValueCount
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: zet_typed_value_t
+                  kind: struct
                 server_access: read_write
         - name: zetMetricGet
           latency: 0.0
@@ -2777,6 +2917,41 @@ config:
               name: hMetricQuery
               type: zet_metric_query_handle_t
               kind: scalar
+        - name: zetMetricQueryGetData
+          latency: 0.0
+          ddi_category: MetricQuery
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricQuery
+              type: zet_metric_query_handle_t
+              kind: scalar
+            1:
+              name: pRawDataSize
+              type: size_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: size_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: pRawData
+              type: uint8_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: pRawDataSize
+                is_num_elements_ptr_to_capturable_arg: True
+                can_be_null: True
+                element:
+                  type: uint8_t
+                  kind: pointer
+                server_access: write
         - name: zetCommandListAppendMetricQueryBegin
           latency: 0.0
           ddi_category: CommandList
@@ -2847,6 +3022,27 @@ config:
               type: zet_command_list_handle_t
               kind: scalar
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+        - name: zetCommandListAppendMetricStreamerMarker
+          latency: 0.0
+          ddi_category: CommandList
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hCommandList
+              type: zet_command_list_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: hMetricStreamer
+              type: zet_metric_streamer_handle_t
+              kind: scalar
+            2:
+              name: value
+              type: uint32_t
+              kind: scalar
         - name: zetTracerExpCreate
           special_handling:
             icd:
