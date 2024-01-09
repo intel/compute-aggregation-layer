@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -273,6 +273,19 @@ int main(int argc, const char *argv[]) {
         RUN_REQUIRED_STEP(allocateHostMemory(context, bufferSize, alignment, usmHostBuffer, nullptr));
         RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmHostBuffer, 0xAA, bufferSize));
         RUN_REQUIRED_STEP(freeMemoryExt(context, usmHostBuffer, ZE_DRIVER_MEMORY_FREE_POLICY_EXT_FLAG_DEFER_FREE, "DEFER"));
+    }
+
+    for (auto memoryAlignment : {0u, 1u << 0, 1u << 3, 1u << 5, 1u << 8, 1u << 10, 1u << 13, 1u << 15, 1u << 18, 1u << 20, 1u << 22}) {
+        constexpr size_t memorySize{1024};
+
+        void *usmHostMemory{nullptr};
+        RUN_REQUIRED_STEP(allocateHostMemory(context, memorySize, memoryAlignment, usmHostMemory, nullptr));
+
+        void *usmSharedMemory{nullptr};
+        RUN_REQUIRED_STEP(allocateSharedMemory(context, memorySize, memoryAlignment, devices[0], usmSharedMemory));
+
+        RUN_REQUIRED_STEP(freeMemory(context, usmHostMemory));
+        RUN_REQUIRED_STEP(freeMemory(context, usmSharedMemory));
     }
 
     RUN_REQUIRED_STEP(destroyContext(context));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -800,11 +800,6 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocHostRpcM *>(command);
     apiCommand->captures.reassembleNestedStructs();
 
-    if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
-        log<Verbosity::error>("Unhandled alignment for zeMemAllocHost");
-        return false;
-    }
-
     if (!apiCommand->args.host_desc || !apiCommand->args.pptr) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_POINTER;
         return true;
@@ -821,9 +816,9 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     for (auto &heap : ctx.getUsmHeaps()) {
         Cal::Allocators::ArenaSubAllocation<Cal::Ipc::MmappedShmemAllocationT, void> shmem;
         if (useStandaloneAllocations) {
-            shmem = heap.allocateAsStandalone(alignedSize, Cal::Utils::pageSize64KB);
+            shmem = heap.allocateAsStandalone(alignedSize, apiCommand->args.alignment);
         } else {
-            shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+            shmem = heap.allocate(alignedSize, apiCommand->args.alignment);
         }
         if (false == shmem.isValid()) {
             continue;
@@ -884,11 +879,6 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemAllocSharedRpcM *>(command);
     apiCommand->captures.reassembleNestedStructs();
 
-    if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
-        log<Verbosity::error>("Unhandled alignment for zeMemAllocShared");
-        return false;
-    }
-
     if (!apiCommand->args.host_desc || !apiCommand->args.device_desc || !apiCommand->args.pptr) {
         apiCommand->captures.ret = ZE_RESULT_ERROR_INVALID_NULL_POINTER;
         return true;
@@ -900,7 +890,7 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, Cal::Utils::pageSize64KB);
+        auto shmem = heap.allocate(alignedSize, apiCommand->args.alignment);
         if (false == shmem.isValid()) {
             continue;
         }

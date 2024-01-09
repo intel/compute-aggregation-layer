@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,7 +20,7 @@ namespace Cal::Allocators {
 template <size_t MinAlignment>
 bool adjustSizeAndAlignment(size_t &size, size_t &alignment) {
     static_assert(Cal::Utils::isPow2(MinAlignment));
-    if (false == Cal::Utils::isPow2(alignment)) {
+    if (false == Cal::Utils::isPow2(alignment) && (0 != alignment)) {
         log<Verbosity::error>("Requested alignment is not power of 2");
         return false;
     }
