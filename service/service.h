@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -1354,7 +1354,12 @@ class Provider {
 void checkForRequiredFiles();
 void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 
+namespace Apis::Ocl {
+void registerAllGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers);
+}
+
 namespace Apis::LevelZero {
+void registerAllGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers);
 ze_event_handle_t getInternalEvent(ClientContext &calClientCtx, ze_command_list_handle_t cmdList);
 bool addRelay(ze_result_t &status, ze_event_handle_t action, ze_event_handle_t trigger, ze_command_list_handle_t cmdList);
 bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, ClientContext &calClientCtx, void *ptr, size_t size);

@@ -182,3 +182,15 @@ struct NestedPNextTraits {
     ze_structure_type_t extensionType{};
     int32_t extensionOffset{};
 };
+
+inline bool operator==(const ze_ipc_event_pool_handle_t &lhs, const ze_ipc_event_pool_handle_t &rhs) {
+    return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
+}
+
+inline bool operator==(const ze_ipc_mem_handle_t &lhs, const ze_ipc_mem_handle_t &rhs) {
+    return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
+}
+
+typedef struct _model_t {
+    char model[ZE_MAX_FABRIC_EDGE_MODEL_EXP_SIZE];
+} model_t;

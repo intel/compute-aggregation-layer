@@ -160,10 +160,6 @@ extern cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const 
 extern cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 } // Extensions
 
-inline bool isSuccessful(cl_int result) {
-    return result == CL_SUCCESS;
-}
-
 inline bool clGetPlatformInfoHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetPlatformInfo");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetPlatformInfoRpcM*>(command);
@@ -2194,7 +2190,9 @@ inline bool clEnqueueMemcpyINTEL_Shared_SharedHandler(Provider &service, Cal::Rp
 
 inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::Ocl;
-    outHandlers.resize(ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype + 1);
+    if(outHandlers.size() < ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype + 1){
+        outHandlers.resize(ClEnqueueMemcpyINTEL_Shared_SharedRpcM::messageSubtype + 1);
+    }
     outHandlers[ClGetPlatformInfoRpcM::messageSubtype] = clGetPlatformInfoHandler;
     outHandlers[ClGetDeviceIDsRpcM::messageSubtype] = clGetDeviceIDsHandler;
     outHandlers[ClGetDeviceInfoRpcM::messageSubtype] = clGetDeviceInfoHandler;

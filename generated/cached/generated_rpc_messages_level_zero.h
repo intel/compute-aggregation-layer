@@ -33,39 +33,6 @@ namespace Cal {
 namespace Rpc {
 namespace LevelZero {
 
-    inline bool operator==(const ze_ipc_event_pool_handle_t& lhs, const ze_ipc_event_pool_handle_t& rhs) {
-        return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
-    }
-
-    inline bool operator==(const ze_ipc_mem_handle_t& lhs, const ze_ipc_mem_handle_t& rhs) {
-        return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
-    }
-
-template <typename Ptr>
-inline void forcePointerWrite(Ptr& p, void* value) {
-    static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");
-    using WritablePtr = std::remove_cv_t<Ptr>;
-
-    const_cast<WritablePtr&>(p) = static_cast<WritablePtr>(value);
-}
-
-typedef struct _model_t {
-    char model[ZE_MAX_FABRIC_EDGE_MODEL_EXP_SIZE];
-} model_t;
-
-struct DynamicArgTraits {
-    uint32_t offset;
-    uint32_t count;
-    uint32_t size;
-    std::vector<DynamicArgTraits> nested;
-};
-
-template <typename DynamicStructT>
-struct DynamicStructTraits {
-    int32_t offset;
-    int32_t count;
-};
-
 template <>
 struct DynamicStructTraits<ze_module_constants_t> {
     int32_t pConstantIdsOffset{-1};
@@ -262,20 +229,6 @@ struct DynamicStructTraits<ze_fabric_edge_exp_properties_t> {
     void* pNextFirstOriginalElement{nullptr};
 };
 
-
-template<typename T>
-inline char *asMemcpyDstT(T * ptr) {
-    static_assert(std::is_standard_layout_v<T>);
-    return reinterpret_cast<char*>(const_cast<std::remove_const_t<T>*>(ptr));
-};
-
-inline char *asMemcpyDstT(const void * ptr) {
-    return reinterpret_cast<char*>(const_cast<void*>(ptr));
-};
-
-inline char *asMemcpyDstT(void * ptr) {
-    return reinterpret_cast<char*>(const_cast<void*>(ptr));
-};
 
 struct ZetMetricGroupGetRpcM {
     Cal::Rpc::RpcMessageHeader header;

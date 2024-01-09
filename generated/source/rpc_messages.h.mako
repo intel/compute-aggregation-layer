@@ -26,43 +26,6 @@ ${header}
 namespace ${namespace_part} {
 % endfor
 
-% if config.api_name == 'level_zero':
-    inline bool operator==(const ze_ipc_event_pool_handle_t& lhs, const ze_ipc_event_pool_handle_t& rhs) {
-        return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
-    }
-
-    inline bool operator==(const ze_ipc_mem_handle_t& lhs, const ze_ipc_mem_handle_t& rhs) {
-        return 0 == std::memcmp(lhs.data, rhs.data, ZE_MAX_IPC_HANDLE_SIZE);
-    }
-% endif
-
-template <typename Ptr>
-inline void forcePointerWrite(Ptr& p, void* value) {
-    static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");
-    using WritablePtr = std::remove_cv_t<Ptr>;
-
-    const_cast<WritablePtr&>(p) = static_cast<WritablePtr>(value);
-}
-
-% if config.api_name == 'level_zero':
-typedef struct _model_t {
-    char model[ZE_MAX_FABRIC_EDGE_MODEL_EXP_SIZE];
-} model_t;
-% endif
-
-struct DynamicArgTraits {
-    uint32_t offset;
-    uint32_t count;
-    uint32_t size;
-    std::vector<DynamicArgTraits> nested;
-};
-
-template <typename DynamicStructT>
-struct DynamicStructTraits {
-    int32_t offset;
-    int32_t count;
-};
-
 % for struct_description in config.structures:
 %  if struct_description.members_to_capture():
 template <>
@@ -78,20 +41,6 @@ struct DynamicStructTraits<${struct_description.name}> {
 
 %  endif
 % endfor
-
-template<typename T>
-inline char *asMemcpyDstT(T * ptr) {
-    static_assert(std::is_standard_layout_v<T>);
-    return reinterpret_cast<char*>(const_cast<std::remove_const_t<T>*>(ptr));
-};
-
-inline char *asMemcpyDstT(const void * ptr) {
-    return reinterpret_cast<char*>(const_cast<void*>(ptr));
-};
-
-inline char *asMemcpyDstT(void * ptr) {
-    return reinterpret_cast<char*>(const_cast<void*>(ptr));
-};
 
 % for group_name in config.functions:
 %  for func in config.functions[group_name]:
@@ -285,7 +234,7 @@ static_assert(std::is_standard_layout_v<${func.message_name}>);
 %  endfor # config.functions[group_type]
 % endfor # config.functions
 
-inline const char *getRpcCallFname(const RpcCallId callId) {
+inline const char *getRpcCallFname${to_pascal_case(config.subconfig_name)}(const RpcCallId callId) {
     static const std::unordered_map<RpcMessageHeader::MessageUniqueIdT, std::string> options = {
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
@@ -303,7 +252,7 @@ inline const char *getRpcCallFname(const RpcCallId callId) {
     return it->second.c_str();
 }
 
-inline auto getRpcCallId(const std::string &funcName) {
+inline auto getRpcCallId${to_pascal_case(config.subconfig_name)}(const std::string &funcName) {
     using RetT = RpcCallId;
     static const std::unordered_map<std::string, RetT> options = {
 % for group_name in rpc_functions:

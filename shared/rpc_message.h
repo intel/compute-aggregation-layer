@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -9,6 +9,7 @@
 
 #include <cinttypes>
 #include <type_traits>
+#include <vector>
 
 namespace Cal {
 
@@ -66,6 +67,50 @@ enum class CallCategory {
     Copy
 };
 
+template <typename Ptr>
+inline void forcePointerWrite(Ptr &p, void *value) {
+    static_assert(std::is_pointer_v<Ptr>, "forcePointerWrite() must be used with pointers!");
+    using WritablePtr = std::remove_cv_t<Ptr>;
+
+    const_cast<WritablePtr &>(p) = static_cast<WritablePtr>(value);
+}
+
+template <typename T>
+inline char *asMemcpyDstT(T *ptr) {
+    static_assert(std::is_standard_layout_v<T>);
+    return reinterpret_cast<char *>(const_cast<std::remove_const_t<T> *>(ptr));
+};
+
+inline char *asMemcpyDstT(const void *ptr) {
+    return reinterpret_cast<char *>(const_cast<void *>(ptr));
+};
+
+inline char *asMemcpyDstT(void *ptr) {
+    return reinterpret_cast<char *>(const_cast<void *>(ptr));
+};
+
+struct DynamicArgTraits {
+    uint32_t offset;
+    uint32_t count;
+    uint32_t size;
+    std::vector<DynamicArgTraits> nested;
+};
+
+namespace LevelZero {
+
+template <typename DynamicStructT>
+struct DynamicStructTraits {
+    int32_t offset;
+    int32_t count;
+};
+
+} // namespace LevelZero
+
 } // namespace Rpc
 
 } // namespace Cal
+
+template <typename T>
+inline bool isSuccessful(T result) {
+    return result == 0;
+}

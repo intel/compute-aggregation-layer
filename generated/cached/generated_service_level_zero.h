@@ -269,10 +269,6 @@ extern ze_result_t (*zexDriverReleaseImportedPointer)(ze_driver_handle_t hDriver
 extern ze_result_t (*zexDriverGetHostPointerBaseAddress)(ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
 } // Extensions
 
-inline bool isSuccessful(ze_result_t result) {
-    return result == ZE_RESULT_SUCCESS;
-}
-
 inline bool zetMetricGroupGetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zetMetricGroupGet");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricGroupGetRpcM*>(command);
@@ -4164,7 +4160,9 @@ inline bool zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared
 
 inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
     using namespace Cal::Rpc::LevelZero;
-    outHandlers.resize(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype + 1);
+    if(outHandlers.size() < ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype + 1){
+        outHandlers.resize(ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM::messageSubtype + 1);
+    }
     outHandlers[ZetMetricGroupGetRpcM::messageSubtype] = zetMetricGroupGetHandler;
     outHandlers[ZetMetricGroupGetPropertiesRpcM::messageSubtype] = zetMetricGroupGetPropertiesHandler;
     outHandlers[ZetMetricGroupGetGlobalTimestampsExpRpcM::messageSubtype] = zetMetricGroupGetGlobalTimestampsExpHandler;

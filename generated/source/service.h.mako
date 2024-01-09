@@ -46,10 +46,6 @@ extern ${ext.returns.type.str} (*${ext.name})(${ext.get_args_list_str()});
 } // Extensions
 % endif # extensions
 
-inline bool isSuccessful(${config.result_type} result) {
-    return result == ${config.result_success};
-}
-
 % for group_name in rpc_functions:
 %  for rpc_func in rpc_functions[group_name]:
 \
@@ -165,12 +161,14 @@ ${", " if not loop.last else ""}
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 
-inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
+inline void registerGeneratedHandlers${to_pascal_case(config.api_name)}${to_pascal_case(config.subconfig_name)}(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
 % if not rpc_functions:
 // No RPC handlers were generated (based on dont_generate_rpc_message)
 % else: # rpc_functions
     using namespace ${'::'.join(config.rpc_namespace)};
-    outHandlers.resize(${last_function_with_message.message_name}::messageSubtype + 1);
+    if(outHandlers.size() < ${last_function_with_message.message_name}::messageSubtype + 1){
+        outHandlers.resize(${last_function_with_message.message_name}::messageSubtype + 1);
+    }
 %  for group_name in rpc_functions:
 %   for rpc_func in rpc_functions[group_name]:
 %    if not should_skip_message_generation(rpc_func):
@@ -203,7 +201,7 @@ ${", " if not loop.last else ""}
 %  endfor # rpc_functions[group_name]
 % endfor # rpc_functions
 
-inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
+inline bool callDirectly${to_pascal_case(config.subconfig_name)}(Cal::Rpc::RpcMessageHeader *command) {
     if(nullptr == command){
         log<Verbosity::debug>("Tried to call directly with empty command message header");
         return false;
