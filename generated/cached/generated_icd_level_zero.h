@@ -382,6 +382,10 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 ze_result_t zeKernelSetIndirectAccess_WithTracing (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags);
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags);
 ze_result_t zeKernelGetIndirectAccess_WithTracing (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags);
+ze_result_t zeKernelGetSourceAttributes (ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString);
+ze_result_t zeKernelGetSourceAttributes_WithTracing (ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString);
+ze_result_t zeKernelGetSourceAttributesRpcHelper (ze_kernel_handle_t hKernel, uint32_t* pSize, char* pString);
+ze_result_t zeKernelGetSourceAttributesRpcHelper_WithTracing (ze_kernel_handle_t hKernel, uint32_t* pSize, char* pString);
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags);
 ze_result_t zeKernelSetCacheConfig_WithTracing (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags);
 ze_result_t zeKernelGetPropertiesRpcHelper (ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
@@ -594,10 +598,6 @@ inline void zeImageGetAllocPropertiesExtUnimpl() {
 }
 inline void zeImageViewCreateExpUnimpl() {
     log<Verbosity::critical>("Function ImageExp.zeImageViewCreateExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
-inline void zeKernelGetSourceAttributesUnimpl() {
-    log<Verbosity::critical>("Function Kernel.zeKernelGetSourceAttributes is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
 inline void zeContextMakeImageResidentUnimpl() {
@@ -1187,6 +1187,10 @@ inline void initL0Ddi(ze_dditable_t &dt){
     if (tracingEnabled) {
         dt.Kernel.pfnGetIndirectAccess = Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess_WithTracing;
     }
+    dt.Kernel.pfnGetSourceAttributes = Cal::Client::Icd::LevelZero::zeKernelGetSourceAttributes;
+    if (tracingEnabled) {
+        dt.Kernel.pfnGetSourceAttributes = Cal::Client::Icd::LevelZero::zeKernelGetSourceAttributes_WithTracing;
+    }
     dt.Kernel.pfnSetCacheConfig = Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig;
     if (tracingEnabled) {
         dt.Kernel.pfnSetCacheConfig = Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig_WithTracing;
@@ -1271,7 +1275,6 @@ inline void initL0Ddi(ze_dditable_t &dt){
     dt.ImageExp.pfnGetMemoryPropertiesExp = reinterpret_cast<decltype(dt.ImageExp.pfnGetMemoryPropertiesExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetMemoryPropertiesExpUnimpl);
     dt.Image.pfnGetAllocPropertiesExt = reinterpret_cast<decltype(dt.Image.pfnGetAllocPropertiesExt)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageGetAllocPropertiesExtUnimpl);
     dt.ImageExp.pfnViewCreateExp = reinterpret_cast<decltype(dt.ImageExp.pfnViewCreateExp)>(Cal::Client::Icd::LevelZero::Unimplemented::zeImageViewCreateExpUnimpl);
-    dt.Kernel.pfnGetSourceAttributes = reinterpret_cast<decltype(dt.Kernel.pfnGetSourceAttributes)>(Cal::Client::Icd::LevelZero::Unimplemented::zeKernelGetSourceAttributesUnimpl);
     dt.Context.pfnMakeImageResident = reinterpret_cast<decltype(dt.Context.pfnMakeImageResident)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextMakeImageResidentUnimpl);
     dt.Context.pfnEvictImage = reinterpret_cast<decltype(dt.Context.pfnEvictImage)>(Cal::Client::Icd::LevelZero::Unimplemented::zeContextEvictImageUnimpl);
     dt.Sampler.pfnCreate = reinterpret_cast<decltype(dt.Sampler.pfnCreate)>(Cal::Client::Icd::LevelZero::Unimplemented::zeSamplerCreateUnimpl);

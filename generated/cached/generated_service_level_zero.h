@@ -244,6 +244,7 @@ extern ze_result_t (*zeKernelSuggestMaxCooperativeGroupCount)(ze_kernel_handle_t
 extern ze_result_t (*zeKernelSetArgumentValue)(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue);
 extern ze_result_t (*zeKernelSetIndirectAccess)(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags);
 extern ze_result_t (*zeKernelGetIndirectAccess)(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags);
+extern ze_result_t (*zeKernelGetSourceAttributes)(ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString);
 extern ze_result_t (*zeKernelSetCacheConfig)(ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags);
 extern ze_result_t (*zeKernelGetProperties)(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties);
 extern ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* pName);
@@ -2330,6 +2331,7 @@ inline bool zeKernelGetIndirectAccessHandler(Provider &service, Cal::Rpc::Channe
                                                 );
     return true;
 }
+bool zeKernelGetSourceAttributesRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeKernelSetCacheConfigHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeKernelSetCacheConfig");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelSetCacheConfigRpcM*>(command);
@@ -4469,6 +4471,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeKernelSetArgumentValueRpcM::messageSubtype] = zeKernelSetArgumentValueHandler;
     outHandlers[ZeKernelSetIndirectAccessRpcM::messageSubtype] = zeKernelSetIndirectAccessHandler;
     outHandlers[ZeKernelGetIndirectAccessRpcM::messageSubtype] = zeKernelGetIndirectAccessHandler;
+    outHandlers[ZeKernelGetSourceAttributesRpcHelperRpcM::messageSubtype] = zeKernelGetSourceAttributesRpcHelperHandler;
     outHandlers[ZeKernelSetCacheConfigRpcM::messageSubtype] = zeKernelSetCacheConfigHandler;
     outHandlers[ZeKernelGetPropertiesRpcM::messageSubtype] = zeKernelGetPropertiesHandler;
     outHandlers[ZeKernelGetNameRpcM::messageSubtype] = zeKernelGetNameHandler;

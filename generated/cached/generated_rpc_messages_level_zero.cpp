@@ -2471,6 +2471,26 @@ size_t ZeKernelSetArgumentValueRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ZeKernelGetSourceAttributesRpcHelperRpcM::Captures::DynamicTraits ZeKernelGetSourceAttributesRpcHelperRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, uint32_t* pSize, char* pString) {
+    DynamicTraits ret = {};
+    ret.pString.count = pString ? (*pSize) : 0;
+    ret.pString.size = ret.pString.count * sizeof(char);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pString.offset + ret.pString.size);
+
+
+    return ret;
+}
+
+size_t ZeKernelGetSourceAttributesRpcHelperRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pString) + Cal::Utils::alignUpPow2<8>(this->countPString * sizeof(char));
+     return size;
+}
+
+size_t ZeKernelGetSourceAttributesRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPString * sizeof(char));
+     return size;
+}
+
 ZeKernelGetPropertiesRpcM::Captures::DynamicTraits ZeKernelGetPropertiesRpcM::Captures::DynamicTraits::calculate(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) {
     DynamicTraits ret = {};
 

@@ -235,6 +235,7 @@ ze_result_t (*zeKernelSuggestMaxCooperativeGroupCount)(ze_kernel_handle_t hKerne
 ze_result_t (*zeKernelSetArgumentValue)(ze_kernel_handle_t hKernel, uint32_t argIndex, size_t argSize, const void* pArgValue) = nullptr;
 ze_result_t (*zeKernelSetIndirectAccess)(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags) = nullptr;
 ze_result_t (*zeKernelGetIndirectAccess)(ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) = nullptr;
+ze_result_t (*zeKernelGetSourceAttributes)(ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString) = nullptr;
 ze_result_t (*zeKernelSetCacheConfig)(ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) = nullptr;
 ze_result_t (*zeKernelGetProperties)(ze_kernel_handle_t hKernel, ze_kernel_properties_t* pKernelProperties) = nullptr;
 ze_result_t (*zeKernelGetName)(ze_kernel_handle_t hKernel, size_t* pSize, char* pName) = nullptr;
@@ -1559,6 +1560,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeKernelGetSourceAttributes = reinterpret_cast<decltype(zeKernelGetSourceAttributes)>(dlsym(libraryHandle, "zeKernelGetSourceAttributes"));
+    if(nullptr == zeKernelGetSourceAttributes){
+        log<Verbosity::error>("Missing symbol zeKernelGetSourceAttributes in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeKernelSetCacheConfig = reinterpret_cast<decltype(zeKernelSetCacheConfig)>(dlsym(libraryHandle, "zeKernelSetCacheConfig"));
     if(nullptr == zeKernelSetCacheConfig){
         log<Verbosity::error>("Missing symbol zeKernelSetCacheConfig in %s", loadPath.c_str());
@@ -1898,6 +1905,7 @@ void unloadLevelZeroLibrary() {
     zeKernelSetArgumentValue = nullptr;
     zeKernelSetIndirectAccess = nullptr;
     zeKernelGetIndirectAccess = nullptr;
+    zeKernelGetSourceAttributes = nullptr;
     zeKernelSetCacheConfig = nullptr;
     zeKernelGetProperties = nullptr;
     zeKernelGetName = nullptr;

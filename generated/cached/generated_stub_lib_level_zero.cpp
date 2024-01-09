@@ -871,6 +871,10 @@ ze_result_t zeKernelGetIndirectAccess(ze_kernel_handle_t hKernel, ze_kernel_indi
    return {};
 }
 
+ze_result_t zeKernelGetSourceAttributes(ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString){
+   return {};
+}
+
 ze_result_t zeKernelSetCacheConfig(ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags){
    return {};
 }

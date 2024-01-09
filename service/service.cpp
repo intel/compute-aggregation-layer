@@ -1393,6 +1393,17 @@ bool zeEventQueryKernelTimestampsExtRpcHelperHandler(Provider &service, Cal::Rpc
     return true;
 }
 
+bool zeKernelGetSourceAttributesRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeKernelGetSourceAttributes");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeKernelGetSourceAttributesRpcHelperRpcM *>(command);
+    char *pString = apiCommand->args.pString ? apiCommand->captures.pString : nullptr;
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeKernelGetSourceAttributes(
+        apiCommand->args.hKernel,
+        apiCommand->args.pSize ? &apiCommand->captures.pSize : nullptr,
+        apiCommand->args.pString ? &pString : nullptr);
+    return true;
+}
 } // namespace LevelZero
 } // namespace Apis
 

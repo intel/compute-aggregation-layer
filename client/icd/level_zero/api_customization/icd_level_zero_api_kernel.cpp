@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -39,6 +39,10 @@ ze_result_t zeKernelSetArgumentValue(ze_kernel_handle_t hKernel, uint32_t argInd
 
 ze_result_t zeKernelGetProperties(ze_kernel_handle_t hKernel, ze_kernel_properties_t *pKernelProperties) {
     return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Kernel *>(hKernel), pKernelProperties, zeKernelGetPropertiesRpcHelper);
+}
+
+ze_result_t zeKernelGetSourceAttributes(ze_kernel_handle_t hKernel, uint32_t *pSize, char **pString) {
+    return zeKernelGetSourceAttributesRpcHelper(hKernel, pSize, pString ? *pString : nullptr);
 }
 
 ze_result_t zeKernelSetGroupSize(ze_kernel_handle_t hKernel, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {

@@ -5867,6 +5867,32 @@ ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 
     return ret;
 }
+ // zeKernelGetSourceAttributes ignored in generator - based on dont_generate_handler flag
+ze_result_t zeKernelGetSourceAttributesRpcHelper (ze_kernel_handle_t hKernel, uint32_t* pSize, char* pString) {
+    log<Verbosity::bloat>("Establishing RPC for zeKernelGetSourceAttributesRpcHelper");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeKernelGetSourceAttributesRpcHelperRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hKernel, pSize, pString);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hKernel, pSize, pString);
+    command->copyFromCaller(dynMemTraits);
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetCacheConfig");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -11422,6 +11448,26 @@ ze_result_t zeKernelGetIndirectAccess_WithTracing(ze_kernel_handle_t hKernel, ze
                                                  apiCallbackData.epilogCallbacks,
                                                  *tracerParams.phKernel, *tracerParams.ppFlags);
 }
+ze_result_t zeKernelGetSourceAttributes_WithTracing(ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString) {
+    ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelGetSourceAttributes,
+                                    hKernel, pSize, pString);
+
+    ze_kernel_get_source_attributes_params_t tracerParams;
+    tracerParams.phKernel = &hKernel;
+    tracerParams.ppSize = &pSize;
+    tracerParams.ppString = &pString;
+
+    Cal::Client::Icd::LevelZero::APITracerCallbackDataImp<ze_pfnKernelGetSourceAttributesCb_t> apiCallbackData;
+
+    ZE_GEN_PER_API_CALLBACK_STATE(apiCallbackData, ze_pfnKernelGetSourceAttributesCb_t, Kernel, pfnGetSourceAttributesCb);
+
+    return Cal::Client::Icd::LevelZero::apiTracerWrapperImp(Cal::Client::Icd::LevelZero::zeKernelGetSourceAttributes,
+                                                 &tracerParams,
+                                                 apiCallbackData.apiOrdinal,
+                                                 apiCallbackData.prologCallbacks,
+                                                 apiCallbackData.epilogCallbacks,
+                                                 *tracerParams.phKernel, *tracerParams.ppSize, *tracerParams.ppString);
+}
 ze_result_t zeKernelSetCacheConfig_WithTracing(ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
     ZE_HANDLE_TRACER_RECURSION(Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig,
                                     hKernel, flags);
@@ -12462,6 +12508,9 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
     return Cal::Client::Icd::LevelZero::zeKernelGetIndirectAccess(hKernel, pFlags);
+}
+ze_result_t zeKernelGetSourceAttributes (ze_kernel_handle_t hKernel, uint32_t* pSize, char** pString) {
+    return Cal::Client::Icd::LevelZero::zeKernelGetSourceAttributes(hKernel, pSize, pString);
 }
 ze_result_t zeKernelSetCacheConfig (ze_kernel_handle_t hKernel, ze_cache_config_flags_t flags) {
     return Cal::Client::Icd::LevelZero::zeKernelSetCacheConfig(hKernel, flags);

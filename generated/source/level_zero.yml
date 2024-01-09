@@ -2277,7 +2277,6 @@ config:
           ImageExp.zeImageGetMemoryPropertiesExp,
           Image.zeImageGetAllocPropertiesExt,
           ImageExp.zeImageViewCreateExp,
-          Kernel.zeKernelGetSourceAttributes,
           Context.zeContextMakeImageResident,
           Context.zeContextEvictImage,
           Sampler.zeSamplerCreate,
@@ -10565,26 +10564,81 @@ config:
                   type: ze_kernel_indirect_access_flags_t
                   kind: scalar
                 server_access: write
-        #        - name : zeKernelGetSourceAttributes
-        #          ddi_category :  Kernel
-        #          returns :
-        #                    type : ze_result_t
-        #                    kind : scalar
-        #                    default : "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-        #          args :
-        #                 0 :
-        #                    name : hKernel
-        #                    type : ze_kernel_handle_t
-        #                    kind : scalar
-        #                 1 :
-        #                    name : pSize
-        #                    type : uint32_t*
-        #                    kind : pointer
-        #                 2 :
-        #                    name : pString
-        #                    type : char**
-        #                    kind : pointer
-        #
+        - name: zeKernelGetSourceAttributes
+          ddi_category:  Kernel
+          special_handling:
+            icd:
+              dont_generate_handler: True
+            rpc:
+              dont_generate_rpc_message: True
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hKernel
+              type: ze_kernel_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pSize
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: pString
+              type: char**
+              kind: ptr
+        - name: zeKernelGetSourceAttributesRpcHelper
+          ddi_category:  Kernel
+          special_handling:
+            variant_of: "zeKernelGetSourceAttributesExt"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+            rpc:
+              custom_handler: True
+              dont_generate_call_directly: True
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hKernel
+              type: ze_kernel_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pSize
+              type: uint32_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: 1
+                can_be_null: True
+                element:
+                  type: uint32_t
+                  kind: scalar
+                server_access: read_write
+            2:
+              name: pString
+              type: char*
+              kind: ptr_array
+              kind_details:
+                num_elements: "*pSize"
+                can_be_null: True
+                element:
+                  type: char
+                  kind: scalar
+                  server_access: read_write
+                server_access: read_write
         - name: zeKernelSetCacheConfig
           latency: 0.0
           ddi_category: Kernel
