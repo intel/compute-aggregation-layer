@@ -50,6 +50,7 @@ add_executable(ocl_test_ult_icd
 
                ${cal_source_root_dir}/client/client_connection.cpp
                ${cal_source_root_dir}/client/icd/icd_global_state.cpp
+               ${cal_source_root_dir}/client/icd/${BRANCH_DIR_SUFFIX}/get_all_extension_function_address.cpp
                ${cal_source_root_dir}/client/client_malloc_override.cpp
                ${cal_source_root_dir}/client/icd/icd_ocl.cpp
 

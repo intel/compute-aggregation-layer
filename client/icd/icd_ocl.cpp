@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -8,6 +8,7 @@
 #include "icd_ocl.h"
 
 #include "client/client_malloc_override.h"
+#include "client/icd/get_all_extension_function_address.h"
 #include "client/icd/icd_page_fault_manager.h"
 #include "generated_icd_ocl.h"
 #include "generated_rpc_messages_ocl.h"
@@ -180,7 +181,7 @@ void *clGetExtensionFunctionAddress(const char *funcname) {
     if (0 == strcmp(funcname, "clIcdGetPlatformIDsKHR")) {
         return reinterpret_cast<void *>(Cal::Client::Icd::Ocl::clIcdGetPlatformIDsKHR);
     }
-    return getOclExtensionFuncionAddressRpcHelper(funcname);
+    return Cal::Client::Icd::Ocl::getAllExtensionFunctionAddress(funcname);
 }
 
 void *clGetExtensionFunctionAddressForPlatform(cl_platform_id platform, const char *funcname) {

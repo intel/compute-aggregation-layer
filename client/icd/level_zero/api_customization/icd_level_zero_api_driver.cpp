@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
+#include "client/icd/get_all_extension_function_address.h"
 #include "client/icd/icd_global_state.h"
 #include "client/icd/level_zero/icd_level_zero.h"
 #include "client/icd/level_zero/logic/imported_host_pointers_manager.h"
@@ -127,7 +128,7 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
         return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    *ppFunctionAddress = getL0ExtensionFuncionAddressRpcHelper(name);
+    *ppFunctionAddress = getAllL0ExtensionFuncionAddress(name);
     if (*ppFunctionAddress == nullptr) {
         log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
     }
