@@ -808,6 +808,7 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     constexpr uint32_t ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR = 1 << 30;
     apiCommand->captures.host_desc.flags |= ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR;
 
+    auto minAlignment = apiCommand->args.alignment ? Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.alignment) : Cal::Utils::pageSize64KB;
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
 
     static bool useStandaloneAllocations = Utils::getCalEnvFlag(calUseStandaloneAllocationsForZeMemAllocHost, false);
@@ -816,9 +817,9 @@ bool zeMemAllocHostHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
     for (auto &heap : ctx.getUsmHeaps()) {
         Cal::Allocators::ArenaSubAllocation<Cal::Ipc::MmappedShmemAllocationT, void> shmem;
         if (useStandaloneAllocations) {
-            shmem = heap.allocateAsStandalone(alignedSize, apiCommand->args.alignment);
+            shmem = heap.allocateAsStandalone(alignedSize, minAlignment);
         } else {
-            shmem = heap.allocate(alignedSize, apiCommand->args.alignment);
+            shmem = heap.allocate(alignedSize, minAlignment);
         }
         if (false == shmem.isValid()) {
             continue;
@@ -887,10 +888,11 @@ bool zeMemAllocSharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel
     constexpr uint32_t ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR = 1 << 30;
     apiCommand->captures.host_desc.flags |= ZEX_HOST_MEM_ALLOC_FLAG_USE_HOST_PTR;
 
+    auto minAlignment = apiCommand->args.alignment ? Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.alignment) : Cal::Utils::pageSize64KB;
     auto alignedSize = Cal::Utils::alignUpPow2<Cal::Utils::pageSize64KB>(apiCommand->args.size);
     auto ctxLock = ctx.lock();
     for (auto &heap : ctx.getUsmHeaps()) {
-        auto shmem = heap.allocate(alignedSize, apiCommand->args.alignment);
+        auto shmem = heap.allocate(alignedSize, minAlignment);
         if (false == shmem.isValid()) {
             continue;
         }
