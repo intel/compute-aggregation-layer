@@ -1542,6 +1542,7 @@ class Config:
                 child_config.structures_by_name = dict()
                 child_config.unimplemented = []
                 child_config.icd_get_extenion_func_addr_func_name = child_config_in.get("icd_get_extenion_func_addr_func_name", None)
+                child_config.file_headers = FileHeaders(child_config_in.get("file_headers", {}))
 
                 child_config.structures = [Structure(s) for s in child_config_in.get("structures", [])]
                 child_config.structures_by_name = {struct.name: struct for struct in child_config.structures}
