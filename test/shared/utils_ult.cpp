@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -503,6 +503,12 @@ TEST(PartitionedAddressRange, givenIntersectingRangeThenIntersectsReturnsTrue) {
     EXPECT_TRUE(partitionedRange.intersectsSubRanges({8191U, 9001U}));
     EXPECT_TRUE(partitionedRange.intersectsSubRanges({9009U, 9020U}));
     EXPECT_TRUE(partitionedRange.intersectsSubRanges({0U, 9020U}));
+}
+
+TEST(PartitionedAddressRange, givenPartitionedRangeWhenGetIntersectedSubRangesIsCalledForIntersectingAddressThenNonEmptyListIsReturned) {
+    Cal::Utils::PartitionedAddressRange partitionedRange({});
+    partitionedRange.insertSubRange({93824997299248U, 93824997299249U});
+    EXPECT_FALSE(partitionedRange.getIntersectedSubRanges({reinterpret_cast<void *>(93824997299248U)}).empty());
 }
 
 TEST(PartitionedAddressRange, givenNonIntersectingRangeThenGetIntersectedSubRangesReturnsEmptyList) {

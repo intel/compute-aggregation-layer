@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -36,11 +36,7 @@ ze_result_t ImportedHostPointersManager::releaseImportedPointer(void *ptr) {
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
-    const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
-    const auto rangeEnd = rangeBegin;
-
-    Cal::Utils::AddressRange rangeToSearch{rangeBegin, rangeEnd};
-
+    Cal::Utils::AddressRange rangeToSearch{ptr};
     const auto ranges = importedPointers.getIntersectedSubRanges(rangeToSearch);
     if (ranges.empty()) {
         log<Verbosity::debug>("Tried to remove a pointer, which had not been imported! ptr = %p", ptr);
