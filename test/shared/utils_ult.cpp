@@ -364,7 +364,6 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
-        EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start + 1, subRange.end - 1})) << subRange.start;
         partitionedRange.insertSubRange(subRange);
         EXPECT_EQ(subRange, partitionedRange.findSubRange(subRange)->getBoundingRange()) << subRange.start;
         EXPECT_EQ(subRange, partitionedRange.findSubRange({reinterpret_cast<void *>(subRange.start)})->getBoundingRange()) << subRange.start;
@@ -375,7 +374,6 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({subRange.start + 1, subRange.end - 1})->getBoundingRange()) << subRange.start;
     }
 
     for (auto subRange : sortedSubranges) {
@@ -388,7 +386,6 @@ TEST(PartitionedAddressRange, whenSubRangeIsProvidedThenFindReturnsItsRepresenta
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start, subRange.end + 1})) << subRange.start;
         EXPECT_EQ(nullptr, partitionedRange.findSubRange({subRange.start - 1, subRange.end + 1})) << subRange.start;
-        EXPECT_EQ(subRange, partitionedRange.findSubRange({subRange.start + 1, subRange.end - 1})->getBoundingRange()) << subRange.start;
     }
 
     EXPECT_EQ(nullptr, partitionedRange.findSubRange(missingRange));

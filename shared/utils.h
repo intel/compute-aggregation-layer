@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -380,26 +380,32 @@ inline bool getCalEnvFlag(std::string_view name) {
     return getCalEnvFlag(name, false);
 }
 int64_t getCalEnvI64(std::string_view name, int64_t defaultValue);
+void signalAbort(const char *message);
 
 struct AddressRange {
     AddressRange() = default;
 
     AddressRange(uintptr_t start, uintptr_t end) : start(start), end(end) {
+        checkRange(this->start, this->end);
     }
 
     AddressRange(uint32_t start, uint32_t end) : start(start), end(end) {
+        checkRange(this->start, this->end);
     }
 
     AddressRange(const void *start, void *end)
         : start(reinterpret_cast<uintptr_t>(start)), end(reinterpret_cast<uintptr_t>(end)) {
+        checkRange(this->start, this->end);
     }
 
     AddressRange(const void *start, size_t size)
         : start(reinterpret_cast<uintptr_t>(start)), end(reinterpret_cast<uintptr_t>(start) + size) {
+        checkRange(this->start, this->end);
     }
 
     AddressRange(const void *start)
         : start(reinterpret_cast<uintptr_t>(start)), end(reinterpret_cast<uintptr_t>(start) + 1) {
+        checkRange(this->start, this->end);
     }
 
     static AddressRange withinSize(size_t size) {
@@ -436,6 +442,13 @@ struct AddressRange {
 
     uintptr_t start = 0;
     uintptr_t end = std::numeric_limits<uintptr_t>::max();
+
+  protected:
+    void checkRange(uintptr_t start, uintptr_t end) {
+        if ((start == end) && (start != 0)) {
+            signalAbort("Invalid empty address range");
+        }
+    }
 };
 
 using OffsetRange = AddressRange;

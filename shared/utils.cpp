@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -288,6 +288,11 @@ void ensureNull(const char *sourceLocation, const void *pointer) {
     } else {
         log<Verbosity::info>("%s is not nullptr!", sourceLocation);
     }
+}
+
+void signalAbort(const char *message) {
+    log<Verbosity::critical>(message);
+    std::abort();
 }
 
 } // namespace Utils
