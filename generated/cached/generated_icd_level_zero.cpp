@@ -5973,6 +5973,8 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
+    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchCooperativeKernel");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -5999,16 +6001,25 @@ ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t
         }
     }
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {

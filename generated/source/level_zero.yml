@@ -10665,6 +10665,11 @@ config:
                 server_access: read
         - name: zeCommandListAppendLaunchCooperativeKernel
           latency: 0.0
+          call_async: true
+          special_handling:
+            icd:
+              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
             type: ze_result_t

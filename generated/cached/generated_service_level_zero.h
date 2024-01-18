@@ -2389,6 +2389,10 @@ inline bool zeCommandListAppendLaunchCooperativeKernelHandler(Provider &service,
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeCommandListAppendLaunchCooperativeKernel (as zeCommandListAppendLaunchCooperativeKernelHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     return true;
 }
 inline bool zeCommandListAppendLaunchKernelIndirectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
