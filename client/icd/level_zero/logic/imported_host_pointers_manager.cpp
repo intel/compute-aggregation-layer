@@ -58,11 +58,7 @@ ze_result_t ImportedHostPointersManager::getHostPointerBaseAddress(void *ptr, vo
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
 
-    const auto rangeBegin = reinterpret_cast<std::uintptr_t>(ptr);
-    const auto rangeEnd = rangeBegin;
-
-    Cal::Utils::AddressRange rangeToSearch{rangeBegin, rangeEnd};
-
+    Cal::Utils::AddressRange rangeToSearch{ptr};
     const auto ranges = importedPointers.getIntersectedSubRanges(rangeToSearch);
     if (ranges.empty()) {
         *baseAddress = nullptr;
