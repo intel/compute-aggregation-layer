@@ -290,6 +290,13 @@ void ensureNull(const char *sourceLocation, const void *pointer) {
     }
 }
 
+void warnIfNotNull(const char *sourceLocation, const void *pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+    log<Verbosity::info>("%s is not nullptr!", sourceLocation);
+}
+
 void signalAbort(const char *message) {
     log<Verbosity::critical>(message);
     std::abort();

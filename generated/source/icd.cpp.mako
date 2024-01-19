@@ -18,6 +18,7 @@ ${header}
 
 using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
+using Cal::Utils::warnIfNotNull;
 
 % for namespace_part in icd_namespace:
 namespace ${namespace_part} {

@@ -22,6 +22,7 @@
 
 using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
+using Cal::Utils::warnIfNotNull;
 
 namespace Cal {
 namespace Client {
@@ -3832,7 +3833,7 @@ ze_result_t zeDriverGetPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_drive
     command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
     if(pDriverProperties)
     {
-        ensureNull("zeDriverGetProperties: pDriverProperties->pNext", pDriverProperties->pNext);
+        warnIfNotNull("zeDriverGetProperties: pDriverProperties->pNext", pDriverProperties->pNext);
     }
 
 
@@ -6156,7 +6157,7 @@ ze_result_t zeDevicePciGetPropertiesExt (ze_device_handle_t hDevice, ze_pci_ext_
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pPciProperties)
     {
-        ensureNull("zeDevicePciGetPropertiesExt: pPciProperties->pNext", pPciProperties->pNext);
+        warnIfNotNull("zeDevicePciGetPropertiesExt: pPciProperties->pNext", pPciProperties->pNext);
     }
 
 

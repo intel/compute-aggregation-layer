@@ -747,6 +747,7 @@ void enforceNullWithWarning(const char *sourceLocation, const void *&pointer);
 void enforceNullWithWarning(const char *sourceLocation, void *&pointer);
 
 void ensureNull(const char *sourceLocation, const void *pointer);
+void warnIfNotNull(const char *sourceLocation, const void *pointer);
 
 template <typename ObjT>
 class Lockable {

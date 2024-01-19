@@ -228,7 +228,7 @@ config:
           name: pNext
           type: void*
           kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          translate_before: 'warnIfNotNull("{func_name}: {arg}", {arg})'
         2:
           name: address
           type: ze_pci_address_ext_t
@@ -833,7 +833,7 @@ config:
           name: pNext
           type: void*
           kind: scalar
-          translate_before: 'ensureNull("{func_name}: {arg}", {arg})'
+          translate_before: 'warnIfNotNull("{func_name}: {arg}", {arg})'
         2:
           name: uuid
           type: ze_driver_uuid_t

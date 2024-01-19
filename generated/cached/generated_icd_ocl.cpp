@@ -20,6 +20,7 @@
 
 using Cal::Utils::enforceNullWithWarning;
 using Cal::Utils::ensureNull;
+using Cal::Utils::warnIfNotNull;
 
 namespace Cal {
 namespace Client {
