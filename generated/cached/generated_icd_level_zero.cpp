@@ -247,7 +247,7 @@ ze_result_t zetMetricGetProperties (zet_metric_handle_t hMetric, zet_metric_prop
     command->args.hMetric = hMetric->asLocalObject()->asRemoteObject();
     if(pProperties)
     {
-        ensureNull("zetMetricGetProperties: pProperties->pNext", pProperties->pNext);
+        warnIfNotNull("zetMetricGetProperties: pProperties->pNext", pProperties->pNext);
     }
 
 
@@ -2461,7 +2461,7 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeCommandListCreate: desc->pNext", desc->pNext);
+        warnIfNotNull("zeCommandListCreate: desc->pNext", desc->pNext);
     }
 
 
@@ -2498,7 +2498,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(altdesc)
     {
-        ensureNull("zeCommandListCreateImmediate: altdesc->pNext", altdesc->pNext);
+        warnIfNotNull("zeCommandListCreateImmediate: altdesc->pNext", altdesc->pNext);
     }
 
 
@@ -2634,7 +2634,7 @@ ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeCommandQueueCreate: desc->pNext", desc->pNext);
+        warnIfNotNull("zeCommandQueueCreate: desc->pNext", desc->pNext);
     }
 
 
@@ -3425,7 +3425,7 @@ ze_result_t zeDeviceGetComputePropertiesRpcHelper (ze_device_handle_t hDevice, z
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pComputeProperties)
     {
-        ensureNull("zeDeviceGetComputeProperties: pComputeProperties->pNext", pComputeProperties->pNext);
+        warnIfNotNull("zeDeviceGetComputeProperties: pComputeProperties->pNext", pComputeProperties->pNext);
     }
 
 
@@ -3538,7 +3538,7 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pMemAccessProperties)
     {
-        ensureNull("zeDeviceGetMemoryAccessProperties: pMemAccessProperties->pNext", pMemAccessProperties->pNext);
+        warnIfNotNull("zeDeviceGetMemoryAccessProperties: pMemAccessProperties->pNext", pMemAccessProperties->pNext);
     }
 
 
@@ -3591,7 +3591,7 @@ ze_result_t zeDeviceGetImagePropertiesRpcHelper (ze_device_handle_t hDevice, ze_
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pImageProperties)
     {
-        ensureNull("zeDeviceGetImageProperties: pImageProperties->pNext", pImageProperties->pNext);
+        warnIfNotNull("zeDeviceGetImageProperties: pImageProperties->pNext", pImageProperties->pNext);
     }
 
 
@@ -3619,7 +3619,7 @@ ze_result_t zeDeviceGetExternalMemoryPropertiesRpcHelper (ze_device_handle_t hDe
     command->args.hDevice = hDevice->asLocalObject()->asRemoteObject();
     if(pExternalMemoryProperties)
     {
-        ensureNull("zeDeviceGetExternalMemoryProperties: pExternalMemoryProperties->pNext", pExternalMemoryProperties->pNext);
+        warnIfNotNull("zeDeviceGetExternalMemoryProperties: pExternalMemoryProperties->pNext", pExternalMemoryProperties->pNext);
     }
 
 
@@ -3861,7 +3861,7 @@ ze_result_t zeDriverGetIpcPropertiesRpcHelper (ze_driver_handle_t hDriver, ze_dr
     command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
     if(pIpcProperties)
     {
-        ensureNull("zeDriverGetIpcProperties: pIpcProperties->pNext", pIpcProperties->pNext);
+        warnIfNotNull("zeDriverGetIpcProperties: pIpcProperties->pNext", pIpcProperties->pNext);
     }
 
 
@@ -4717,7 +4717,7 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
     command->args.hCommandQueue = hCommandQueue->asLocalObject()->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeFenceCreate: desc->pNext", desc->pNext);
+        warnIfNotNull("zeFenceCreate: desc->pNext", desc->pNext);
     }
 
 
@@ -4874,7 +4874,7 @@ ze_result_t zeImageGetProperties (ze_device_handle_t hDevice, const ze_image_des
     }
     if(pImageProperties)
     {
-        ensureNull("zeImageGetProperties: pImageProperties->pNext", pImageProperties->pNext);
+        warnIfNotNull("zeImageGetProperties: pImageProperties->pNext", pImageProperties->pNext);
     }
 
 
@@ -4962,7 +4962,7 @@ ze_result_t zeKernelSchedulingHintExp (ze_kernel_handle_t hKernel, ze_scheduling
     command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
     if(pHint)
     {
-        ensureNull("zeKernelSchedulingHintExp: pHint->pNext", pHint->pNext);
+        warnIfNotNull("zeKernelSchedulingHintExp: pHint->pNext", pHint->pNext);
     }
 
 
@@ -5595,7 +5595,7 @@ ze_result_t zeModuleGetPropertiesRpcHelper (ze_module_handle_t hModule, ze_modul
     command->args.hModule = hModule->asLocalObject()->asRemoteObject();
     if(pModuleProperties)
     {
-        ensureNull("zeModuleGetProperties: pModuleProperties->pNext", pModuleProperties->pNext);
+        warnIfNotNull("zeModuleGetProperties: pModuleProperties->pNext", pModuleProperties->pNext);
     }
 
 
@@ -5624,7 +5624,7 @@ ze_result_t zeKernelCreate (ze_module_handle_t hModule, const ze_kernel_desc_t* 
     command->args.hModule = hModule->asLocalObject()->asRemoteObject();
     if(desc)
     {
-        ensureNull("zeKernelCreate: desc->pNext", desc->pNext);
+        warnIfNotNull("zeKernelCreate: desc->pNext", desc->pNext);
     }
 
 
