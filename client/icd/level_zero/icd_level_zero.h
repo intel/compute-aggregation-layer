@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "boost/container/flat_map.hpp"
 #include "client/client_platform.h"
 #include "client/icd/icd_global_state.h"
 #include "client/icd/level_zero/api_customization/icd_level_zero_api.h"
@@ -124,6 +125,10 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
         return commandListType == CommandListType::ImmediateSynchronous;
     }
 
+    bool isImmediateAsynchronous() const {
+        return commandListType == CommandListType::Immediate;
+    }
+
     void registerMemoryToWrite(const void *srcPtr, size_t srcSize);
 
     static bool rangesOverlap(const void *srcPtr, const void *dstPtr, size_t size);
@@ -148,8 +153,9 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     }
     void moveKernelArgsToGpu(IcdL0Kernel *kernel);
 
-    void registerTemporaryAllocation(std::unique_ptr<void, std::function<void(void *)>> alloc);
+    void registerTemporaryAllocation(const void *ptr, std::unique_ptr<void, std::function<void(void *)>> alloc);
     void cleanTemporaryAllocations();
+    void *getTemporaryAllocationForReuse(const void *ptr);
 
     IcdL0Context *context{};
 
@@ -167,7 +173,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 
     struct {
         std::mutex mutex;
-        std::vector<std::unique_ptr<void, std::function<void(void *)>>> allocations;
+        boost::container::flat_map<const void *, std::unique_ptr<void, std::function<void(void *)>>> allocations;
     } temporaryStagingAreas;
 
     CommandListType commandListType{CommandListType::Regular};

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -80,6 +80,7 @@ bool appendMemoryPrefetch(ze_command_list_handle_t commandList, const void *shar
 bool closeCommandList(ze_command_list_handle_t list);
 bool resetCommandList(ze_command_list_handle_t list);
 bool destroyCommandList(ze_command_list_handle_t &list);
+bool synchronizeOnHost(ze_command_list_handle_t list);
 
 bool allocateHostMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, void *&usmHostBuffer, const void *descPNext = nullptr);
 bool allocateSharedMemory(ze_context_handle_t context, size_t bufferSize, size_t alignment, ze_device_handle_t device,

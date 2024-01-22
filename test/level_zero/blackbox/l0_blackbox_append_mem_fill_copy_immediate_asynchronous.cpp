@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -90,6 +90,34 @@ int main(int argc, const char *argv[]) {
 
     RUN_REQUIRED_STEP(verifyMemoryCopyResults(sourceBufferFromHeap.data(), destinationBufferFromHeap.data(), bufferSize));
     RUN_REQUIRED_STEP(verifyMemoryCopyResults(sourceBufferFromHeap.data(), usmHostBuffer, bufferSize));
+
+    // Case 2: zeCommandListAppendMemoryCopy
+    std::vector<char> sourceBufferFromHeap1(bufferSize);
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBufferFromHeap1.data(), 0x0, bufferSize));
+
+    std::vector<char> sourceBufferFromHeap2(bufferSize);
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(sourceBufferFromHeap2.data(), 0x0, bufferSize));
+
+    void *usmSharedBuffer1{nullptr};
+    RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer1));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer1, 0x0, bufferSize));
+
+    void *usmSharedBuffer2{nullptr};
+    RUN_REQUIRED_STEP(allocateSharedMemory(context, bufferSize, alignment, devices[0], usmSharedBuffer2));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer2, 0x0, bufferSize));
+
+    for (int i = 0; i < 2; i++) {
+        const uint8_t pattern = (i + 3) % 7;
+        RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmSharedBuffer1, pattern, bufferSize));
+        RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, sourceBufferFromHeap1.data(), usmSharedBuffer1, bufferSize));
+        RUN_REQUIRED_STEP(appendBarrier(cmdList, nullptr));
+        RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, usmSharedBuffer2, sourceBufferFromHeap1.data(), bufferSize));
+        RUN_REQUIRED_STEP(synchronizeOnHost(cmdList));
+    }
+    RUN_REQUIRED_STEP(verifyMemoryCopyResults(usmSharedBuffer1, usmSharedBuffer2, bufferSize));
+
+    RUN_REQUIRED_STEP(freeMemory(context, usmSharedBuffer1));
+    RUN_REQUIRED_STEP(freeMemory(context, usmSharedBuffer2));
 
     // Teardown.
     RUN_REQUIRED_STEP(destroyEvent(allCopiesFinishedEvent));

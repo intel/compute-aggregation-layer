@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -416,6 +416,20 @@ bool destroyCommandList(ze_command_list_handle_t &list) {
     list = nullptr;
     log<Verbosity::info>("L0 command list has been destroyed!");
 
+    return true;
+}
+
+bool synchronizeOnHost(ze_command_list_handle_t list) {
+    log<Verbosity::info>("Waiting for command list to finish via zeCommandListHostSynchronize()");
+
+    const auto zeCommandListHostSynchronizeResult = zeCommandListHostSynchronize(list, UINT64_MAX);
+    if (zeCommandListHostSynchronizeResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeCommandListHostSynchronize() call has failed! Error code = %d",
+                              static_cast<int>(zeCommandListHostSynchronizeResult));
+        return false;
+    }
+
+    log<Verbosity::info>("zeCommandListHostSynchronize finished");
     return true;
 }
 

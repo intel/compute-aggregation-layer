@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -229,14 +229,27 @@ void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
     }
 }
 
-void IcdL0CommandList::registerTemporaryAllocation(std::unique_ptr<void, std::function<void(void *)>> alloc) {
+void IcdL0CommandList::registerTemporaryAllocation(const void *ptr, std::unique_ptr<void, std::function<void(void *)>> alloc) {
     std::lock_guard lock{temporaryStagingAreas.mutex};
-    temporaryStagingAreas.allocations.push_back(std::move(alloc));
+    temporaryStagingAreas.allocations.insert(std::make_pair(ptr, std::move(alloc)));
 }
 
 void IcdL0CommandList::cleanTemporaryAllocations() {
     std::lock_guard lock{temporaryStagingAreas.mutex};
     temporaryStagingAreas.allocations.clear();
+}
+
+void *IcdL0CommandList::getTemporaryAllocationForReuse(const void *ptr) {
+    if (!isImmediateAsynchronous()) {
+        return nullptr;
+    }
+
+    std::lock_guard lock{temporaryStagingAreas.mutex};
+    auto it = temporaryStagingAreas.allocations.find(ptr);
+    if (temporaryStagingAreas.allocations.end() == it) {
+        return nullptr;
+    }
+    return it->second.get();
 }
 
 void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {

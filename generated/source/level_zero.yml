@@ -5971,7 +5971,7 @@ config:
                   capture_details:
                     replayable_command: False
                     mode: staging_usm
-                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n        hCommandList->asLocalObject()->registerTemporaryAllocation(dstptr, std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             2:
@@ -5988,7 +5988,7 @@ config:
                 - kind: ptr_va
                   capture_details:
                     mode: staging_usm
-                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(srcptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(srcptr));\n        hCommandList->asLocalObject()->registerTemporaryAllocation(srcptr, std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             3:
@@ -6712,7 +6712,7 @@ config:
                   capture_details:
                     replayable_command: false
                     mode: staging_usm
-                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n        hCommandList->asLocalObject()->registerTemporaryAllocation(dstptr, std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             2:
@@ -7033,7 +7033,7 @@ config:
                   capture_details:
                     replayable_command: false
                     mode: staging_usm
-                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n    hCommandList->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))"
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n        hCommandList->asLocalObject()->registerTemporaryAllocation(dstptr, std::move({allocation}_alloc))"
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
             2 :
@@ -10845,7 +10845,7 @@ config:
             type: ze_result_t
             kind: scalar
             default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
-            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n    }}"
+            translate_after: "if ({arg} == ZE_RESULT_SUCCESS) {{\n        {arg} = globalPlatform->getHostptrCopiesReader().readMemory(channel, Cal::Client::Icd::icdGlobalState.getGlobalShmemImporter());\n        hCommandList->asLocalObject()->cleanTemporaryAllocations();\n    }}"
           args:
             0:
               name: hCommandList

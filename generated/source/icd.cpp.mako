@@ -130,12 +130,16 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     }
 %           endif
 %           else:
-    void *standalone_${arg.name}{};
+    void *standalone_${arg.name} = hCommandList->asLocalObject()->getTemporaryAllocationForReuse(${arg.name});
+    if (standalone_${arg.name} == nullptr)
     {
         std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
         standalone_${arg.name} = standalone_${arg.name}_alloc.get();
 %           if not arg.capture_details.reclaim_method.is_immediate_mode():
         ${arg.capture_details.reclaim_method.format(f"standalone_{arg.name}")};
+%       if arg.kind_details.server_access.can_read():
+        memcpy(Cal::Utils::toAddress(standalone_${arg.name}), ${arg.name}, ${arg.get_calculated_array_size()});
+%       endif # arg.kind_details.server_access.can_read()
     }
 %           endif
 %           endif
@@ -155,9 +159,11 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %        if arg.capture_details.mode.is_standalone_mode():
     auto standalone_${arg.name} = channel.getStandaloneSpace(${arg.get_calculated_array_size()});
 %        endif
-%       if arg.kind_details.server_access.can_read():
+%       if config.api_name == "ocl":
+%        if arg.kind_details.server_access.can_read():
     memcpy(Cal::Utils::toAddress(standalone_${arg.name}), ${arg.name}, ${arg.get_calculated_array_size()});
-%       endif # arg.kind_details.server_access.can_read()
+%        endif # arg.kind_details.server_access.can_read()
+%       endif # config.api_name == "ocl"
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_copy_from_caller:
     command->copyFromCaller(${get_copy_from_caller_call_params_list_str(func_base)});
