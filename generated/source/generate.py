@@ -5,6 +5,7 @@
 #
 
 import copy
+import datetime
 import itertools
 import os
 import re
@@ -14,6 +15,7 @@ import yaml
 
 from collections import defaultdict
 from mako.template import Template
+import mako
 
 license_fname = "LICENSE.md"
 base_license = "../../LICENSE.md"
@@ -570,7 +572,14 @@ class FunctionTraits:
         assert(len(ev) <= 1)
         return ev[0] if ev else None
 
-
+def handle_mako_error(template_name : str):
+    mako_error = mako.exceptions.text_error_template().render()
+    if "raise exceptions.SyntaxException(" in mako_error:
+        stack, mako_error = mako_error.split("raise exceptions.SyntaxException(")
+        mako_error = mako_error.strip("\n\r")
+    message = f"Failed to generate file using {template_name} because:\n{mako_error}"
+    print(message)
+    os._exit(1)
 
 class FunctionCaptureLayout:
     #  | <--- return value ---> | <--- fixed length arrays ---> | <--- dynamic arg offsets ---> | <--- dynamic args ---> | <--- nested captures ---> |
@@ -1247,28 +1256,34 @@ class FunctionCaptureLayout:
 
         emit_copy_assignment = self.function.special_handling and self.function.special_handling.rpc and self.function.special_handling.rpc.emit_copy_assignment
 
-        return Template(template).render(cl=self,
-                                         inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
-                                         fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
-                                         dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
-                                         dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
-                                         nested_args=[arg_layout.arg for arg_layout in self.nested_capture_args_layouts],
-                                         member_layout_formatter=MemberLayoutFormatter(),
-                                         emit_copy_assignment=emit_copy_assignment,
-                                         **vars(self), **Formater.get_all_formaters())
+        try:
+            return Template(template).render(cl=self,
+                                            inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
+                                            fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
+                                            dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
+                                            dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
+                                            nested_args=[arg_layout.arg for arg_layout in self.nested_capture_args_layouts],
+                                            member_layout_formatter=MemberLayoutFormatter(),
+                                            emit_copy_assignment=emit_copy_assignment,
+                                            **vars(self), **Formater.get_all_formaters())
+        except :
+            handle_mako_error("captures.h.mako")
 
     def generate_cpp(self):
         with open("captures.cpp.mako", "r", encoding="utf-8") as f:
             template = f.read()
 
-        return Template(template).render(cl=self,
-                                         inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
-                                         fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
-                                         dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
-                                         dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
-                                         nested_args=[arg_layout.arg for arg_layout in self.nested_capture_args_layouts],
-                                         member_layout_formatter=MemberLayoutFormatter(),
-                                         **vars(self), **Formater.get_all_formaters())
+        try:
+            return Template(template).render(cl=self,
+                                            inline_dyn_array_args=self.function.traits.get_inline_dyn_ptr_array_args(),
+                                            fixed_array_args=self.function.traits.get_fixed_ptr_array_args(),
+                                            dyn_offset_args=[arg_layout.arg for arg_layout in self.dynamic_offsets_args_layouts],
+                                            dyn_count_args=[arg_layout.arg for arg_layout in self.dynamic_counts_args_layouts],
+                                            nested_args=[arg_layout.arg for arg_layout in self.nested_capture_args_layouts],
+                                            member_layout_formatter=MemberLayoutFormatter(),
+                                            **vars(self), **Formater.get_all_formaters())
+        except :
+            handle_mako_error("captures.cpp.mako")
 
 def remove_prefix(text : str, prefix : str) -> str :
     return text[len(prefix) : ] if text.startswith(prefix) else text
@@ -1481,7 +1496,7 @@ def create_condition_based_on_ptr_kind(var_name, required_kind):
     return cond
 
 class Config:
-    def __init__(self, root_config: dict, child_configs : list):
+    def __init__(self, root_config: dict, child_configs : list, filter):
         self.parent_config = None
         self.license = root_config["license"]
         self.subconfig_name = ""
@@ -1489,6 +1504,7 @@ class Config:
         self.api_name = root_config["api_name"]
         self.loader_lib_names = root_config["loader_lib_names"]
         self.supports_tracing = root_config["supports_tracing"]
+        self.filter = filter
 
         self.structures = [Structure(s) for s in root_config.get("structures", [])]
         self.structures_by_name = {struct.name: struct for struct in self.structures}
@@ -1497,6 +1513,14 @@ class Config:
 
         self.tracable_group_defaults = {function_group["name"] : (function_group["tracable_default"] if "tracable_default" in function_group.keys() else False) for function_group in root_config.get("functions", [])}
         self.functions = {function_group["name"] : [Function(self.structures_by_name, f, self.tracable_group_defaults[function_group["name"]]) for f in function_group["members"]] for function_group in root_config.get("functions", [])}
+        if self.filter:
+            for group_name in self.functions.keys():
+                new_group_members = []
+                for func in self.functions[group_name]:
+                    if re.match(self.filter, func.name):
+                        new_group_members.append(func)
+                self.functions[group_name] = new_group_members
+
         self.group_prefixes = {function_group["name"] : (function_group["prefix"] if "prefix" in function_group.keys() else "") for function_group in root_config.get("functions", [])}
         
         self.generate_variants()
@@ -1533,7 +1557,7 @@ class Config:
             message_subtype_base = get_num_distinct_messages(self.functions, self.api_name)
             for cc_name in child_configs.keys():
                 child_config_in = child_configs[cc_name]
-                config_base = Config(root_config, None)
+                config_base = Config(root_config, None, filter)
                 child_config = config_base
                 child_config.subconfig_name = cc_name
                 child_config.functions = []
@@ -1628,10 +1652,11 @@ def get_configs(root_config : str) -> str:
 
     return configs
 
-def load(fname: str) -> Config:
+def load(fname: str, filter : str) -> Config:
+    print(f"Loading {fname} configs")
     configs = get_configs(fname)
     root_config = configs[""]
-    return Config(root_config["config"], {name : configs[name]["config"] for name in configs.keys() if (name != "")})
+    return Config(root_config["config"], {name : configs[name]["config"] for name in configs.keys() if (name != "")}, filter)
 
 def get_num_distinct_messages(grouped_functions, api_name):
     def should_skip_message_generation(func):
@@ -1678,30 +1703,33 @@ def generate_rpc_messages_h(config: Config, additional_file_headers: list) -> st
 
     with open("rpc_messages.h.mako", "r", encoding="utf-8") as f:
         template = f.read()
-    return Template(template).render(
-        config=config,
-        unimplemented=config.unimplemented,
-        daemon_namespace=config.daemon_namespace,
-        rpc_namespace=config.rpc_namespace,
-        rpc_functions={
-            group_name : [f for f in config.functions[group_name] if not (
-                f.special_handling and f.special_handling.rpc and f.special_handling.rpc.dont_generate_rpc_message)] for group_name in config.functions},
-        file_headers=config.file_headers.common +
-        config.file_headers.rpc_messages_h +
-        additional_file_headers,
-        CapturesFormater=CapturesFormater,
-        should_skip_message_generation=should_skip_message_generation,
-        get_message_subtype=get_message_subtype,
-        get_copy_from_caller_args=lambda f: get_copy_from_or_to_caller_args(
-            f,
-            True),
-        get_copy_to_caller_args=lambda f: get_copy_from_or_to_caller_args(
-            f,
-            False),
-        get_ptr_array_args=get_ptr_array_args,
-        to_pascal_case=to_pascal_case,
-        get_struct_members_layouts=get_struct_members_layouts,
-        member_layout_formatter=MemberLayoutFormatter())
+    try:
+        return Template(template).render(
+            config=config,
+            unimplemented=config.unimplemented,
+            daemon_namespace=config.daemon_namespace,
+            rpc_namespace=config.rpc_namespace,
+            rpc_functions={
+                group_name : [f for f in config.functions[group_name] if not (
+                    f.special_handling and f.special_handling.rpc and f.special_handling.rpc.dont_generate_rpc_message)] for group_name in config.functions},
+            file_headers=config.file_headers.common +
+            config.file_headers.rpc_messages_h +
+            additional_file_headers,
+            CapturesFormater=CapturesFormater,
+            should_skip_message_generation=should_skip_message_generation,
+            get_message_subtype=get_message_subtype,
+            get_copy_from_caller_args=lambda f: get_copy_from_or_to_caller_args(
+                f,
+                True),
+            get_copy_to_caller_args=lambda f: get_copy_from_or_to_caller_args(
+                f,
+                False),
+            get_ptr_array_args=get_ptr_array_args,
+            to_pascal_case=to_pascal_case,
+            get_struct_members_layouts=get_struct_members_layouts,
+            member_layout_formatter=MemberLayoutFormatter())
+    except :
+        handle_mako_error("rpc_messages.h.mako")
 
 
 def generate_rpc_messages_cpp(config: Config, additional_file_headers: list) -> str:
@@ -1714,13 +1742,16 @@ def generate_rpc_messages_cpp(config: Config, additional_file_headers: list) -> 
 
     with open("rpc_messages.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
-    return Template(template).render(
-        config=config,
-        rpc_namespace=config.rpc_namespace,
-        file_headers=config.file_headers.common +
-        config.file_headers.rpc_messages_cpp +
-        additional_file_headers,
-        should_skip_message_generation=should_skip_message_generation)
+    try:    
+        return Template(template).render(
+            config=config,
+            rpc_namespace=config.rpc_namespace,
+            file_headers=config.file_headers.common +
+            config.file_headers.rpc_messages_cpp +
+            additional_file_headers,
+            should_skip_message_generation=should_skip_message_generation)
+    except :
+        handle_mako_error("rpc_messages.cpp.mako")
 
 
 def generate_stub_lib_cpp(config: Config) -> str:
@@ -1732,9 +1763,12 @@ def generate_stub_lib_cpp(config: Config) -> str:
     def get_func_handler_args_list_str(f):
         return ", ".join([f"{sarg}" for sarg in [arg.to_str() for arg in f.args]])
 
-    return Template(template).render(config=config, functions_to_stub=functions_to_stub,
-                                     file_headers=config.file_headers.api,
-                                     get_func_handler_args_list_str=get_func_handler_args_list_str)
+    try:
+        return Template(template).render(config=config, functions_to_stub=functions_to_stub,
+                                        file_headers=config.file_headers.api,
+                                        get_func_handler_args_list_str=get_func_handler_args_list_str)
+    except :
+        handle_mako_error("stub_lib.cpp.mako")
 
 
 def get_func_ddi_name(config: Config, func):
@@ -1797,21 +1831,24 @@ def generate_icd_h(config: Config, additional_file_headers: list) -> str:
     with open("icd.h.mako", "r", encoding="utf-8") as f:
         template = f.read()
 
-    return Template(template).render(
-        config=config,
-        file_headers=config.file_headers.common +
-        config.file_headers.icd_h +
-        additional_file_headers,
-        rpc_namespace=config.rpc_namespace,
-        icd_namespace=config.icd_namespace,
-        icd_namespace_str='::'.join(
-            config.icd_namespace),
-        functions=config.functions,
-        functions_in_dispatch_table=functions_in_dispatch_table,
-        get_func_handler_name=get_func_handler_name,
-        get_func_handler_args_list_str=get_func_handler_args_list_str,
-        get_func_ddi_name=get_func_ddi_name_bind,
-        get_ddi_name=get_ddi_name_bind)
+    try:
+        return Template(template).render(
+            config=config,
+            file_headers=config.file_headers.common +
+            config.file_headers.icd_h +
+            additional_file_headers,
+            rpc_namespace=config.rpc_namespace,
+            icd_namespace=config.icd_namespace,
+            icd_namespace_str='::'.join(
+                config.icd_namespace),
+            functions=config.functions,
+            functions_in_dispatch_table=functions_in_dispatch_table,
+            get_func_handler_name=get_func_handler_name,
+            get_func_handler_args_list_str=get_func_handler_args_list_str,
+            get_func_ddi_name=get_func_ddi_name_bind,
+            get_ddi_name=get_ddi_name_bind)
+    except :
+        handle_mako_error("icd.h.mako")
 
 
 def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
@@ -1890,42 +1927,45 @@ def generate_icd_cpp(config: Config, additional_file_headers: list) -> str:
     with open("icd.cpp.mako", "r", encoding="utf-8") as f:
         template = f.read()
 
-    return Template(template).render(
-        config=config,
-        file_headers=config.file_headers.common + config.file_headers.icd_cpp + additional_file_headers,
-        icd_namespace=config.icd_namespace,
-        icd_namespace_str='::'.join(
-            config.icd_namespace),
-        functions=config.functions,
-        functions_in_dispatch_table=functions_in_dispatch_table,
-        icd_extensions=icd_extensions,
-        non_variant_functions=non_variant_functions,
-        get_func_handler_name=get_func_handler_name,
-        get_func_handler_args_list_str=get_func_handler_args_list_str,
-        get_fq_message_name=get_fq_message_name,
-        get_func_handler_call_params_list_str=get_func_handler_call_params_list_str,
-        dont_generate_handler=dont_generate_handler,
-        itentionally_ignore=itentionally_ignore,
-        get_copy_from_caller_call_params_list_str=get_copy_from_or_to_caller_call_params_list_str,
-        get_copy_to_caller_call_params_list_str=get_copy_from_or_to_caller_call_params_list_str,
-        get_args_requiring_translation_before=get_args_requiring_translation_before,
-        get_args_requiring_translation_after=get_args_requiring_translation_after,
-        get_arg_from_capture=get_arg_from_capture,
-        is_unsupported=is_unsupported,
-        can_be_null=can_be_null,
-        to_pascal_case = to_pascal_case,
-        to_camel_case = to_camel_case,
-        to_snake_case = to_snake_case,
-        get_ddi_name = get_ddi_name_bind,
-        get_func_ddi_name = get_func_ddi_name_bind,
-        remove_prefix = remove_prefix,
+    try:
+        return Template(template).render(
+            config=config,
+            file_headers=config.file_headers.common + config.file_headers.icd_cpp + additional_file_headers,
+            icd_namespace=config.icd_namespace,
+            icd_namespace_str='::'.join(
+                config.icd_namespace),
+            functions=config.functions,
+            functions_in_dispatch_table=functions_in_dispatch_table,
+            icd_extensions=icd_extensions,
+            non_variant_functions=non_variant_functions,
+            get_func_handler_name=get_func_handler_name,
+            get_func_handler_args_list_str=get_func_handler_args_list_str,
+            get_fq_message_name=get_fq_message_name,
+            get_func_handler_call_params_list_str=get_func_handler_call_params_list_str,
+            dont_generate_handler=dont_generate_handler,
+            itentionally_ignore=itentionally_ignore,
+            get_copy_from_caller_call_params_list_str=get_copy_from_or_to_caller_call_params_list_str,
+            get_copy_to_caller_call_params_list_str=get_copy_from_or_to_caller_call_params_list_str,
+            get_args_requiring_translation_before=get_args_requiring_translation_before,
+            get_args_requiring_translation_after=get_args_requiring_translation_after,
+            get_arg_from_capture=get_arg_from_capture,
+            is_unsupported=is_unsupported,
+            can_be_null=can_be_null,
+            to_pascal_case = to_pascal_case,
+            to_camel_case = to_camel_case,
+            to_snake_case = to_snake_case,
+            get_ddi_name = get_ddi_name_bind,
+            get_func_ddi_name = get_func_ddi_name_bind,
+            remove_prefix = remove_prefix,
 
-        prologue=lambda f: f.special_handling.icd.handler_prologue if (
-            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_prologue) else "",
-        epilogue=lambda f: f.special_handling.icd.handler_epilogue if (
-            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue) else "",
-        epilogue_data=lambda f: f.special_handling.icd.handler_epilogue_data if (
-            f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue_data) else "")
+            prologue=lambda f: f.special_handling.icd.handler_prologue if (
+                f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_prologue) else "",
+            epilogue=lambda f: f.special_handling.icd.handler_epilogue if (
+                f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue) else "",
+            epilogue_data=lambda f: f.special_handling.icd.handler_epilogue_data if (
+                f.special_handling and f.special_handling.icd and f.special_handling.icd.handler_epilogue_data) else "")
+    except :
+        handle_mako_error("icd.cpp.mako")
 
 
 def generate_service_h(config: Config, additional_file_headers: list) -> str:
@@ -1941,7 +1981,9 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
 
     functions_with_messages = {group_name : [f for f in config.functions[group_name] if not should_skip_message_generation(f)] for group_name in config.functions}
     last_function_with_message_group = list(functions_with_messages.keys())[-1]
-    last_function_with_message = functions_with_messages[last_function_with_message_group][-1]
+    last_function_with_message = None
+    if functions_with_messages[last_function_with_message_group]:
+        last_function_with_message = functions_with_messages[last_function_with_message_group][-1]
 
     all_extensions = config.get_extensions()
     rpc_extensions = {group_name : [
@@ -1950,11 +1992,13 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
                 ext.special_handling and ext.special_handling.rpc and (
                     ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in all_extensions}
 
-    rpc_functions = {group_name : [
-        f for f in config.functions[group_name] if not (
-            f.aliased_function or (
-                f.special_handling and f.special_handling.rpc and (
-                    f.special_handling.rpc.dont_generate_rpc_message or f.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in config.functions}
+    rpc_functions = dict()
+    if last_function_with_message:
+        rpc_functions = {group_name : [
+            f for f in config.functions[group_name] if not (
+                f.aliased_function or (
+                    f.special_handling and f.special_handling.rpc and (
+                        f.special_handling.rpc.dont_generate_rpc_message or f.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in config.functions}
     standard_functions = {group_name : [f for f in config.functions[group_name] if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)] for group_name in config.functions}
 
     def get_rpc_handler_suffix(rpc_func):
@@ -1991,34 +2035,37 @@ def generate_service_h(config: Config, additional_file_headers: list) -> str:
         else:
             return f"apiCommand->args.{arg.name}"
 
-    return Template(template).render(
-        config=config,
-        extensions=rpc_extensions,
-        standard_functions=standard_functions,
-        rpc_functions=rpc_functions,
-        file_headers=config.file_headers.common +
-        config.file_headers.daemon_h +
-        additional_file_headers,
-        daemon_namespace=config.daemon_namespace,
-        daemon_namespace_str='::'.join(
-            config.daemon_namespace),
-        ext_loader='::'.join(
-            config.daemon_namespace +
-            ['getExtensionFuncAddress']),
-        get_rpc_handler_suffix=get_rpc_handler_suffix,
-        use_rpc_custom_handler=use_rpc_custom_handler,
-        get_api_func_name=get_api_func_name,
-        get_rpc_func_fqfn=get_rpc_func_fqfn,
-        get_arg_from_api_command_struct=get_arg_from_api_command_struct,
-        requires_malloc_shmem_zero_copy_handler=requires_malloc_shmem_zero_copy_handler,
-        to_pascal_case=to_pascal_case,
-        get_struct_members_layouts=get_struct_members_layouts,
-        prologue=lambda f: f.special_handling.rpc.handler_prologue if (
-            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_prologue) else "",
-        epilogue=lambda f: f.special_handling.rpc.handler_epilogue if (
-            f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "",
-        last_function_with_message=last_function_with_message,
-        should_skip_message_generation=should_skip_message_generation)
+    try:
+        return Template(template).render(
+            config=config,
+            extensions=rpc_extensions,
+            standard_functions=standard_functions,
+            rpc_functions=rpc_functions,
+            file_headers=config.file_headers.common +
+            config.file_headers.daemon_h +
+            additional_file_headers,
+            daemon_namespace=config.daemon_namespace,
+            daemon_namespace_str='::'.join(
+                config.daemon_namespace),
+            ext_loader='::'.join(
+                config.daemon_namespace +
+                ['getExtensionFuncAddress']),
+            get_rpc_handler_suffix=get_rpc_handler_suffix,
+            use_rpc_custom_handler=use_rpc_custom_handler,
+            get_api_func_name=get_api_func_name,
+            get_rpc_func_fqfn=get_rpc_func_fqfn,
+            get_arg_from_api_command_struct=get_arg_from_api_command_struct,
+            requires_malloc_shmem_zero_copy_handler=requires_malloc_shmem_zero_copy_handler,
+            to_pascal_case=to_pascal_case,
+            get_struct_members_layouts=get_struct_members_layouts,
+            prologue=lambda f: f.special_handling.rpc.handler_prologue if (
+                f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_prologue) else "",
+            epilogue=lambda f: f.special_handling.rpc.handler_epilogue if (
+                f.special_handling and f.special_handling.rpc and f.special_handling.rpc.handler_epilogue) else "",
+            last_function_with_message=last_function_with_message,
+            should_skip_message_generation=should_skip_message_generation)
+    except :
+        handle_mako_error("service.h.mako")
 
 
 def generate_service_cpp(config: Config, additional_file_headers: list) -> str:
@@ -2033,19 +2080,25 @@ def generate_service_cpp(config: Config, additional_file_headers: list) -> str:
                     ext.special_handling.rpc.dont_generate_rpc_message or ext.special_handling.rpc.dont_generate_rpc_handler)))] for group_name in all_extensions}
 
     standard_functions = {group_name : [f for f in config.functions[group_name] if not (f.aliased_function or f.traits.is_extension or f.traits.is_variant)] for group_name in config.functions}
-    return Template(template).render(config=config, extensions=rpc_extensions, standard_functions=standard_functions,
-                                     file_headers=config.file_headers.common + config.file_headers.daemon_cpp + additional_file_headers,
-                                     daemon_namespace=config.daemon_namespace, daemon_namespace_str='::'.join(config.daemon_namespace),
-                                     ext_loader='::'.join(config.daemon_namespace + ['getExtensionFuncAddress']),
-                                     to_pascal_case=to_pascal_case)
+    try:
+        return Template(template).render(config=config, extensions=rpc_extensions, standard_functions=standard_functions,
+                                        file_headers=config.file_headers.common + config.file_headers.daemon_cpp + additional_file_headers,
+                                        daemon_namespace=config.daemon_namespace, daemon_namespace_str='::'.join(config.daemon_namespace),
+                                        ext_loader='::'.join(config.daemon_namespace + ['getExtensionFuncAddress']),
+                                        to_pascal_case=to_pascal_case)
+    except :
+        handle_mako_error("service.cpp.mako")
 
 
 def generate_shared_h(config: Config, additional_file_headers: list) -> str:
     with open("shared.h.mako", "r", encoding="utf-8") as f:
         template = f.read()
-    return Template(template).render(config=config, unimplemented=config.unimplemented,
-                                     file_headers=config.file_headers.common + config.file_headers.shared_h + additional_file_headers,
-                                     daemon_namespace=config.daemon_namespace)
+    try:
+        return Template(template).render(config=config, unimplemented=config.unimplemented,
+                                        file_headers=config.file_headers.common + config.file_headers.shared_h + additional_file_headers,
+                                        daemon_namespace=config.daemon_namespace)
+    except :
+        handle_mako_error("shared.h.mako")
 
 
 def license_line_to_cpp_comment(line :str) -> str:
@@ -2070,50 +2123,72 @@ def dump(data: str, fname: str, license: str) -> None:
         f.write(contents.encode("utf-8"))
 
 
-def generate(config: Config, out_dir: str, prefix:str) -> str:
+def generate(config: Config, out_dir: str, prefix:str, file_filter:str) -> str:
     os.makedirs(out_dir, exist_ok=True)
     fname_base = "generated" + prefix
-    fpath_base = os.path.join(out_dir, fname_base)
+    fpath_base = os.path.join(out_dir)
 
-    icd_h = generate_icd_h(config, [])
-    dump(icd_h, fpath_base + f"_icd_{config.api_name}.h", config.license)
+    files_to_generate = [  (f"{fname_base}_icd_{config.api_name}.h", lambda config : generate_icd_h(config, [])),
+                           (f"{fname_base}_icd_{config.api_name}.cpp", lambda config : generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"", f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
+                           (f"{fname_base}_rpc_messages_{config.api_name}.h", lambda config : generate_rpc_messages_h(config, [])),
+                           (f"{fname_base}_rpc_messages_{config.api_name}.cpp", lambda config : generate_rpc_messages_cpp(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
+                           (f"{fname_base}_service_{config.api_name}.h", lambda config : generate_service_h(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
+                           (f"{fname_base}_service_{config.api_name}.cpp", lambda config : generate_service_cpp(config, [f"#include \"{fname_base}_service_{config.api_name}.h\""])),
+                           (f"{fname_base}_shared_{config.api_name}.h", lambda config : generate_shared_h(config, [])),
+                           (f"{fname_base}_stub_lib_{config.api_name}.cpp", lambda config : generate_stub_lib_cpp(config)),
+                         ]
 
-    icd_cpp = generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"",
-                                        f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(icd_cpp, fpath_base + f"_icd_{config.api_name}.cpp", config.license)
+    for f in files_to_generate:
+        path, generator = (f[0], f[1])
+        if file_filter and not re.match(file_filter, path):
+            print(f"Skipping generation of {path}")
+            continue
+        content = generator(config)
+        dump(content, os.path.join(fpath_base, path), config.license)
 
-    rpc_messages_h = generate_rpc_messages_h(config, [])
-    dump(rpc_messages_h, fpath_base + f"_rpc_messages_{config.api_name}.h", config.license)
-
-    rpc_messages_cpp = generate_rpc_messages_cpp(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(rpc_messages_cpp, fpath_base + f"_rpc_messages_{config.api_name}.cpp", config.license)
-
-    service_h = generate_service_h(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])
-    dump(service_h, fpath_base + f"_service_{config.api_name}.h", config.license)
-
-    service_cpp = generate_service_cpp(config, [f"#include \"{fname_base}_service_{config.api_name}.h\""])
-    dump(service_cpp, fpath_base + f"_service_{config.api_name}.cpp", config.license)
-
-    shared_h = generate_shared_h(config, [])
-    dump(shared_h, fpath_base + f"_shared_{config.api_name}.h", config.license)
-
-    stub_lib_cpp = generate_stub_lib_cpp(config)
-    dump(stub_lib_cpp, fpath_base + f"_stub_lib_{config.api_name}.cpp", config.license)
-
+def print_help():
+    print("""This is generator for Compute Aggregation Layer RPC protocol. Run without any parameters to regenerate the files.
+          
+--help                             prints this help
+--func_filter REGEXP               only API functions that match this pattern (regular expression) will be taken into account
+--file_filter REGEXP               only output files that matchi this pattern (regular expression) will be taken into account
+--configs NAME1.yml,NAME2.yml,...  chooses configuration files to be used (instead of default ones)
+          """)
 
 def main():
     path = "../cached/"
+    func_filter = ""
+    file_filter = ""
 
-    if len(sys.argv) > 1:
-        path = sys.argv[1]
+    i = 1
+    configs = ["ocl.yml", "level_zero.yml"]
+    while i < len(sys.argv):
+        if sys.argv[i] == "--help":
+            print_help()
+            return 0
+        if sys.argv[i] == "--func_filter":
+            func_filter = sys.argv[i+1]
+            i+=2
+            print(f"filter (treated as regexp) : {func_filter}")
+        elif sys.argv[i] == "--file_filter":
+            file_filter = sys.argv[i+1]
+            i+=2
+            print(f"generated file filter (treated as regexp) : {file_filter}")
+        elif sys.argv[i] == "--configs":
+            configs = sys.argv[i+1].split(",")
+            i+=2
+        else:
+            path = sys.argv[i]
+            i+=1
     
-    print(f"output directory : {path}")
-    for config_name in ["ocl.yml", 
-                                "level_zero.yml"]:
-        config = load(config_name)
-        generate(config, path, "")
+    print(f"Output directory : {path}")
+    print(f"Base configurations : [{', '.join(configs)}]")
+    for config_name in configs:
+        config = load(config_name, func_filter)
+        config.func_filter = func_filter
+        generate(config, path, "", file_filter)
         for cc_name in config.child_configs.keys():
-            generate(config.child_configs[cc_name], os.path.join(path, cc_name), "_"+cc_name)
+            generate(config.child_configs[cc_name], os.path.join(path, cc_name), "_"+cc_name, file_filter)
 
 
 if __name__ == "__main__":
