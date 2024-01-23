@@ -175,7 +175,16 @@ inline size_t getTotalSizeForCopyRegion(const ze_copy_region_t *region, uint32_t
     if (region == nullptr) {
         return 0;
     }
-    return getTotalSizeForCopyRegion(*region, pitch, slicePitch);
+
+    ze_copy_region_t validRegion = {region->width, region->height, region->depth};
+    if (validRegion.depth == 0)
+        validRegion.depth = 1;
+    if (validRegion.width == 0)
+        validRegion.width = 1;
+    if (validRegion.height == 0)
+        validRegion.height = 1;
+
+    return getTotalSizeForCopyRegion(validRegion, pitch, slicePitch);
 }
 
 struct NestedPNextTraits {
