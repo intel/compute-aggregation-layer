@@ -4,15 +4,20 @@
 # SPDX-License-Identifier: MIT
 #
 
+import concurrent
 import copy
 import datetime
 import itertools
+import multiprocessing
 import os
 import re
 import string
 import sys
+import time
+import threading
 import yaml
 
+from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict
 from mako.template import Template
 import mako
@@ -2122,29 +2127,47 @@ def dump(data: str, fname: str, license: str) -> None:
         contents += data
         f.write(contents.encode("utf-8"))
 
+def wrapped_parallel_job(target, args):
+    try:
+        target(*args)
+    except Exception as e :
+        print(e)
 
-def generate(config: Config, out_dir: str, prefix:str, file_filter:str) -> str:
+def generate(config: Config, out_dir: str, prefix:str, file_filter:str, max_num_workers:int, parallel_jobs) -> str:
     os.makedirs(out_dir, exist_ok=True)
     fname_base = "generated" + prefix
     fpath_base = os.path.join(out_dir)
 
-    files_to_generate = [  (f"{fname_base}_icd_{config.api_name}.h", lambda config : generate_icd_h(config, [])),
-                           (f"{fname_base}_icd_{config.api_name}.cpp", lambda config : generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"", f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
+    files_to_generate = [  
                            (f"{fname_base}_rpc_messages_{config.api_name}.h", lambda config : generate_rpc_messages_h(config, [])),
                            (f"{fname_base}_rpc_messages_{config.api_name}.cpp", lambda config : generate_rpc_messages_cpp(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
+                           (f"{fname_base}_icd_{config.api_name}.h", lambda config : generate_icd_h(config, [])),
+                           (f"{fname_base}_icd_{config.api_name}.cpp", lambda config : generate_icd_cpp(config, [f"#include \"{fname_base}_icd_{config.api_name}.h\"", f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
                            (f"{fname_base}_service_{config.api_name}.h", lambda config : generate_service_h(config, [f"#include \"{fname_base}_rpc_messages_{config.api_name}.h\""])),
                            (f"{fname_base}_service_{config.api_name}.cpp", lambda config : generate_service_cpp(config, [f"#include \"{fname_base}_service_{config.api_name}.h\""])),
                            (f"{fname_base}_shared_{config.api_name}.h", lambda config : generate_shared_h(config, [])),
                            (f"{fname_base}_stub_lib_{config.api_name}.cpp", lambda config : generate_stub_lib_cpp(config)),
                          ]
 
+    jobs = []
     for f in files_to_generate:
         path, generator = (f[0], f[1])
         if file_filter and not re.match(file_filter, path):
             print(f"Skipping generation of {path}")
             continue
-        content = generator(config)
-        dump(content, os.path.join(fpath_base, path), config.license)
+        wrapped_generator = lambda generator, config, path,: dump(generator(config), os.path.join(fpath_base, path), config.license)
+        job = (wrapped_generator, (generator, config, path))
+        jobs.append(job)
+
+    if max_num_workers > 1:
+        for job in jobs:
+            wrapped_job = (wrapped_parallel_job, (job[0], job[1]))
+            parallel_jobs.append(wrapped_job)
+        
+    else:
+        for job in jobs:
+            job[0](*job[1])
+        
 
 def print_help():
     print("""This is generator for Compute Aggregation Layer RPC protocol. Run without any parameters to regenerate the files.
@@ -2153,43 +2176,109 @@ def print_help():
 --func_filter REGEXP               only API functions that match this pattern (regular expression) will be taken into account
 --file_filter REGEXP               only output files that matchi this pattern (regular expression) will be taken into account
 --configs NAME1.yml,NAME2.yml,...  chooses configuration files to be used (instead of default ones)
+-j NUM                             maximum number of worker threads
           """)
 
-def main():
+def main(args):
     path = "../cached/"
     func_filter = ""
     file_filter = ""
 
     i = 1
-    configs = ["ocl.yml", "level_zero.yml"]
-    while i < len(sys.argv):
-        if sys.argv[i] == "--help":
+    configs = ["level_zero.yml", "ocl.yml"]
+    max_num_workers = 1
+    max_num_workers_arg_value_it = -1
+    configs_arg_value_it = -1
+    is_child = False
+    while i < len(args):
+        if args[i] == "--help":
             print_help()
             return 0
-        if sys.argv[i] == "--func_filter":
-            func_filter = sys.argv[i+1]
+        elif args[i] == "--is_child":
+            is_child = True
+            i += 1
+        elif args[i] == "--func_filter":
+            func_filter = args[i+1]
             i+=2
-            print(f"filter (treated as regexp) : {func_filter}")
-        elif sys.argv[i] == "--file_filter":
-            file_filter = sys.argv[i+1]
+            if not is_child:
+                print(f"filter (treated as regexp) : {func_filter}")
+        elif args[i] == "--file_filter":
+            file_filter = args[i+1]
             i+=2
-            print(f"generated file filter (treated as regexp) : {file_filter}")
-        elif sys.argv[i] == "--configs":
-            configs = sys.argv[i+1].split(",")
+            if not is_child:
+                print(f"generated file filter (treated as regexp) : {file_filter}")
+        elif args[i] == "--configs":
+            configs = args[i+1].split(",")
+            configs_arg_value_it = i+1
+            i+=2
+        elif args[i] == "-j":
+            max_num_workers = int(args[i+1])
+            max_num_workers_arg_value_it = i+1
             i+=2
         else:
-            path = sys.argv[i]
+            path = args[i]
             i+=1
+
+    if max_num_workers > 1 and (len(configs) > 1):
+        num_workers_per_config = int(max_num_workers/(len(configs)))
+        if max_num_workers_arg_value_it == -1:
+            args.append("-j")
+            args.append(num_workers_per_config)
+        else:
+            args[max_num_workers_arg_value_it] = num_workers_per_config
+        if configs_arg_value_it == -1:
+            configs_arg_value_it = len(args)+1
+            args.append("--configs")
+            args.append(configs)
+        args.append("--is_child")
+        workers = []
+        
+        for config in configs:
+            args[configs_arg_value_it] = config
+            w = multiprocessing.Process(target=main, args=[args])
+            w.start()
+            workers.append(w)
+
+        for w in workers:
+            w.join()
+        return
     
-    print(f"Output directory : {path}")
-    print(f"Base configurations : [{', '.join(configs)}]")
+    if not is_child:
+        print(f"Output directory : {path}")
+        print(f"Base configurations : [{', '.join(configs)}]")
+    parallel_jobs = []
     for config_name in configs:
         config = load(config_name, func_filter)
         config.func_filter = func_filter
-        generate(config, path, "", file_filter)
+        generate(config, path, "", file_filter, max_num_workers, parallel_jobs)
         for cc_name in config.child_configs.keys():
-            generate(config.child_configs[cc_name], os.path.join(path, cc_name), "_"+cc_name, file_filter)
+            generate(config.child_configs[cc_name], os.path.join(path, cc_name), "_"+cc_name, file_filter, max_num_workers, parallel_jobs)
+
+    if parallel_jobs:
+        print(f"Running {len(parallel_jobs)} jobs in parallel (-j {max_num_workers})")
+        active_workers = []
+        while parallel_jobs:
+            if active_workers or (len(active_workers) < max_num_workers):
+                w = multiprocessing.Process(target=parallel_jobs[-1][0], args=(parallel_jobs[-1][1]))
+                active_workers.append(w)
+                parallel_jobs = parallel_jobs[0:-1]
+                w.start()
+            else:
+                for worker in active_workers:
+                    if not worker.is_alive():
+                        worker.join()
+                        active_workers = active_workers.remove(worker)
+                        break
+                if active_workers and (len(active_workers) == max_num_workers):
+                    time.sleep(1)
+        while active_workers:
+            for worker in active_workers:
+                if not worker.is_alive():
+                    worker.join()
+                    active_workers = active_workers.remove(worker)
+                    break
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
