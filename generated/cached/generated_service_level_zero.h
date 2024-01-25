@@ -1289,7 +1289,7 @@ inline bool zeCommandListAppendWriteGlobalTimestampHandler(Provider &service, Ca
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM*>(command);
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
                                                 apiCommand->args.hCommandList, 
-                                                apiCommand->args.dstptr, 
+                                                apiCommand->args.dstptr ? &apiCommand->captures.dstptr : nullptr, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
                                                 apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr

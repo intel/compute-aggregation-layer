@@ -5482,7 +5482,14 @@ config:
             1:
               name: dstptr
               type: uint64_t*
-              kind: pointer
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint64_t
+                  kind: scalar
+                server_access: write
             2:
               name: hSignalEvent
               type: ze_event_handle_t
@@ -5501,7 +5508,8 @@ config:
                 element:
                   type: ze_event_handle_t
                   kind: scalar
-                server_access: read_write
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
 
         - name: zeCommandQueueCreate
           latency: 1.0

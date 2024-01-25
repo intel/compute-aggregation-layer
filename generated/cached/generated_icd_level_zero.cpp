@@ -2607,6 +2607,16 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hC
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
     command->copyFromCaller(dynMemTraits);
     command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    if(phWaitEvents)
+    {
+        auto base = command->captures.phWaitEvents;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.phWaitEvents.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

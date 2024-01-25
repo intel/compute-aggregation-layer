@@ -8616,6 +8616,7 @@ struct ZeCommandListAppendWriteGlobalTimestampRpcM {
         };
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
+        uint64_t dstptr;
         uint32_t countPhWaitEvents = 0;
         ze_event_handle_t phWaitEvents[];
 
@@ -8667,8 +8668,8 @@ struct ZeCommandListAppendWriteGlobalTimestampRpcM {
     }
 
     void copyToCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.phWaitEvents){
-            memcpy(args.phWaitEvents, captures.phWaitEvents, dynMemTraits.phWaitEvents.size);
+        if(args.dstptr){
+            *args.dstptr = captures.dstptr;
         }
     }
 };
