@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -50,10 +50,57 @@ bool getDeviceProperties(ze_device_handle_t device) {
        << " * numSlices : " << deviceProperties.numSlices << "\n"
        << " * numSubslicesPerSlice : " << deviceProperties.numSubslicesPerSlice << "\n"
        << " * numEUsPerSubslice : " << deviceProperties.numEUsPerSubslice << "\n"
-       << " * numThreadsPerEU : " << deviceProperties.numThreadsPerEU;
+       << " * numThreadsPerEU : " << deviceProperties.numThreadsPerEU << "\n"
+       << " * timerResolution (): " << deviceProperties.timerResolution;
 
     const auto deviceInfoStr = ss.str();
     log<Verbosity::info>("%s", deviceInfoStr.c_str());
+
+    if (ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES != deviceProperties.stype) {
+        log<Verbosity::error>("zeDeviceGetProperties() call returned incorrect sType = %d", static_cast<int>(deviceProperties.stype));
+        return false;
+    }
+
+    if (deviceProperties.timerResolution == 0) {
+        log<Verbosity::error>("zeDeviceGetProperties() call returned incorrect timer resolution = %d", static_cast<int>(deviceProperties.timerResolution));
+        return false;
+    }
+
+    ze_device_properties_t deviceProperties12 = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES_1_2};
+
+    const auto zeDeviceGetProperties12Result = zeDeviceGetProperties(device, &deviceProperties12);
+    if (zeDeviceGetProperties12Result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDeviceGetProperties(1_2) call has failed! Error code = %d", static_cast<int>(zeDeviceGetProperties12Result));
+        return false;
+    }
+
+    ss.str("");
+    ss << "Device properties 1_2: \n"
+       << " * name : " << deviceProperties12.name << "\n"
+       << " * deviceId : " << deviceProperties12.deviceId << "\n"
+       << " * numSlices : " << deviceProperties12.numSlices << "\n"
+       << " * numSubslicesPerSlice : " << deviceProperties12.numSubslicesPerSlice << "\n"
+       << " * numEUsPerSubslice : " << deviceProperties12.numEUsPerSubslice << "\n"
+       << " * numThreadsPerEU : " << deviceProperties12.numThreadsPerEU << "\n"
+       << " * timerResolution (cycles/sec): " << deviceProperties12.timerResolution;
+
+    const auto deviceInfo12Str = ss.str();
+    log<Verbosity::info>("%s", deviceInfo12Str.c_str());
+
+    if (ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES_1_2 != deviceProperties12.stype) {
+        log<Verbosity::error>("zeDeviceGetProperties(1_2) call returned incorrect sType = %d", static_cast<int>(deviceProperties12.stype));
+        return false;
+    }
+
+    if (deviceProperties12.timerResolution == 0) {
+        log<Verbosity::error>("zeDeviceGetProperties(1_2) call returned incorrect timer resolution = %d", static_cast<int>(deviceProperties12.timerResolution));
+        return false;
+    }
+
+    if (deviceProperties12.timerResolution == deviceProperties.timerResolution) {
+        log<Verbosity::error>("zeDeviceGetProperties() and zeDeviceGetProperties(1_2) calls returned the same timer resolutions = %d", static_cast<int>(deviceProperties12.timerResolution));
+        return false;
+    }
 
     return true;
 }

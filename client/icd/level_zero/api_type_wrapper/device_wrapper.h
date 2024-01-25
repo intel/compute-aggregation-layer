@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -18,6 +18,8 @@
 
 namespace Cal::Client::Icd::LevelZero {
 
+struct ze_device_properties_1_2_t : ze_device_properties_t {};
+
 class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t, Logic::IcdL0TypePrinter> {
   public:
     using RefCountedWithParent::RefCountedWithParent;
@@ -28,6 +30,7 @@ class IcdL0Device : public Cal::Shared::RefCountedWithParent<_ze_device_handle_t
     const std::vector<ze_device_handle_t> &getFilteredDevices() const { return filteredDevices; };
 
     Logic::PropertiesCache::VectorTuple<ze_device_properties_t,
+                                        ze_device_properties_1_2_t,
                                         ze_device_compute_properties_t,
                                         ze_device_module_properties_t,
                                         ze_device_memory_access_properties_t,

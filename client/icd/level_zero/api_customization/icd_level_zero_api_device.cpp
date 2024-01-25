@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -89,7 +89,11 @@ ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properti
         pDeviceProperties->pNext = nullptr;
     }
 
-    return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
+    if (pDeviceProperties->stype == ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES_1_2) {
+        return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), static_cast<ze_device_properties_1_2_t *>(pDeviceProperties), zeDeviceGetPropertiesRpcHelper);
+    } else {
+        return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), pDeviceProperties, zeDeviceGetPropertiesRpcHelper);
+    }
 }
 
 ze_result_t zeDeviceGetComputeProperties(ze_device_handle_t hDevice, ze_device_compute_properties_t *pComputeProperties) {
