@@ -104,6 +104,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_module_program_exp_desc_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_DEVICE_IP_VERSION_EXT == desc->stype) {
+        return sizeof(ze_device_ip_version_ext_t);
+    }
+
     auto stypeInt = static_cast<int>(desc->stype);
 
     if (ZET_STRUCTURE_TYPE_METRIC_GLOBAL_TIMESTAMPS_RESOLUTION_EXP == stypeInt) {

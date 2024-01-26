@@ -11,6 +11,7 @@
 #include "cal.h"
 #include "level_zero/ze_api.h"
 #include "shared/log.h"
+#include "shared/sys.h"
 #include "test/utils/assertions.h"
 #include "test/utils/l0_common_steps.h"
 
@@ -51,7 +52,7 @@ bool getDeviceProperties(ze_device_handle_t device) {
        << " * numSubslicesPerSlice : " << deviceProperties.numSubslicesPerSlice << "\n"
        << " * numEUsPerSubslice : " << deviceProperties.numEUsPerSubslice << "\n"
        << " * numThreadsPerEU : " << deviceProperties.numThreadsPerEU << "\n"
-       << " * timerResolution (): " << deviceProperties.timerResolution;
+       << " * timerResolution (nanoseconds): " << deviceProperties.timerResolution;
 
     const auto deviceInfoStr = ss.str();
     log<Verbosity::info>("%s", deviceInfoStr.c_str());
@@ -99,6 +100,40 @@ bool getDeviceProperties(ze_device_handle_t device) {
 
     if (deviceProperties12.timerResolution == deviceProperties.timerResolution) {
         log<Verbosity::error>("zeDeviceGetProperties() and zeDeviceGetProperties(1_2) calls returned the same timer resolutions = %d", static_cast<int>(deviceProperties12.timerResolution));
+        return false;
+    }
+
+    if (false == Cal::Utils::getCalEnvFlag("CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES")) {
+        Cal::Sys::setenv("CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES", "1", true);
+    }
+
+    ze_device_properties_t devicePropertiesWithIpVersionExt = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES};
+    ze_device_ip_version_ext_t deviceIpVersionExt = {};
+    deviceIpVersionExt.stype = ZE_STRUCTURE_TYPE_DEVICE_IP_VERSION_EXT;
+    devicePropertiesWithIpVersionExt.pNext = &deviceIpVersionExt;
+
+    const auto zeDeviceGetPropertiesWithIpVersionExtResult = zeDeviceGetProperties(device, &devicePropertiesWithIpVersionExt);
+    if (zeDeviceGetPropertiesWithIpVersionExtResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDeviceGetProperties() call with DEVICE_IP_VERSION_EXT has failed! Error code = %d", static_cast<int>(zeDeviceGetPropertiesWithIpVersionExtResult));
+        return false;
+    }
+
+    ss.str("");
+    ss << "Device properties with DEVICE_IP_VERSION_EXT: \n"
+       << " * name : " << deviceProperties.name << "\n"
+       << " * deviceId : " << deviceProperties.deviceId << "\n"
+       << " * numSlices : " << deviceProperties.numSlices << "\n"
+       << " * numSubslicesPerSlice : " << deviceProperties.numSubslicesPerSlice << "\n"
+       << " * numEUsPerSubslice : " << deviceProperties.numEUsPerSubslice << "\n"
+       << " * numThreadsPerEU : " << deviceProperties.numThreadsPerEU << "\n"
+       << " * timerResolution (nanoseconds): " << deviceProperties.timerResolution << "\n"
+       << " * ipVersion: " << std::showbase << std::hex << deviceIpVersionExt.ipVersion;
+
+    const auto deviceInfoWithDeviceIpVersionStr = ss.str();
+    log<Verbosity::info>("%s", deviceInfoWithDeviceIpVersionStr.c_str());
+
+    if (deviceIpVersionExt.ipVersion == 0) {
+        log<Verbosity::error>("zeDeviceGetProperties() call with DEVICE_IP_VERSION_EXT returned incorrect ipVersion = 0x%x", static_cast<int>(deviceIpVersionExt.ipVersion));
         return false;
     }
 
