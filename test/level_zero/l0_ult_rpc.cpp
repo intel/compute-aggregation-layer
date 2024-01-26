@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -373,16 +373,30 @@ TEST(ZeMemAllocSharedExtensionsTest, GivenOpaqueListsAttachedToTwoDifferentFunct
 }
 
 TEST(ZeDeviceGetPropertiesExtensionsTest, GivenPassedExtensionsWhenCopyingAndReassemblingMessageThenExtensionsAreProperlyHandled) {
-    // 0. Prepare two extensions and form opaque list from them.
+    // 0. Prepare four extensions and form opaque list from them.
     ze_eu_count_ext_t euCountExtension = {
         ZE_STRUCTURE_TYPE_EU_COUNT_EXT, // stype
         nullptr,                        // pNext
         0u                              // numTotalEUs
     };
 
+    ze_rtas_device_exp_properties_t rtasDeviceExtension = {
+        ZE_STRUCTURE_TYPE_RTAS_DEVICE_EXP_PROPERTIES, // stype
+        &euCountExtension,                            // pNext
+        0u,                                           // flags
+        ZE_RTAS_FORMAT_EXP_FORCE_UINT32,              // format
+        0u                                            // buffer alignment
+    };
+
+    ze_event_query_kernel_timestamps_ext_properties_t eventQueryKernelTimestampsExtension = {
+        ZE_STRUCTURE_TYPE_EVENT_QUERY_KERNEL_TIMESTAMPS_EXT_PROPERTIES, // stype
+        &rtasDeviceExtension,                                           // pNext
+        0u,                                                             // flags
+    };
+
     ze_device_luid_ext_properties_t luidExtension = {
         ZE_STRUCTURE_TYPE_DEVICE_LUID_EXT_PROPERTIES, // stype
-        &euCountExtension,                            // pNext
+        &eventQueryKernelTimestampsExtension,         // pNext
         ze_device_luid_ext_t{},                       // luid
         0u                                            // nodeMask
     };
@@ -429,16 +443,36 @@ TEST(ZeDeviceGetPropertiesExtensionsTest, GivenPassedExtensionsWhenCopyingAndRea
 
     auto *luidInDynMem = static_cast<ze_device_luid_ext_properties_t *>(command->captures.pDeviceProperties.pNext);
     EXPECT_EQ(luidExtension.stype, luidInDynMem->stype);
-    ASSERT_NE(&euCountExtension, luidInDynMem->pNext);
+    ASSERT_NE(&eventQueryKernelTimestampsExtension, luidInDynMem->pNext);
     ASSERT_TRUE(pointsToDynMemBuffer(luidInDynMem->pNext));
 
-    auto *euCountInDynMem = static_cast<ze_eu_count_ext_t *>(luidInDynMem->pNext);
+    auto *kernelTimestampsInDynMem = static_cast<ze_event_query_kernel_timestamps_ext_properties_t *>(luidInDynMem->pNext);
+    EXPECT_EQ(eventQueryKernelTimestampsExtension.stype, kernelTimestampsInDynMem->stype);
+    ASSERT_NE(&rtasDeviceExtension, kernelTimestampsInDynMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(kernelTimestampsInDynMem->pNext));
+
+    auto *rtasDeviceInDynMem = static_cast<ze_rtas_device_exp_properties_t *>(kernelTimestampsInDynMem->pNext);
+    EXPECT_EQ(rtasDeviceExtension.stype, rtasDeviceInDynMem->stype);
+    ASSERT_NE(&euCountExtension, rtasDeviceInDynMem->pNext);
+    ASSERT_TRUE(pointsToDynMemBuffer(rtasDeviceInDynMem->pNext));
+
+    auto *euCountInDynMem = static_cast<ze_eu_count_ext_t *>(rtasDeviceInDynMem->pNext);
     EXPECT_EQ(euCountExtension.stype, euCountInDynMem->stype);
     ASSERT_EQ(nullptr, euCountInDynMem->pNext);
 
     // 7. Modify scalar fields to simulate output parameters and then copy to caller.
     const auto expectedNumTotalEUs = 16u;
     euCountInDynMem->numTotalEUs = expectedNumTotalEUs;
+
+    const auto expectedRtasDeviceFlags = 1u;
+    rtasDeviceInDynMem->flags = expectedRtasDeviceFlags;
+    const auto expectedRtasFormat = ZE_RTAS_FORMAT_EXP_INVALID;
+    rtasDeviceInDynMem->rtasFormat = expectedRtasFormat;
+    const auto expectedRtasBufferAlignment = 1024u;
+    rtasDeviceInDynMem->rtasBufferAlignment = expectedRtasBufferAlignment;
+
+    const auto expectedKernelTimestampFlags = 3u;
+    kernelTimestampsInDynMem->flags = expectedKernelTimestampFlags;
 
     const auto expectedNodeMask = 15u;
     luidInDynMem->nodeMask = expectedNodeMask;
@@ -450,10 +484,16 @@ TEST(ZeDeviceGetPropertiesExtensionsTest, GivenPassedExtensionsWhenCopyingAndRea
 
     // 8. Validate pointers and output fields.
     EXPECT_EQ(&luidExtension, deviceProperties.pNext);
-    EXPECT_EQ(&euCountExtension, luidExtension.pNext);
+    EXPECT_EQ(&eventQueryKernelTimestampsExtension, luidExtension.pNext);
+    EXPECT_EQ(&rtasDeviceExtension, eventQueryKernelTimestampsExtension.pNext);
+    EXPECT_EQ(&euCountExtension, rtasDeviceExtension.pNext);
     EXPECT_EQ(nullptr, euCountExtension.pNext);
 
     EXPECT_EQ(expectedNumTotalEUs, euCountExtension.numTotalEUs);
+    EXPECT_EQ(expectedRtasDeviceFlags, rtasDeviceExtension.flags);
+    EXPECT_EQ(expectedRtasFormat, rtasDeviceExtension.rtasFormat);
+    EXPECT_EQ(expectedRtasBufferAlignment, rtasDeviceExtension.rtasBufferAlignment);
+    EXPECT_EQ(expectedKernelTimestampFlags, eventQueryKernelTimestampsExtension.flags);
     EXPECT_EQ(expectedNodeMask, luidExtension.nodeMask);
     EXPECT_EQ(0, std::memcmp(expectedLuid.id, luidExtension.luid.id, ZE_MAX_DEVICE_LUID_SIZE_EXT));
 }

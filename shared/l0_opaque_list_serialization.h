@@ -108,6 +108,14 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_device_ip_version_ext_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_EVENT_QUERY_KERNEL_TIMESTAMPS_EXT_PROPERTIES == desc->stype) {
+        return sizeof(ze_event_query_kernel_timestamps_ext_properties_t);
+    }
+
+    if (ZE_STRUCTURE_TYPE_RTAS_DEVICE_EXP_PROPERTIES == desc->stype) {
+        return sizeof(ze_rtas_device_exp_properties_t);
+    }
+
     auto stypeInt = static_cast<int>(desc->stype);
 
     if (ZET_STRUCTURE_TYPE_METRIC_GLOBAL_TIMESTAMPS_RESOLUTION_EXP == stypeInt) {
