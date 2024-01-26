@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -74,8 +74,6 @@ constexpr std::string_view calUseSemaphoresInChannelServerEnvName = "CAL_USE_SEM
 // Controls whether CAL should use semaphores as a client synchronization method
 constexpr std::string_view calUseSemaphoresInChannelClientEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_CLIENT";
 constexpr std::string_view calUseSemaphoresThresholdInChannelClientEnvName = "CAL_USE_SEMAPHORES_THRESHOLD_IN_CHANNEL_CLIENT";
-
-constexpr std::string_view calUsePnextInZeDeviceGetProperties = "CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES";
 
 constexpr std::string_view calEarlyShmUnlinkEnvName = "CAL_EARLY_SHM_UNLINK";
 

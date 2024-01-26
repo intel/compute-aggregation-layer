@@ -83,14 +83,6 @@ ze_result_t zeDeviceGetSubDevices(ze_device_handle_t hDevice, uint32_t *pCount, 
 }
 
 ze_result_t zeDeviceGetProperties(ze_device_handle_t hDevice, ze_device_properties_t *pDeviceProperties) {
-    if (pDeviceProperties->pNext) {
-        bool usePnext = Cal::Utils::getCalEnvFlag(calUsePnextInZeDeviceGetProperties, false);
-        if (usePnext == false) {
-            log<Verbosity::debug>("Ignoring pNext in zeDeviceGetProperties. To use this value, set %s", calUsePnextInZeDeviceGetProperties.data());
-            pDeviceProperties->pNext = nullptr;
-        }
-    }
-
     if (pDeviceProperties->stype == ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES_1_2) {
         return Logic::PropertiesCache::obtainProperties(static_cast<IcdL0Device *>(hDevice), static_cast<ze_device_properties_1_2_t *>(pDeviceProperties), zeDeviceGetPropertiesRpcHelper);
     } else {

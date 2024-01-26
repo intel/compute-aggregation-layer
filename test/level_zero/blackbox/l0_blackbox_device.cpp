@@ -103,10 +103,6 @@ bool getDeviceProperties(ze_device_handle_t device) {
         return false;
     }
 
-    if (false == Cal::Utils::getCalEnvFlag("CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES")) {
-        Cal::Sys::setenv("CAL_USE_PNEXT_IN_ZE_DEVICE_GET_PROPERTIES", "1", true);
-    }
-
     ze_device_properties_t devicePropertiesWithIpVersionExt = {ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES};
     ze_device_ip_version_ext_t deviceIpVersionExt = {};
     deviceIpVersionExt.stype = ZE_STRUCTURE_TYPE_DEVICE_IP_VERSION_EXT;
