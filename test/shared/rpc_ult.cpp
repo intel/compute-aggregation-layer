@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -243,6 +243,7 @@ TEST(CommandsChannel, whenWaitOnServiceSemparhoreIsCalledThenWaitsOnSemaphoreAnd
     EXPECT_TRUE(commandsChannel.waitOnServiceSemaphore());
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_wait.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semServer));
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenWaitOnServiceSemparhoreIsCalledAndSystemCallFailsThenReturnsFalseAndEmitsWarning) {
@@ -258,6 +259,7 @@ TEST(CommandsChannel, whenWaitOnServiceSemparhoreIsCalledAndSystemCallFailsThenR
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_wait.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semServer));
     EXPECT_FALSE(logs.empty());
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenWaitOnClientSemparhoreIsCalledThenWaitsOnSemaphoreAndReturnsTrueOnlyIfSuccesfull) {
@@ -299,6 +301,7 @@ TEST(CommandsChannel, whenSignalServiceSemparhoreIsCalledThenSignalsSemaphoreAnd
     EXPECT_TRUE(commandsChannel.signalServiceSemaphore());
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_post.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semServer));
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenSignalServiceSemparhoreIsCalledAndSystemCallFailsThenReturnsFalseAndEmitsWarning) {
@@ -314,6 +317,7 @@ TEST(CommandsChannel, whenSignalServiceSemparhoreIsCalledAndSystemCallFailsThenR
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.sem_post.callCount);
     ASSERT_EQ(0, Cal::Sys::sem_destroy(&semServer));
     EXPECT_FALSE(logs.empty());
+    commandsChannel.ownsSemaphores = false;
 }
 
 TEST(CommandsChannel, whenSignalClientSemparhoreIsCalledThenSignalsSemaphoreAndReturnsTrueOnlyIfSuccesfull) {
