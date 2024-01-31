@@ -10473,7 +10473,7 @@ config:
           ddi_category: Kernel
           special_handling:
             icd:
-              handler_epilogue: "hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);"
+              handler_prologue: "hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);"
           returns:
             type: ze_result_t
             kind: scalar

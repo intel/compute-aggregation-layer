@@ -5809,6 +5809,7 @@ ze_result_t zeKernelSetArgumentValueRpcHelper (ze_kernel_handle_t hKernel, uint3
     return ret;
 }
 ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t flags) {
+    hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
     log<Verbosity::bloat>("Establishing RPC for zeKernelSetIndirectAccess");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -5834,8 +5835,6 @@ ze_result_t zeKernelSetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_ind
     }
     ze_result_t ret = command->captures.ret;
 
-    channelLock.unlock();
-    hKernel->asLocalObject()->sharedIndirectAccessSet |= (ZE_KERNEL_INDIRECT_ACCESS_FLAG_SHARED & flags);
     return ret;
 }
 ze_result_t zeKernelGetIndirectAccess (ze_kernel_handle_t hKernel, ze_kernel_indirect_access_flags_t* pFlags) {
