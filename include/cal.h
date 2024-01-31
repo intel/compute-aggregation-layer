@@ -96,3 +96,5 @@ constexpr std::string_view calDebugBreakClientOrdinalEnvName = "CAL_DEBUG_BREAK_
 constexpr std::string_view calAbortOnNonNullPNext = "CAL_ABORT_ON_NON_NULL_PNEXT";
 // Use standalone allocations instead of allocating memory in an arena for zeMemAllocHost
 constexpr std::string_view calUseStandaloneAllocationsForZeMemAllocHost = "CAL_USE_STANDALONE_ALLOCATIONS_FOR_ZE_MEM_ALLOC_HOST";
+// Use alternative library (instead of regular libcal.so) on client side for L0 API
+constexpr std::string_view calClientZeEnableAltDriversEnvName = "CAL_CLIENT_ZE_ENABLE_ALT_DRIVERS";

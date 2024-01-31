@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -313,7 +313,7 @@ inline void initDynamicVerbosity() {
 } // namespace Cal
 
 template <Verbosity V, typename... Args>
-int log(const char *formatString, Args &&...args) {
+inline int log(const char *formatString, Args &&...args) {
     if constexpr (V < Cal::Utils::minStaticVebosity) {
         return 0;
     }
