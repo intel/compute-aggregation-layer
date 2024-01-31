@@ -5143,7 +5143,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_epilogue: "kernel->asLocalObject()->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
+              handler_prologue: "kernel->asLocalObject()->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
           returns:
             type: cl_int
             kind: scalar
