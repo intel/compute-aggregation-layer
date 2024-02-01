@@ -691,6 +691,34 @@ ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug) {
 
     return ret;
 }
+ze_result_t zetKernelGetProfileInfo (ze_kernel_handle_t hKernel, zet_profile_properties_t* pProfileProperties) {
+    log<Verbosity::bloat>("Establishing RPC for zetKernelGetProfileInfo");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZetKernelGetProfileInfoRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hKernel, pProfileProperties);
+    command->copyFromCaller();
+    command->args.hKernel = hKernel->asLocalObject()->asRemoteObject();
+    if(pProfileProperties)
+    {
+        warnIfNotNull("zetKernelGetProfileInfo: pProfileProperties->pNext", pProfileProperties->pNext);
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceReset");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -11780,6 +11808,9 @@ ze_result_t zetDebugAttach (ze_device_handle_t hDevice, const zet_debug_config_t
 }
 ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug) {
     return Cal::Client::Icd::LevelZero::zetDebugDetach(hDebug);
+}
+ze_result_t zetKernelGetProfileInfo (ze_kernel_handle_t hKernel, zet_profile_properties_t* pProfileProperties) {
+    return Cal::Client::Icd::LevelZero::zetKernelGetProfileInfo(hKernel, pProfileProperties);
 }
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force) {
     return Cal::Client::Icd::LevelZero::zesDeviceReset(hDevice, force);

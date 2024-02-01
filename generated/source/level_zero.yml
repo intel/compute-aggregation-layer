@@ -751,6 +751,26 @@ config:
           type: uint32_t
           kind: scalar
 
+    - name: zet_profile_properties_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: void*
+          kind: scalar
+          translate_before: 'warnIfNotNull("{func_name}: {arg}", {arg})'
+        2:
+          name: flags
+          type: zet_profile_flags_t
+          kind: scalar
+        3:
+          name: numTokens
+          type: uint32_t
+          kind: scalar
+
     - name: ze_device_image_properties_t
       members:
         0:
@@ -2305,7 +2325,6 @@ config:
     - name: "tools"
       members:
         [
-          Kernel.zetKernelGetProfileInfo,
           Debug.zetDebugAttach,
           Debug.zetDebugDetach,
           Debug.zetDebugReadEvent,
@@ -3246,6 +3265,33 @@ config:
               name: hDebug
               type: zet_debug_session_handle_t
               kind: scalar
+        - name: zetKernelGetProfileInfo
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Kernel
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hKernel
+              type: ze_kernel_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: pProfileProperties
+              type: zet_profile_properties_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: zet_profile_properties_t
+                  kind: struct
+                server_access: read_write
 
     - name: "sysman"
       prefix: "zes"

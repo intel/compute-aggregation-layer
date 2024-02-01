@@ -65,7 +65,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("Device.zesDeviceEnumPsus");
     ret.push_back("Psu.zesPsuGetProperties");
     ret.push_back("Psu.zesPsuGetState");
-    ret.push_back("Kernel.zetKernelGetProfileInfo");
     ret.push_back("Debug.zetDebugAttach");
     ret.push_back("Debug.zetDebugDetach");
     ret.push_back("Debug.zetDebugReadEvent");

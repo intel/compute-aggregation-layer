@@ -69,6 +69,7 @@ ze_result_t zetTracerExpSetEnabled (zet_tracer_exp_handle_t hTracer, ze_bool_t e
 ze_result_t zetDeviceGetDebugProperties (ze_device_handle_t hDevice, zet_device_debug_properties_t* pDebugProperties);
 ze_result_t zetDebugAttach (ze_device_handle_t hDevice, const zet_debug_config_t* config, zet_debug_session_handle_t* phDebug);
 ze_result_t zetDebugDetach (zet_debug_session_handle_t hDebug);
+ze_result_t zetKernelGetProfileInfo (ze_kernel_handle_t hKernel, zet_profile_properties_t* pProfileProperties);
 ze_result_t zesDeviceReset (zes_device_handle_t hDevice, ze_bool_t force);
 ze_result_t zesDeviceResetExt (zes_device_handle_t hDevice, zes_reset_properties_t* pProperties);
 ze_result_t zesDeviceEnumPowerDomains (zes_device_handle_t hDevice, uint32_t* pCount, zes_pwr_handle_t* phPower);
@@ -741,10 +742,6 @@ inline void zesPsuGetStateUnimpl() {
     log<Verbosity::critical>("Function Psu.zesPsuGetState is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void zetKernelGetProfileInfoUnimpl() {
-    log<Verbosity::critical>("Function Kernel.zetKernelGetProfileInfo is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void zetDebugAttachUnimpl() {
     log<Verbosity::critical>("Function Debug.zetDebugAttach is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -1413,8 +1410,8 @@ inline void initL0ToolsDdi(zet_dditable_t &dt){
     dt.Device.pfnGetDebugProperties = Cal::Client::Icd::LevelZero::zetDeviceGetDebugProperties;
     dt.Debug.pfnAttach = Cal::Client::Icd::LevelZero::zetDebugAttach;
     dt.Debug.pfnDetach = Cal::Client::Icd::LevelZero::zetDebugDetach;
+    dt.Kernel.pfnGetProfileInfo = Cal::Client::Icd::LevelZero::zetKernelGetProfileInfo;
     // below are unimplemented, provided bindings are for easier debugging only
-    dt.Kernel.pfnGetProfileInfo = reinterpret_cast<decltype(dt.Kernel.pfnGetProfileInfo)>(Cal::Client::Icd::LevelZero::Unimplemented::zetKernelGetProfileInfoUnimpl);
     dt.Debug.pfnAttach = reinterpret_cast<decltype(dt.Debug.pfnAttach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugAttachUnimpl);
     dt.Debug.pfnDetach = reinterpret_cast<decltype(dt.Debug.pfnDetach)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugDetachUnimpl);
     dt.Debug.pfnReadEvent = reinterpret_cast<decltype(dt.Debug.pfnReadEvent)>(Cal::Client::Icd::LevelZero::Unimplemented::zetDebugReadEventUnimpl);

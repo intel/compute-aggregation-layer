@@ -131,6 +131,10 @@ ze_result_t zetDebugDetach(zet_debug_session_handle_t hDebug){
    return {};
 }
 
+ze_result_t zetKernelGetProfileInfo(ze_kernel_handle_t hKernel, zet_profile_properties_t* pProfileProperties){
+   return {};
+}
+
 ze_result_t zesDeviceReset(zes_device_handle_t hDevice, ze_bool_t force){
    return {};
 }
