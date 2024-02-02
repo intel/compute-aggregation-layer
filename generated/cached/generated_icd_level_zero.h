@@ -426,6 +426,12 @@ ze_result_t zexDriverReleaseImportedPointerRpcHelper (ze_driver_handle_t hDriver
 ze_result_t zexDriverReleaseImportedPointer_WithTracing (ze_driver_handle_t hDriver, void* ptr);
 ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
 ze_result_t zexDriverGetHostPointerBaseAddress_WithTracing (ze_driver_handle_t hDriver, void* ptr, void** baseAddress);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Local (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Local_WithTracing (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Usm (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Usm_WithTracing (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared_WithTracing (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm_WithTracing (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);

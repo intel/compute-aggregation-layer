@@ -2530,7 +2530,7 @@ cl_int clEnqueueReadImage (cl_command_queue command_queue, cl_mem image, cl_bool
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_read, src_origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.image = image->asLocalObject()->asRemoteObject();
     Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
@@ -2582,7 +2582,7 @@ cl_int clEnqueueWriteImage (cl_command_queue command_queue, cl_mem image, cl_boo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_ptr), ptr, Cal::Client::Icd::Ocl::getImageReadWriteHostMemorySize(image, origin, region, input_row_pitch, input_slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<const void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.image = image->asLocalObject()->asRemoteObject();
     if(event_wait_list)
@@ -3907,7 +3907,7 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_ptr), ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<const void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     if(event_wait_list)
@@ -4074,7 +4074,7 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_ptr), ptr, Cal::Utils::getBufferRectSizeInBytes(region, host_row_pitch, host_slice_pitch));
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<const void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     if(event_wait_list)
@@ -4240,7 +4240,7 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
@@ -4410,7 +4410,7 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
-    command->args.ptr = standalone_ptr;
+    command->args.ptr = reinterpret_cast<void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
     if(event_wait_list)
@@ -4581,7 +4581,7 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     memcpy(Cal::Utils::toAddress(standalone_src_ptr), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
     command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
-    command->args.src_ptr = standalone_src_ptr;
+    command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -4752,7 +4752,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_src_ptr), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.src_ptr = standalone_src_ptr;
+    command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -4919,7 +4919,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_src_ptr), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.src_ptr = standalone_src_ptr;
+    command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -5092,8 +5092,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_srcPtr), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = standalone_dstPtr;
-    command->args.srcPtr = standalone_srcPtr;
+    command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
+    command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -5154,7 +5154,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = standalone_dstPtr;
+    command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -5215,7 +5215,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
-    command->args.dstPtr = standalone_dstPtr;
+    command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -5277,7 +5277,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_srcPtr), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcPtr = standalone_srcPtr;
+    command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {
@@ -5444,7 +5444,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     memcpy(Cal::Utils::toAddress(standalone_srcPtr), srcPtr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.srcPtr = standalone_srcPtr;
+    command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     if(event_wait_list)
     {

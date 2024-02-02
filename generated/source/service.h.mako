@@ -97,7 +97,7 @@ inline bool ${rpc_func.name}Handler${get_rpc_handler_suffix(rpc_func)}(Provider 
     apiCommand->captures.ret = ${get_rpc_func_fqfn(rpc_func)}(
 %     for arg in rpc_func.args:
 %      if arg.kind.is_pointer_zero_copy_malloc_shmem():
-                                                importedMallocPtr${to_pascal_case(arg.name)}\
+                                                reinterpret_cast<${arg.type.str}>(importedMallocPtr${to_pascal_case(arg.name)})\
 %      elif arg.kind.is_pointer_remapped():
                                                 remappedPtr${to_pascal_case(arg.name)}\
 %      elif arg == op_end_marker_event_arg:

@@ -763,26 +763,6 @@ size_t ZeCommandListAppendMemoryRangesBarrierRpcM::Captures::getCaptureDynMemSiz
      return size;
 }
 
-ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    DynamicTraits ret = {};
-    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
-    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
-
-
-    return ret;
-}
-
-size_t ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
-     return size;
-}
-
-size_t ZeCommandListAppendWriteGlobalTimestampRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
-     return size;
-}
-
 ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits ZeCommandQueueExecuteCommandListsRpcM::Captures::DynamicTraits::calculate(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence) {
     DynamicTraits ret = {};
     ret.phCommandLists.count = phCommandLists ? (numCommandLists) : 0;
@@ -2642,6 +2622,66 @@ size_t ZeCommandListAppendLaunchMultipleKernelsIndirectRpcM::Captures::getCaptur
      const auto lastMemberArraySize = this->countPhWaitEvents * sizeof(ze_event_handle_t);
 
      auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::Captures::DynamicTraits ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::Captures::DynamicTraits::calculate(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    DynamicTraits ret = {};
+    ret.phWaitEvents.count = phWaitEvents ? (numWaitEvents) : 0;
+    ret.phWaitEvents.size = ret.phWaitEvents.count * sizeof(ze_event_handle_t);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.phWaitEvents.offset + ret.phWaitEvents.size);
+
+
+    return ret;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, phWaitEvents) + Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
+     return size;
+}
+
+size_t ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPhWaitEvents * sizeof(ze_event_handle_t));
      return size;
 }
 

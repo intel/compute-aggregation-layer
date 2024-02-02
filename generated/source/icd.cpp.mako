@@ -172,7 +172,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
 %        if arg.capture_details.mode.is_standalone_mode():
     command->${"args" if not arg.traits.is_implicit_arg else "implicitArgs"}.${arg.name} = reinterpret_cast<${arg.type.str}>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_${arg.name})));
 %        elif arg.capture_details.mode.is_staging_usm_mode():
-    command->args.${arg.name} = standalone_${arg.name};
+    command->args.${arg.name} = reinterpret_cast<${arg.type.str}>(standalone_${arg.name});
 %        endif
 %      endfor # arg in func_base.traits.get_standalone_args()
 %      if func_base.traits.emit_reassemblation_in_icd:

@@ -951,4 +951,16 @@ ze_result_t zeVirtualMemGetAccessAttribute(ze_context_handle_t hContext, const v
    return {};
 }
 
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Local(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Usm(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
+ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared(ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
+   return {};
+}
+
 // #### Generated code -- end ####

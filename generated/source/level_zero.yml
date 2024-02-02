@@ -5536,6 +5536,13 @@ config:
                   type: uint64_t
                   kind: scalar
                 server_access: write
+              kind_variants:
+                - kind: ptr_va
+                  capture_details:
+                    mode: staging_usm
+                    reclaim_method: "globalPlatform->getHostptrCopiesReader().addToMap({allocation}, reinterpret_cast<uintptr_t>(dstptr));\n        hCommandList->asLocalObject()->registerTemporaryAllocation(dstptr, std::move({allocation}_alloc))"
+                - kind: ptr_usm_va
+                - kind: ptr_zero_copy_malloc_shmem_va
             2:
               name: hSignalEvent
               type: ze_event_handle_t

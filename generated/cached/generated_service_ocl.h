@@ -726,7 +726,7 @@ inline bool clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemHandler(Provider
                                                 apiCommand->args.context, 
                                                 apiCommand->args.flags, 
                                                 apiCommand->args.size, 
-                                                importedMallocPtrHostPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrHostPtr), 
                                                 apiCommand->args.errcode_ret ? &apiCommand->captures.errcode_ret : nullptr
                                                 );
     return true;
@@ -1549,7 +1549,7 @@ inline bool clEnqueueWriteBuffer_SharedHandler(Provider &service, Cal::Rpc::Chan
                                                 apiCommand->args.blocking_write, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                importedMallocPtrPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrPtr), 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1629,7 +1629,7 @@ inline bool clEnqueueWriteBufferRect_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                importedMallocPtrPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrPtr), 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1694,7 +1694,7 @@ inline bool clEnqueueReadBuffer_SharedHandler(Provider &service, Cal::Rpc::Chann
                                                 apiCommand->args.blocking_read, 
                                                 apiCommand->args.offset, 
                                                 apiCommand->args.size, 
-                                                importedMallocPtrPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrPtr), 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1774,7 +1774,7 @@ inline bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.buffer_slice_pitch, 
                                                 apiCommand->args.host_row_pitch, 
                                                 apiCommand->args.host_slice_pitch, 
-                                                importedMallocPtrPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrPtr), 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr
@@ -1835,7 +1835,7 @@ inline bool clEnqueueSVMMemcpy_Local_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dst_ptr), 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -1897,7 +1897,7 @@ inline bool clEnqueueSVMMemcpy_Usm_SharedHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dst_ptr, 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -1920,7 +1920,7 @@ inline bool clEnqueueSVMMemcpy_Shared_LocalHandler(Provider &service, Cal::Rpc::
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
                                                 apiCommand->args.src_ptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -1944,7 +1944,7 @@ inline bool clEnqueueSVMMemcpy_Shared_UsmHandler(Provider &service, Cal::Rpc::Ch
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
                                                 apiCommand->args.src_ptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -1973,8 +1973,8 @@ inline bool clEnqueueSVMMemcpy_Shared_SharedHandler(Provider &service, Cal::Rpc:
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -2036,7 +2036,7 @@ inline bool clEnqueueMemcpyINTEL_Local_SharedHandler(Provider &service, Cal::Rpc
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dstPtr, 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -2098,7 +2098,7 @@ inline bool clEnqueueMemcpyINTEL_Usm_SharedHandler(Provider &service, Cal::Rpc::
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
                                                 apiCommand->args.dstPtr, 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
@@ -2121,7 +2121,7 @@ inline bool clEnqueueMemcpyINTEL_Shared_LocalHandler(Provider &service, Cal::Rpc
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
                                                 apiCommand->args.srcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -2145,7 +2145,7 @@ inline bool clEnqueueMemcpyINTEL_Shared_UsmHandler(Provider &service, Cal::Rpc::
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
                                                 apiCommand->args.srcPtr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -2174,8 +2174,8 @@ inline bool clEnqueueMemcpyINTEL_Shared_SharedHandler(Provider &service, Cal::Rp
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemcpyINTEL(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                importedMallocPtrDstPtr, 
-                                                importedMallocPtrSrcPtr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstPtr), 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
                                                 apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 

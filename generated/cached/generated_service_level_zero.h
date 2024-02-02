@@ -1294,18 +1294,6 @@ inline bool zeCommandListCloseHandler(Provider &service, Cal::Rpc::ChannelServer
     return true;
 }
 bool zeCommandListResetHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
-inline bool zeCommandListAppendWriteGlobalTimestampHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendWriteGlobalTimestamp");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
-                                                apiCommand->args.hCommandList, 
-                                                apiCommand->args.dstptr ? &apiCommand->captures.dstptr : nullptr, 
-                                                apiCommand->args.hSignalEvent, 
-                                                apiCommand->args.numWaitEvents, 
-                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
-                                                );
-    return true;
-}
 inline bool zeCommandQueueCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandQueueCreate");
     service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->captures.desc : nullptr, ctx);
@@ -2592,6 +2580,48 @@ inline bool zexDriverGetHostPointerBaseAddressHandler(Provider &service, Cal::Rp
                                                 );
     return true;
 }
+inline bool zeCommandListAppendWriteGlobalTimestamp_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendWriteGlobalTimestamp_Local");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM*>(command);
+    ctx.getMemoryBlocksManager().registerUSMStaging(apiCommand->args.dstptr, 1 * sizeof(uint64_t));
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.dstptr, 
+                                                apiCommand->args.hSignalEvent, 
+                                                apiCommand->args.numWaitEvents, 
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
+                                                );
+    return true;
+}
+inline bool zeCommandListAppendWriteGlobalTimestamp_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendWriteGlobalTimestamp_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand->args.hCommandList, 
+                                                apiCommand->args.dstptr, 
+                                                apiCommand->args.hSignalEvent, 
+                                                apiCommand->args.numWaitEvents, 
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
+                                                );
+    return true;
+}
+inline bool zeCommandListAppendWriteGlobalTimestamp_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendWriteGlobalTimestamp_Shared");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM*>(command);
+    void *importedMallocPtrDstptr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.dstptr), 1 * sizeof(uint64_t), 0U);
+    if((nullptr == importedMallocPtrDstptr)  && (nullptr != apiCommand->args.dstptr)){
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.dstptr, 1 * sizeof(uint64_t));
+        return false;
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand->args.hCommandList, 
+                                                reinterpret_cast<uint64_t*>(importedMallocPtrDstptr), 
+                                                apiCommand->args.hSignalEvent, 
+                                                apiCommand->args.numWaitEvents, 
+                                                apiCommand->args.phWaitEvents ? apiCommand->captures.phWaitEvents : nullptr
+                                                );
+    return true;
+}
 inline bool zeCommandListAppendMemoryCopyDeferred_Usm_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeCommandListAppendMemoryCopyDeferred_Usm_Usm");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM*>(command);
@@ -2617,7 +2647,7 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Usm_SharedHandler(Provider &se
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.dstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -2654,7 +2684,7 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Shared_UsmHandler(Provider &se
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -2678,8 +2708,8 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Shared_SharedHandler(Provider 
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -2702,7 +2732,7 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Shared_RemappedHandler(Provide
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 remappedPtrSrcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -2761,7 +2791,7 @@ inline bool zeCommandListAppendMemoryCopyDeferred_Remapped_SharedHandler(Provide
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 remappedPtrDstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 opEndMarkerEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -2883,7 +2913,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Local_SharedHandler(Provider 
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.dstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 opEndMarkerEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -2947,7 +2977,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Usm_SharedHandler(Provider &s
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.dstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -2969,7 +2999,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_LocalHandler(Provider 
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -2992,7 +3022,7 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_UsmHandler(Provider &s
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -3020,8 +3050,8 @@ inline bool zeCommandListAppendMemoryCopyImmediate_Shared_SharedHandler(Provider
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -3080,7 +3110,7 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedHandle
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.dstptr ? apiCommand->captures.getDstptr() : nullptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -3139,7 +3169,7 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedHandler(
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
                                                 apiCommand->args.dstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -3161,7 +3191,7 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalHandle
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.srcptr ? apiCommand->captures.getSrcptr() : nullptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -3184,7 +3214,7 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmHandler(
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
@@ -3212,8 +3242,8 @@ inline bool zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedHandl
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopy(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.hSignalEvent, 
                                                 apiCommand->args.numWaitEvents, 
@@ -3258,7 +3288,7 @@ inline bool zeCommandListAppendMemoryCopyRegionDeferred_Usm_SharedHandler(Provid
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3302,7 +3332,7 @@ inline bool zeCommandListAppendMemoryCopyRegionDeferred_Shared_UsmHandler(Provid
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -3331,11 +3361,11 @@ inline bool zeCommandListAppendMemoryCopyRegionDeferred_Shared_SharedHandler(Pro
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3360,7 +3390,7 @@ inline bool zeCommandListAppendMemoryCopyRegionDeferred_Shared_RemappedHandler(P
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -3432,7 +3462,7 @@ inline bool zeCommandListAppendMemoryCopyRegionDeferred_Remapped_SharedHandler(P
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3523,7 +3553,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Shared
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3602,7 +3632,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_SharedHa
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3654,7 +3684,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_UsmHa
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -3687,11 +3717,11 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Share
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3720,7 +3750,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Remap
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -3792,7 +3822,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Share
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3887,7 +3917,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_SharedH
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -3939,7 +3969,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_UsmH
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -3972,11 +4002,11 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Shar
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
-                                                importedMallocPtrSrcptr, 
+                                                reinterpret_cast<const void*>(importedMallocPtrSrcptr), 
                                                 apiCommand->args.srcRegion ? &apiCommand->captures.srcRegion : nullptr, 
                                                 apiCommand->args.srcPitch, 
                                                 apiCommand->args.srcSlicePitch, 
@@ -4005,7 +4035,7 @@ inline bool zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Rema
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyRegion(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.dstRegion ? &apiCommand->captures.dstRegion : nullptr, 
                                                 apiCommand->args.dstPitch, 
                                                 apiCommand->args.dstSlicePitch, 
@@ -4048,7 +4078,7 @@ inline bool zeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmHandler(P
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyFromContext(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.hContextSrc, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
@@ -4136,7 +4166,7 @@ inline bool zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyFromContext(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.hContextSrc, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
@@ -4209,7 +4239,7 @@ inline bool zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared
     }
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendMemoryCopyFromContext(
                                                 apiCommand->args.hCommandList, 
-                                                importedMallocPtrDstptr, 
+                                                reinterpret_cast<void*>(importedMallocPtrDstptr), 
                                                 apiCommand->args.hContextSrc, 
                                                 apiCommand->args.srcptr, 
                                                 apiCommand->args.size, 
@@ -4335,7 +4365,6 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeCommandListDestroyRpcM::messageSubtype] = zeCommandListDestroyHandler;
     outHandlers[ZeCommandListCloseRpcM::messageSubtype] = zeCommandListCloseHandler;
     outHandlers[ZeCommandListResetRpcM::messageSubtype] = zeCommandListResetHandler;
-    outHandlers[ZeCommandListAppendWriteGlobalTimestampRpcM::messageSubtype] = zeCommandListAppendWriteGlobalTimestampHandler;
     outHandlers[ZeCommandQueueCreateRpcM::messageSubtype] = zeCommandQueueCreateHandler;
     outHandlers[ZeCommandQueueDestroyRpcM::messageSubtype] = zeCommandQueueDestroyHandler;
     outHandlers[ZeCommandQueueExecuteCommandListsRpcM::messageSubtype] = zeCommandQueueExecuteCommandListsHandler;
@@ -4463,6 +4492,9 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZexDriverImportExternalPointerRpcM::messageSubtype] = zexDriverImportExternalPointerHandler;
     outHandlers[ZexDriverReleaseImportedPointerRpcM::messageSubtype] = zexDriverReleaseImportedPointerHandler;
     outHandlers[ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype] = zexDriverGetHostPointerBaseAddressHandler;
+    outHandlers[ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::messageSubtype] = zeCommandListAppendWriteGlobalTimestamp_LocalHandler;
+    outHandlers[ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::messageSubtype] = zeCommandListAppendWriteGlobalTimestamp_UsmHandler;
+    outHandlers[ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::messageSubtype] = zeCommandListAppendWriteGlobalTimestamp_SharedHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_UsmHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_SharedHandler;
     outHandlers[ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype] = zeCommandListAppendMemoryCopyDeferred_Usm_RemappedHandler;
@@ -5229,15 +5261,6 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListCloseRpcM &apiCommand
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListResetRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListReset(
                                                 apiCommand.args.hCommandList
-                                                );
-}
-inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM &apiCommand) {
-    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
-                                                apiCommand.args.hCommandList, 
-                                                apiCommand.args.dstptr, 
-                                                apiCommand.args.hSignalEvent, 
-                                                apiCommand.args.numWaitEvents, 
-                                                apiCommand.args.phWaitEvents
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM &apiCommand) {
@@ -6127,6 +6150,33 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddress
                                                 apiCommand.args.hDriver, 
                                                 apiCommand.args.ptr, 
                                                 apiCommand.args.baseAddress
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeCommandListAppendWriteGlobalTimestamp(
+                                                apiCommand.args.hCommandList, 
+                                                apiCommand.args.dstptr, 
+                                                apiCommand.args.hSignalEvent, 
+                                                apiCommand.args.numWaitEvents, 
+                                                apiCommand.args.phWaitEvents
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM &apiCommand) {
@@ -7086,7 +7136,6 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListCloseRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListCloseRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListResetRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListResetRpcM*>(command)); break;
-        case Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestampRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandQueueDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueExecuteCommandListsRpcM*>(command)); break;
@@ -7211,6 +7260,9 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverImportExternalPointerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverReleaseImportedPointerRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexDriverGetHostPointerBaseAddressRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_LocalRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_UsmRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_UsmRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_RemappedRpcM*>(command)); break;
