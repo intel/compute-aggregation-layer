@@ -295,6 +295,11 @@ bool getDeviceMemoryAccessProperties(ze_device_handle_t device) {
     const auto memoryAccessInfoStr = ss.str();
     log<Verbosity::info>("%s", memoryAccessInfoStr.c_str());
 
+    if ((memoryAccessProperties.sharedSingleDeviceAllocCapabilities & (ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT | ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT_ATOMIC)) != 0) {
+        log<Verbosity::error>("zeDeviceGetMemoryAccessProperties() calls returned unsupported capabilities for shared allocations on single device = %d", static_cast<int>(memoryAccessProperties.sharedSingleDeviceAllocCapabilities));
+        return false;
+    }
+
     return true;
 }
 

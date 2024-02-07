@@ -3569,6 +3569,12 @@ ze_result_t zeDeviceGetMemoryAccessPropertiesRpcHelper (ze_device_handle_t hDevi
     command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (ret == ZE_RESULT_SUCCESS) {
+        if (pMemAccessProperties && pMemAccessProperties->stype == ZE_STRUCTURE_TYPE_DEVICE_MEMORY_ACCESS_PROPERTIES) {
+            pMemAccessProperties->sharedSingleDeviceAllocCapabilities &= ~(ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT|ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT_ATOMIC);
+        }
+    }
     return ret;
 }
 ze_result_t zeDeviceGetCachePropertiesRpcHelper (ze_device_handle_t hDevice, uint32_t* pCount, ze_device_cache_properties_t* pCacheProperties) {

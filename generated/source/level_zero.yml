@@ -7597,6 +7597,7 @@ config:
           special_handling:
             icd:
               handler_only_suffix: "RpcHelper"
+              handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        if (pMemAccessProperties && pMemAccessProperties->stype == ZE_STRUCTURE_TYPE_DEVICE_MEMORY_ACCESS_PROPERTIES) {\n            pMemAccessProperties->sharedSingleDeviceAllocCapabilities &= ~(ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT|ZE_MEMORY_ACCESS_CAP_FLAG_CONCURRENT_ATOMIC);\n        }\n    }"
           ddi_category: Device
           returns:
             type: ze_result_t
