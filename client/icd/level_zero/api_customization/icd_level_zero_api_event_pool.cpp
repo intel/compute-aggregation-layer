@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -28,6 +28,30 @@ ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_
     }
 
     return zeEventPoolOpenIpcHandleRpcHelper(hContext, hIpc, phEventPool);
+}
+
+ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout) {
+    using namespace std::literals::chrono_literals;
+    uint64_t pollingThreshold = std::chrono::nanoseconds(1s).count();
+    uint64_t pollingTimeout = (timeout < pollingThreshold) ? timeout : pollingThreshold;
+    uint64_t totalWaited = 0;
+    while (true) {
+        log<Verbosity::debug>("Establishing RPC for zeEventHostSynchronize with timeout %llu - polling timeout %llu, totalWaited %llu", timeout, pollingTimeout, totalWaited);
+        auto result = zeEventHostSynchronizeRpcHelper(hEvent, pollingTimeout);
+        if (result == ZE_RESULT_SUCCESS) {
+            log<Verbosity::debug>("zeEventHostSynchronize returned ZE_RESULT_SUCCESS - totalWaited %llu", pollingTimeout + totalWaited);
+            return ZE_RESULT_SUCCESS;
+        }
+        if (result != ZE_RESULT_NOT_READY) {
+            log<Verbosity::debug>("zeEventHostSynchronize failed with error code %d", static_cast<int>(result));
+            return result;
+        }
+        totalWaited += pollingTimeout;
+        if (totalWaited >= timeout) {
+            log<Verbosity::debug>("zeEventHostSynchronize returned ZE_RESULT_NOT_READY - totalWaited %llu >= timeout %llu", totalWaited, timeout);
+            return ZE_RESULT_NOT_READY;
+        }
+    }
 }
 
 } // namespace Cal::Client::Icd::LevelZero

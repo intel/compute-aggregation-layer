@@ -8378,6 +8378,7 @@ config:
             icd:
               handler_prologue: "if (hEvent->asLocalObject()->isSignaled()) {\n        return ZE_RESULT_SUCCESS;\n    }"
               handler_epilogue: "if (ret == ZE_RESULT_SUCCESS) {\n        hEvent->asLocalObject()->signal();\n    }"
+              handler_only_suffix: "RpcHelper"
             rpc:
               custom_handler: True
           ddi_category: Event

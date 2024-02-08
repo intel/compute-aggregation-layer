@@ -278,7 +278,7 @@ ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandLi
 ze_result_t zeCommandListAppendWaitOnEvents_WithTracing (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents);
 ze_result_t zeEventHostSignal (ze_event_handle_t hEvent);
 ze_result_t zeEventHostSignal_WithTracing (ze_event_handle_t hEvent);
-ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout);
+ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventHostSynchronize_WithTracing (ze_event_handle_t hEvent, uint64_t timeout);
 ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent);
 ze_result_t zeEventQueryStatus_WithTracing (ze_event_handle_t hEvent);

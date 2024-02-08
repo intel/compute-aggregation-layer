@@ -4275,7 +4275,7 @@ ze_result_t zeEventHostSignal (ze_event_handle_t hEvent) {
 
     return ret;
 }
-ze_result_t zeEventHostSynchronize (ze_event_handle_t hEvent, uint64_t timeout) {
+ze_result_t zeEventHostSynchronizeRpcHelper (ze_event_handle_t hEvent, uint64_t timeout) {
     if (hEvent->asLocalObject()->isSignaled()) {
         return ZE_RESULT_SUCCESS;
     }
