@@ -130,7 +130,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     }
 %           endif
 %           else:
-    void *standalone_${arg.name} = hCommandList->asLocalObject()->getTemporaryAllocationForReuse(${arg.name});
+    void *standalone_${arg.name} = hCommandList->asLocalObject()->getTemporaryAllocationForReuse(${arg.name}, ${arg.get_calculated_array_size()});
     if (standalone_${arg.name} == nullptr)
     {
         std::unique_ptr<void, std::function<void(void*)>> standalone_${arg.name}_alloc(static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().allocateStagingArea(${arg.get_calculated_array_size()}), [hCommandList](void *ptrToMarkAsUnused){static_cast<IcdL0CommandList *>(hCommandList)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});

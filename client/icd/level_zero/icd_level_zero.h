@@ -153,9 +153,9 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
     }
     void moveKernelArgsToGpu(IcdL0Kernel *kernel);
 
-    void registerTemporaryAllocation(const void *ptr, std::unique_ptr<void, std::function<void(void *)>> alloc);
+    void registerTemporaryAllocation(const void *ptr, size_t size, std::unique_ptr<void, std::function<void(void *)>> alloc);
     void cleanTemporaryAllocations();
-    void *getTemporaryAllocationForReuse(const void *ptr);
+    void *getTemporaryAllocationForReuse(const void *ptr, size_t size);
 
     IcdL0Context *context{};
 
@@ -173,7 +173,7 @@ class IcdL0CommandList : public Cal::Shared::RefCountedWithParent<_ze_command_li
 
     struct {
         std::mutex mutex;
-        boost::container::flat_map<const void *, std::unique_ptr<void, std::function<void(void *)>>> allocations;
+        boost::container::flat_map<const void *, std::pair<size_t, std::unique_ptr<void, std::function<void(void *)>>>> allocations;
     } temporaryStagingAreas;
 
     CommandListType commandListType{CommandListType::Regular};

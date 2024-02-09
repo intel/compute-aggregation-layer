@@ -229,9 +229,9 @@ void IcdL0CommandList::moveKernelArgsToGpu(IcdL0Kernel *kernel) {
     }
 }
 
-void IcdL0CommandList::registerTemporaryAllocation(const void *ptr, std::unique_ptr<void, std::function<void(void *)>> alloc) {
+void IcdL0CommandList::registerTemporaryAllocation(const void *ptr, size_t size, std::unique_ptr<void, std::function<void(void *)>> alloc) {
     std::lock_guard lock{temporaryStagingAreas.mutex};
-    temporaryStagingAreas.allocations.insert(std::make_pair(ptr, std::move(alloc)));
+    temporaryStagingAreas.allocations[ptr] = std::make_pair(size, std::move(alloc));
 }
 
 void IcdL0CommandList::cleanTemporaryAllocations() {
@@ -239,7 +239,7 @@ void IcdL0CommandList::cleanTemporaryAllocations() {
     temporaryStagingAreas.allocations.clear();
 }
 
-void *IcdL0CommandList::getTemporaryAllocationForReuse(const void *ptr) {
+void *IcdL0CommandList::getTemporaryAllocationForReuse(const void *ptr, size_t size) {
     if (!isImmediateAsynchronous()) {
         return nullptr;
     }
@@ -249,7 +249,12 @@ void *IcdL0CommandList::getTemporaryAllocationForReuse(const void *ptr) {
     if (temporaryStagingAreas.allocations.end() == it) {
         return nullptr;
     }
-    return it->second.get();
+
+    if (it->second.first != size) {
+        temporaryStagingAreas.allocations.erase(it);
+        return nullptr;
+    }
+    return it->second.second.get();
 }
 
 void IcdL0CommandList::moveSharedAllocationsToGpuImpl(const void *ptr) {

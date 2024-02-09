@@ -245,7 +245,10 @@ class CaptureReclaimMethod:
         return self.str == "immediate"
 
     def format(self, ptr):
-        return self.str.format(allocation=ptr)
+        try:
+            return self.str.format(allocation=ptr)
+        except Exception as e:
+            raise Exception(f"CaptureReclaimMethod format was ${self.str} allocation was {ptr}") from e
 
 class CaptureDetails:
     def __init__(self, src: dict):
