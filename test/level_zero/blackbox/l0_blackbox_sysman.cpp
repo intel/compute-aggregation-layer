@@ -281,6 +281,56 @@ bool getZesPciBars(zes_device_handle_t device) {
     return true;
 }
 
+bool getZesDeviceProcessesGetState(zes_device_handle_t device) {
+    uint32_t count = 0;
+    auto result = zesDeviceProcessesGetState(device, &count, nullptr);
+    if (result == ZE_RESULT_ERROR_UNSUPPORTED_FEATURE) {
+        log<Verbosity::info>("zesDeviceProcessesGetState() is not supported! Error code = %x", static_cast<int>(result));
+        return true;
+    }
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zesDeviceProcessesGetState() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+    if (count == 0) {
+        log<Verbosity::info>("zesDeviceProcessesGetState() returned no handles");
+        return true;
+    }
+
+    std::vector<zes_process_state_t> processes(count);
+    for (uint32_t i = 0; i < count; i++) {
+        processes[i].stype = ZES_STRUCTURE_TYPE_PROCESS_STATE;
+        processes[i].pNext = nullptr;
+    }
+    result = zesDeviceProcessesGetState(device, &count, processes.data());
+    if (result != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("getZesDeviceProcessesGetState() with count=%d call has failed! Error code = %x", count, static_cast<int>(result));
+        return false;
+    }
+
+    if (processes.size() > 0) {
+        bool pidFound = false;
+        uint32_t hostPid = getpid();
+        for (auto process : processes) {
+            if (process.processId == 0u) {
+                log<Verbosity::error>("getZesDeviceProcessesGetState() returned incorrect pid value %d", process.processId);
+                return false;
+            }
+            if (process.processId == hostPid) {
+                pidFound = true;
+            }
+        }
+        if (!pidFound) {
+            log<Verbosity::error>("getZesDeviceProcessesGetState() couldn't get information about host process with pid %d", hostPid);
+            return false;
+        }
+    } else {
+        log<Verbosity::info>("getZesDeviceProcessesGetState() returned no information about host processes using the device");
+    }
+
+    return true;
+}
+
 int main(int argc, const char *argv[]) {
     using Cal::Testing::Utils::LevelZero::getDevices;
     using Cal::Testing::Utils::LevelZero::getDrivers;
@@ -308,4 +358,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getZesMemProperties(devices[0]));
 
     RUN_REQUIRED_STEP(getZesPciBars(devices[0]));
+
+    RUN_REQUIRED_STEP(getZesDeviceProcessesGetState(devices[0]));
 }

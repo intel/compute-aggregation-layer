@@ -124,7 +124,7 @@ ze_result_t zesSchedulerSetComputeUnitDebugMode (zes_sched_handle_t hScheduler, 
 ze_result_t zesEngineGetProperties (zes_engine_handle_t hEngine, zes_engine_properties_t* pProperties);
 ze_result_t zesEngineGetActivity (zes_engine_handle_t hEngine, zes_engine_stats_t* pStats);
 ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* pState);
-ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
+ze_result_t zesDeviceProcessesGetStateRpcHelper (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses);
 ze_result_t zesDevicePciGetProperties (zes_device_handle_t hDevice, zes_pci_properties_t* pProperties);
 ze_result_t zesDevicePciGetState (zes_device_handle_t hDevice, zes_pci_state_t* pState);
 ze_result_t zesDevicePciGetBars (zes_device_handle_t hDevice, uint32_t* pCount, zes_pci_bar_properties_t* pProperties);

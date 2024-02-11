@@ -1974,7 +1974,7 @@ ze_result_t zesDeviceGetState (zes_device_handle_t hDevice, zes_device_state_t* 
 
     return ret;
 }
-ze_result_t zesDeviceProcessesGetState (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
+ze_result_t zesDeviceProcessesGetStateRpcHelper (zes_device_handle_t hDevice, uint32_t* pCount, zes_process_state_t* pProcesses) {
     log<Verbosity::bloat>("Establishing RPC for zesDeviceProcessesGetState");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
