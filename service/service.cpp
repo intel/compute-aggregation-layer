@@ -1078,7 +1078,7 @@ bool zeModuleCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, 
 
 // acquire internal event suitable for given cmdList
 ze_event_handle_t getInternalEvent(ClientContext &calClientCtx, ze_command_list_handle_t cmdList) {
-    auto l0Ctx = calClientCtx.getCommandListToContextTracker().getAssociatedContext(cmdList);
+    auto l0Ctx = calClientCtx.getContextMappingsTracker().getAssociatedContext(cmdList);
     return calClientCtx.getArtificialEventsManager().obtainEventReplacement(l0Ctx);
 }
 
@@ -1346,7 +1346,7 @@ bool zeCommandListDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &cha
         const auto &resource = apiCommand->args.hCommandList;
         if (resource) {
             ctx.removeResourceTracking(resource);
-            ctx.getCommandListToContextTracker().deregisterCommandListMapping(resource);
+            ctx.getContextMappingsTracker().deregisterCommandListMapping(resource);
         }
     }
     return true;
@@ -1586,6 +1586,7 @@ void ClientContext::l0SpecificCleanup() {
     destroyResources("ze_event_handle_t", getTracking<ze_event_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeEventDestroy);
     destroyResources("ze_event_pool_handle_t", getTracking<ze_event_pool_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeEventPoolDestroy);
     destroyResources("ze_image_handle_t", getTracking<ze_image_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeImageDestroy);
+    destroyResources("zet_metric_streamer_handle_t", getTracking<zet_metric_streamer_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zetMetricStreamerClose);
     destroyResources("ze_context_handle_t", getTracking<ze_context_handle_t>(), Cal::Service::Apis::LevelZero::Standard::zeContextDestroy);
 }
 

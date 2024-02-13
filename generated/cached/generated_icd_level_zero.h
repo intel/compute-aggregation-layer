@@ -14,6 +14,7 @@
 #include "client/icd/level_zero/api_customization/icd_level_zero_api.h"
 #include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"
 #include "client/icd/level_zero/api_customization/icd_level_zero_api_tracing.h"
+#include "client/icd/level_zero/api_customization/icd_level_zero_api_tools.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/ze_ddi.h"
 #include "level_zero/zes_api.h"
@@ -50,6 +51,7 @@ ze_result_t zetMetricGetProperties (zet_metric_handle_t hMetric, zet_metric_prop
 ze_result_t zetContextActivateMetricGroups (zet_context_handle_t hContext, zet_device_handle_t hDevice, uint32_t count, zet_metric_group_handle_t* phMetricGroups);
 ze_result_t zetMetricStreamerOpen (zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, zet_metric_streamer_desc_t* desc, ze_event_handle_t hNotificationEvent, zet_metric_streamer_handle_t* phMetricStreamer);
 ze_result_t zetMetricStreamerReadData (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData);
+ze_result_t zetMetricStreamerReadDataRpcHelper (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData);
 ze_result_t zetMetricStreamerClose (zet_metric_streamer_handle_t hMetricStreamer);
 ze_result_t zetMetricQueryPoolCreate (zet_context_handle_t hContext, zet_device_handle_t hDevice, zet_metric_group_handle_t hMetricGroup, const zet_metric_query_pool_desc_t * desc, zet_metric_query_pool_handle_t* phMetricQueryPool);
 ze_result_t zetMetricQueryPoolDestroy (zet_metric_query_pool_handle_t hMetricQueryPool);

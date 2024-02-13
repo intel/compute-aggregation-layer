@@ -9,9 +9,10 @@
 
 #include "cal.h"
 #include "level_zero/ze_api.h"
+#include "level_zero/zet_api.h"
 #include "service/cochoreographer.h"
 #include "service/level_zero/artificial_events_manager.h"
-#include "service/level_zero/command_list_to_context_tracker.h"
+#include "service/level_zero/context_mappings_tracker.h"
 #include "service/level_zero/l0_shared_objects.h"
 #include "service/level_zero/ongoing_hostptr_copies_manager.h"
 #include "shared/control_messages.h"
@@ -277,8 +278,8 @@ class ClientContext {
         return remappedPtr;
     }
 
-    Cal::Service::LevelZero::CommandListToContextTracker &getCommandListToContextTracker() {
-        return commandListToContextTracker;
+    Cal::Service::LevelZero::ContextMappingsTracker &getContextMappingsTracker() {
+        return contextMappingsTracker;
     }
 
     Cal::Service::LevelZero::ArtificialEventsManager &getArtificialEventsManager() {
@@ -345,6 +346,8 @@ class ClientContext {
             return l0FencesTracking;
         } else if constexpr (std::is_same_v<HandleT, ze_image_handle_t>) {
             return l0ImagesTracking;
+        } else if constexpr (std::is_same_v<HandleT, zet_metric_streamer_handle_t>) {
+            return l0MetricStreamersTracking;
         } else {
             struct AlwaysFalse;
             constexpr bool alwaysFalse = std::is_same_v<HandleT, AlwaysFalse>;
@@ -397,9 +400,10 @@ class ClientContext {
     std::unordered_set<ze_event_pool_handle_t> l0EventPoolsTracking{};
     std::unordered_set<ze_fence_handle_t> l0FencesTracking{};
     std::unordered_set<ze_image_handle_t> l0ImagesTracking{};
+    std::unordered_set<zet_metric_streamer_handle_t> l0MetricStreamersTracking{};
 
     Cal::Ipc::MemoryBlocksManager memoryBlocksManager{};
-    Cal::Service::LevelZero::CommandListToContextTracker commandListToContextTracker{};
+    Cal::Service::LevelZero::ContextMappingsTracker contextMappingsTracker{};
     Cal::Service::LevelZero::ArtificialEventsManager artificialEventsManager{};
     Cal::Service::LevelZero::OngoingHostptrCopiesManager hostptrCopiesManager{};
     Cal::Ipc::MallocShmemImporter mallocShmemImporter = {};

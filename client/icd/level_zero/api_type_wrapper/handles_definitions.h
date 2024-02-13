@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -27,6 +27,7 @@ struct IcdL0Event;
 struct IcdL0Image;
 struct IcdL0MetricGroup;
 struct IcdL0Metric;
+struct IcdL0MetricStreamer;
 
 } // namespace Cal::Client::Icd::LevelZero
 
@@ -44,3 +45,4 @@ struct _ze_fence_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Ca
 struct _ze_image_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Image> {};
 struct _zet_metric_group_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0MetricGroup> {};
 struct _zet_metric_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0Metric> {};
+struct _zet_metric_streamer_handle_t : Cal::Client::Icd::LevelZero::IcdMappedTypeWrapper<Cal::Client::Icd::LevelZero::IcdL0MetricStreamer> {};

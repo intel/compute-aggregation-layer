@@ -328,20 +328,29 @@ ze_result_t zetMetricStreamerOpen (zet_context_handle_t hContext, zet_device_han
         return command->returnValue();
     }
     command->copyToCaller();
+    if(phMetricStreamer)
+    {
+        phMetricStreamer[0] = globalPlatform->translateNewRemoteObjectToLocalObject(phMetricStreamer[0]);
+    }
     ze_result_t ret = command->captures.ret;
 
+    channelLock.unlock();
+    if (phMetricStreamer != nullptr) {
+        phMetricStreamer[0]->asLocalObject()->context = hContext->asLocalObject();
+    }
     return ret;
 }
-ze_result_t zetMetricStreamerReadData (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) {
-    log<Verbosity::bloat>("Establishing RPC for zetMetricStreamerReadData");
+ // zetMetricStreamerReadData ignored in generator - based on dont_generate_handler flag
+ze_result_t zetMetricStreamerReadDataRpcHelper (zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) {
+    log<Verbosity::bloat>("Establishing RPC for zetMetricStreamerReadDataRpcHelper");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
-    using CommandT = Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcM;
-    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hMetricStreamer, maxReportCount, pRawDataSize, pRawData);
-    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
-    auto command = new(commandSpace) CommandT(dynMemTraits, hMetricStreamer, maxReportCount, pRawDataSize, pRawData);
-    command->copyFromCaller(dynMemTraits);
+    using CommandT = Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcHelperRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hMetricStreamer, maxReportCount, pRawDataSize, pRawData);
+    command->copyFromCaller();
+    command->args.hMetricStreamer = hMetricStreamer->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -351,7 +360,7 @@ ze_result_t zetMetricStreamerReadData (zet_metric_streamer_handle_t hMetricStrea
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
     }
-    command->copyToCaller(dynMemTraits);
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -364,6 +373,7 @@ ze_result_t zetMetricStreamerClose (zet_metric_streamer_handle_t hMetricStreamer
     using CommandT = Cal::Rpc::LevelZero::ZetMetricStreamerCloseRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hMetricStreamer);
+    command->args.hMetricStreamer = hMetricStreamer->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
@@ -372,6 +382,9 @@ ze_result_t zetMetricStreamerClose (zet_metric_streamer_handle_t hMetricStreamer
 
     if(false == channel.callSynchronous(command)){
         return command->returnValue();
+    }
+    {
+        hMetricStreamer->asLocalObject()->dec();
     }
     ze_result_t ret = command->captures.ret;
 
@@ -603,6 +616,7 @@ ze_result_t zetCommandListAppendMetricStreamerMarker (zet_command_list_handle_t 
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hCommandList, hMetricStreamer, value);
     command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
+    command->args.hMetricStreamer = hMetricStreamer->asLocalObject()->asRemoteObject();
 
 
     if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {

@@ -356,6 +356,7 @@ template void objectCleanup<ze_fence_handle_t, IcdL0Fence *>(void *, void *);
 template void objectCleanup<ze_image_handle_t, IcdL0Image *>(void *, void *);
 template void objectCleanup<zet_metric_group_handle_t, IcdL0MetricGroup *>(void *, void *);
 template void objectCleanup<zet_metric_handle_t, IcdL0Metric *>(void *, void *);
+template void objectCleanup<zet_metric_streamer_handle_t, IcdL0MetricStreamer *>(void *, void *);
 
 } // namespace LevelZero
 } // namespace Client::Icd

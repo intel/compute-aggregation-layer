@@ -22,6 +22,7 @@ set(ICD_L0_OBJECTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_pnext_translation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_sysman.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_tracing.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/api_customization/icd_level_zero_api_tools.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/device_wrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api_type_wrapper/module_wrapper.cpp

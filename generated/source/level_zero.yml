@@ -43,6 +43,7 @@ config:
       - '#include "client/icd/level_zero/api_customization/icd_level_zero_api.h"'
       - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_sysman.h"'
       - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_tracing.h"'
+      - '#include "client/icd/level_zero/api_customization/icd_level_zero_api_tools.h"'
       - '#include "level_zero/ze_api.h"'
       - '#include "level_zero/ze_ddi.h"'
       - '#include "level_zero/zes_api.h"'
@@ -2724,6 +2725,9 @@ config:
                 server_access: read
         - name: zetMetricStreamerOpen
           latency: 0.0
+          special_handling:
+            icd:
+              handler_epilogue: "if (phMetricStreamer != nullptr) {\n        phMetricStreamer[0]->asLocalObject()->context = hContext->asLocalObject();\n    }"
           ddi_category: MetricStreamer
           returns:
             type: ze_result_t
@@ -2773,9 +2777,14 @@ config:
                 element:
                   type: zet_metric_streamer_handle_t
                   kind: scalar
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg})"
                 server_access: write
+              daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getContextMappingsTracker().registerMetricStreamerToContextMapping({arg}, apiCommand->args.hContext)"
         - name: zetMetricStreamerReadData
           latency: 0.0
+          special_handling:
+            icd:
+              dont_generate_handler: True
           ddi_category: MetricStreamer
           returns:
             type: ze_result_t
@@ -2786,6 +2795,7 @@ config:
               name: hMetricStreamer
               type: zet_metric_streamer_handle_t 
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             1:
               name: maxReportCount
               type: uint32_t
@@ -2804,15 +2814,43 @@ config:
             3:
               name: pRawData
               type: uint8_t*
+              kind: scalar
+        - name: zetMetricStreamerReadDataRpcHelper
+          latency: 0.0
+          special_handling:
+            variant_of: "zetMetricStreamerReadData"
+            icd:
+              not_in_dispatch_table: True
+          ddi_category: MetricStreamer
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_UNINITIALIZED"
+          args:
+            0:
+              name: hMetricStreamer
+              type: zet_metric_streamer_handle_t 
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: maxReportCount
+              type: uint32_t
+              kind: scalar
+            2:
+              name: pRawDataSize
+              type: size_t*
               kind: ptr_array
               kind_details:
-                num_elements: pRawDataSize
-                is_num_elements_ptr_to_capturable_arg: True
+                num_elements: "1"
                 can_be_null: True
                 element:
-                  type: uint8_t
+                  type: size_t
                   kind: scalar
                 server_access: read_write
+            3:
+              name: pRawData
+              type: uint8_t*
+              kind: scalar
         - name: zetMetricStreamerClose
           latency: 0.0
           ddi_category: MetricStreamer
@@ -2825,6 +2863,9 @@ config:
               name: hMetricStreamer
               type: zet_metric_streamer_handle_t 
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+              translate_after: "{arg}->asLocalObject()->dec()"
+              daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getContextMappingsTracker().deregisterMetricStreamerMapping({arg})"
         - name: zetMetricQueryPoolCreate
           latency: 0.0
           ddi_category: MetricQueryPool
@@ -3055,6 +3096,7 @@ config:
               name: hMetricStreamer
               type: zet_metric_streamer_handle_t
               kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
             2:
               name: value
               type: uint32_t
@@ -5412,7 +5454,7 @@ config:
                   kind: scalar
                   translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::CommandListType::Regular)"
                 server_access: write
-              daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
+              daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getContextMappingsTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
         - name: zeCommandListCreateImmediate
           latency: 0.0
@@ -5460,7 +5502,7 @@ config:
                   kind: scalar
                   translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, IcdL0CommandList::selectImmediateType(altdesc))"
                 server_access: write
-              daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getCommandListToContextTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
+              daemon_action_on_success: "ctx.trackAllocatedResource({arg});\n            ctx.getContextMappingsTracker().registerCommandListToContextMapping({arg}, apiCommand->args.hContext)"
 
         - name: zeCommandListDestroy
           latency: 0.0
@@ -5479,7 +5521,7 @@ config:
               kind: scalar
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
-              daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getCommandListToContextTracker().deregisterCommandListMapping({arg})"
+              daemon_action_on_success: "ctx.removeResourceTracking({arg});\n            ctx.getContextMappingsTracker().deregisterCommandListMapping({arg})"
 
         - name: zeCommandListClose
           latency: 0.0

@@ -55,6 +55,10 @@ ze_result_t zetMetricStreamerReadData(zet_metric_streamer_handle_t hMetricStream
    return {};
 }
 
+ze_result_t zetMetricStreamerReadDataRpcHelper(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData){
+   return {};
+}
+
 ze_result_t zetMetricStreamerClose(zet_metric_streamer_handle_t hMetricStreamer){
    return {};
 }

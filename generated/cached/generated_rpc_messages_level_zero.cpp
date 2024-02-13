@@ -214,26 +214,6 @@ size_t ZetContextActivateMetricGroupsRpcM::Captures::getCaptureDynMemSize() cons
      return size;
 }
 
-ZetMetricStreamerReadDataRpcM::Captures::DynamicTraits ZetMetricStreamerReadDataRpcM::Captures::DynamicTraits::calculate(zet_metric_streamer_handle_t hMetricStreamer, uint32_t maxReportCount, size_t* pRawDataSize, uint8_t* pRawData) {
-    DynamicTraits ret = {};
-    ret.pRawData.count = pRawData ? ((pRawDataSize ? *pRawDataSize : 0)) : 0;
-    ret.pRawData.size = ret.pRawData.count * sizeof(uint8_t);
-    ret.totalDynamicSize = alignUpPow2<8>(ret.pRawData.offset + ret.pRawData.size);
-
-
-    return ret;
-}
-
-size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureTotalSize() const {
-     auto size = offsetof(Captures, pRawData) + Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
-     return size;
-}
-
-size_t ZetMetricStreamerReadDataRpcM::Captures::getCaptureDynMemSize() const {
-     auto size = Cal::Utils::alignUpPow2<8>(this->countPRawData * sizeof(uint8_t));
-     return size;
-}
-
 ZetMetricQueryGetDataRpcM::Captures::DynamicTraits ZetMetricQueryGetDataRpcM::Captures::DynamicTraits::calculate(zet_metric_query_handle_t hMetricQuery, size_t* pRawDataSize, uint8_t* pRawData) {
     DynamicTraits ret = {};
     ret.pRawData.count = pRawData ? ((pRawDataSize ? *pRawDataSize : 0)) : 0;

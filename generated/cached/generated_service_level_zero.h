@@ -387,6 +387,13 @@ inline bool zetMetricStreamerOpenHandler(Provider &service, Cal::Rpc::ChannelSer
                                                 apiCommand->args.hNotificationEvent, 
                                                 apiCommand->args.phMetricStreamer ? &apiCommand->captures.phMetricStreamer : nullptr
                                                 );
+    if(isSuccessful(apiCommand->captures.ret)) {
+        const auto& resource = apiCommand->args.phMetricStreamer ? &apiCommand->captures.phMetricStreamer : nullptr;
+        if (resource) {
+            ctx.trackAllocatedResource(*resource);
+            ctx.getContextMappingsTracker().registerMetricStreamerToContextMapping(*resource, apiCommand->args.hContext);
+        }
+    }
     return true;
 }
 inline bool zetMetricStreamerReadDataHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -396,7 +403,18 @@ inline bool zetMetricStreamerReadDataHandler(Provider &service, Cal::Rpc::Channe
                                                 apiCommand->args.hMetricStreamer, 
                                                 apiCommand->args.maxReportCount, 
                                                 apiCommand->args.pRawDataSize ? &apiCommand->captures.pRawDataSize : nullptr, 
-                                                apiCommand->args.pRawData ? apiCommand->captures.pRawData : nullptr
+                                                apiCommand->args.pRawData
+                                                );
+    return true;
+}
+inline bool zetMetricStreamerReadDataRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zetMetricStreamerReadDataRpcHelper");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcHelperRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricStreamerReadData(
+                                                apiCommand->args.hMetricStreamer, 
+                                                apiCommand->args.maxReportCount, 
+                                                apiCommand->args.pRawDataSize ? &apiCommand->captures.pRawDataSize : nullptr, 
+                                                apiCommand->args.pRawData
                                                 );
     return true;
 }
@@ -406,6 +424,13 @@ inline bool zetMetricStreamerCloseHandler(Provider &service, Cal::Rpc::ChannelSe
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricStreamerClose(
                                                 apiCommand->args.hMetricStreamer
                                                 );
+    if(isSuccessful(apiCommand->captures.ret)) {
+        const auto& resource = apiCommand->args.hMetricStreamer;
+        if (resource) {
+            ctx.removeResourceTracking(resource);
+            ctx.getContextMappingsTracker().deregisterMetricStreamerMapping(resource);
+        }
+    }
     return true;
 }
 inline bool zetMetricQueryPoolCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
@@ -1261,7 +1286,7 @@ inline bool zeCommandListCreateHandler(Provider &service, Cal::Rpc::ChannelServe
         const auto& resource = apiCommand->args.phCommandList ? &apiCommand->captures.phCommandList : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
-            ctx.getCommandListToContextTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
+            ctx.getContextMappingsTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -1280,7 +1305,7 @@ inline bool zeCommandListCreateImmediateHandler(Provider &service, Cal::Rpc::Cha
         const auto& resource = apiCommand->args.phCommandList ? &apiCommand->captures.phCommandList : nullptr;
         if (resource) {
             ctx.trackAllocatedResource(*resource);
-            ctx.getCommandListToContextTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
+            ctx.getContextMappingsTracker().registerCommandListToContextMapping(*resource, apiCommand->args.hContext);
         }
     }
     return true;
@@ -4272,6 +4297,7 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZetContextActivateMetricGroupsRpcM::messageSubtype] = zetContextActivateMetricGroupsHandler;
     outHandlers[ZetMetricStreamerOpenRpcM::messageSubtype] = zetMetricStreamerOpenHandler;
     outHandlers[ZetMetricStreamerReadDataRpcM::messageSubtype] = zetMetricStreamerReadDataHandler;
+    outHandlers[ZetMetricStreamerReadDataRpcHelperRpcM::messageSubtype] = zetMetricStreamerReadDataRpcHelperHandler;
     outHandlers[ZetMetricStreamerCloseRpcM::messageSubtype] = zetMetricStreamerCloseHandler;
     outHandlers[ZetMetricQueryPoolCreateRpcM::messageSubtype] = zetMetricQueryPoolCreateHandler;
     outHandlers[ZetMetricQueryPoolDestroyRpcM::messageSubtype] = zetMetricQueryPoolDestroyHandler;
@@ -4647,6 +4673,14 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricStreamerOpenRpcM &apiComm
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricStreamerReadData(
+                                                apiCommand.args.hMetricStreamer, 
+                                                apiCommand.args.maxReportCount, 
+                                                apiCommand.args.pRawDataSize, 
+                                                apiCommand.args.pRawData
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcHelperRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zetMetricStreamerReadData(
                                                 apiCommand.args.hMetricStreamer, 
                                                 apiCommand.args.maxReportCount, 
@@ -7044,6 +7078,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZetContextActivateMetricGroupsRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetContextActivateMetricGroupsRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricStreamerOpenRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricStreamerOpenRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcHelperRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricStreamerReadDataRpcHelperRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricStreamerCloseRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricStreamerCloseRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricQueryPoolCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryPoolCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZetMetricQueryPoolDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZetMetricQueryPoolDestroyRpcM*>(command)); break;
