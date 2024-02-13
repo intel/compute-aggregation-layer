@@ -10,6 +10,8 @@
 #include "icd_level_zero_ipc_helpers.h"
 #include "shared/log.h"
 
+#include <thread>
+
 namespace Cal::Client::Icd::LevelZero {
 
 ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t *phIpc) {
@@ -51,6 +53,8 @@ ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout) {
             log<Verbosity::debug>("zeEventHostSynchronize returned ZE_RESULT_NOT_READY - totalWaited %llu >= timeout %llu", totalWaited, timeout);
             return ZE_RESULT_NOT_READY;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        totalWaited += std::chrono::nanoseconds(1ms).count();
     }
 }
 
