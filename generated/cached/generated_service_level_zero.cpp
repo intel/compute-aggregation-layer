@@ -169,6 +169,7 @@ ze_result_t (*zeDriverGetProperties)(ze_driver_handle_t hDriver, ze_driver_prope
 ze_result_t (*zeDriverGetIpcProperties)(ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties) = nullptr;
 ze_result_t (*zeDriverGetExtensionProperties)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties) = nullptr;
 ze_result_t (*zeDriverGetExtensionFunctionAddress)(ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress) = nullptr;
+ze_result_t (*zeDriverGetLastErrorDescription)(ze_driver_handle_t hDriver, const char** ppString) = nullptr;
 ze_result_t (*zeEventPoolCreate)(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) = nullptr;
 ze_result_t (*zeEventPoolDestroy)(ze_event_pool_handle_t hEventPool) = nullptr;
 ze_result_t (*zeEventCreate)(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent) = nullptr;
@@ -1164,6 +1165,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeDriverGetLastErrorDescription = reinterpret_cast<decltype(zeDriverGetLastErrorDescription)>(dlsym(libraryHandle, "zeDriverGetLastErrorDescription"));
+    if(nullptr == zeDriverGetLastErrorDescription){
+        log<Verbosity::error>("Missing symbol zeDriverGetLastErrorDescription in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeEventPoolCreate = reinterpret_cast<decltype(zeEventPoolCreate)>(dlsym(libraryHandle, "zeEventPoolCreate"));
     if(nullptr == zeEventPoolCreate){
         log<Verbosity::error>("Missing symbol zeEventPoolCreate in %s", loadPath.c_str());
@@ -1839,6 +1846,7 @@ void unloadLevelZeroLibrary() {
     zeDriverGetIpcProperties = nullptr;
     zeDriverGetExtensionProperties = nullptr;
     zeDriverGetExtensionFunctionAddress = nullptr;
+    zeDriverGetLastErrorDescription = nullptr;
     zeEventPoolCreate = nullptr;
     zeEventPoolDestroy = nullptr;
     zeEventCreate = nullptr;

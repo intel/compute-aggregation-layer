@@ -258,6 +258,9 @@ ze_result_t zeDriverGetIpcProperties_WithTracing (ze_driver_handle_t hDriver, ze
 ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties);
 ze_result_t zeDriverGetExtensionProperties_WithTracing (ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties);
 ze_result_t zeDriverGetExtensionFunctionAddress (ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress);
+ze_result_t zeDriverGetLastErrorDescriptionRpcHelper (ze_driver_handle_t hDriver, const char** ppString);
+ze_result_t zeDriverGetLastErrorDescriptionRpcHelper (ze_driver_handle_t hDriver, size_t stringLength, char* pString);
+ze_result_t zeDriverGetLastErrorDescriptionRpcHelper_WithTracing (ze_driver_handle_t hDriver, size_t stringLength, char* pString);
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool);
 ze_result_t zeEventPoolCreate_WithTracing (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool);
 ze_result_t zeEventPoolDestroy (ze_event_pool_handle_t hEventPool);
@@ -967,6 +970,7 @@ inline void initL0Ddi(ze_dditable_t &dt){
         dt.Driver.pfnGetExtensionProperties = Cal::Client::Icd::LevelZero::zeDriverGetExtensionProperties_WithTracing;
     }
     dt.Driver.pfnGetExtensionFunctionAddress = Cal::Client::Icd::LevelZero::zeDriverGetExtensionFunctionAddress;
+    dt.Driver.pfnGetLastErrorDescription = Cal::Client::Icd::LevelZero::zeDriverGetLastErrorDescription;
     dt.EventPool.pfnCreate = Cal::Client::Icd::LevelZero::zeEventPoolCreate;
     if (tracingEnabled) {
         dt.EventPool.pfnCreate = Cal::Client::Icd::LevelZero::zeEventPoolCreate_WithTracing;

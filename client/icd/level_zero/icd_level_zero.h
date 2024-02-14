@@ -34,6 +34,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <thread>
 #include <utility>
 
 namespace Cal {
@@ -429,6 +430,16 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         }
     }
 
+    void updateLastErrorDescription(std::thread::id tid, const std::string &errorDescription) {
+        std::lock_guard<std::mutex> lock(this->lastErrorDescriptionMapMutex);
+        this->lastErrorDescriptionMap[tid] = errorDescription;
+    }
+
+    std::string &getLastErrorDescription(std::thread::id tid) {
+        std::lock_guard<std::mutex> lock(this->lastErrorDescriptionMapMutex);
+        return lastErrorDescriptionMap[tid];
+    }
+
     void *openUsmDevicePointerFromIpcHandle(ze_context_handle_t context, void *newUsmPtr) {
         if (!newUsmPtr || !globalState.getCpuInfo().isAccessibleByApplication(newUsmPtr)) {
             return newUsmPtr;
@@ -545,6 +556,9 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
     bool zeAffinityMaskPresent = false;
     std::vector<ze_device_handle_t> filteredDevices;
     std::once_flag parseZeAffinityMaskOnce;
+
+    std::mutex lastErrorDescriptionMapMutex;
+    std::map<std::thread::id, std::string> lastErrorDescriptionMap;
 
     Logic::HostptrCopiesReader hostptrCopiesReader;
 };

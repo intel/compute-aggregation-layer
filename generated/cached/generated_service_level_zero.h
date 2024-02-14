@@ -178,6 +178,7 @@ extern ze_result_t (*zeDriverGetProperties)(ze_driver_handle_t hDriver, ze_drive
 extern ze_result_t (*zeDriverGetIpcProperties)(ze_driver_handle_t hDriver, ze_driver_ipc_properties_t* pIpcProperties);
 extern ze_result_t (*zeDriverGetExtensionProperties)(ze_driver_handle_t hDriver, uint32_t* pCount, ze_driver_extension_properties_t* pExtensionProperties);
 extern ze_result_t (*zeDriverGetExtensionFunctionAddress)(ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress);
+extern ze_result_t (*zeDriverGetLastErrorDescription)(ze_driver_handle_t hDriver, const char** ppString);
 extern ze_result_t (*zeEventPoolCreate)(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool);
 extern ze_result_t (*zeEventPoolDestroy)(ze_event_pool_handle_t hEventPool);
 extern ze_result_t (*zeEventCreate)(ze_event_pool_handle_t hEventPool, const ze_event_desc_t* desc, ze_event_handle_t* phEvent);
@@ -1649,6 +1650,16 @@ inline bool zeDriverGetExtensionPropertiesHandler(Provider &service, Cal::Rpc::C
                                                 );
     return true;
 }
+inline bool zeDriverGetLastErrorDescriptionHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDriverGetLastErrorDescription");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDriverGetLastErrorDescription(
+                                                apiCommand->args.hDriver, 
+                                                apiCommand->args.ppString
+                                                );
+    return true;
+}
+bool zeDriverGetLastErrorDescriptionRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeEventPoolCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeEventPoolCreate");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM*>(command);
@@ -4429,6 +4440,8 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeDriverGetPropertiesRpcM::messageSubtype] = zeDriverGetPropertiesHandler;
     outHandlers[ZeDriverGetIpcPropertiesRpcM::messageSubtype] = zeDriverGetIpcPropertiesHandler;
     outHandlers[ZeDriverGetExtensionPropertiesRpcM::messageSubtype] = zeDriverGetExtensionPropertiesHandler;
+    outHandlers[ZeDriverGetLastErrorDescriptionRpcM::messageSubtype] = zeDriverGetLastErrorDescriptionHandler;
+    outHandlers[ZeDriverGetLastErrorDescriptionRpcHelperRpcM::messageSubtype] = zeDriverGetLastErrorDescriptionRpcHelperHandler;
     outHandlers[ZeEventPoolCreateRpcM::messageSubtype] = zeEventPoolCreateHandler;
     outHandlers[ZeEventPoolDestroyRpcM::messageSubtype] = zeEventPoolDestroyHandler;
     outHandlers[ZeEventCreateRpcM::messageSubtype] = zeEventCreateHandler;
@@ -5549,6 +5562,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeDriverGetExtensionPropertiesRpcM
                                                 apiCommand.args.hDriver, 
                                                 apiCommand.args.pCount, 
                                                 apiCommand.args.pExtensionProperties
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDriverGetLastErrorDescription(
+                                                apiCommand.args.hDriver, 
+                                                apiCommand.args.ppString
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM &apiCommand) {
@@ -7209,6 +7228,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDriverGetIpcPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetIpcPropertiesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeDriverGetExtensionPropertiesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetExtensionPropertiesRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventPoolCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventPoolDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeEventCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeEventCreateRpcM*>(command)); break;

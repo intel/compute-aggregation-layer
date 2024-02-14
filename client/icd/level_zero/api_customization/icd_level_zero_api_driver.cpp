@@ -11,6 +11,7 @@
 #include "client/icd/level_zero/logic/imported_host_pointers_manager.h"
 #include "client/icd/level_zero/logic/properties_cache.h"
 #include "generated_icd_level_zero.h"
+#include "generated_rpc_messages_level_zero.h"
 #include "icd_level_zero_api.h"
 #include "shared/log.h"
 
@@ -134,6 +135,22 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
     }
 
     return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;
+}
+
+ze_result_t zeDriverGetLastErrorDescription(ze_driver_handle_t hDriver, const char **ppString) {
+    if (ppString) {
+        constexpr size_t maxErrorDescriptionSize = 256;
+        std::vector<char> errorDescription(maxErrorDescriptionSize);
+        auto result = zeDriverGetLastErrorDescriptionRpcHelper(hDriver, errorDescription.size(), errorDescription.data());
+        if (result == ZE_RESULT_SUCCESS) {
+            auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+            auto tid = std::this_thread::get_id();
+            globalPlatform->updateLastErrorDescription(tid, errorDescription.data());
+            ppString[0] = globalPlatform->getLastErrorDescription(tid).c_str();
+            return ZE_RESULT_SUCCESS;
+        }
+    }
+    return ZE_RESULT_ERROR_INVALID_NULL_POINTER;
 }
 
 } // namespace Cal::Client::Icd::LevelZero

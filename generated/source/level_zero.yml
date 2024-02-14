@@ -8113,6 +8113,60 @@ config:
                   type: void *
                   kind: scalar
                 server_access: write
+        - name: zeDriverGetLastErrorDescription
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+              handler_only_suffix: "RpcHelper"
+          ddi_category: Driver
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+            1:
+              name: ppString
+              type: const char**
+              kind: pointer
+        - name: zeDriverGetLastErrorDescriptionRpcHelper
+          ddi_category: Driver
+          special_handling:
+            variant_of: "zeDriverGetLastErrorDescription"
+            icd:
+              not_in_dispatch_table: True
+              dont_generate_stub: True
+            rpc:
+              custom_handler: True
+              dont_generate_call_directly: True
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hDriver
+              type: ze_driver_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: stringLength
+              type: size_t
+              kind: scalar
+            2:
+              name: pString
+              type: char*
+              kind: ptr_array
+              kind_details:
+                num_elements: "stringLength"
+                element:
+                  type: char
+                  kind: scalar
+                server_access: write
         - name: zeEventPoolCreate
           latency: 1.0
           ddi_category: EventPool

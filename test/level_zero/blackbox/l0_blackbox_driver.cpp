@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -100,6 +100,22 @@ bool getDriverIpcProperties(ze_driver_handle_t driver) {
     return true;
 }
 
+bool getLastErrorDescription(ze_driver_handle_t driver) {
+    const char *pErrorDescriptionStr = nullptr;
+
+    const auto zeDriverGetLastErrorDescriptionResult = zeDriverGetLastErrorDescription(driver, &pErrorDescriptionStr);
+    if (zeDriverGetLastErrorDescriptionResult != ZE_RESULT_SUCCESS) {
+        log<Verbosity::error>("zeDriverGetLastErrorDescription() call has failed! Error code = %d", static_cast<int>(zeDriverGetLastErrorDescriptionResult));
+        return false;
+    }
+    if (pErrorDescriptionStr == nullptr) {
+        log<Verbosity::error>("zeDriverGetLastErrorDescription() call returned invalid nullptr error string");
+        return false;
+    }
+
+    return true;
+}
+
 bool getNonexistentExtensionFunctionAddress(ze_driver_handle_t driver, void **outFunctionAddress, const char *extensionName) {
     const auto zeDriverGetExtensionFunctionAddressResult = zeDriverGetExtensionFunctionAddress(driver, extensionName, outFunctionAddress);
     if (zeDriverGetExtensionFunctionAddressResult == ZE_RESULT_SUCCESS) {
@@ -135,6 +151,7 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(getDriverProperties(drivers[0]));
     RUN_REQUIRED_STEP(getDriverExtensionProperties(drivers[0]));
     RUN_REQUIRED_STEP(getDriverIpcProperties(drivers[0]));
+    RUN_REQUIRED_STEP(getLastErrorDescription(drivers[0]));
 
     void *extensionAddress{nullptr};
     RUN_REQUIRED_STEP(getExtensionFunctionAddress(drivers[0], &extensionAddress, "zexDriverImportExternalPointer"));

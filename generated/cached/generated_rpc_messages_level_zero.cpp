@@ -1310,6 +1310,26 @@ size_t ZeDriverGetExtensionPropertiesRpcM::Captures::getCaptureDynMemSize() cons
      return size;
 }
 
+ZeDriverGetLastErrorDescriptionRpcHelperRpcM::Captures::DynamicTraits ZeDriverGetLastErrorDescriptionRpcHelperRpcM::Captures::DynamicTraits::calculate(ze_driver_handle_t hDriver, size_t stringLength, char* pString) {
+    DynamicTraits ret = {};
+    ret.pString.count = pString ? (stringLength) : 0;
+    ret.pString.size = ret.pString.count * sizeof(char);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.pString.offset + ret.pString.size);
+
+
+    return ret;
+}
+
+size_t ZeDriverGetLastErrorDescriptionRpcHelperRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, pString) + Cal::Utils::alignUpPow2<8>(this->countPString * sizeof(char));
+     return size;
+}
+
+size_t ZeDriverGetLastErrorDescriptionRpcHelperRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countPString * sizeof(char));
+     return size;
+}
+
 ZeEventPoolCreateRpcM::Captures::DynamicTraits ZeEventPoolCreateRpcM::Captures::DynamicTraits::calculate(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
     DynamicTraits ret = {};
     ret.phDevices.count = phDevices ? (numDevices) : 0;

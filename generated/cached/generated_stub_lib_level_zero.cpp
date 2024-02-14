@@ -611,6 +611,10 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
    return {};
 }
 
+ze_result_t zeDriverGetLastErrorDescription(ze_driver_handle_t hDriver, const char** ppString){
+   return {};
+}
+
 ze_result_t zeEventPoolCreate(ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool){
    return {};
 }

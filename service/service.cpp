@@ -17,6 +17,7 @@
 #include <fstream>
 #include <functional>
 #include <regex>
+#include <string>
 #include <wait.h>
 
 using namespace std::string_literals;
@@ -1404,6 +1405,25 @@ bool zeKernelGetSourceAttributesRpcHelperHandler(Provider &service, Cal::Rpc::Ch
         apiCommand->args.pString ? &pString : nullptr);
     return true;
 }
+
+bool zeDriverGetLastErrorDescriptionRpcHelperHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeDriverGetLastErrorDescription");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcHelperRpcM *>(command);
+    const char *pString = nullptr;
+
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeDriverGetLastErrorDescription(apiCommand->args.hDriver, &pString);
+    if (apiCommand->captures.ret == ZE_RESULT_SUCCESS && pString != nullptr) {
+        std::string receievedLastErrorDescription(pString);
+        if (receievedLastErrorDescription.length() > apiCommand->captures.countPString) {
+            log<Verbosity::error>("Usupported length for zeDriverGetLastErrorDescriptionRpcHelperHandler %d", receievedLastErrorDescription.length());
+            return false;
+        }
+        std::strncpy(apiCommand->captures.pString, pString, receievedLastErrorDescription.length());
+        return true;
+    }
+    return false;
+}
+
 } // namespace LevelZero
 } // namespace Apis
 

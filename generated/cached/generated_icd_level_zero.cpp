@@ -3940,6 +3940,51 @@ ze_result_t zeDriverGetExtensionPropertiesRpcHelper (ze_driver_handle_t hDriver,
     return ret;
 }
  // zeDriverGetExtensionFunctionAddress ignored in generator - based on dont_generate_handler flag
+ze_result_t zeDriverGetLastErrorDescriptionRpcHelper (ze_driver_handle_t hDriver, const char** ppString) {
+    log<Verbosity::bloat>("Establishing RPC for zeDriverGetLastErrorDescription");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hDriver, ppString);
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeDriverGetLastErrorDescriptionRpcHelper (ze_driver_handle_t hDriver, size_t stringLength, char* pString) {
+    log<Verbosity::bloat>("Establishing RPC for zeDriverGetLastErrorDescriptionRpcHelper");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeDriverGetLastErrorDescriptionRpcHelperRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hDriver, stringLength, pString);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, hDriver, stringLength, pString);
+    command->args.hDriver = hDriver->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
     log<Verbosity::bloat>("Establishing RPC for zeEventPoolCreate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -12324,6 +12369,9 @@ ze_result_t zeDriverGetExtensionProperties (ze_driver_handle_t hDriver, uint32_t
 }
 ze_result_t zeDriverGetExtensionFunctionAddress (ze_driver_handle_t hDriver, const char* name, void** ppFunctionAddress) {
     return Cal::Client::Icd::LevelZero::zeDriverGetExtensionFunctionAddress(hDriver, name, ppFunctionAddress);
+}
+ze_result_t zeDriverGetLastErrorDescription (ze_driver_handle_t hDriver, const char** ppString) {
+    return Cal::Client::Icd::LevelZero::zeDriverGetLastErrorDescription(hDriver, ppString);
 }
 ze_result_t zeEventPoolCreate (ze_context_handle_t hContext, const ze_event_pool_desc_t* desc, uint32_t numDevices, ze_device_handle_t* phDevices, ze_event_pool_handle_t* phEventPool) {
     return Cal::Client::Icd::LevelZero::zeEventPoolCreate(hContext, desc, numDevices, phDevices, phEventPool);
