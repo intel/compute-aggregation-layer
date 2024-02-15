@@ -2652,7 +2652,7 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hC
         return zeCommandListAppendWriteGlobalTimestamp_Shared(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
     }
 }
-ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
+ze_result_t zeCommandQueueCreateRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueCreate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2782,7 +2782,7 @@ ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunk
 
     return ret;
 }
-ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
+ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandQueueSynchronize");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();

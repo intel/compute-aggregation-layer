@@ -5611,6 +5611,8 @@ config:
         - name: zeCommandQueueCreate
           latency: 1.0
           special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
             rpc:
               handler_prologue: "service.overrideCommandQueueDesc(reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->args.desc ? &reinterpret_cast<Cal::Rpc::LevelZero::ZeCommandQueueCreateRpcM*>(command)->captures.desc : nullptr, ctx);"
           ddi_category: CommandQueue
@@ -5772,6 +5774,8 @@ config:
         - name: zeCommandQueueSynchronize
           latency: 2.0
           special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
             rpc:
               custom_handler: True
           ddi_category: CommandQueue

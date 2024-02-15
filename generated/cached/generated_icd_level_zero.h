@@ -161,7 +161,7 @@ ze_result_t zeCommandListReset (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListReset_WithTracing (ze_command_list_handle_t hCommandList);
 ze_result_t zeCommandListAppendWriteGlobalTimestamp (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
 ze_result_t zeCommandListAppendWriteGlobalTimestamp_WithTracing (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents);
-ze_result_t zeCommandQueueCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
+ze_result_t zeCommandQueueCreateRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
 ze_result_t zeCommandQueueCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* desc, ze_command_queue_handle_t* phCommandQueue);
 ze_result_t zeCommandQueueDestroy (ze_command_queue_handle_t hCommandQueue);
 ze_result_t zeCommandQueueDestroy_WithTracing (ze_command_queue_handle_t hCommandQueue);
@@ -169,7 +169,7 @@ ze_result_t zeCommandQueueExecuteCommandListsRpcHelper (ze_command_queue_handle_
 ze_result_t zeCommandQueueExecuteCommandLists_WithTracing (ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t* phCommandLists, ze_fence_handle_t hFence);
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs);
 ze_result_t zeCommandQueueExecuteCommandListsCopyMemoryRpcHelper_WithTracing (uint32_t chunksCount, const Cal::Rpc::MemChunk* chunks, uint32_t* transferDescsCount, Cal::Rpc::TransferDesc* transferDescs);
-ze_result_t zeCommandQueueSynchronize (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
+ze_result_t zeCommandQueueSynchronizeRpcHelper (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeCommandQueueSynchronize_WithTracing (ze_command_queue_handle_t hCommandQueue, uint64_t timeout);
 ze_result_t zeContextCreate (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);
 ze_result_t zeContextCreate_WithTracing (ze_driver_handle_t hDriver, const ze_context_desc_t* desc, ze_context_handle_t* phContext);

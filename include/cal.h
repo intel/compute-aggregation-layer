@@ -64,6 +64,8 @@ constexpr std::string_view calSharedVaArenaSizeEnvName = "CAL_SHARED_VA_ARENA_SI
 constexpr std::string_view calOverrideMallocEnvName = "CAL_OVERRIDE_MALLOC";
 // Minimum size of allocation that will be redirected to CAL implementation of malloc
 constexpr std::string_view calOverrideMallocThresholdEnvName = "CAL_OVERRIDE_MALLOC_THRESHOLD_BYTES";
+// Controls whether CAL should use emulated synchronous mode for command lists in synchronous mode (i.e. override synchronous queue with asynchronous mode and call cmommand list execute + queue synchronize with timeout)
+constexpr std::string_view calCommandQueueModeEmulatedSynchronousEnvName = "CAL_COMMAND_QUEUE_MODE_EMULATED_SYNCHRONOUS";
 
 constexpr std::string_view calUseCustomOCLPlatformName = "CAL_USE_CUSTOM_OCL_PLATFORM_NAME";
 constexpr std::string_view calPlatformName = "Compute Aggregation Layer for oneAPI Level Zero and OpenCL(TM) Applications";

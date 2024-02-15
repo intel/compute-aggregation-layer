@@ -195,6 +195,12 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
     void moveSharedAllocationsToGpu(uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists);
 
     ze_command_queue_mode_t getCommandQueueMode();
+    void setEmulatedSynchronousMode(bool onOff) {
+        emulatedSynchronousMode = onOff;
+    }
+    bool isEmulatedSynchronousMode() const {
+        return emulatedSynchronousMode;
+    }
 
   private:
     friend IcdL0Platform;
@@ -204,6 +210,7 @@ class IcdL0CommandQueue : public Cal::Shared::RefCountedWithParent<_ze_command_q
 
     std::mutex queueMutex{};
     ze_command_queue_mode_t mode{};
+    bool emulatedSynchronousMode = false;
 };
 
 struct IcdL0ModuleBuildLog : Cal::Shared::RefCountedWithParent<_ze_module_build_log_handle_t, Logic::IcdL0TypePrinter> {
