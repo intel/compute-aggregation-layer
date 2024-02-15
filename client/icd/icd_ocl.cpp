@@ -172,7 +172,8 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
 
     auto ret = clGetProgramInfoRpcHelper(program, param_name, param_value_size, param_value, param_value_size_ret);
     if ((param_name == CL_PROGRAM_NUM_DEVICES) && param_value && (param_value_size == 8)) {
-        *reinterpret_cast<uint64_t *>(param_value) = *reinterpret_cast<cl_uint *>(param_value);
+        cl_uint *secondDwordInQword = reinterpret_cast<cl_uint *>(param_value) + 1;
+        std::memset(secondDwordInQword, 0x0, sizeof(cl_uint));
     }
     return ret;
 }
