@@ -311,7 +311,7 @@ bool getZesDeviceProcessesGetState(zes_device_handle_t device) {
     if (processes.size() > 0) {
         bool pidFound = false;
         uint32_t hostPid = getpid();
-        for (auto process : processes) {
+        for (auto &process : processes) {
             if (process.processId == 0u) {
                 log<Verbosity::error>("getZesDeviceProcessesGetState() returned incorrect pid value %d", process.processId);
                 return false;
