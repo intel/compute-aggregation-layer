@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -329,10 +329,12 @@ struct ClBufferRecycler {
                 if ((0 == hitsCount) && (0 == missesCount)) {
                     log<Verbosity::performance>(" * range unused (0 hits, 0 misses)");
                 } else {
-                    log<Verbosity::performance>(" * hit rate : %f% (%zu hits, %zu misses)", int((((float)(hitsCount) / hitsCount + missesCount) * 10000)) / 100.0f, hitsCount, missesCount);
+                    log<Verbosity::performance>(" * hit rate : %f% (%zu hits, %zu misses)", int((float)(hitsCount) / (hitsCount + missesCount) * 10000) / 100.0f, hitsCount, missesCount);
                     log<Verbosity::performance>(" * reuse total : %zuB = %zuKB = %fMB", reuseTotal, reuseTotal / 1024, (reuseTotal / 1024) / 1024.0f);
                     log<Verbosity::performance>(" * waste total : %zuB = %zuKB = %fMB", wasteTotal, wasteTotal / 1024, (wasteTotal / 1024) / 1024.0f);
-                    log<Verbosity::performance>(" * waste ratio : %f% ", int((((float)(wasteTotal) / reuseTotal + wasteTotal) * 10000)) / 100.0f);
+                    if ((reuseTotal + wasteTotal) > 0) {
+                        log<Verbosity::performance>(" * waste ratio : %f% ", int((float)(wasteTotal) / (reuseTotal + wasteTotal) * 10000) / 100.0f);
+                    }
                     log<Verbosity::performance>(" * peek recycled buffer count : %zu", maxWaitedBuffersCount);
                     log<Verbosity::performance>(" * peek recycled buffer total size : %zuB = %zuKB = %fMB", maxWaitedBuffersTotalSize, maxWaitedBuffersTotalSize / 1024, (wasteTotal / 1024) / 1024.0f);
                 }
@@ -391,7 +393,7 @@ struct ClBufferRecycler {
                 auto hostPtrMatch = (*it)->apiHostPtr == host_ptr;
 
                 // for CL_MEM_USE_HOST_PTR we must match host_ptr
-                if ((flags | CL_MEM_USE_HOST_PTR) && !hostPtrMatch) {
+                if ((flags & CL_MEM_USE_HOST_PTR) && !hostPtrMatch) {
                     ++it;
                     continue;
                 }

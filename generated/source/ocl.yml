@@ -880,7 +880,7 @@ config:
                   type: "const unsigned char*"
                   kind: "ptr_array"
                   kind_details:
-                    num_elements: "lengths[{index}]"
+                    num_elements: "(lengths ? lengths[{index}] : 0)"
                     element:
                       type: "unsigned char"
                       kind: "scalar"

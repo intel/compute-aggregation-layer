@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -842,15 +842,13 @@ class BasicMemoryBlocksManager {
         }
 
         uint32_t newTransferDescsCount = memoryBlock->getCountOfOverlappingChunks(range.base(), range.size());
+        if (!newTransferDescsCount) {
+            log<Verbosity::debug>("Could not retrieve memory block, which includes given chunk!");
+        }
 
         uint32_t prevTransferDescsCount = static_cast<uint32_t>(transferDescs.size());
         transferDescs.resize(prevTransferDescsCount + newTransferDescsCount);
         uint32_t appendedTransfersCount = prevTransferDescsCount;
-
-        if (!memoryBlock) {
-            log<Verbosity::error>("Could not retrieve memory block, which includes given chunk!");
-            return false;
-        }
 
         const auto enoughSpace = memoryBlock->appendOverlappingChunks(range.base(),
                                                                       range.size(),

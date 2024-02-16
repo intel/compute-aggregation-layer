@@ -2528,6 +2528,9 @@ ze_result_t zeCommandListCreate (ze_context_handle_t hContext, ze_device_handle_
     return ret;
 }
 ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t* altdesc, ze_command_list_handle_t* phCommandList) {
+    if (!hContext) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListCreateImmediate");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2559,7 +2562,7 @@ ze_result_t zeCommandListCreateImmediate (ze_context_handle_t hContext, ze_devic
     ze_result_t ret = command->captures.ret;
 
     channelLock.unlock();
-    if (hContext != nullptr && phCommandList != nullptr) {
+    if (phCommandList != nullptr) {
         phCommandList[0]->asLocalObject()->context = hContext->asLocalObject();
     }
     return ret;
@@ -4235,6 +4238,9 @@ ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, z
     return ret;
 }
 ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
+    if (!hEvent) {
+        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
+    }
     hEvent->asLocalObject()->setAllowIcdState(hCommandList);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();

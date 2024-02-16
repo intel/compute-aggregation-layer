@@ -291,7 +291,7 @@ ClCreateProgramWithBinaryRpcM::Captures::DynamicTraits ClCreateProgramWithBinary
     for(uint32_t i = 0; i < ret.binaries.count; ++i){
         DynamicArgTraits nested;
         nested.offset = ret.totalDynamicSize;
-        nested.count = binaries ? (lengths[i]) : 0;
+        nested.count = binaries ? ((lengths ? lengths[i] : 0)) : 0;
         nested.size = nested.count * sizeof(unsigned char);
         ret.totalDynamicSize += alignUpPow2<8>(nested.size);
         ret.binaries.nested.push_back(nested);
