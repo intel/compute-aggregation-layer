@@ -14,7 +14,7 @@ namespace Cal::Client::Icd::LevelZero {
 extern const uint32_t calCommandQueueSynchronizePollingTimeoutDivisor;
 
 ze_result_t zeCommandQueueCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t *desc, ze_command_queue_handle_t *phCommandQueue) {
-    static auto isCommandQueueModeEmulatedSynchronousEnabled = Cal::Utils::getCalEnvFlag(calCommandQueueModeEmulatedSynchronousEnvName, false);
+    static auto isCommandQueueModeEmulatedSynchronousEnabled = Cal::Utils::getCalEnvFlag(calCommandQueueModeEmulatedSynchronousEnvName, true);
     if (isCommandQueueModeEmulatedSynchronousEnabled && ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS == desc->mode) {
         auto queueAsyncDesc = *desc;
         queueAsyncDesc.mode = ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS;
