@@ -11,6 +11,8 @@
 
 namespace Cal::Client::Icd::LevelZero {
 
+extern const uint32_t calCommandQueueSynchronizePollingTimeoutDivisor;
+
 ze_result_t zeCommandQueueCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t *desc, ze_command_queue_handle_t *phCommandQueue) {
     static auto isCommandQueueModeEmulatedSynchronousEnabled = Cal::Utils::getCalEnvFlag(calCommandQueueModeEmulatedSynchronousEnvName, false);
     if (isCommandQueueModeEmulatedSynchronousEnabled && ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS == desc->mode) {
@@ -46,7 +48,7 @@ ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommand
             return result;
         }
         using namespace std::literals::chrono_literals;
-        uint64_t pollingTimeout = std::chrono::nanoseconds(1s).count();
+        uint64_t pollingTimeout = std::chrono::nanoseconds(1s).count() / calCommandQueueSynchronizePollingTimeoutDivisor;
         uint64_t totalWaited = 0;
         while (true) {
             log<Verbosity::debug>("Establishing RPC for zeCommandQueueSynchronize with polling timeout %llu, totalWaited %llu", pollingTimeout, totalWaited);
