@@ -2172,6 +2172,10 @@ inline bool zeModuleDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &c
     apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeModuleDestroy(
                                                 apiCommand->args.hModule
                                                 );
+    if((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to zeModuleDestroy (as zeModuleDestroyHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
     if(isSuccessful(apiCommand->captures.ret)) {
         const auto& resource = apiCommand->args.hModule;
         if (resource) {

@@ -10107,6 +10107,7 @@ config:
         - name: zeModuleDestroy
           latency: 0.0
           ddi_category: Module
+          call_async: True
           returns:
             type: ze_result_t
             kind: scalar

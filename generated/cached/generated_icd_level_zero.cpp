@@ -5485,13 +5485,25 @@ ze_result_t zeModuleDestroy (ze_module_handle_t hModule) {
     auto command = new(commandSpace) CommandT(hModule);
     command->args.hModule = hModule->asLocalObject()->asRemoteObject();
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         {
+           const auto prevRefCount = hModule->asLocalObject()->dec();
+        if (prevRefCount == 1u) {
+            globalPlatform->removeGlobalPointers(hModule);
+        };
+         }
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     {
         const auto prevRefCount = hModule->asLocalObject()->dec();
