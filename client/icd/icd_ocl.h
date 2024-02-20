@@ -902,7 +902,9 @@ class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform
     template <typename OclObjectT, typename OclParentObjectT>
     auto translateNewRemoteImageObjectToLocalObject(OclObjectT *mem, OclParentObjectT parent, OclImageTraits imageTraits) {
         auto *calMem = this->translateNewRemoteObjectToLocalObject(mem, parent);
-        calMem->setImageTraits(imageTraits);
+        if (calMem) {
+            calMem->setImageTraits(imageTraits);
+        }
         return calMem;
     }
 
