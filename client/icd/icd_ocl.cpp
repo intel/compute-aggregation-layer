@@ -335,6 +335,9 @@ cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_typ
                                 CL_MEM_HOST_NO_ACCESS);
     }
     flags |= parentFlags & (CL_MEM_USE_HOST_PTR | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR);
+    auto parentHostPtr = buffer->asLocalObject()->apiHostPtr;
+    auto origin = static_cast<const cl_buffer_region *>(buffer_create_info)->origin;
+    retMem->asLocalObject()->apiHostPtr = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(parentHostPtr) + origin);
     retMem->asLocalObject()->flags = flags;
     return retMem;
 }
@@ -448,6 +451,14 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
         }
         if (param_value) {
             *static_cast<size_t *>(param_value) = memobj->asLocalObject()->size;
+        }
+        return CL_SUCCESS;
+    case CL_MEM_HOST_PTR:
+        if (param_value_size_ret) {
+            *param_value_size_ret = sizeof(void *);
+        }
+        if (param_value) {
+            *static_cast<uintptr_t *>(param_value) = reinterpret_cast<uintptr_t>(memobj->asLocalObject()->apiHostPtr);
         }
         return CL_SUCCESS;
     default:
