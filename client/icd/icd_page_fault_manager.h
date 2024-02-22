@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -53,7 +53,7 @@ class PageFaultManager {
         }
     }
 
-    const bool getSharedAllocationsEnabled() const {
+    bool getSharedAllocationsEnabled() const {
         return this->sharedAllocationsEnabled;
     }
 

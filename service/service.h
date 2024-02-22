@@ -639,7 +639,7 @@ class Provider {
         return systemInfo.cpuInfo;
     }
 
-    const bool getYieldThreads() const {
+    bool getYieldThreads() const {
         return yieldThreads;
     }
 
