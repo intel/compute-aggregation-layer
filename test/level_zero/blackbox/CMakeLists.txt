@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -9,6 +9,7 @@ macro(add_l0_blackbox TEST_NAME TEST_FILES)
                  ${TEST_FILES}
                  $<TARGET_OBJECTS:l0_blackbox_common>
   )
+  target_compile_definitions(${TEST_NAME} PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
   target_link_libraries(${TEST_NAME} ze_loader ${common_library_dependencies})
 endmacro()
 
@@ -18,6 +19,7 @@ add_library(l0_blackbox_common OBJECT
             ${cal_source_root_dir}/shared/utils.cpp
             ${cal_source_root_dir}/shared/sys.cpp
 )
+target_compile_definitions(l0_blackbox_common PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 
 add_l0_blackbox(l0_blackbox_append_mem_fill_copy_asynchronous_queue ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_append_mem_fill_copy_asynchronous_queue.cpp)
 add_l0_blackbox(l0_blackbox_append_mem_fill_copy_immediate_asynchronous ${CMAKE_CURRENT_SOURCE_DIR}/l0_blackbox_append_mem_fill_copy_immediate_asynchronous.cpp)

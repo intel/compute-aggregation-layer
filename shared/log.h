@@ -7,6 +7,7 @@
 
 #pragma once
 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-security"
 
 #include "include/cal.h"
@@ -105,7 +106,7 @@ class Log {
     }
 
     template <Verbosity V, typename... Args>
-    int add(bool useLoggerName, bool appendPID, bool addCallStackDump, const char *formatString, Args &&...args) {
+    int add(bool useLoggerName, bool appendPID, [[maybe_unused]] bool addCallStackDump, const char *formatString, Args &&...args) {
         isEmpty = false;
         auto len = snprintf(nullptr, 0, formatString, args...);
         if (len <= 0) {
@@ -330,7 +331,7 @@ inline int log(const char *formatString, Args &&...args) {
         return 0;
     }
 
-    bool addCallStackDump = false;
+    [[maybe_unused]] bool addCallStackDump = false;
     if constexpr (CAL_SUPPORT_CALLSTACK_DUMPING) {
         if (V <= Cal::Utils::maxDynamicCallStackVerbosity) {
             addCallStackDump = true;
@@ -339,3 +340,5 @@ inline int log(const char *formatString, Args &&...args) {
 
     return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, Cal::Utils::appendPID, addCallStackDump, formatString, std::forward<Args>(args)...);
 }
+
+#pragma GCC diagnostic pop

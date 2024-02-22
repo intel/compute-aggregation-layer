@@ -1,12 +1,10 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
-#define FULL_VERBOSITY_IN_RELEASE_BUILD 1
-#define ENABLE_BLOATED_VERBOSITY 1
 #include "cal.h"
 #include "shared/log.h"
 #include "shared/ocl_wrapper.h"

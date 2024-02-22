@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -7,6 +7,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(cal LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
 
 include(CTest)
 include(os_release_info.cmake)
@@ -38,8 +39,11 @@ elseif(__LD_GOLD_FOUND AND COMPILER_SUPPORTS_GOLD)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold -Wl,--build-id=sha1")
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Werror=format-security -Wno-unused-parameter -Wno-missing-field-initializers -pthread -fstack-protector -fPIC -fno-rtti")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fstack-protector-strong -O2 -D_FORTIFY_SOURCE=2")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro")
+
 find_package(Threads REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}")
 

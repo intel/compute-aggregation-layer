@@ -5,9 +5,6 @@
  *
  */
 
-#define FULL_VERBOSITY_IN_RELEASE_BUILD 1
-#define ENABLE_BLOATED_VERBOSITY 1
-
 #include "cal.h"
 #include "level_zero/ze_api.h"
 #include "shared/log.h"

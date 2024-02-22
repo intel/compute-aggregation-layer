@@ -11,6 +11,7 @@ add_executable(ocl_test_basic
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
+target_compile_definitions(ocl_test_basic PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 target_link_libraries(ocl_test_basic OpenCL ${common_library_dependencies})
 
 add_executable(ocl_test_use_host_ptr
@@ -20,6 +21,7 @@ add_executable(ocl_test_use_host_ptr
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
+target_compile_definitions(ocl_test_use_host_ptr PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 target_link_libraries(ocl_test_use_host_ptr OpenCL ${common_library_dependencies})
 
 add_executable(ocl_parallel_copy
@@ -29,6 +31,7 @@ add_executable(ocl_parallel_copy
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
+target_compile_definitions(ocl_parallel_copy PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 target_link_libraries(ocl_parallel_copy OpenCL ${common_library_dependencies})
 
 add_executable(ocl_staging_area
@@ -38,6 +41,7 @@ add_executable(ocl_staging_area
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
 )
+target_compile_definitions(ocl_staging_area PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 target_link_libraries(ocl_staging_area OpenCL ${common_library_dependencies})
 
 get_property(ICD_L0_OBJECTS_SOURCES GLOBAL PROPERTY ICD_L0_OBJECTS_SOURCES_PROPERTY)

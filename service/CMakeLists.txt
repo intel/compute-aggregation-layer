@@ -23,6 +23,8 @@ add_executable(calrun # SERVICE
                $<TARGET_OBJECTS:generated_service>
                $<TARGET_OBJECTS:service_l0_objects>
 )
+target_compile_options(calrun PUBLIC "$<$<CONFIG:RELEASE>:-fPIE>")
+target_link_options(calrun PUBLIC "$<$<CONFIG:RELEASE>:-pie>")
 
 install(TARGETS calrun
         RUNTIME
