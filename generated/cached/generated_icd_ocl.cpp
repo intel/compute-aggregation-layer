@@ -1697,7 +1697,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
     }
 
     if(
-       !event &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -3922,8 +3922,8 @@ cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -3975,8 +3975,8 @@ cl_int clEnqueueWriteBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, 
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4028,8 +4028,8 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4089,8 +4089,8 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4142,8 +4142,8 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4195,8 +4195,8 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     }
 
     if(
-       !blocking_write &&
-       !event &&
+       !command->args.blocking_write &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4256,8 +4256,8 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4311,8 +4311,8 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4365,8 +4365,8 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4425,8 +4425,8 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4479,8 +4479,8 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4532,8 +4532,8 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     }
 
     if(
-       !blocking_read &&
-       !event &&
+       !command->args.blocking_read &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4595,8 +4595,8 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4650,8 +4650,8 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4705,8 +4705,8 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4766,8 +4766,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4819,8 +4819,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4872,8 +4872,8 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4933,8 +4933,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -4986,8 +4986,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5039,8 +5039,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5107,8 +5107,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5168,8 +5168,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5229,8 +5229,8 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5291,8 +5291,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5344,8 +5344,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5397,8 +5397,8 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5458,8 +5458,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5511,8 +5511,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
@@ -5564,8 +5564,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     }
 
     if(
-       !blocking &&
-       !event &&
+       !command->args.blocking &&
+       !command->args.event &&
        channel.isCallAsyncEnabled()){
          command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
          channel.callAsynchronous(command);
