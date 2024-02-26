@@ -4243,7 +4243,7 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     command->args.ptr = reinterpret_cast<void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
-    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4298,7 +4298,7 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
-    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4352,7 +4352,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
-    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read);
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4413,6 +4413,7 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     command->args.ptr = reinterpret_cast<void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4467,6 +4468,7 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4520,6 +4522,7 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_read, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
