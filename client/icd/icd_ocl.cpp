@@ -470,6 +470,14 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
 
 void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t offset) {
     if (isUsmHostOrShared(ptr)) {
+        auto apiHostPtr = buffer->asLocalObject()->apiHostPtr;
+        if (apiHostPtr && (buffer->asLocalObject()->flags & CL_MEM_USE_HOST_PTR)) {
+            auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
+            if (standaloneHostPtr) {
+                memcpy(apiHostPtr, standaloneHostPtr, buffer->asLocalObject()->size);
+                return reinterpret_cast<char *>(apiHostPtr) + offset;
+            }
+        }
         return ptr;
     }
 
@@ -477,6 +485,18 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
         return reinterpret_cast<char *>(buffer->asLocalObject()->apiHostPtr) + offset;
     }
     return nullptr;
+}
+
+void *IcdOclPlatform::translateUnMappedPointer(cl_mem buffer, void *ptr) {
+    auto apiHostPtr = buffer->asLocalObject()->apiHostPtr;
+    if (apiHostPtr && (buffer->asLocalObject()->flags & CL_MEM_USE_HOST_PTR)) {
+        auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
+        if (standaloneHostPtr) {
+            memcpy(standaloneHostPtr, apiHostPtr, buffer->asLocalObject()->size);
+            return standaloneHostPtr;
+        }
+    }
+    return ptr;
 }
 
 void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {

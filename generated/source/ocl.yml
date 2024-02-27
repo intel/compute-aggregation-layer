@@ -4432,6 +4432,7 @@ config:
               name: blocking_map
               type: cl_bool
               kind: scalar
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst})"
             3:
               name: map_flags
               type: cl_map_flags
@@ -4508,6 +4509,7 @@ config:
               name: mapped_ptr
               type: "void*"
               kind: scalar
+              translate_before: "{dst} = globalPlatform->translateUnMappedPointer(memobj, {arg})"
             3:
               name: num_events_in_wait_list
               type: cl_uint

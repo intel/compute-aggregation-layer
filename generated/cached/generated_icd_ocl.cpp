@@ -2756,6 +2756,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_map);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -2799,6 +2800,7 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.memobj = memobj->asLocalObject()->asRemoteObject();
+    command->args.mapped_ptr = globalPlatform->translateUnMappedPointer(memobj, mapped_ptr);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;

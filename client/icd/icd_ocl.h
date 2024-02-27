@@ -836,6 +836,7 @@ class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform
     }
 
     void *translateMappedPointer(cl_mem buffer, void *ptr, size_t offset);
+    void *translateUnMappedPointer(cl_mem buffer, void *ptr);
 
     IcdOclDevice *translateNewRemoteObjectToLocalObject(cl_device_id calDevice, cl_device_id parentDevice, bool isSubDevice) {
         if (nullptr == calDevice) {
