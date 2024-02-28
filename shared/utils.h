@@ -357,7 +357,11 @@ class Regex {
     bool isCompiled = false;
 };
 
-inline size_t getBufferRectSizeInBytes(const size_t *region, size_t rowPitch, size_t slicePitch) {
+inline size_t getBufferRectSizeInBytes(const size_t *origin, const size_t *region, size_t rowPitch, size_t slicePitch) {
+    if ((nullptr == origin) || (nullptr == region)) {
+        return 0;
+    }
+
     if ((nullptr == region) || (0 == region[0]) || (0 == region[1]) || (0 == region[2])) {
         return 0;
     }
@@ -370,7 +374,10 @@ inline size_t getBufferRectSizeInBytes(const size_t *region, size_t rowPitch, si
         slicePitch = rowPitch * region[1];
     }
 
-    size_t size = region[2] * slicePitch;
+    size_t offsetInBytes = origin[2] * slicePitch + origin[1] * rowPitch + origin[0];
+    size_t regionSizeInbytes = region[0] + rowPitch * (region[1] - 1) + slicePitch * (region[2] - 1);
+    size_t size = offsetInBytes + regionSizeInbytes;
+
     return size;
 }
 

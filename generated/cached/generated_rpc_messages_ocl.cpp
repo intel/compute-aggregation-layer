@@ -1171,7 +1171,7 @@ size_t ClEnqueueWriteBufferRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueWriteBufferRectRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRectRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueWriteBufferRectRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRectRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -1211,7 +1211,7 @@ size_t ClEnqueueReadBufferRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueReadBufferRectRpcM::Captures::DynamicTraits ClEnqueueReadBufferRectRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueReadBufferRectRpcM::Captures::DynamicTraits ClEnqueueReadBufferRectRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2009,7 +2009,7 @@ size_t ClEnqueueWriteBuffer_SharedRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueWriteBufferRect_LocalRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueWriteBufferRect_LocalRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2029,7 +2029,7 @@ size_t ClEnqueueWriteBufferRect_LocalRpcM::Captures::getCaptureDynMemSize() cons
      return size;
 }
 
-ClEnqueueWriteBufferRect_UsmRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueWriteBufferRect_UsmRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2049,7 +2049,7 @@ size_t ClEnqueueWriteBufferRect_UsmRpcM::Captures::getCaptureDynMemSize() const 
      return size;
 }
 
-ClEnqueueWriteBufferRect_SharedRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueWriteBufferRect_SharedRpcM::Captures::DynamicTraits ClEnqueueWriteBufferRect_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2129,7 +2129,7 @@ size_t ClEnqueueReadBuffer_SharedRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueReadBufferRect_LocalRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueReadBufferRect_LocalRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_LocalRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2149,7 +2149,7 @@ size_t ClEnqueueReadBufferRect_LocalRpcM::Captures::getCaptureDynMemSize() const
      return size;
 }
 
-ClEnqueueReadBufferRect_UsmRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueReadBufferRect_UsmRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_UsmRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
@@ -2169,7 +2169,7 @@ size_t ClEnqueueReadBufferRect_UsmRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
-ClEnqueueReadBufferRect_SharedRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+ClEnqueueReadBufferRect_SharedRpcM::Captures::DynamicTraits ClEnqueueReadBufferRect_SharedRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     DynamicTraits ret = {};
     ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
     ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);

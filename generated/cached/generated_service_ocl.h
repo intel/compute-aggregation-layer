@@ -108,9 +108,9 @@ extern cl_int (*clGetSupportedImageFormats)(cl_context context, cl_mem_flags fla
 extern cl_int (*clSetKernelArg)(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void* arg_value);
 extern cl_int (*clSetProgramSpecializationConstant)(cl_program program, cl_uint spec_id, size_t spec_size, const void* spec_value);
 extern cl_int (*clEnqueueWriteBuffer)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-extern cl_int (*clEnqueueWriteBufferRect)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+extern cl_int (*clEnqueueWriteBufferRect)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueReadBuffer)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
-extern cl_int (*clEnqueueReadBufferRect)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+extern cl_int (*clEnqueueReadBufferRect)(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueCopyBuffer)(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, size_t src_offset, size_t dst_offset, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueCopyBufferRect)(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, const size_t* src_origin, const size_t* dst_origin, const size_t* region, size_t src_row_pitch, size_t src_slice_pitch, size_t dst_row_pitch, size_t dst_slice_pitch, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueReadImage)(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t* src_origin, const size_t* region, size_t row_pitch, size_t slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
@@ -940,8 +940,8 @@ inline bool clEnqueueWriteBufferRectHandler(Provider &service, Cal::Rpc::Channel
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_write, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -985,8 +985,8 @@ inline bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelS
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1567,8 +1567,8 @@ inline bool clEnqueueWriteBufferRect_LocalHandler(Provider &service, Cal::Rpc::C
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_write, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1592,8 +1592,8 @@ inline bool clEnqueueWriteBufferRect_UsmHandler(Provider &service, Cal::Rpc::Cha
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_write, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1613,17 +1613,17 @@ inline bool clEnqueueWriteBufferRect_UsmHandler(Provider &service, Cal::Rpc::Cha
 inline bool clEnqueueWriteBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect_Shared");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_SharedRpcM*>(command);
-    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
     if((nullptr == importedMallocPtrPtr)  && (nullptr != apiCommand->args.ptr)){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
         return false;
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_write, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1712,8 +1712,8 @@ inline bool clEnqueueReadBufferRect_LocalHandler(Provider &service, Cal::Rpc::Ch
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1737,8 +1737,8 @@ inline bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::Chan
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -1758,17 +1758,17 @@ inline bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::Chan
 inline bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Shared");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM*>(command);
-    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
     if((nullptr == importedMallocPtrPtr)  && (nullptr != apiCommand->args.ptr)){
-        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
         return false;
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.buffer, 
                                                 apiCommand->args.blocking_read, 
-                                                apiCommand->args.buffer_offset ? apiCommand->captures.buffer_offset : nullptr, 
-                                                apiCommand->args.host_offset ? apiCommand->captures.host_offset : nullptr, 
+                                                apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr, 
+                                                apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr, 
                                                 apiCommand->args.region ? apiCommand->captures.region : nullptr, 
                                                 apiCommand->args.buffer_row_pitch, 
                                                 apiCommand->args.buffer_slice_pitch, 
@@ -2958,8 +2958,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcM &apiCommand
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_write, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -2989,8 +2989,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM &apiCommand)
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3489,8 +3489,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_LocalRpcM &apiC
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_write, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3507,8 +3507,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_UsmRpcM &apiCom
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_write, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3525,8 +3525,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_SharedRpcM &api
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_write, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3582,8 +3582,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM &apiCo
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3600,8 +3600,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM &apiComm
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 
@@ -3618,8 +3618,8 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM &apiC
                                                 apiCommand.args.command_queue, 
                                                 apiCommand.args.buffer, 
                                                 apiCommand.args.blocking_read, 
-                                                apiCommand.args.buffer_offset, 
-                                                apiCommand.args.host_offset, 
+                                                apiCommand.args.buffer_origin, 
+                                                apiCommand.args.host_origin, 
                                                 apiCommand.args.region, 
                                                 apiCommand.args.buffer_row_pitch, 
                                                 apiCommand.args.buffer_slice_pitch, 

@@ -6754,8 +6754,8 @@ struct ClEnqueueWriteBufferRectRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_write = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -6771,8 +6771,8 @@ struct ClEnqueueWriteBufferRectRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_write == rhs.blocking_write;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -6789,14 +6789,14 @@ struct ClEnqueueWriteBufferRectRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -6821,14 +6821,14 @@ struct ClEnqueueWriteBufferRectRpcM {
 
     ClEnqueueWriteBufferRectRpcM() = default;
 
-    ClEnqueueWriteBufferRectRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueWriteBufferRectRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_write = blocking_write;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -6841,14 +6841,14 @@ struct ClEnqueueWriteBufferRectRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueWriteBufferRectRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueWriteBufferRectRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_write = blocking_write;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -6862,11 +6862,11 @@ struct ClEnqueueWriteBufferRectRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -7006,8 +7006,8 @@ struct ClEnqueueReadBufferRectRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_read = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -7023,8 +7023,8 @@ struct ClEnqueueReadBufferRectRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -7041,14 +7041,14 @@ struct ClEnqueueReadBufferRectRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -7073,14 +7073,14 @@ struct ClEnqueueReadBufferRectRpcM {
 
     ClEnqueueReadBufferRectRpcM() = default;
 
-    ClEnqueueReadBufferRectRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueReadBufferRectRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_read = blocking_read;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -7093,14 +7093,14 @@ struct ClEnqueueReadBufferRectRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueReadBufferRectRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueReadBufferRectRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_read = blocking_read;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -7114,11 +7114,11 @@ struct ClEnqueueReadBufferRectRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -11848,8 +11848,8 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_write = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -11865,8 +11865,8 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_write == rhs.blocking_write;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -11883,14 +11883,14 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -11915,14 +11915,14 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
 
     ClEnqueueWriteBufferRect_LocalRpcM() = default;
 
-    ClEnqueueWriteBufferRect_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueWriteBufferRect_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_write = blocking_write;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -11935,14 +11935,14 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueWriteBufferRect_LocalRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueWriteBufferRect_LocalRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_write = blocking_write;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -11956,11 +11956,11 @@ struct ClEnqueueWriteBufferRect_LocalRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -11990,8 +11990,8 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_write = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -12007,8 +12007,8 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_write == rhs.blocking_write;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -12025,14 +12025,14 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -12057,14 +12057,14 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
 
     ClEnqueueWriteBufferRect_UsmRpcM() = default;
 
-    ClEnqueueWriteBufferRect_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueWriteBufferRect_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_write = blocking_write;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12077,14 +12077,14 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueWriteBufferRect_UsmRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueWriteBufferRect_UsmRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_write = blocking_write;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12098,11 +12098,11 @@ struct ClEnqueueWriteBufferRect_UsmRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -12132,8 +12132,8 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_write = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -12149,8 +12149,8 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_write == rhs.blocking_write;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -12167,14 +12167,14 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -12199,14 +12199,14 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
 
     ClEnqueueWriteBufferRect_SharedRpcM() = default;
 
-    ClEnqueueWriteBufferRect_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueWriteBufferRect_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_write = blocking_write;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12219,14 +12219,14 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueWriteBufferRect_SharedRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueWriteBufferRect_SharedRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_write = blocking_write;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12240,11 +12240,11 @@ struct ClEnqueueWriteBufferRect_SharedRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -12604,8 +12604,8 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_read = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -12621,8 +12621,8 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -12639,14 +12639,14 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -12671,14 +12671,14 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
 
     ClEnqueueReadBufferRect_LocalRpcM() = default;
 
-    ClEnqueueReadBufferRect_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueReadBufferRect_LocalRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_read = blocking_read;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12691,14 +12691,14 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueReadBufferRect_LocalRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueReadBufferRect_LocalRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_read = blocking_read;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12712,11 +12712,11 @@ struct ClEnqueueReadBufferRect_LocalRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -12746,8 +12746,8 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_read = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -12763,8 +12763,8 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -12781,14 +12781,14 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -12813,14 +12813,14 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
 
     ClEnqueueReadBufferRect_UsmRpcM() = default;
 
-    ClEnqueueReadBufferRect_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueReadBufferRect_UsmRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_read = blocking_read;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12833,14 +12833,14 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueReadBufferRect_UsmRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueReadBufferRect_UsmRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_read = blocking_read;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12854,11 +12854,11 @@ struct ClEnqueueReadBufferRect_UsmRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));
@@ -12888,8 +12888,8 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
         cl_command_queue command_queue = {};
         cl_mem buffer = {};
         cl_bool blocking_read = {};
-        const size_t* buffer_offset = {};
-        const size_t* host_offset = {};
+        const size_t* buffer_origin = {};
+        const size_t* host_origin = {};
         const size_t* region = {};
         size_t buffer_row_pitch = {};
         size_t buffer_slice_pitch = {};
@@ -12905,8 +12905,8 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
             equal &= this->command_queue == rhs.command_queue;
             equal &= this->buffer == rhs.buffer;
             equal &= this->blocking_read == rhs.blocking_read;
-            equal &= this->buffer_offset == rhs.buffer_offset;
-            equal &= this->host_offset == rhs.host_offset;
+            equal &= this->buffer_origin == rhs.buffer_origin;
+            equal &= this->host_origin == rhs.host_origin;
             equal &= this->region == rhs.region;
             equal &= this->buffer_row_pitch == rhs.buffer_row_pitch;
             equal &= this->buffer_slice_pitch == rhs.buffer_slice_pitch;
@@ -12923,14 +12923,14 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
     struct Captures {
 
         struct DynamicTraits {
-            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+            static DynamicTraits calculate(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
             uint32_t totalDynamicSize = 0;
             DynamicArgTraits event_wait_list = {};          
         };
 
         cl_int ret = CL_DEVICE_NOT_AVAILABLE;
-        size_t buffer_offset[3];
-        size_t host_offset[3];
+        size_t buffer_origin[3];
+        size_t host_origin[3];
         size_t region[3];
         cl_event event;
         uint32_t countEvent_wait_list = 0;
@@ -12955,14 +12955,14 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
 
     ClEnqueueReadBufferRect_SharedRpcM() = default;
 
-    ClEnqueueReadBufferRect_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    ClEnqueueReadBufferRect_SharedRpcM(const Captures::DynamicTraits &dynamicTraits, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         header.subtype = messageSubtype;
         args.command_queue = command_queue;
         args.buffer = buffer;
         args.blocking_read = blocking_read;
-        args.buffer_offset = buffer_offset;
-        args.host_offset = host_offset;
+        args.buffer_origin = buffer_origin;
+        args.host_origin = host_origin;
         args.region = region;
         args.buffer_row_pitch = buffer_row_pitch;
         args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12975,14 +12975,14 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
         captures.adjustCaptureLayout(dynamicTraits);
     }
     
-    static void fillWithoutCapture(ClEnqueueReadBufferRect_SharedRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_offset, const size_t* host_offset, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    static void fillWithoutCapture(ClEnqueueReadBufferRect_SharedRpcM &message, cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
         message.header.type = Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl;
         message.header.subtype = messageSubtype;
         message.args.command_queue = command_queue;
         message.args.buffer = buffer;
         message.args.blocking_read = blocking_read;
-        message.args.buffer_offset = buffer_offset;
-        message.args.host_offset = host_offset;
+        message.args.buffer_origin = buffer_origin;
+        message.args.host_origin = host_origin;
         message.args.region = region;
         message.args.buffer_row_pitch = buffer_row_pitch;
         message.args.buffer_slice_pitch = buffer_slice_pitch;
@@ -12996,11 +12996,11 @@ struct ClEnqueueReadBufferRect_SharedRpcM {
     
 
     void copyFromCaller(const Captures::DynamicTraits &dynMemTraits){
-        if(args.buffer_offset){
-            memcpy(asMemcpyDstT(captures.buffer_offset), args.buffer_offset, 3 * sizeof(size_t));
+        if(args.buffer_origin){
+            memcpy(asMemcpyDstT(captures.buffer_origin), args.buffer_origin, 3 * sizeof(size_t));
         }
-        if(args.host_offset){
-            memcpy(asMemcpyDstT(captures.host_offset), args.host_offset, 3 * sizeof(size_t));
+        if(args.host_origin){
+            memcpy(asMemcpyDstT(captures.host_origin), args.host_origin, 3 * sizeof(size_t));
         }
         if(args.region){
             memcpy(asMemcpyDstT(captures.region), args.region, 3 * sizeof(size_t));

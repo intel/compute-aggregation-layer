@@ -3508,7 +3508,7 @@ config:
               type: cl_bool
               kind: scalar
             3:
-              name: buffer_offset
+              name: buffer_origin
               type: "const size_t*"
               kind: ptr_array
               kind_details:
@@ -3519,7 +3519,7 @@ config:
                   kind: scalar
                 server_access: read
             4:
-              name: host_offset
+              name: host_origin
               type: "const size_t*"
               kind: ptr_array
               kind_details:
@@ -3560,7 +3560,7 @@ config:
               name: ptr
               type: "const void*"
               kind_details:
-                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
+                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}host_origin, {captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
@@ -3711,7 +3711,7 @@ config:
               kind: scalar
               translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst}, ptr_kind)"
             3:
-              name: buffer_offset
+              name: buffer_origin
               type: "const size_t*"
               kind: ptr_array
               kind_details:
@@ -3722,7 +3722,7 @@ config:
                   kind: scalar
                 server_access: read
             4:
-              name: host_offset
+              name: host_origin
               type: "const size_t*"
               kind: ptr_array
               kind_details:
@@ -3763,7 +3763,7 @@ config:
               name: ptr
               type: "void*"
               kind_details:
-                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
+                num_elements: "Cal::Utils::getBufferRectSizeInBytes({captures_prefix}host_origin, {captures_prefix}region, {arg_prefix}host_row_pitch, {arg_prefix}host_slice_pitch)"
                 can_be_null: True
                 element:
                   type: "void"
