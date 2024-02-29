@@ -362,7 +362,7 @@ inline size_t getBufferRectSizeInBytes(const size_t *origin, const size_t *regio
         return 0;
     }
 
-    if ((nullptr == region) || (0 == region[0]) || (0 == region[1]) || (0 == region[2])) {
+    if ((0 == region[0]) || (0 == region[1]) || (0 == region[2])) {
         return 0;
     }
 

@@ -493,7 +493,8 @@ void *IcdOclPlatform::translateUnMappedPointer(cl_mem buffer, void *ptr) {
         auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
         if (standaloneHostPtr) {
             memcpy(standaloneHostPtr, apiHostPtr, buffer->asLocalObject()->size);
-            return standaloneHostPtr;
+            auto offset = Cal::Utils::byteDistanceAbs(ptr, apiHostPtr);
+            return Cal::Utils::moveByBytes(standaloneHostPtr, offset);
         }
     }
     return ptr;
