@@ -337,8 +337,9 @@ cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_typ
     flags |= parentFlags & (CL_MEM_USE_HOST_PTR | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR);
     auto parentHostPtr = buffer->asLocalObject()->apiHostPtr;
     auto origin = static_cast<const cl_buffer_region *>(buffer_create_info)->origin;
-    retMem->asLocalObject()->apiHostPtr = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(parentHostPtr) + origin);
+    retMem->asLocalObject()->apiHostPtr = Cal::Utils::moveByBytes(parentHostPtr, origin);
     retMem->asLocalObject()->flags = flags;
+    retMem->asLocalObject()->parentMemObj = buffer->asLocalObject();
     return retMem;
 }
 
@@ -472,10 +473,19 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
     if (isUsmHostOrShared(ptr)) {
         auto apiHostPtr = buffer->asLocalObject()->apiHostPtr;
         if (apiHostPtr && (buffer->asLocalObject()->flags & CL_MEM_USE_HOST_PTR)) {
-            auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
-            if (standaloneHostPtr) {
-                memcpy(apiHostPtr, standaloneHostPtr, buffer->asLocalObject()->size);
-                return reinterpret_cast<char *>(apiHostPtr) + offset;
+            auto parentMemObj = buffer->asLocalObject()->parentMemObj;
+            if (parentMemObj) {
+                auto standaloneHostPtr = parentMemObj->asLocalObject()->standaloneHostPtrAllocation.get();
+                if (standaloneHostPtr) {
+                    memcpy(parentMemObj->asLocalObject()->apiHostPtr, standaloneHostPtr, parentMemObj->asLocalObject()->size);
+                    return Cal::Utils::moveByBytes(apiHostPtr, offset);
+                }
+            } else {
+                auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
+                if (standaloneHostPtr) {
+                    memcpy(apiHostPtr, standaloneHostPtr, buffer->asLocalObject()->size);
+                    return Cal::Utils::moveByBytes(apiHostPtr, offset);
+                }
             }
         }
         return ptr;
@@ -490,11 +500,21 @@ void *IcdOclPlatform::translateMappedPointer(cl_mem buffer, void *ptr, size_t of
 void *IcdOclPlatform::translateUnMappedPointer(cl_mem buffer, void *ptr) {
     auto apiHostPtr = buffer->asLocalObject()->apiHostPtr;
     if (apiHostPtr && (buffer->asLocalObject()->flags & CL_MEM_USE_HOST_PTR)) {
-        auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
-        if (standaloneHostPtr) {
-            memcpy(standaloneHostPtr, apiHostPtr, buffer->asLocalObject()->size);
-            auto offset = Cal::Utils::byteDistanceAbs(ptr, apiHostPtr);
-            return Cal::Utils::moveByBytes(standaloneHostPtr, offset);
+        auto parentMemObj = buffer->asLocalObject()->parentMemObj;
+        if (parentMemObj) {
+            auto standaloneHostPtr = parentMemObj->asLocalObject()->standaloneHostPtrAllocation.get();
+            if (standaloneHostPtr) {
+                memcpy(standaloneHostPtr, parentMemObj->asLocalObject()->apiHostPtr, parentMemObj->asLocalObject()->size);
+                auto offset = Cal::Utils::byteDistanceAbs(ptr, parentMemObj->asLocalObject()->apiHostPtr);
+                return Cal::Utils::moveByBytes(standaloneHostPtr, offset);
+            }
+        } else {
+            auto standaloneHostPtr = buffer->asLocalObject()->standaloneHostPtrAllocation.get();
+            if (standaloneHostPtr) {
+                memcpy(standaloneHostPtr, apiHostPtr, buffer->asLocalObject()->size);
+                auto offset = Cal::Utils::byteDistanceAbs(ptr, apiHostPtr);
+                return Cal::Utils::moveByBytes(standaloneHostPtr, offset);
+            }
         }
     }
     return ptr;

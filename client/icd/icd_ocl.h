@@ -275,6 +275,7 @@ struct IcdOclMem : Cal::Shared::RefCountedWithParent<_cl_mem, IcdOclTypePrinter>
     size_t size = 0U;
     cl_mem_flags flags = 0U;
     IcdOclContext *parent = nullptr;
+    IcdOclMem *parentMemObj = nullptr;
 
     IcdOclContext *getContext() const {
         return parent;
