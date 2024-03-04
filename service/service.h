@@ -579,7 +579,7 @@ class Provider {
             return -1;
         }
         if (-1 != serviceConfig.sharedRunnerLockFd) {
-            if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
+            if ((0 != Cal::Sys::flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
                 log<Verbosity::error>("Could not unlock shared runner lock for socket %s\n", serviceConfig.listener.socketPath.c_str());
             }
         }

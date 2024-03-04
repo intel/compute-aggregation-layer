@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -217,6 +217,98 @@ struct SysCallsContext {
             return apiConfig.ftruncate.impl.value()(fd, length);
         }
         return ftruncateBaseImpl(fd, length);
+    }
+
+    virtual int unlink(const char *pathname) {
+        ++apiConfig.unlink.callCount;
+        if (apiConfig.unlink.returnValue) {
+            return apiConfig.unlink.returnValue.value();
+        }
+        if (apiConfig.unlink.impl) {
+            return apiConfig.unlink.impl.value()(pathname);
+        }
+        return 0;
+    }
+
+    virtual int socket(int domain, int type, int protocol) {
+        ++apiConfig.socket.callCount;
+        if (apiConfig.socket.returnValue) {
+            return apiConfig.socket.returnValue.value();
+        }
+        if (apiConfig.socket.impl) {
+            return apiConfig.socket.impl.value()(domain, type, protocol);
+        }
+        return apiConfig.socket.callCount;
+    }
+
+    virtual int listen(int sockfd, int backlog) {
+        ++apiConfig.listen.callCount;
+        if (apiConfig.listen.returnValue) {
+            return apiConfig.listen.returnValue.value();
+        }
+        if (apiConfig.listen.impl) {
+            return apiConfig.listen.impl.value()(sockfd, backlog);
+        }
+        return apiConfig.listen.callCount;
+    }
+
+    virtual int accept(int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen) {
+        ++apiConfig.accept.callCount;
+        if (apiConfig.accept.returnValue) {
+            return apiConfig.accept.returnValue.value();
+        }
+        if (apiConfig.accept.impl) {
+            return apiConfig.accept.impl.value()(sockfd, addr, addrLen);
+        }
+        return apiConfig.accept.callCount;
+    }
+
+    virtual int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+        ++apiConfig.bind.callCount;
+        if (apiConfig.bind.returnValue) {
+            return apiConfig.bind.returnValue.value();
+        }
+        if (apiConfig.bind.impl) {
+            return apiConfig.bind.impl.value()(sockfd, addr, addrlen);
+        }
+        return apiConfig.bind.callCount;
+    }
+
+    virtual int flock(int fd, int operation) {
+        ++apiConfig.flock.callCount;
+        if (apiConfig.flock.returnValue) {
+            return apiConfig.flock.returnValue.value();
+        }
+        if (apiConfig.flock.impl) {
+            return apiConfig.flock.impl.value()(fd, operation);
+        }
+        return 0;
+    }
+
+    virtual int chmod(const char *pathname, mode_t mode) {
+        ++apiConfig.chmod.callCount;
+        if (apiConfig.chmod.returnValue) {
+            return apiConfig.chmod.returnValue.value();
+        }
+
+        if (apiConfig.chmod.impl) {
+            return apiConfig.chmod.impl.value()(pathname, mode);
+        }
+
+        return 0;
+    }
+
+    virtual int mkdir(const char *path, mode_t mode) {
+        ++apiConfig.mkdir.callCount;
+        if (apiConfig.mkdir.returnValue) {
+            return apiConfig.mkdir.returnValue.value();
+        }
+
+        if (apiConfig.mkdir.impl) {
+            return apiConfig.mkdir.impl.value()(path, mode);
+        }
+
+        return 0;
     }
 
     void *mmapBaseImpl(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
@@ -484,6 +576,54 @@ struct SysCallsContext {
             std::optional<std::function<int(void *addr, size_t len, int prot)>> impl;
             uint64_t callCount = 0U;
         } mprotect;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *pathname)>> impl;
+            uint64_t callCount = 0U;
+        } unlink;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int domain, int type, int protocol)>> impl;
+            uint64_t callCount = 0U;
+        } socket;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int sockfd, int backlog)>> impl;
+            uint64_t callCount = 0U;
+        } listen;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen)>> impl;
+            uint64_t callCount = 0U;
+        } accept;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int sockfd, const struct sockaddr *addr, socklen_t addrlen)>> impl;
+            uint64_t callCount = 0U;
+        } bind;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(int fd, int operation)>> impl;
+            uint64_t callCount = 0U;
+        } flock;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *path, mode_t mode)>> impl;
+            uint64_t callCount = 0U;
+        } mkdir;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *pathname, mode_t mode)>> impl;
+            uint64_t callCount = 0U;
+        } chmod;
     } apiConfig;
 };
 

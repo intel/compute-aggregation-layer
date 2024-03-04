@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -12,7 +12,9 @@
 #include <memory>
 #include <semaphore.h>
 #include <stdlib.h>
+#include <sys/file.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -40,6 +42,15 @@ extern int (*sem_post)(sem_t *sem);
 
 extern int (*ftruncate)(int fd, off_t length);
 extern int (*close)(int fd);
+extern int (*unlink)(const char *pathname);
+extern int (*socket)(int domain, int type, int protocol);
+extern int (*listen)(int sockfd, int backlog);
+extern int (*accept)(int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen);
+extern int (*bind)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+extern int (*flock)(int fd, int operation);
+
+extern int (*mkdir)(const char *path, mode_t mode);
+extern int (*chmod)(const char *pathname, mode_t mode);
 
 } // namespace Sys
 } // namespace Cal

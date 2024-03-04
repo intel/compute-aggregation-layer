@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -343,10 +344,10 @@ class NamedSocketConnectionListener : public ConnectionListener {
         }
         log<Verbosity::debug>("Creating listener socket as server");
         log<Verbosity::debug>("Unlinking stale socket file (if exists) : %s", path);
-        unlink(path);
+        Cal::Sys::unlink(path);
 
         log<Verbosity::debug>("Creating listener socket");
-        this->listenerSocketFd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+        this->listenerSocketFd = Cal::Sys::socket(AF_UNIX, SOCK_SEQPACKET, 0);
         if (this->listenerSocketFd == -1) {
             log<Verbosity::error>("Failed to create listener socket");
             return -1;
@@ -364,8 +365,29 @@ class NamedSocketConnectionListener : public ConnectionListener {
             return -1;
         }
 
+        auto err = Cal::Sys::chmod(socketAddress.sun_path, 0700);
+        if (err != 0) {
+            log<Verbosity::error>("Failed to restrict socket access to current user - err : %d", err);
+            this->close();
+            return -1;
+        }
+
+        err = Cal::Sys::flock(this->listenerSocketFd, LOCK_EX | LOCK_NB);
+        if (err != 0) {
+            log<Verbosity::error>("Failed to restrict socket access to current user - err : %d", err);
+            this->close();
+            return -1;
+        }
+
+        err = Cal::Sys::flock(this->listenerSocketFd, LOCK_UN);
+        if (err != 0) {
+            log<Verbosity::error>("Failed to restrict socket access to current user - err : %d", err);
+            this->close();
+            return -1;
+        }
+
         log<Verbosity::debug>("Listening on socket %s", socketAddress.sun_path);
-        if (0 != ::listen(this->listenerSocketFd, 4096)) {
+        if (0 != Cal::Sys::listen(this->listenerSocketFd, 4096)) {
             log<Verbosity::error>("Failed while starting to listen on socket (family : AF_UNIX) : %s - error : %s", socketAddress.sun_path, Connection::connectionErrnoToError(errno).c_str());
             this->close();
             return -1;
@@ -381,7 +403,7 @@ class NamedSocketConnectionListener : public ConnectionListener {
             return nullptr;
         }
 
-        int socketFd = ::accept(listenerSocketFd, NULL, NULL);
+        int socketFd = Cal::Sys::accept(listenerSocketFd, NULL, NULL);
         if (socketFd == -1) {
             if (this->listening) {
                 log<Verbosity::error>("Failed to accept on socket");
@@ -411,7 +433,7 @@ class NamedSocketConnectionListener : public ConnectionListener {
         }
 
         log<Verbosity::debug>("Unlinking socket file : %s", path.c_str());
-        unlink(path.c_str());
+        Cal::Sys::unlink(path.c_str());
         this->listenerSocketFd = -1;
         return 0;
     }

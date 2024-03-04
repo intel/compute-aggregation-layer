@@ -172,8 +172,38 @@ int64_t getCalEnvI64(std::string_view name, int64_t defaultValue) {
     return atoll(envStr);
 }
 
+bool ensureUserPrivateDir(const char *path) {
+    auto err = Cal::Sys::mkdir(path, 0700);
+    if ((err != 0) && (errno != EEXIST)) {
+        log<Verbosity::error>("Could not create %s because %d - errno: %d", path, err, errno);
+        return false;
+    }
+    return true;
+}
+
+std::string ensureUserPrivateDirectoryLayout() {
+    auto calUserPath = calTempFilesDefaultPath.data() + std::to_string(geteuid()) + "/"s;
+    if (false == ensureUserPrivateDir(calUserPath.c_str())) {
+        return "";
+    }
+
+    if (false == ensureUserPrivateDir((calUserPath + "/runner").c_str())) {
+        return "";
+    }
+
+    if (false == ensureUserPrivateDir((calUserPath + "/shared_runner").c_str())) {
+        return "";
+    }
+
+    return calUserPath;
+}
+
 std::string getPathForTempFiles() {
-    return calTempFilesDefaultPath.data() + std::to_string(geteuid()) + "/"s;
+    static auto path = ensureUserPrivateDirectoryLayout();
+    if (path.empty()) {
+        log<Verbosity::critical>("Could not create temporary directory");
+    }
+    return path;
 }
 
 bool isDebuggerConnected() {

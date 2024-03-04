@@ -1507,7 +1507,7 @@ void checkForRequiredFiles() {
     log<Verbosity::info>("CAL library: %s", fullCalLibPath.c_str());
 
     if (enableOcl) {
-        std::filesystem::path calIcdPath = "/opt/compute-aggregation-layer";
+        std::filesystem::path calIcdPath = Utils::getPathForTempFiles();
         bool isInOpt = std::filesystem::exists(calIcdPath / "cal.icd");
         bool isInCalDir = std::filesystem::exists(calDir / "cal.icd");
         if (isInOpt) {
@@ -1515,10 +1515,21 @@ void checkForRequiredFiles() {
         } else if (isInCalDir) {
             Cal::Sys::setenv("OCL_ICD_VENDORS", calDir.c_str(), 1);
         } else {
-            std::ofstream calIcdFile(calTempFilesDefaultPath.data() + "cal.icd"s);
-            if (calIcdFile.is_open()) {
-                calIcdFile << "libcal.so";
-                Cal::Sys::setenv("OCL_ICD_VENDORS", calTempFilesDefaultPath.data(), 1);
+            auto icdEntryFd = open((calIcdPath / "cal.icd"s).c_str(), O_EXCL | O_CREAT | O_WRONLY, 0600);
+            bool entryAvailable = false;
+            if (icdEntryFd >= 0) {
+                const char *icdEntry = "libcal.so";
+                auto len = static_cast<ssize_t>(strlen(icdEntry));
+                if (len == write(icdEntryFd, icdEntry, len)) {
+                    entryAvailable = true;
+                }
+                close(icdEntryFd);
+            } else if (errno == EEXIST) {
+                entryAvailable = true;
+            }
+
+            if (entryAvailable) {
+                Cal::Sys::setenv("OCL_ICD_VENDORS", calIcdPath.c_str(), 1);
             } else {
                 log<Verbosity::critical>("Fallback path for creating cal.icd file has failed. Please create cal.icd in working directory or set OCL_ICD_VENDORS environment variable");
                 exit(EXIT_FAILURE);

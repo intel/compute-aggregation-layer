@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -106,7 +106,10 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    std::filesystem::create_directories(serviceConfig.listener.socketPath.c_str());
+    if (false == Cal::Utils::ensureUserPrivateDir(serviceConfig.listener.socketPath.c_str())) {
+        return -1;
+    }
+
     serviceConfig.listener.socketPath.append("socket");
 
     if (serviceConfig.isAnyRunnerMode()) {
@@ -131,7 +134,7 @@ int main(int argc, const char *argv[]) {
                 log<Verbosity::critical>("Could not open %s\n", lockPath.c_str());
                 return -1;
             }
-            if (0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_EX)) {
+            if (0 != Cal::Sys::flock(serviceConfig.sharedRunnerLockFd, LOCK_EX)) {
                 log<Verbosity::critical>("Could not lock %s\n", lockPath.c_str());
                 return -1;
             }
@@ -141,7 +144,7 @@ int main(int argc, const char *argv[]) {
                 existingSharedCalConnection.reset();
             }
             if (nullptr != existingSharedCalConnection) {
-                if ((0 != flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
+                if ((0 != Cal::Sys::flock(serviceConfig.sharedRunnerLockFd, LOCK_UN)) || (0 != Cal::Sys::close(serviceConfig.sharedRunnerLockFd))) {
                     log<Verbosity::critical>("Could not unlock %s\n", lockPath.c_str());
                 }
             }

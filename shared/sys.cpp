@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -33,6 +33,15 @@ int (*sem_post)(sem_t *sem) = ::sem_post;
 
 int (*close)(int fd) = ::close;
 int (*ftruncate)(int fd, off_t length) = ::ftruncate;
+int (*unlink)(const char *pathname) = ::unlink;
+int (*socket)(int domain, int type, int protocol) = ::socket;
+int (*listen)(int sockfd, int backlog) = ::listen;
+int (*accept)(int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen) = ::accept;
+int (*bind)(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = ::bind;
+int (*flock)(int fd, int operation) = ::flock;
+
+int (*mkdir)(const char *path, mode_t mode) = ::mkdir;
+int (*chmod)(const char *pathname, mode_t mode) = ::chmod;
 
 } // namespace Sys
 } // namespace Cal

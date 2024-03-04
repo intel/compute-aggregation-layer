@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -100,6 +100,38 @@ int (*ftruncate)(int fd, off_t length) = +[](int fd, off_t length) -> int {
 
 int (*mprotect)(void *addr, size_t len, int prot) = +[](void *addr, size_t len, int prot) -> int {
     return Cal::Mocks::getSysCallsContext()->mprotect(addr, len, prot);
+};
+
+int (*unlink)(const char *pathname) = +[](const char *pathname) -> int {
+    return Cal::Mocks::getSysCallsContext()->unlink(pathname);
+};
+
+int (*socket)(int domain, int type, int protocol) = +[](int domain, int type, int protocol) -> int {
+    return Cal::Mocks::getSysCallsContext()->socket(domain, type, protocol);
+};
+
+int (*listen)(int sockfd, int backlog) = +[](int sockfd, int backlog) -> int {
+    return Cal::Mocks::getSysCallsContext()->listen(sockfd, backlog);
+};
+
+int (*accept)(int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen) = +[](int sockfd, __SOCKADDR_ARG addr, socklen_t *__restrict addrLen) -> int {
+    return Cal::Mocks::getSysCallsContext()->accept(sockfd, addr, addrLen);
+};
+
+int (*bind)(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = +[](int sockfd, const struct sockaddr *addr, socklen_t addrlen) -> int {
+    return Cal::Mocks::getSysCallsContext()->bind(sockfd, addr, addrlen);
+};
+
+int (*flock)(int fd, int operation) = +[](int fd, int operation) -> int {
+    return Cal::Mocks::getSysCallsContext()->flock(fd, operation);
+};
+
+int (*mkdir)(const char *path, mode_t mode) = +[](const char *path, mode_t mode) -> int {
+    return Cal::Mocks::getSysCallsContext()->mkdir(path, mode);
+};
+
+int (*chmod)(const char *pathname, mode_t mode) = +[](const char *pathname, mode_t mode) -> int {
+    return Cal::Mocks::getSysCallsContext()->chmod(pathname, mode);
 };
 
 } // namespace Sys

@@ -46,10 +46,10 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/register_all_generated_handlers.cpp
                ${cal_source_root_dir}/shared/allocators.cpp
                ${cal_source_root_dir}/shared/callstack.cpp
-               ${cal_source_root_dir}/shared/sys.cpp
                ${cal_source_root_dir}/shared/usm.cpp
                ${cal_source_root_dir}/shared/utils.cpp
                ${cal_source_root_dir}/test/utils/signal_utils.cpp
+               ${cal_source_root_dir}/test/mocks/sys_mock.cpp
 
                $<TARGET_OBJECTS:generated_ult>
 

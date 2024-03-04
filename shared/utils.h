@@ -819,5 +819,8 @@ constexpr auto toAddress(const T &p) noexcept {
     return p.get();
 }
 
+bool ensureUserPrivateDir(const char *path);
+std::string ensureUserPrivateDirectoryLayout();
+
 } // namespace Utils
 } // namespace Cal
