@@ -320,7 +320,7 @@ config:
             icd:
               handler_only_suffix: "RpcHelper"
               handler_prologue: "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
-              handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n    }\n    if(pfn_notify){ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);}\n"
+              handler_epilogue: "if (ret != nullptr) {\n        ret->asLocalObject()->setDevicesList(num_devices, devices);\n        if (pfn_notify) {\n            ret->asLocalObject()->notifyErrInfoMem = std::move(standalone_error_info);\n        }\n    } else {\n        *errcode_ret = CL_OUT_OF_HOST_MEMORY;\n    }"
             rpc:
               custom_handler: True
           returns:
