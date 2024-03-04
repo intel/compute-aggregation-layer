@@ -855,7 +855,7 @@ struct MockProvider : public Cal::Service::Provider {
 TEST(CopyGroupAssign, whenServiceProviderIsCreatedThenApplyDefaultServiceConfigurationSettings) {
     MockProvider service(nullptr, Cal::Service::ServiceConfig());
 
-    EXPECT_EQ(service.defaultSharedVaSizeInGB, 128);
+    EXPECT_EQ(service.defaultSharedVaSizeInGB, 256);
     EXPECT_EQ(service.defaultRpcMessageChannelSizeMB, 256);
     EXPECT_EQ(service.sharedVaArenaSizeMB, 256);
 }
