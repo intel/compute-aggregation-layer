@@ -77,7 +77,6 @@ config:
           # WIP :
           clEnqueueMapImage,
           # Callbacks, intentionally left for later
-          clEnqueueSVMFree,
           clEnqueueNativeKernel,
         ]
 
@@ -5379,6 +5378,76 @@ config:
               name: size
               type: size_t
               kind: scalar
+            5:
+              name: num_events_in_wait_list
+              type: cl_uint
+              kind: scalar
+            6:
+              name: event_wait_list
+              type: "const cl_event*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "num_events_in_wait_list"
+                can_be_null: True
+                element:
+                  type: cl_event
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+            7:
+              name: event
+              type: "cl_event*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: cl_event
+                  kind: scalar
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                server_access: write
+        - name: clEnqueueSVMFree
+          latency: 0.0
+          special_handling:
+            icd:
+              handler_prologue: "invalidateKernelArgCache();"
+          returns:
+            type: cl_int
+            kind: scalar
+            default: "CL_DEVICE_NOT_AVAILABLE"
+          args:
+            0:
+              name: command_queue
+              type: cl_command_queue
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: num_svm_pointers
+              type: cl_uint
+              kind: scalar
+            2:
+              name: svm_pointers
+              type: "void**"
+              kind: ptr_array
+              kind_details:
+                num_elements: "num_svm_pointers"
+                can_be_null: True
+                element:
+                  type: void*
+                  kind: ptr_usm_va
+                server_access: read
+            3:
+              name: pfn_notify
+              type: "void (CL_CALLBACK*)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data)"
+              kind: ptr_func
+              kind_details:
+                variable_generator: "void (CL_CALLBACK* {arg})(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data)"
+              ignore: True
+            4:
+              name: user_data
+              type: "void*"
+              kind: ptr_va
+              ignore: True
             5:
               name: num_events_in_wait_list
               type: cl_uint

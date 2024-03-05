@@ -146,6 +146,7 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
 cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_pointers, const void** svm_pointers, const size_t* sizes, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices);
 cl_int clReleaseDeviceEXT (cl_device_id device);
 cl_int clRetainDeviceEXT (cl_device_id device);
@@ -328,10 +329,6 @@ inline void clEnqueueMapImageUnimpl() {
     log<Verbosity::critical>("Function clEnqueueMapImage is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
 }
-inline void clEnqueueSVMFreeUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueSVMFree is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
-}
 inline void clEnqueueNativeKernelUnimpl() {
     log<Verbosity::critical>("Function clEnqueueNativeKernel is not yet implemented in Compute Aggregation Layer - aborting");
     std::abort();
@@ -449,6 +446,7 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clEnqueueSVMMemFill = Cal::Client::Icd::Ocl::clEnqueueSVMMemFill;
     dt.clEnqueueSVMMigrateMem = Cal::Client::Icd::Ocl::clEnqueueSVMMigrateMem;
     dt.clEnqueueSVMMemcpy = Cal::Client::Icd::Ocl::clEnqueueSVMMemcpy;
+    dt.clEnqueueSVMFree = Cal::Client::Icd::Ocl::clEnqueueSVMFree;
     dt.clCreateSubDevicesEXT = Cal::Client::Icd::Ocl::clCreateSubDevicesEXT;
     dt.clReleaseDeviceEXT = Cal::Client::Icd::Ocl::clReleaseDeviceEXT;
     dt.clRetainDeviceEXT = Cal::Client::Icd::Ocl::clRetainDeviceEXT;
@@ -487,7 +485,6 @@ inline void initOclIcdDispatchTable(cl_icd_dispatch &dt){
     dt.clEnqueueAcquireDX9MediaSurfacesKHR = reinterpret_cast<decltype(dt.clEnqueueAcquireDX9MediaSurfacesKHR)>(Cal::Client::Icd::Ocl::Unimplemented::clEnqueueAcquireDX9MediaSurfacesKHRUnimpl);
     dt.clEnqueueReleaseDX9MediaSurfacesKHR = reinterpret_cast<decltype(dt.clEnqueueReleaseDX9MediaSurfacesKHR)>(Cal::Client::Icd::Ocl::Unimplemented::clEnqueueReleaseDX9MediaSurfacesKHRUnimpl);
     dt.clEnqueueMapImage = reinterpret_cast<decltype(dt.clEnqueueMapImage)>(Cal::Client::Icd::Ocl::Unimplemented::clEnqueueMapImageUnimpl);
-    dt.clEnqueueSVMFree = reinterpret_cast<decltype(dt.clEnqueueSVMFree)>(Cal::Client::Icd::Ocl::Unimplemented::clEnqueueSVMFreeUnimpl);
     dt.clEnqueueNativeKernel = reinterpret_cast<decltype(dt.clEnqueueNativeKernel)>(Cal::Client::Icd::Ocl::Unimplemented::clEnqueueNativeKernelUnimpl);
 }
 

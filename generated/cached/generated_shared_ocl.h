@@ -51,7 +51,6 @@ inline std::vector<std::string> getListOfUnimplementedFunctionNames(){
     ret.push_back("clEnqueueAcquireDX9MediaSurfacesKHR");
     ret.push_back("clEnqueueReleaseDX9MediaSurfacesKHR");
     ret.push_back("clEnqueueMapImage");
-    ret.push_back("clEnqueueSVMFree");
     ret.push_back("clEnqueueNativeKernel");
     return ret;
 }

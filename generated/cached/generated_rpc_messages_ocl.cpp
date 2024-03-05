@@ -1665,6 +1665,36 @@ size_t ClEnqueueSVMMemcpyRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ClEnqueueSVMFreeRpcM::Captures::DynamicTraits ClEnqueueSVMFreeRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.svm_pointers.count = svm_pointers ? (num_svm_pointers) : 0;
+    ret.svm_pointers.size = ret.svm_pointers.count * sizeof(void*);
+
+    ret.event_wait_list.offset = alignUpPow2<8>(ret.svm_pointers.offset + ret.svm_pointers.size);
+    ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueSVMFreeRpcM::Captures::getCaptureTotalSize() const {
+     const auto lastMemberOffset = offsetEvent_wait_list;
+     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
+
+     auto size = offsetof(Captures, dynMem) + Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
+size_t ClEnqueueSVMFreeRpcM::Captures::getCaptureDynMemSize() const {
+     const auto lastMemberOffset = offsetEvent_wait_list;
+     const auto lastMemberArraySize = this->countEvent_wait_list * sizeof(cl_event);
+
+     auto size = Cal::Utils::alignUpPow2<8>(lastMemberOffset + lastMemberArraySize);
+     return size;
+}
+
 ClCreateSubDevicesEXTRpcM::Captures::DynamicTraits ClCreateSubDevicesEXTRpcM::Captures::DynamicTraits::calculate(cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices) {
     DynamicTraits ret = {};
     ret.out_devices.count = out_devices ? (num_entries) : 0;

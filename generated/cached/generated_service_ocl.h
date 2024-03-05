@@ -139,6 +139,7 @@ extern cl_int (*clSetKernelExecInfo)(cl_kernel kernel, cl_kernel_exec_info param
 extern cl_int (*clEnqueueSVMMemFill)(cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueSVMMigrateMem)(cl_command_queue command_queue, cl_uint num_svm_pointers, const void** svm_pointers, const size_t* sizes, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clEnqueueSVMMemcpy)(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+extern cl_int (*clEnqueueSVMFree)(cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 } // Standard
 
 namespace Extensions {
@@ -1323,6 +1324,21 @@ inline bool clEnqueueSVMMemcpyHandler(Provider &service, Cal::Rpc::ChannelServer
     }
     return true;
 }
+inline bool clEnqueueSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMFree");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMFree(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.num_svm_pointers, 
+                                                apiCommand->args.svm_pointers ? apiCommand->captures.getSvm_pointers() : nullptr, 
+                                                apiCommand->args.pfn_notify, 
+                                                apiCommand->args.user_data, 
+                                                apiCommand->args.num_events_in_wait_list, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
+                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
+                                                );
+    return true;
+}
 inline bool clCreateSubDevicesEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubDevicesEXT");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM*>(command);
@@ -2300,6 +2316,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClEnqueueSVMMemFillRpcM::messageSubtype] = clEnqueueSVMMemFillHandler;
     outHandlers[ClEnqueueSVMMigrateMemRpcM::messageSubtype] = clEnqueueSVMMigrateMemHandler;
     outHandlers[ClEnqueueSVMMemcpyRpcM::messageSubtype] = clEnqueueSVMMemcpyHandler;
+    outHandlers[ClEnqueueSVMFreeRpcM::messageSubtype] = clEnqueueSVMFreeHandler;
     outHandlers[ClCreateSubDevicesEXTRpcM::messageSubtype] = clCreateSubDevicesEXTHandler;
     outHandlers[ClReleaseDeviceEXTRpcM::messageSubtype] = clReleaseDeviceEXTHandler;
     outHandlers[ClRetainDeviceEXTRpcM::messageSubtype] = clRetainDeviceEXTHandler;
@@ -3293,6 +3310,18 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcM &apiCommand) {
                                                 apiCommand.args.event
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMFree(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.num_svm_pointers, 
+                                                apiCommand.args.svm_pointers, 
+                                                apiCommand.args.pfn_notify, 
+                                                apiCommand.args.user_data, 
+                                                apiCommand.args.num_events_in_wait_list, 
+                                                apiCommand.args.event_wait_list, 
+                                                apiCommand.args.event
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clCreateSubDevicesEXT(
                                                 apiCommand.args.in_device, 
@@ -3966,6 +3995,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClEnqueueSVMMemFillRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemFillRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueSVMMigrateMemRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMigrateMemRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMemcpyRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClReleaseDeviceEXTRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClRetainDeviceEXTRpcM*>(command)); break;

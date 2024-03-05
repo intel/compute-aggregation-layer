@@ -3397,6 +3397,46 @@ cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, voi
         return clEnqueueSVMMemcpy_Shared_Shared(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     }
 }
+cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    invalidateKernelArgCache();
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMFree");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, num_svm_pointers, svm_pointers, pfn_notify, user_data, num_events_in_wait_list, event_wait_list, event);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_svm_pointers, svm_pointers, pfn_notify, user_data, num_events_in_wait_list, event_wait_list, event);
+    command->copyFromCaller(dynMemTraits);
+    command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    if(event_wait_list)
+    {
+        auto base = command->captures.getEvent_wait_list();
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.event_wait_list.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(event)
+    {
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    }
+    cl_int ret = command->captures.ret;
+
+    return ret;
+}
 cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices) {
     log<Verbosity::bloat>("Establishing RPC for clCreateSubDevicesEXT");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
@@ -5995,6 +6035,9 @@ cl_int clEnqueueSVMMigrateMem (cl_command_queue command_queue, cl_uint num_svm_p
 }
 cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     return Cal::Client::Icd::Ocl::clEnqueueSVMMemcpy(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
+}
+cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    return Cal::Client::Icd::Ocl::clEnqueueSVMFree(command_queue, num_svm_pointers, svm_pointers, pfn_notify, user_data, num_events_in_wait_list, event_wait_list, event);
 }
 cl_int clCreateSubDevicesEXT (cl_device_id in_device, const cl_device_partition_property_ext* properties, cl_uint num_entries, cl_device_id* out_devices, cl_uint* num_devices) {
     return Cal::Client::Icd::Ocl::clCreateSubDevicesEXT(in_device, properties, num_entries, out_devices, num_devices);

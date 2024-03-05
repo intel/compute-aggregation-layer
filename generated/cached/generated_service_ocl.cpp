@@ -130,6 +130,7 @@ cl_int (*clSetKernelExecInfo)(cl_kernel kernel, cl_kernel_exec_info param_name, 
 cl_int (*clEnqueueSVMMemFill)(cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = nullptr;
 cl_int (*clEnqueueSVMMigrateMem)(cl_command_queue command_queue, cl_uint num_svm_pointers, const void** svm_pointers, const size_t* sizes, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = nullptr;
 cl_int (*clEnqueueSVMMemcpy)(cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = nullptr;
+cl_int (*clEnqueueSVMFree)(cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = nullptr;
 
 void *libraryHandle = nullptr;
 
@@ -798,6 +799,12 @@ bool loadOclLibrary(std::optional<std::string> path) {
         unloadOclLibrary();
         return false;
     }
+    clEnqueueSVMFree = reinterpret_cast<decltype(clEnqueueSVMFree)>(dlsym(libraryHandle, "clEnqueueSVMFree"));
+    if(nullptr == clEnqueueSVMFree){
+        log<Verbosity::error>("Missing symbol clEnqueueSVMFree in %s", loadPath.c_str());
+        unloadOclLibrary();
+        return false;
+    }
     return true;
 }
 
@@ -912,6 +919,7 @@ void unloadOclLibrary() {
     clEnqueueSVMMemFill = nullptr;
     clEnqueueSVMMigrateMem = nullptr;
     clEnqueueSVMMemcpy = nullptr;
+    clEnqueueSVMFree = nullptr;
     if(libraryHandle){
         dlclose(libraryHandle);
     }
