@@ -395,46 +395,6 @@ bool clEnqueueSVMUnmapHandler(Provider &service, Cal::Rpc::ChannelServer &channe
     return true;
 }
 
-bool clEnqueueSVMMigrateMemHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMMigrateMem");
-    log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMMigrateMemRpcM *>(command);
-    if (0 == apiCommand->args.num_svm_pointers) {
-        apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueBarrierWithWaitList(apiCommand->args.command_queue,
-                                                                                                   apiCommand->args.num_events_in_wait_list,
-                                                                                                   apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr,
-                                                                                                   apiCommand->args.event ? &apiCommand->captures.event : nullptr);
-    } else if (1 == apiCommand->args.num_svm_pointers) {
-        apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMigrateMemINTEL(apiCommand->args.command_queue,
-                                                                                                 apiCommand->args.svm_pointers[0],
-                                                                                                 apiCommand->args.sizes ? apiCommand->args.sizes[0] : 0,
-                                                                                                 apiCommand->args.flags,
-                                                                                                 apiCommand->args.num_events_in_wait_list,
-                                                                                                 apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr,
-                                                                                                 apiCommand->args.event ? &apiCommand->captures.event : nullptr);
-    } else {
-        for (size_t i = 0; i < apiCommand->args.num_svm_pointers; ++i) {
-            apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMigrateMemINTEL(apiCommand->args.command_queue,
-                                                                                                     apiCommand->args.svm_pointers[i],
-                                                                                                     apiCommand->args.sizes ? apiCommand->args.sizes[i] : 0,
-                                                                                                     apiCommand->args.flags,
-                                                                                                     apiCommand->args.num_events_in_wait_list,
-                                                                                                     apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr,
-                                                                                                     nullptr);
-            if (CL_SUCCESS != apiCommand->captures.ret) {
-                break;
-            }
-        }
-        if ((CL_SUCCESS == apiCommand->captures.ret) && apiCommand->args.event) {
-            apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueBarrierWithWaitList(apiCommand->args.command_queue,
-                                                                                                       0,
-                                                                                                       nullptr,
-                                                                                                       &apiCommand->captures.event);
-        }
-    }
-    return true;
-}
-
 bool clMemFreeINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clMemFreeINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClMemFreeINTELRpcM *>(command);

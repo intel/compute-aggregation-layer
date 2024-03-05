@@ -5248,8 +5248,6 @@ config:
           special_handling:
             icd:
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
-            rpc:
-              custom_handler: True
           returns:
             type: cl_int
             kind: scalar
