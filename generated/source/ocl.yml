@@ -5409,6 +5409,8 @@ config:
           special_handling:
             icd:
               handler_prologue: "invalidateKernelArgCache();"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_int
             kind: scalar

@@ -1338,21 +1338,7 @@ inline bool clEnqueueSVMMemcpyHandler(Provider &service, Cal::Rpc::ChannelServer
     }
     return true;
 }
-inline bool clEnqueueSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMFree");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMFree(
-                                                apiCommand->args.command_queue, 
-                                                apiCommand->args.num_svm_pointers, 
-                                                apiCommand->args.svm_pointers ? apiCommand->captures.getSvm_pointers() : nullptr, 
-                                                apiCommand->args.pfn_notify, 
-                                                apiCommand->args.user_data, 
-                                                apiCommand->args.num_events_in_wait_list, 
-                                                apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr, 
-                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
-                                                );
-    return true;
-}
+bool clEnqueueSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool clCreateSubDevicesEXTHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clCreateSubDevicesEXT");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClCreateSubDevicesEXTRpcM*>(command);

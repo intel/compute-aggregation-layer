@@ -499,6 +499,54 @@ bool clCreateContextFromTypeHandler(Provider &service, Cal::Rpc::ChannelServer &
     return true;
 }
 
+struct OclCallbackContextForSVMFreeNotify {
+    Cal::Rpc::ChannelServer &channel;
+    Cal::Rpc::CallbackIdT callbackId;
+    ClientContext *clientContext;
+};
+
+void CL_CALLBACK clEnqueueSVMFreeCallbackWrapper(cl_command_queue queue, cl_uint num_svm_pointers, void **svm_pointers, void *user_data) {
+    auto *cctx = reinterpret_cast<Apis::Ocl::OclCallbackContextForSVMFreeNotify *>(user_data);
+    Cal::Rpc::ChannelServer &channel = cctx->channel;
+    Cal::Rpc::CallbackIdT callbackId = cctx->callbackId;
+    auto clientContext = cctx->clientContext;
+
+    delete cctx;
+
+    if (callbackId.fptr) {
+        log<Verbosity::debug>("Pushed callback notification from clEnqueueSVMFreeCallbackWrapper to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
+        channel.pushCompletedCallbackId(callbackId);
+    }
+
+    if ((num_svm_pointers == 0) || (svm_pointers == nullptr) || (clientContext == nullptr)) {
+        log<Verbosity::debug>("lEnqueueSVMFreeCallbackWrapper: num_svm_pointers=%u, svm_pointers=%p, clientContext=%p, clientContext=%p", num_svm_pointers, svm_pointers, clientContext);
+        return;
+    }
+
+    for (cl_uint i = 0; i < num_svm_pointers; i++) {
+        auto clientContextLock = clientContext->lock();
+        log<Verbosity::debug>("Reaped Usm shared host allocation from clEnqueueSVMFreeCallbackWrapper ptr=%p", svm_pointers[i]);
+        clientContext->reapUsmSharedHostAlloc(svm_pointers[i], false);
+    }
+}
+
+bool clEnqueueSVMFreeHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueSVMFree");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM *>(command);
+
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMFree(
+        apiCommand->args.command_queue,
+        apiCommand->args.num_svm_pointers,
+        apiCommand->args.svm_pointers ? apiCommand->captures.getSvm_pointers() : nullptr,
+        clEnqueueSVMFreeCallbackWrapper,
+        new Apis::Ocl::OclCallbackContextForSVMFreeNotify{channel, Rpc::CallbackIdT{reinterpret_cast<uintptr_t>(apiCommand->args.pfn_notify), reinterpret_cast<uintptr_t>(apiCommand->args.command_queue), reinterpret_cast<uintptr_t>(apiCommand->args.user_data), apiCommand->header, 0},
+                                                          &ctx},
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.getEvent_wait_list() : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    return true;
+}
+
 struct CallbackContext {
     Cal::Rpc::ChannelServer &channel;
     Cal::Rpc::CallbackIdT callbackId;
