@@ -198,140 +198,106 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
 
 namespace Unimplemented {
 inline void clSetCommandQueuePropertyUnimpl() {
-    log<Verbosity::critical>("Function clSetCommandQueueProperty is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clSetCommandQueueProperty is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromGLBufferUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromGLBuffer is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromGLBuffer is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromGLTexture2DUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromGLTexture2D is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromGLTexture2D is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromGLTexture3DUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromGLTexture3D is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromGLTexture3D is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromGLRenderbufferUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromGLRenderbuffer is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromGLRenderbuffer is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetGLObjectInfoUnimpl() {
-    log<Verbosity::critical>("Function clGetGLObjectInfo is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetGLObjectInfo is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetGLTextureInfoUnimpl() {
-    log<Verbosity::critical>("Function clGetGLTextureInfo is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetGLTextureInfo is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueAcquireGLObjectsUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueAcquireGLObjects is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueAcquireGLObjects is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueReleaseGLObjectsUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueReleaseGLObjects is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueReleaseGLObjects is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetGLContextInfoKHRUnimpl() {
-    log<Verbosity::critical>("Function clGetGLContextInfoKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetGLContextInfoKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateEventFromGLsyncKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateEventFromGLsyncKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateEventFromGLsyncKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromGLTextureUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromGLTexture is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromGLTexture is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromEGLImageKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromEGLImageKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromEGLImageKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueAcquireEGLObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueAcquireEGLObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueAcquireEGLObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueReleaseEGLObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueReleaseEGLObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueReleaseEGLObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateEventFromEGLSyncKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateEventFromEGLSyncKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateEventFromEGLSyncKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetDeviceIDsFromD3D10KHRUnimpl() {
-    log<Verbosity::critical>("Function clGetDeviceIDsFromD3D10KHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetDeviceIDsFromD3D10KHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D10BufferKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D10BufferKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D10BufferKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D10Texture2DKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D10Texture2DKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D10Texture2DKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D10Texture3DKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D10Texture3DKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D10Texture3DKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueAcquireD3D10ObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueAcquireD3D10ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueAcquireD3D10ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueReleaseD3D10ObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueReleaseD3D10ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueReleaseD3D10ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetDeviceIDsFromD3D11KHRUnimpl() {
-    log<Verbosity::critical>("Function clGetDeviceIDsFromD3D11KHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetDeviceIDsFromD3D11KHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D11BufferKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D11BufferKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D11BufferKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D11Texture2DKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D11Texture2DKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D11Texture2DKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromD3D11Texture3DKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromD3D11Texture3DKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromD3D11Texture3DKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clCreateFromDX9MediaSurfaceKHRUnimpl() {
-    log<Verbosity::critical>("Function clCreateFromDX9MediaSurfaceKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clCreateFromDX9MediaSurfaceKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueAcquireD3D11ObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueAcquireD3D11ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueAcquireD3D11ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueReleaseD3D11ObjectsKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueReleaseD3D11ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueReleaseD3D11ObjectsKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clGetDeviceIDsFromDX9MediaAdapterKHRUnimpl() {
-    log<Verbosity::critical>("Function clGetDeviceIDsFromDX9MediaAdapterKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clGetDeviceIDsFromDX9MediaAdapterKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueAcquireDX9MediaSurfacesKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueAcquireDX9MediaSurfacesKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueAcquireDX9MediaSurfacesKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueReleaseDX9MediaSurfacesKHRUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueReleaseDX9MediaSurfacesKHR is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueReleaseDX9MediaSurfacesKHR is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueMapImageUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueMapImage is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueMapImage is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void clEnqueueNativeKernelUnimpl() {
-    log<Verbosity::critical>("Function clEnqueueNativeKernel is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function clEnqueueNativeKernel is not yet implemented in Compute Aggregation Layer - aborting");
 }
 } // Unimplemented
 

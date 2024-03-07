@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -51,7 +51,7 @@ bool ClientConnection::ensureServiceIsAvailable() {
     return connectionTraits.isConnected;
 }
 
-void serviceDebugBreak(uint64_t thisClientOrdinal) {
+void serviceDebugBreakEnv(uint64_t thisClientOrdinal) {
     auto breakOrdinal = Cal::Utils::getCalEnvI64(calDebugBreakClientOrdinalEnvName, -1);
     if (breakOrdinal < 0) {
         return;
@@ -63,12 +63,7 @@ void serviceDebugBreak(uint64_t thisClientOrdinal) {
 
     auto pid = getpid();
     log<Verbosity::critical>("Entering debug break mode for client ordinal : %lld, pid : %d, (ppid : %d)", thisClientOrdinal, pid, getppid());
-    while (Cal::Utils::isDebuggerConnected() == false) {
-        log<Verbosity::critical>("Waiting for debugger on pid %d (e.g. gdb -p %d)", pid, pid);
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(5s);
-    }
-    log<Verbosity::critical>("Debugger connected");
+    Cal::Utils::debugBreak();
 }
 
 void ClientConnection::connect() {
@@ -102,7 +97,7 @@ void ClientConnection::connect() {
     this->globalShmemImporter = std::make_unique<Cal::Ipc::ShmemImporter>(Cal::Ipc::getCalShmemPathBase(serviceConfig.pid));
     this->usmShmemImporter = std::make_unique<Cal::Usm::UsmShmemImporter>(*this->globalShmemImporter);
 
-    serviceDebugBreak(serviceConfig.assignedClientOrdinal);
+    serviceDebugBreakEnv(serviceConfig.assignedClientOrdinal);
 
     this->mallocShmemExporter = std::make_unique<Cal::Client::MallocOverride::MallocShmemExporter>();
     if (this->mallocShmemExporter->isAllowed()) {

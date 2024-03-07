@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -40,8 +40,7 @@ struct IcdWrapperBase {
 
     void ensureIsLocalObject() const {
         if (isRemote()) {
-            log<Verbosity::critical>("Attempted to use remote object as local object!");
-            std::abort();
+            Cal::Utils::signalAbort("Attempted to use remote object as local object!");
         }
     }
 };

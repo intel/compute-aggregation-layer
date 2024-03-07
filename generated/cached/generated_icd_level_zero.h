@@ -570,236 +570,178 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared
 
 namespace Unimplemented {
 inline void zeCommandListAppendImageCopyUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopy is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeCommandListAppendImageCopyRegionUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyRegion is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopyRegion is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeCommandListAppendImageCopyToMemoryUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyToMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopyToMemory is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeCommandListAppendImageCopyFromMemoryUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyFromMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopyFromMemory is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeCommandListAppendImageCopyToMemoryExtUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyToMemoryExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopyToMemoryExt is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeCommandListAppendImageCopyFromMemoryExtUnimpl() {
-    log<Verbosity::critical>("Function CommandList.zeCommandListAppendImageCopyFromMemoryExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function CommandList.zeCommandListAppendImageCopyFromMemoryExt is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeImageGetMemoryPropertiesExpUnimpl() {
-    log<Verbosity::critical>("Function ImageExp.zeImageGetMemoryPropertiesExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function ImageExp.zeImageGetMemoryPropertiesExp is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeImageGetAllocPropertiesExtUnimpl() {
-    log<Verbosity::critical>("Function Image.zeImageGetAllocPropertiesExt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Image.zeImageGetAllocPropertiesExt is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeImageViewCreateExpUnimpl() {
-    log<Verbosity::critical>("Function ImageExp.zeImageViewCreateExp is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function ImageExp.zeImageViewCreateExp is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeContextMakeImageResidentUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextMakeImageResident is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Context.zeContextMakeImageResident is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeContextEvictImageUnimpl() {
-    log<Verbosity::critical>("Function Context.zeContextEvictImage is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Context.zeContextEvictImage is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeSamplerCreateUnimpl() {
-    log<Verbosity::critical>("Function Sampler.zeSamplerCreate is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Sampler.zeSamplerCreate is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zeSamplerDestroyUnimpl() {
-    log<Verbosity::critical>("Function Sampler.zeSamplerDestroy is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Sampler.zeSamplerDestroy is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumFansUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumFans is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumFans is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanGetConfigUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanSetDefaultModeUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanSetDefaultMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanSetDefaultMode is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanSetFixedSpeedModeUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanSetFixedSpeedMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanSetFixedSpeedMode is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanSetSpeedTableModeUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanSetSpeedTableMode is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanSetSpeedTableMode is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFanGetStateUnimpl() {
-    log<Verbosity::critical>("Function Fan.zesFanGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Fan.zesFanGetState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumFirmwaresUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumFirmwares is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumFirmwares is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFirmwareGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Firmware.zesFirmwareGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Firmware.zesFirmwareGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFirmwareFlashUnimpl() {
-    log<Verbosity::critical>("Function Firmware.zesFirmwareFlash is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Firmware.zesFirmwareFlash is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEccAvailableUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEccAvailable is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEccAvailable is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEccConfigurableUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEccConfigurable is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEccConfigurable is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceGetEccStateUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceGetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceGetEccState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceSetEccStateUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceSetEccState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumLedsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumLeds is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumLeds is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesLedGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Led.zesLedGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Led.zesLedGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesLedGetStateUnimpl() {
-    log<Verbosity::critical>("Function Led.zesLedGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Led.zesLedGetState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesLedSetStateUnimpl() {
-    log<Verbosity::critical>("Function Led.zesLedSetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Led.zesLedSetState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesLedSetColorUnimpl() {
-    log<Verbosity::critical>("Function Led.zesLedSetColor is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Led.zesLedSetColor is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumFabricPortsUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumFabricPorts is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumFabricPorts is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortGetLinkTypeUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortGetLinkType is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortGetLinkType is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortGetConfigUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortGetConfig is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortSetConfigUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortSetConfig is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortGetStateUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortGetState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesFabricPortGetThroughputUnimpl() {
-    log<Verbosity::critical>("Function FabricPort.zesFabricPortGetThroughput is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function FabricPort.zesFabricPortGetThroughput is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumDiagnosticTestSuitesUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumDiagnosticTestSuites is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumDiagnosticTestSuites is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDiagnosticsGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Diagnostics.zesDiagnosticsGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Diagnostics.zesDiagnosticsGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDiagnosticsGetTestsUnimpl() {
-    log<Verbosity::critical>("Function Diagnostics.zesDiagnosticsGetTests is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Diagnostics.zesDiagnosticsGetTests is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDiagnosticsRunTestsUnimpl() {
-    log<Verbosity::critical>("Function Diagnostics.zesDiagnosticsRunTests is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Diagnostics.zesDiagnosticsRunTests is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesDeviceEnumPsusUnimpl() {
-    log<Verbosity::critical>("Function Device.zesDeviceEnumPsus is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Device.zesDeviceEnumPsus is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesPsuGetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Psu.zesPsuGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Psu.zesPsuGetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zesPsuGetStateUnimpl() {
-    log<Verbosity::critical>("Function Psu.zesPsuGetState is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Psu.zesPsuGetState is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugAttachUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugAttach is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugAttach is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugDetachUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugDetach is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugDetach is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugReadEventUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugReadEvent is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugReadEvent is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugAcknowledgeEventUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugAcknowledgeEvent is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugAcknowledgeEvent is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugInterruptUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugInterrupt is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugInterrupt is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugResumeUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugResume is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugResume is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugReadMemoryUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugReadMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugReadMemory is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugWriteMemoryUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugWriteMemory is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugWriteMemory is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugGetRegisterSetPropertiesUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugGetRegisterSetProperties is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugGetRegisterSetProperties is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugReadRegistersUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugReadRegisters is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugReadRegisters is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetDebugWriteRegistersUnimpl() {
-    log<Verbosity::critical>("Function Debug.zetDebugWriteRegisters is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Debug.zetDebugWriteRegisters is not yet implemented in Compute Aggregation Layer - aborting");
 }
 inline void zetModuleGetDebugInfoUnimpl() {
-    log<Verbosity::critical>("Function Module.zetModuleGetDebugInfo is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function Module.zetModuleGetDebugInfo is not yet implemented in Compute Aggregation Layer - aborting");
 }
 } // Unimplemented
 

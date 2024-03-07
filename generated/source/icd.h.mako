@@ -46,8 +46,7 @@ namespace Unimplemented {
 % for func_category in config.unimplemented:
 %  for fname in func_category["members"]:
 inline void ${fname.rpartition(".")[2]}Unimpl() {
-    log<Verbosity::critical>("Function ${fname} is not yet implemented in Compute Aggregation Layer - aborting");
-    std::abort();
+    Cal::Utils::signalAbort("Function ${fname} is not yet implemented in Compute Aggregation Layer - aborting");
 }
 %  endfor # func_category["members"]
 % endfor # config.unimplemented

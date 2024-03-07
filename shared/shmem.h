@@ -737,8 +737,7 @@ class BasicMemoryBlocksManager {
 
         auto [insertedBlockIt, wasInserted] = memoryBlocks.try_emplace(srcPageBegin, shmemAllocator, srcptr, size);
         if (!wasInserted) {
-            log<Verbosity::critical>("Could not insert block! Aborting...");
-            std::abort();
+            Cal::Utils::signalAbort("Could not insert block! Aborting...");
         }
 
         return (*insertedBlockIt).second;

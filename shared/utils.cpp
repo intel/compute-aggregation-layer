@@ -19,6 +19,7 @@
 #include <optional>
 #include <pwd.h>
 #include <stdexcept>
+#include <thread>
 #include <unistd.h>
 #include <vector>
 
@@ -314,7 +315,7 @@ void ensureNull(const char *sourceLocation, const void *pointer) {
     static bool abortOnNonNullPNext = getCalEnvFlag(calAbortOnNonNullPNext, true);
     if (abortOnNonNullPNext) {
         log<Verbosity::error>("%s is not nullptr! Aborting...", sourceLocation);
-        std::abort();
+        Cal::Utils::signalAbort();
     } else {
         log<Verbosity::info>("%s is not nullptr!", sourceLocation);
     }
@@ -328,8 +329,28 @@ void warnIfNotNull(const char *sourceLocation, const void *pointer) {
 }
 
 void signalAbort(const char *message) {
-    log<Verbosity::critical>(message);
-    std::abort();
+    if (message) {
+        log<Verbosity::critical>(message);
+    }
+    if (Cal::Utils::getCalEnvFlag(calDebugBreakInsteadOfAbortingEnvName)) {
+        Cal::Utils::debugBreak();
+    } else {
+        std::abort();
+    }
+}
+
+void signalAbort() {
+    signalAbort(nullptr);
+}
+
+void debugBreak() {
+    auto pid = getpid();
+    while (Cal::Utils::isDebuggerConnected() == false) {
+        log<Verbosity::critical>("Waiting for debugger on pid %d (e.g. gdb -p %d)", pid, pid);
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(5s);
+    }
+    log<Verbosity::critical>("Debugger connected");
 }
 
 } // namespace Utils

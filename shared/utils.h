@@ -388,6 +388,7 @@ inline bool getCalEnvFlag(std::string_view name) {
 }
 int64_t getCalEnvI64(std::string_view name, int64_t defaultValue);
 void signalAbort(const char *message);
+void signalAbort();
 
 struct AddressRange {
     AddressRange() = default;
@@ -821,6 +822,8 @@ constexpr auto toAddress(const T &p) noexcept {
 
 bool ensureUserPrivateDir(const char *path);
 std::string ensureUserPrivateDirectoryLayout();
+
+void debugBreak();
 
 } // namespace Utils
 } // namespace Cal

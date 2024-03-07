@@ -27,8 +27,7 @@ inline size_t countOpaqueList(const ze_base_desc_t *desc) {
 
 inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
     if (desc == nullptr) {
-        log<Verbosity::error>("Nullptr pNext passed to getUnderlyingSize! Aborting...");
-        std::abort();
+        Cal::Utils::signalAbort("Attempted to use remote object as local object!");
         return 0;
     }
 
@@ -131,7 +130,7 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
     }
 
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", stypeInt);
-    std::abort();
+    Cal::Utils::signalAbort();
     return 0;
 }
 
@@ -146,8 +145,7 @@ inline const void *&getNextField(const ze_base_desc_t &desc) {
 
 inline ze_structure_type_t getExtensionType(const ze_base_desc_t *desc) {
     if (desc == nullptr) {
-        log<Verbosity::error>("Nullptr pNext passed to getExtensionType! Aborting...");
-        std::abort();
+        Cal::Utils::signalAbort("Nullptr pNext passed to getExtensionType!");
         return {};
     }
 

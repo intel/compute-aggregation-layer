@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -28,6 +28,103 @@
 namespace Cal {
 
 namespace Rpc {
+
+struct WrappedMutex {
+    WrappedMutex() {
+    }
+
+    void lock() {
+        mutex.lock();
+    }
+
+    bool try_lock() {
+        return mutex.try_lock();
+    }
+
+    void unlock() {
+        mutex.unlock();
+    }
+
+    void debugAssertLockOwnership() {
+    }
+
+  private:
+    std::mutex mutex;
+};
+
+struct TaggedMutex : private WrappedMutex {
+    TaggedMutex() {
+    }
+
+    void lock() {
+        mutex.lock();
+        this->owner = std::this_thread::get_id();
+    }
+
+    bool try_lock() {
+        if (mutex.try_lock()) {
+            this->owner = std::this_thread::get_id();
+            return true;
+        }
+        return false;
+    }
+
+    void unlock() {
+        this->owner = {};
+        mutex.unlock();
+    }
+
+    void debugAssertLockOwnership() {
+    }
+
+  protected:
+    std::thread::id getPerceivedOwner() const {
+        return owner;
+    }
+
+  private:
+    std::mutex mutex;
+    std::thread::id owner = {};
+};
+
+struct TaggedMutexDebug : private TaggedMutex {
+    void lock() {
+        if (this->getPerceivedOwner() == std::this_thread::get_id()) {
+            log<Verbosity::critical>("Recursive lock detected :\n%s", Cal::Utils::concatenate(Cal::Utils::getCallStack(), "\n").c_str());
+
+            Cal::Utils::signalAbort();
+        }
+        TaggedMutex::lock();
+    }
+
+    bool try_lock() {
+        if (TaggedMutex::try_lock()) {
+            return true;
+        } else if (this->getPerceivedOwner() == std::this_thread::get_id()) {
+            log<Verbosity::critical>("Recursive lock detected :\n%s", Cal::Utils::concatenate(Cal::Utils::getCallStack(), "\n").c_str());
+
+            Cal::Utils::signalAbort();
+        }
+        return false;
+    }
+
+    void unlock() {
+        TaggedMutex::unlock();
+    }
+
+    void debugAssertLockOwnership() {
+        if (TaggedMutex::getPerceivedOwner() != std::this_thread::get_id()) {
+            log<Verbosity::critical>("Unguarded access at :\n%s", Cal::Utils::concatenate(Cal::Utils::getCallStack(), "\n").c_str());
+            Cal::Utils::signalAbort();
+        }
+    }
+};
+
+#ifdef NDEBUG
+using RpcMutex = std::mutex;
+#else
+using RpcMutex = TaggedMutexDebug;
+#endif
 
 // Implementation is lock-free for single-producer, single-consumer scenarios
 //    multi-producer/consumer scenarios (multithreading on client/service side)
@@ -282,8 +379,8 @@ class CommandsChannel {
         }
     }
 
-    std::unique_lock<std::mutex> lock() {
-        return std::unique_lock<std::mutex>(mutex);
+    std::unique_lock<RpcMutex> lock() {
+        return std::unique_lock<RpcMutex>(mutex);
     }
 
     bool waitOnServiceSemaphore() {
@@ -589,7 +686,7 @@ class CommandsChannel {
     sem_t *semServer = nullptr;
     sem_t *semClientCallback = nullptr;
 
-    std::mutex mutex;
+    RpcMutex mutex;
     bool ownsSemaphores = false;
 };
 
@@ -698,8 +795,7 @@ class ChannelClient : public CommandsChannel {
     void *getCmdSpaceAligned(size_t size, size_t alignment) {
         auto addr = cmdHeap.allocate(size, alignment);
         if (nullptr == addr) {
-            log<Verbosity::critical>("Command channel's commands heap is full");
-            std::abort();
+            Cal::Utils::signalAbort("Command channel's commands heap is full");
             return nullptr;
         }
 
@@ -709,8 +805,7 @@ class ChannelClient : public CommandsChannel {
     std::unique_ptr<void, ChannelSpaceDeleter> getStandaloneSpaceAligned(size_t size, size_t alignment) {
         auto addr = standaloneHeap.allocate(size, alignment);
         if (nullptr == addr) {
-            log<Verbosity::critical>("Command channel's standalone heap is full");
-            std::abort();
+            Cal::Utils::signalAbort("Command channel's standalone heap is full");
             return std::unique_ptr<void, ChannelSpaceDeleter>(nullptr, ChannelSpaceDeleter(*this));
         }
 

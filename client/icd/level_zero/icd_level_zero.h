@@ -452,8 +452,7 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
             return newUsmPtr;
         }
 
-        log<Verbosity::critical>("Service returned an address, which is not USM device! Aborting...");
-        std::abort();
+        Cal::Utils::signalAbort("Service returned an address, which is not USM device!");
 
         return nullptr;
     }

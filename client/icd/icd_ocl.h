@@ -46,8 +46,7 @@ struct cl_icd_base_mapped : cl_icd_base {
     void ensureIsLocalObjet() {
 #ifndef NDEBUG
         if (this->isRemote()) {
-            log<Verbosity::critical>("Attempted to use remote object as local object");
-            std::abort();
+            Cal::Utils::signalAbort("Attempted to use remote object as local object");
         }
 #endif
     }
@@ -969,7 +968,7 @@ class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform
             return mappings.clSamplerMap;
         }
 
-        std::abort();
+        Cal::Utils::signalAbort("Internal error - unknown object type");
     }
 
     template <typename ObjT>
