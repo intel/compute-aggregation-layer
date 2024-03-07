@@ -744,6 +744,9 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
     void beforeReleaseCallback() {
         if (1 == this->peekRefCount()) {
             this->cleanTemporaryAllocations();
+            if (context) {
+                context->beforeReleaseCallback();
+            }
         }
     }
 
