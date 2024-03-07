@@ -385,26 +385,28 @@ cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
     } else {
         log<Verbosity::debug>("clWaitForEvents - callbacks handler is enabled, will poll event status with clGetEventInfo");
         log<Verbosity::performance>("clWaitForEvents - will use busy polling with clGetEventInfo for callbacks support");
-        while (true) {
-            for (cl_uint i = 0; i < num_events; i++) {
-                cl_int eventStatus = CL_COMPLETE;
-                cl_int ret = Cal::Client::Icd::Ocl::clGetEventInfo(event_list[i], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(eventStatus), &eventStatus, nullptr);
-                if (ret != CL_SUCCESS) {
-                    log<Verbosity::error>("Failed to get event[%d] status with clGetEventInfo : err=%d", i, ret);
-                    return ret;
-                }
-                if (eventStatus != CL_COMPLETE) {
-                    log<Verbosity::bloat>("clGetEventInfo - event[%d] is not complete", i);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    break;
-                }
-                log<Verbosity::bloat>("clGetEventInfo - event[%d] is complete", i);
-                if (i == num_events - 1) {
-                    log<Verbosity::bloat>("clGetEventInfo - all events are complete", i);
-                    return CL_SUCCESS;
-                }
+        bool eventStatusError = false;
+        for (cl_uint i = 0; i < num_events;) {
+            cl_int eventStatus = CL_COMPLETE;
+            cl_int ret = Cal::Client::Icd::Ocl::clGetEventInfo(event_list[i], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(eventStatus), &eventStatus, nullptr);
+            if (ret != CL_SUCCESS) {
+                log<Verbosity::error>("clWaitForEvent - failed to get event[%d] status with clGetEventInfo : err=%d", i, ret);
+                return ret;
             }
+            if (eventStatus < 0) {
+                log<Verbosity::bloat>("clWaitForEvents - event[%d] is in error state", i);
+                eventStatusError = true;
+            } else if (eventStatus != CL_COMPLETE) {
+                log<Verbosity::bloat>("clWaitForEvents - event[%d] is not complete", i);
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
+            } else {
+                log<Verbosity::bloat>("clWaitForEvents - event[%d] is complete", i);
+            }
+            ++i;
         }
+        log<Verbosity::bloat>("clWaitForEvents - all events are complete (%d)", num_events);
+        return eventStatusError ? CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST : CL_SUCCESS;
     }
 }
 
