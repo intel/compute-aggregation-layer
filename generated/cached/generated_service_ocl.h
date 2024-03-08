@@ -1807,7 +1807,7 @@ inline bool clEnqueueSVMMemcpy_Local_LocalHandler(Provider &service, Cal::Rpc::C
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dst_ptr), 
+                                                apiCommand->args.dst_ptr, 
                                                 apiCommand->args.src_ptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -1826,7 +1826,7 @@ inline bool clEnqueueSVMMemcpy_Local_UsmHandler(Provider &service, Cal::Rpc::Cha
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dst_ptr), 
+                                                apiCommand->args.dst_ptr, 
                                                 apiCommand->args.src_ptr, 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 
@@ -1850,7 +1850,7 @@ inline bool clEnqueueSVMMemcpy_Local_SharedHandler(Provider &service, Cal::Rpc::
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueSVMMemcpy(
                                                 apiCommand->args.command_queue, 
                                                 apiCommand->args.blocking, 
-                                                channel.decodeLocalPtrFromHeapOffset(apiCommand->args.dst_ptr), 
+                                                apiCommand->args.dst_ptr, 
                                                 reinterpret_cast<const void*>(importedMallocPtrSrcPtr), 
                                                 apiCommand->args.size, 
                                                 apiCommand->args.num_events_in_wait_list, 

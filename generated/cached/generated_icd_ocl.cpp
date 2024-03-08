@@ -4617,6 +4617,12 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    void *standalone_dst_ptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dst_ptr_alloc(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dst_ptr = standalone_dst_ptr_alloc.get();
+        command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr_alloc));
+    }
     void *standalone_src_ptr{};
     {
         std::unique_ptr<void, std::function<void(void*)>> standalone_src_ptr_alloc(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
@@ -4628,12 +4634,12 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     memcpy(Cal::Utils::toAddress(standalone_src_ptr), src_ptr, size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
+    command->args.dst_ptr = reinterpret_cast<void*>(standalone_dst_ptr);
     command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4663,6 +4669,7 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
       }
     }
     command->copyToCaller(dynMemTraits);
+    memcpy(dst_ptr, standalone_dst_ptr, size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
@@ -4680,15 +4687,21 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    void *standalone_dst_ptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dst_ptr_alloc(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dst_ptr = standalone_dst_ptr_alloc.get();
+        command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr_alloc));
+    }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_UsmRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
+    command->args.dst_ptr = reinterpret_cast<void*>(standalone_dst_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4718,6 +4731,7 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
       }
     }
     command->copyToCaller(dynMemTraits);
+    memcpy(dst_ptr, standalone_dst_ptr, size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
@@ -4735,15 +4749,21 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemcpy_Local_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
+    void *standalone_dst_ptr{};
+    {
+        std::unique_ptr<void, std::function<void(void*)>> standalone_dst_ptr_alloc(static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().allocateStagingArea(size), [command_queue](void *ptrToMarkAsUnused){static_cast<IcdOclCommandQueue *>(command_queue)->context->getStagingAreaManager().releaseStagingArea(ptrToMarkAsUnused);});
+        standalone_dst_ptr = standalone_dst_ptr_alloc.get();
+        command_queue->asLocalObject()->registerTemporaryAllocation(std::move(standalone_dst_ptr_alloc));
+    }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_SharedRpcM;
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    auto standalone_dst_ptr = channel.getStandaloneSpace(size);
     command->copyFromCaller(dynMemTraits);
-    command->args.dst_ptr = reinterpret_cast<void*>(channel.encodeHeapOffsetFromLocalPtr(Cal::Utils::toAddress(standalone_dst_ptr)));
+    command->args.dst_ptr = reinterpret_cast<void*>(standalone_dst_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4773,6 +4793,7 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
       }
     }
     command->copyToCaller(dynMemTraits);
+    memcpy(dst_ptr, standalone_dst_ptr, size);
     if(event)
     {
         event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
@@ -4805,6 +4826,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     command->copyFromCaller(dynMemTraits);
     command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4858,6 +4880,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4911,6 +4934,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4972,6 +4996,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     command->copyFromCaller(dynMemTraits);
     command->args.src_ptr = reinterpret_cast<const void*>(standalone_src_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5025,6 +5050,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5078,6 +5104,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dst_ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;

@@ -5341,6 +5341,7 @@ config:
               name: blocking
               type: cl_bool
               kind: scalar
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst}, dst_ptr_kind)"
             2:
               name: dst_ptr
               type: void*
@@ -5352,9 +5353,9 @@ config:
                   kind: scalar
                 server_access: write
               kind_variants:
-                - kind: ptr_array
+                - kind: ptr_va
                   capture_details:
-                    mode: standalone
+                    mode: staging_usm
                     reclaim_method: command_queue->asLocalObject()->registerTemporaryAllocation(std::move({allocation}_alloc))
                 - kind: ptr_usm_va
                 - kind: ptr_zero_copy_malloc_shmem_va
