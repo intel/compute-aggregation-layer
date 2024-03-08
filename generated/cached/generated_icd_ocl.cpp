@@ -3399,6 +3399,8 @@ cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, voi
 }
 cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     invalidateKernelArgCache();
+    if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
+
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMFree");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3409,6 +3411,7 @@ cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointer
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, num_svm_pointers, svm_pointers, pfn_notify, user_data, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    command->args.user_data = user_data ? new UserDataClEnqueueSVMFree(num_svm_pointers, svm_pointers, user_data) : nullptr;
     if(event_wait_list)
     {
         auto base = command->captures.getEvent_wait_list();

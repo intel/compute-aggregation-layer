@@ -610,10 +610,15 @@ void IcdOclPlatform::handleCallbacks(IcdOclPlatform *platform) {
         case Cal::Rpc::Ocl::ClEnqueueSVMFreeRpcM::messageSubtype: {
             log<Verbosity::debug>("Received callback notification for message subType : %d", callbackId.src.subtype);
             auto commandQueue = reinterpret_cast<cl_command_queue>(callbackId.handle);
-            platform->translateRemoteObjectToLocalObject(commandQueue);
             auto userData = reinterpret_cast<void *>(callbackId.data);
-            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_command_queue queue, void *user_data)>(callbackId.fptr);
-            fptr(commandQueue, userData);
+            auto wrappedData = reinterpret_cast<UserDataClEnqueueSVMFree *>(userData);
+            platform->translateRemoteObjectToLocalObject(commandQueue);
+            void *originalUserData = wrappedData->originalUserData;
+            auto numSvmPointers = wrappedData->numSvmPointers;
+            auto svmPointers = wrappedData->svmPointers;
+            delete wrappedData;
+            auto fptr = reinterpret_cast<void(CL_CALLBACK *)(cl_command_queue queue, cl_uint num_svm_pointers, void *svm_pointers[], void *user_data)>(callbackId.fptr);
+            fptr(commandQueue, numSvmPointers, svmPointers, originalUserData);
             break;
         }
         }

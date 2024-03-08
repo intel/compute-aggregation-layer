@@ -145,6 +145,14 @@ struct UserDataLinkProgram {
     void *originalUserData;
 };
 
+struct UserDataClEnqueueSVMFree {
+    UserDataClEnqueueSVMFree(cl_uint numSvmPointers, void **svmPointers, void *userData)
+        : numSvmPointers(numSvmPointers), svmPointers(svmPointers), originalUserData(userData) {}
+    cl_uint numSvmPointers;
+    void **svmPointers;
+    void *originalUserData;
+};
+
 template <typename OclObjectType>
 auto asLocalObjectOrNull(OclObjectType *obj) {
     return obj ? obj->asLocalObject() : nullptr;

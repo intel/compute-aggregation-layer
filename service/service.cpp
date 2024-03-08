@@ -516,17 +516,25 @@ void CL_CALLBACK clEnqueueSVMFreeCallbackWrapper(cl_command_queue queue, cl_uint
     if (callbackId.fptr) {
         log<Verbosity::debug>("Pushed callback notification from clEnqueueSVMFreeCallbackWrapper to the ring - fptr : 0x%llx, handle : 0x%llx, subType : %u", callbackId.fptr, callbackId.handle, callbackId.src.subtype);
         channel.pushCompletedCallbackId(callbackId);
-    }
-
-    if ((num_svm_pointers == 0) || (svm_pointers == nullptr) || (clientContext == nullptr)) {
-        log<Verbosity::debug>("lEnqueueSVMFreeCallbackWrapper: num_svm_pointers=%u, svm_pointers=%p, clientContext=%p, clientContext=%p", num_svm_pointers, svm_pointers, clientContext);
-        return;
-    }
-
-    for (cl_uint i = 0; i < num_svm_pointers; i++) {
+    } else {
+        if ((num_svm_pointers == 0) || (svm_pointers == nullptr) || (clientContext == nullptr)) {
+            log<Verbosity::debug>("clEnqueueSVMFreeCallbackWrapper returned num_svm_pointers=%u, svm_pointers=%p, clientContext=%p, clientContext=%p", num_svm_pointers, svm_pointers, clientContext);
+            return;
+        }
+        cl_context context;
+        auto status = Cal::Service::Apis::Ocl::Standard::clGetCommandQueueInfo(queue, CL_QUEUE_CONTEXT, sizeof(cl_context), &context, 0);
+        if (status != CL_SUCCESS) {
+            log<Verbosity::error>("clEnqueueSVMFreeCallbackWrapper: clGetCommandQueueInfo failed to get queue context status=%d", status);
+            return;
+        }
+        for (cl_uint i = 0; i < num_svm_pointers; i++) {
+            Cal::Service::Apis::Ocl::Extensions::clMemFreeINTEL(context, svm_pointers[i]);
+        }
         auto clientContextLock = clientContext->lock();
-        log<Verbosity::debug>("Reaped Usm shared host allocation from clEnqueueSVMFreeCallbackWrapper ptr=%p", svm_pointers[i]);
-        clientContext->reapUsmSharedHostAlloc(svm_pointers[i], false);
+        for (cl_uint i = 0; i < num_svm_pointers; i++) {
+            log<Verbosity::debug>("Reaped Usm shared host allocation from clEnqueueSVMFreeCallbackWrapper ptr=%p", svm_pointers[i]);
+            clientContext->reapUsmSharedHostAlloc(svm_pointers[i], false);
+        }
     }
 }
 

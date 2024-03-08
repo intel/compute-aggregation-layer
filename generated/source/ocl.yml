@@ -5408,7 +5408,11 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "invalidateKernelArgCache();"
+              handler_prologue:
+                [
+                  "invalidateKernelArgCache();",
+                  "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+                ]
             rpc:
               custom_handler: True
           returns:
@@ -5447,6 +5451,7 @@ config:
               name: user_data
               type: "void*"
               kind: ptr_va
+              translate_before: "{dst} = {arg} ? new UserDataClEnqueueSVMFree(num_svm_pointers, svm_pointers, user_data) : nullptr"
               ignore: True
             5:
               name: num_events_in_wait_list
