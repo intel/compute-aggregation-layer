@@ -110,6 +110,21 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
     return clGetDeviceInfoRpcHelper(device, param_name, param_value_size, param_value, param_value_size_ret);
 }
 
+cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+    if (param_name == CL_EVENT_COMMAND_TYPE && param_value_size == sizeof(cl_command_type) && param_value != nullptr) {
+        auto commandType = static_cast<IcdOclEvent *>(event)->getCommandType();
+        if (commandType != 0) {
+            log<Verbosity::debug>("clGetEventInfo(CL_EVENT_COMMAND_TYPE) - overriding commandType %d associated with event %p", event, commandType);
+            *reinterpret_cast<cl_command_type *>(param_value) = commandType;
+            if (param_value_size_ret) {
+                *param_value_size_ret = sizeof(cl_command_type);
+            }
+            return CL_SUCCESS;
+        }
+    }
+    return clGetEventInfoRpcHelper(event, param_name, param_value_size, param_value, param_value_size_ret);
+}
+
 static cl_int getProgramBinaries(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
     auto icdProgram = static_cast<IcdOclProgram *>(program);
     const auto binariesSizes = icdProgram->getBinariesSizes();

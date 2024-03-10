@@ -190,6 +190,7 @@ namespace Ocl {
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms);
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
+cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret);
 void *clGetExtensionFunctionAddress(const char *funcname);
 cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret);
@@ -787,7 +788,18 @@ struct IcdOclProgram : Cal::Shared::RefCountedWithParent<_cl_program, IcdOclType
 
 struct IcdOclEvent : Cal::Shared::RefCountedWithParent<_cl_event, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
+
+    void setCommandType(cl_command_type cmdType) {
+        commandType = cmdType;
+    }
+    cl_command_type getCommandType() const {
+        return commandType;
+    }
+
+  protected:
+    cl_command_type commandType = 0;
 };
+
 struct IcdOclSampler : Cal::Shared::RefCountedWithParent<_cl_sampler, IcdOclTypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
 };
@@ -895,6 +907,14 @@ class IcdOclPlatform : public Cal::Client::Icd::IcdPlatform, public _cl_platform
 
     IcdOclContext *translateNewRemoteObjectToLocalObject(cl_context v) {
         return translateNewRemoteObjectToLocalObjectFromMap<IcdOclContext>(mappings.ctxMap, v, Cal::Shared::SingleReference::wrap(nullptr));
+    }
+
+    IcdOclEvent *translateNewRemoteObjectToLocalObject(cl_event event, cl_command_queue queue, cl_command_type commandType) {
+        auto ret = translateNewRemoteObjectToLocalObjectFromMap<IcdOclEvent>(mappings.clEventMap, event, Cal::Shared::SingleReference::wrap(asLocalObjectOrNull(queue)));
+        if (ret) {
+            static_cast<IcdOclEvent *>(ret)->setCommandType(commandType);
+        }
+        return ret;
     }
 
     template <typename OclObjectT, typename OclParentObjectT>

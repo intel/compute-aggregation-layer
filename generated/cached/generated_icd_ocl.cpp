@@ -2951,7 +2951,7 @@ cl_int clWaitForEventsRpcHelper (cl_uint num_events, const cl_event* event_list)
 
     return ret;
 }
-cl_int clGetEventInfo (cl_event event, cl_event_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
+cl_int clGetEventInfoRpcHelper (cl_event event, cl_event_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret) {
     log<Verbosity::bloat>("Establishing RPC for clGetEventInfo");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3201,7 +3201,7 @@ cl_int clEnqueueSVMMap (cl_command_queue command_queue, cl_bool blocking_map, cl
     command->copyToCaller(dynMemTraits);
     if(event)
     {
-        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue, CL_COMMAND_SVM_MAP);
     }
     cl_int ret = command->captures.ret;
 
@@ -3242,7 +3242,7 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     command->copyToCaller(dynMemTraits);
     if(event)
     {
-        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue, CL_COMMAND_SVM_UNMAP);
     }
     cl_int ret = command->captures.ret;
 

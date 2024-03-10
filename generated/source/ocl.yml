@@ -4717,6 +4717,9 @@ config:
                 server_access: read
         - name: clGetEventInfo
           latency: 0.0
+          special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
           returns:
             type: cl_int
             kind: scalar
@@ -5063,7 +5066,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue, CL_COMMAND_SVM_MAP)"
                 server_access: write
         - name: clEnqueueSVMUnmap
           latency: 0.0
@@ -5112,7 +5115,7 @@ config:
                 element:
                   type: cl_event
                   kind: scalar
-                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue, CL_COMMAND_SVM_UNMAP)"
                 server_access: write
         - name: clSetKernelArgSVMPointer
           latency: 0.0

@@ -130,7 +130,7 @@ cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, v
 cl_int clEnqueueFillBuffer (cl_command_queue command_queue, cl_mem memobj, const void* pattern, size_t patternSize, size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clEnqueueFillImage (cl_command_queue command_queue, cl_mem image, const void* fill_color, const size_t* origin, const size_t* region, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clWaitForEventsRpcHelper (cl_uint num_events, const cl_event* event_list);
-cl_int clGetEventInfo (cl_event event, cl_event_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
+cl_int clGetEventInfoRpcHelper (cl_event event, cl_event_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_int clGetEventProfilingInfo (cl_event event, cl_profiling_info param_name, size_t param_value_size, void* param_value, size_t* param_value_size_ret);
 cl_event clCreateUserEvent (cl_context context, cl_int* errcode_ret);
 cl_int clSetUserEventStatus (cl_event event, cl_int execution_status);
