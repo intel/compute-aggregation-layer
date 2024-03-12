@@ -114,13 +114,13 @@ bool Regex::matches(const char *text) {
     return result == 0;
 }
 
-char *getCalEnv(std::string_view name) {
+char *getEnv(std::string_view name) {
     auto ret = Cal::Sys::getenv(name.data());
     return ret;
 }
 
-bool getCalEnvFlag(std::string_view name, bool defaultValue) {
-    auto envStr = getCalEnv(name);
+bool getEnvFlag(std::string_view name, bool defaultValue) {
+    auto envStr = getEnv(name);
     if (nullptr == envStr) {
         return defaultValue;
     }
@@ -165,12 +165,60 @@ bool getCalEnvFlag(std::string_view name, bool defaultValue) {
     return value;
 }
 
-int64_t getCalEnvI64(std::string_view name, int64_t defaultValue) {
-    auto envStr = getCalEnv(name);
+int64_t getEnvI64(std::string_view name, int64_t defaultValue) {
+    auto envStr = getEnv(name);
     if (nullptr == envStr) {
         return defaultValue;
     }
     return atoll(envStr);
+}
+
+bool isAllowedCalEnv(std::string_view name) {
+#ifndef NDEBUG
+    return true;
+#else
+#if CAL_ENABLE_DEBUG_KEYS_IN_RELEASE
+    if (getEnvFlag(calReadDebugKeysEnvName)) {
+        return true;
+    }
+#endif
+    for (const auto &envName : calReleaseModeEnvs) {
+        if (envName == name) {
+            return true;
+        }
+    }
+#if CAL_ENABLE_DEBUG_KEYS_IN_RELEASE
+    log<Verbosity::error>("%s ignored in release mode (use %s=1 to override)", name.data(), calReadDebugKeysEnvName.data());
+#else
+    if (getEnvFlag(calReadDebugKeysEnvName)) {
+        log<Verbosity::error>("%s ignored in release mode (note : %s was ignored because available CAL was built with this feature disabled)", name.data(), calReadDebugKeysEnvName.data());
+    } else {
+        log<Verbosity::error>("%s ignored in release mode", name.data());
+    }
+#endif
+    return false;
+#endif
+}
+
+char *getCalEnv(std::string_view name) {
+    if ((nullptr == getEnv(name)) || (false == isAllowedCalEnv(name))) {
+        return nullptr;
+    }
+    return getEnv(name);
+}
+
+bool getCalEnvFlag(std::string_view name, bool defaultValue) {
+    if ((nullptr == getEnv(name)) || (false == isAllowedCalEnv(name))) {
+        return defaultValue;
+    }
+    return getEnvFlag(name, defaultValue);
+}
+
+int64_t getCalEnvI64(std::string_view name, int64_t defaultValue) {
+    if ((nullptr == getEnv(name)) || (false == isAllowedCalEnv(name))) {
+        return defaultValue;
+    }
+    return getEnvI64(name, defaultValue);
 }
 
 bool ensureUserPrivateDir(const char *path) {

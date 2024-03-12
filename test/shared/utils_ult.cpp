@@ -720,7 +720,7 @@ TEST(GetCalEnv, whenEnvAvailableThenReturnItsStringValue) {
     char expectedValue[] = "somevalue";
     tempSysCallsCtx.apiConfig.getenv.returnValue = expectedValue;
 
-    EXPECT_EQ(expectedValue, Cal::Utils::getCalEnv("myenv"));
+    EXPECT_EQ(expectedValue, Cal::Utils::getEnv("myenv"));
     EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.getenv.callCount);
 
     EXPECT_TRUE(logs.empty()) << logs.str();
@@ -730,9 +730,9 @@ TEST(GetCalEnvFlag, whenEnvNotAvailableThenReturnDefault) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
-    EXPECT_FALSE(Cal::Utils::getCalEnvFlag("myenv"));
-    EXPECT_FALSE(Cal::Utils::getCalEnvFlag("myenv", false));
-    EXPECT_TRUE(Cal::Utils::getCalEnvFlag("myenv", true));
+    EXPECT_FALSE(Cal::Utils::getEnvFlag("myenv"));
+    EXPECT_FALSE(Cal::Utils::getEnvFlag("myenv", false));
+    EXPECT_TRUE(Cal::Utils::getEnvFlag("myenv", true));
 
     EXPECT_TRUE(logs.empty()) << logs.str();
 }
@@ -742,9 +742,9 @@ TEST(GetCalEnv, whenEnvAvailableButInvalidThenReturnItsBooleanValue) {
     Cal::Mocks::LogCaptureContext logs;
     char expectedValue[] = "X";
     tempSysCallsCtx.apiConfig.getenv.returnValue = expectedValue;
-    EXPECT_FALSE(Cal::Utils::getCalEnvFlag("myenv"));
-    EXPECT_FALSE(Cal::Utils::getCalEnvFlag("myenv", false));
-    EXPECT_TRUE(Cal::Utils::getCalEnvFlag("myenv", true));
+    EXPECT_FALSE(Cal::Utils::getEnvFlag("myenv"));
+    EXPECT_FALSE(Cal::Utils::getEnvFlag("myenv", false));
+    EXPECT_TRUE(Cal::Utils::getEnvFlag("myenv", true));
 
     EXPECT_FALSE(logs.empty());
 }
@@ -761,12 +761,12 @@ TEST(GetCalEnvFlag, whenEnvAvailableThenReturnItsBooleanValue) {
 
     for (auto e : enabled) {
         expectedValue[0] = e;
-        EXPECT_TRUE(Cal::Utils::getCalEnvFlag("myenv"));
+        EXPECT_TRUE(Cal::Utils::getEnvFlag("myenv"));
     }
 
     for (auto d : disabled) {
         expectedValue[0] = d;
-        EXPECT_FALSE(Cal::Utils::getCalEnvFlag("myenv"));
+        EXPECT_FALSE(Cal::Utils::getEnvFlag("myenv"));
     }
 
     EXPECT_TRUE(logs.empty()) << logs.str();
@@ -776,8 +776,8 @@ TEST(GetCalEnvI64, whenEnvNotAvailableThenReturnDefault) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     Cal::Mocks::LogCaptureContext logs;
 
-    EXPECT_EQ(0, Cal::Utils::getCalEnvI64("myenv", 0));
-    EXPECT_EQ(7, Cal::Utils::getCalEnvI64("myenv", 7));
+    EXPECT_EQ(0, Cal::Utils::getEnvI64("myenv", 0));
+    EXPECT_EQ(7, Cal::Utils::getEnvI64("myenv", 7));
 
     EXPECT_TRUE(logs.empty()) << logs.str();
 }
@@ -787,15 +787,15 @@ TEST(GetCalEnvI64, whenEnvAvailableThenReturnItsIntegerValue) {
     Cal::Mocks::LogCaptureContext logs;
     char expectedValue3[] = "3";
     tempSysCallsCtx.apiConfig.getenv.returnValue = expectedValue3;
-    EXPECT_EQ(3, Cal::Utils::getCalEnvI64("myenv", 0));
+    EXPECT_EQ(3, Cal::Utils::getEnvI64("myenv", 0));
 
     char expectedValueM7[] = "-7";
     tempSysCallsCtx.apiConfig.getenv.returnValue = expectedValueM7;
-    EXPECT_EQ(-7, Cal::Utils::getCalEnvI64("myenv", 0));
+    EXPECT_EQ(-7, Cal::Utils::getEnvI64("myenv", 0));
 
     char expectedValue11[] = "11";
     tempSysCallsCtx.apiConfig.getenv.returnValue = expectedValue11;
-    EXPECT_EQ(11, Cal::Utils::getCalEnvI64("myenv", 0));
+    EXPECT_EQ(11, Cal::Utils::getEnvI64("myenv", 0));
 
     EXPECT_TRUE(logs.empty()) << logs.str();
 }

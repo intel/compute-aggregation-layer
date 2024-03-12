@@ -6,6 +6,7 @@
 
 add_definitions(-Dmockable=virtual)
 add_definitions(-Dfinal=)
+add_definitions(-DCAL_ENABLE_DEBUG_KEYS_IN_RELEASE=1)
 string(REGEX REPLACE "-Werror[^=]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 string(REGEX REPLACE "-Werror[^=]" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 add_subdirectories()

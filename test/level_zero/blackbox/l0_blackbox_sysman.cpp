@@ -338,7 +338,7 @@ int main(int argc, const char *argv[]) {
 
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
-    if (false == Cal::Utils::getCalEnvFlag("ZES_ENABLE_SYSMAN")) {
+    if (false == Cal::Utils::getEnvFlag("ZES_ENABLE_SYSMAN")) {
         Cal::Sys::setenv("ZES_ENABLE_SYSMAN", "1", true);
     }
 

@@ -29,7 +29,7 @@ bool checkIfL0RedirectIsNeeded() {
         return true;
     }
 
-    bool redirectBecauseOfDebuggability = Cal::Utils::getCalEnvFlag("ZET_ENABLE_PROGRAM_DEBUGGING", false);
+    bool redirectBecauseOfDebuggability = Cal::Utils::getEnvFlag("ZET_ENABLE_PROGRAM_DEBUGGING", false);
     if (redirectBecauseOfDebuggability) {
         log<Verbosity::info>("Redirecting directly to GPU driver because of env : %s", "ZET_ENABLE_PROGRAM_DEBUGGING");
         return true;
@@ -293,7 +293,7 @@ ze_command_queue_mode_t IcdL0CommandQueue::getCommandQueueMode() {
 
 bool IcdL0Platform::isZeAffinityMaskPresent() {
     std::call_once(parseZeAffinityMaskOnce, [this]() {
-        auto zeAffinityMask = Cal::Utils::getCalEnv("ZE_AFFINITY_MASK");
+        auto zeAffinityMask = Cal::Utils::getEnv("ZE_AFFINITY_MASK");
         auto zeAffinityMaskDetected = zeAffinityMask != nullptr && zeAffinityMask[0] != 0;
 
         if (zeAffinityMaskDetected) {

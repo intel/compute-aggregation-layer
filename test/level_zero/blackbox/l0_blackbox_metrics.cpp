@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -96,7 +96,7 @@ bool getMetricProperties(zet_metric_handle_t metric) {
 int main(int argc, const char *argv[]) {
     Cal::Utils::initMaxDynamicVerbosity(Verbosity::debug);
 
-    if (false == Cal::Utils::getCalEnvFlag("ZET_ENABLE_METRICS")) {
+    if (false == Cal::Utils::getEnvFlag("ZET_ENABLE_METRICS")) {
         Cal::Sys::setenv("ZET_ENABLE_METRICS", "1", true);
     }
 

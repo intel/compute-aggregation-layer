@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -26,7 +26,7 @@ IcdGlobalState *icdGlobalStateStorage = new IcdGlobalState;
 IcdGlobalState &icdGlobalState = *icdGlobalStateStorage;
 IcdGlobalState::IcdGlobalState() {
     this->enableCache = Cal::Utils::getCalEnvFlag(calIcdEnableCacheEnvName, true);
-    tracingEnabled = Cal::Utils::getCalEnvFlag("ZET_ENABLE_API_TRACING_EXP", false);
+    tracingEnabled = Cal::Utils::getEnvFlag("ZET_ENABLE_API_TRACING_EXP", false);
     if (tracingEnabled) {
         log<Verbosity::performance>("API tracing requires turning async calls off");
         Cal::Sys::setenv("CAL_ASYNC_CALLS", "0", true);

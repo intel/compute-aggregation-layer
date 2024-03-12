@@ -1584,8 +1584,8 @@ void checkForRequiredFiles() {
 
     if (enableL0) {
         Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", libCalPath.c_str(), 1);
-        if (Cal::Sys::getenv(calClientZeEnableAltDriversEnvName.data())) {
-            Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", Cal::Sys::getenv(calClientZeEnableAltDriversEnvName.data()), 1);
+        if (Cal::Utils::getCalEnv(calClientZeEnableAltDriversEnvName.data())) {
+            Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", Cal::Utils::getCalEnv(calClientZeEnableAltDriversEnvName.data()), 1);
         }
     }
 

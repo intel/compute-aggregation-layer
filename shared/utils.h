@@ -381,12 +381,20 @@ inline size_t getBufferRectSizeInBytes(const size_t *origin, const size_t *regio
     return size;
 }
 
+char *getEnv(std::string_view name);
+bool getEnvFlag(std::string_view name, bool defaultValue);
+inline bool getEnvFlag(std::string_view name) {
+    return getEnvFlag(name, false);
+}
+int64_t getEnvI64(std::string_view name, int64_t defaultValue);
+
 char *getCalEnv(std::string_view name);
 bool getCalEnvFlag(std::string_view name, bool defaultValue);
 inline bool getCalEnvFlag(std::string_view name) {
     return getCalEnvFlag(name, false);
 }
 int64_t getCalEnvI64(std::string_view name, int64_t defaultValue);
+
 void signalAbort(const char *message);
 void signalAbort();
 

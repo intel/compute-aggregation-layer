@@ -57,6 +57,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}")
 option(ENABLE_BLOATED_VERBOSITY "Enable all logs (a lot)" OFF)
 option(ENABLE_PERFORMANCE_DEBUG "Enable performance-related debug logs" ON)
 option(DISABLE_ULT "Disables unit tests from ALL target" OFF)
+option(READ_DEBUG_KEYS_IN_RELEASE "Allow CAL debug environment variables even when built in release mode" OFF)
+
+if(READ_DEBUG_KEYS_IN_RELEASE)
+  add_definitions(-DCAL_ENABLE_DEBUG_KEYS_IN_RELEASE=1)
+endif()
+message("READ_DEBUG_KEYS_IN_RELEASE is ${READ_DEBUG_KEYS_IN_RELEASE}")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(ENABLE_CALLSTACK_DUMPING_DEFAULT ON)

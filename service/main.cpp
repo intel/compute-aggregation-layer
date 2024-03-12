@@ -114,6 +114,10 @@ int main(int argc, const char *argv[]) {
 
     if (serviceConfig.isAnyRunnerMode()) {
         Cal::Sys::setenv(calListenerSocketPathEnvName.data(), serviceConfig.listener.socketPath.c_str(), 1);
+    } else {
+#ifdef NDEBUG
+        Cal::Sys::unsetenv(calListenerSocketPathEnvName.data());
+#endif
     }
 
     Cal::Utils::initDynamicVerbosity();
