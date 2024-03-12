@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -15,7 +15,29 @@ namespace Cal::Service::Apis::LevelZero {
 static const char *intelGpuPlatformName = "Intel.*Graphics";
 static const char *intelGpuDeviceName = "Intel.*GPU";
 
+bool isRecursiveCalL0() {
+    auto *altDrivers = Cal::Sys::getenv("ZE_ENABLE_ALT_DRIVERS");
+    if (nullptr == altDrivers) {
+        return false;
+    }
+    if (strstr(altDrivers, ",")) {
+        return false;
+    }
+
+    bool isRedirectToCalLib = (nullptr != strstr(altDrivers, "libcal.so"));
+    return isRedirectToCalLib;
+}
+
+void warnIfRecursiveCalL0() {
+    if (isRecursiveCalL0()) {
+        log<Verbosity::error>("Detected that ZE_ENABLE_ALT_DRIVER redirects to libcal.so for calrun service process! This forbids CAL service from loading L0 GPU driver. Please rerun calrun with \"ZE_ENABLE_ALT_DRIVERS=\" (i.e. unset).");
+    }
+}
+
 bool L0SharedObjects::init() {
+    warnIfRecursiveCalL0();
+
+    Cal::Sys::setenv("ZES_ENABLE_SYSMAN", "1", true);
     if (!Cal::Service::Apis::LevelZero::Standard::loadLevelZeroLibrary(std::nullopt)) {
         log<Verbosity::info>("Could not load LevelZero ICD loader library (libze_loader.so.1) - LevelZero API will not be available");
         return false;

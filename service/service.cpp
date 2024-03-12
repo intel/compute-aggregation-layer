@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <dlfcn.h>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <regex>
@@ -33,7 +34,34 @@ static const char *intelGpuPlatformName = "Intel.*Graphics";
 namespace Ocl {
 cl_platform_id globalOclPlatform = {};
 
+bool isRecursiveCalOcl() {
+    auto *vendorsPath = Cal::Sys::getenv("OCL_ICD_VENDORS");
+    if (nullptr == vendorsPath) {
+        return false;
+    }
+
+    bool redirectsToCalIcd = false;
+    bool containsOtherIcdEntries = false;
+    for (const auto &entry : std::filesystem::directory_iterator(vendorsPath)) {
+        if (entry.path().filename().string() == "cal.icd") {
+            redirectsToCalIcd = true;
+        } else if (entry.path().extension().string() == ".icd") {
+            containsOtherIcdEntries = true;
+        }
+    }
+
+    return redirectsToCalIcd && (false == containsOtherIcdEntries);
+}
+
+void warnIfRecursiveCalOcl() {
+    if (isRecursiveCalOcl()) {
+        log<Verbosity::error>("Detected that OCL_ICD_VENDORS redirects to libcal.so for calrun service process! This forbids CAL service from loading OCL GPU driver. Please rerun calrun with \"OCL_ICD_VENDORS=\" (i.e. unset).");
+    }
+}
+
 bool OclSharedObjects::init() {
+    warnIfRecursiveCalOcl();
+
     if (false == Cal::Service::Apis::Ocl::Standard::loadOclLibrary(std::nullopt)) {
         log<Verbosity::info>("Could not load OpenCL ICD loader library (libOpenCL.so) - OpenCL API will not be available");
         return false;
