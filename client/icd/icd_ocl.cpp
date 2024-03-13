@@ -264,6 +264,7 @@ void *clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uin
         Cal::Client::Icd::Ocl::clMemFreeINTEL(context, ptr);
         ptr = nullptr;
     }
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().registerSharedAlloc(ptr, size, PageFaultManager::Placement::HOST);
     return ptr;
 }
 
@@ -322,13 +323,19 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
     if ((flags & CL_MEM_USE_HOST_PTR) && Cal::Client::Icd::icdGlobalState.getMallocShmemExporter().isRegionSharable(host_ptr, size)) {
         retMem = clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem(context, flags, size, host_ptr, errcode_ret);
     } else {
-        std::unique_ptr<void, std::function<void(void *)>> standaloneHostPtrAlloc{static_cast<IcdOclContext *>(context)->getStagingAreaManager().allocateStagingArea(size), [context](void *ptrToMarkAsUnused) { static_cast<IcdOclContext *>(context)->getStagingAreaManager().deallocateStagingArea(ptrToMarkAsUnused); }};
-        void *standaloneHostPtr = standaloneHostPtrAlloc.get();
-        memcpy(Cal::Utils::toAddress(standaloneHostPtr), host_ptr, host_ptr ? size : 0u);
-        auto useHostPtrFlags = flags & (~(CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR));
-        useHostPtrFlags |= CL_MEM_USE_HOST_PTR;
-        retMem = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem(context, useHostPtrFlags, size, standaloneHostPtr, errcode_ret);
-        retMem->asLocalObject()->standaloneHostPtrAllocation = std::move(standaloneHostPtrAlloc);
+        auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+        auto host_ptr_pointer_type = globalPlatform->getPointerType(host_ptr);
+        if (host_ptr_pointer_type == PointerType::usm) {
+            retMem = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem(context, flags, size, host_ptr, errcode_ret);
+        } else {
+            std::unique_ptr<void, std::function<void(void *)>> standaloneHostPtrAlloc{static_cast<IcdOclContext *>(context)->getStagingAreaManager().allocateStagingArea(size), [context](void *ptrToMarkAsUnused) { static_cast<IcdOclContext *>(context)->getStagingAreaManager().deallocateStagingArea(ptrToMarkAsUnused); }};
+            void *standaloneHostPtr = standaloneHostPtrAlloc.get();
+            memcpy(Cal::Utils::toAddress(standaloneHostPtr), host_ptr, host_ptr ? size : 0u);
+            auto useHostPtrFlags = flags & (~(CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR));
+            useHostPtrFlags |= CL_MEM_USE_HOST_PTR;
+            retMem = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem(context, useHostPtrFlags, size, standaloneHostPtr, errcode_ret);
+            retMem->asLocalObject()->standaloneHostPtrAllocation = std::move(standaloneHostPtrAlloc);
+        }
     }
     retMem->asLocalObject()->apiHostPtr = host_ptr;
     retMem->asLocalObject()->size = size;

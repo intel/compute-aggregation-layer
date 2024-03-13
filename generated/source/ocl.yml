@@ -5182,6 +5182,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(svm_ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int
@@ -5758,6 +5759,7 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dstPtr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int

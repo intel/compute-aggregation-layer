@@ -335,7 +335,7 @@ bool clSharedMemAllocINTELHandler(Provider &service, Cal::Rpc::ChannelServer &ch
 
 bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clSVMAlloc");
-    log<Verbosity::performance>("WARNING : clSVMAlloc is implemented using clHostMemAllocINTEL");
+    log<Verbosity::debug>("WARNING : clSVMAlloc is implemented using clSharedMemAllocINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClSVMAllocRpcM *>(command);
     if (apiCommand->args.alignment > Cal::Utils::pageSize64KB) {
         log<Verbosity::error>("Unhandled alignment for clSVMAlloc");
@@ -353,11 +353,12 @@ bool clSVMAllocHandler(Provider &service, Cal::Rpc::ChannelServer &channel, Clie
         }
         void *cpuAddress = shmem.getSubAllocationPtr();
         properties[1] = reinterpret_cast<uintptr_t>(cpuAddress);
-        apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clHostMemAllocINTEL(apiCommand->args.context,
-                                                                                            properties,
-                                                                                            apiCommand->args.size,
-                                                                                            apiCommand->args.alignment,
-                                                                                            nullptr);
+        apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clSharedMemAllocINTEL(apiCommand->args.context,
+                                                                                              nullptr,
+                                                                                              properties,
+                                                                                              apiCommand->args.size,
+                                                                                              apiCommand->args.alignment,
+                                                                                              nullptr);
         if (nullptr == apiCommand->captures.ret) {
             log<Verbosity::debug>("Failed to map %zu bytes of USM shared/host memory from heap :%zx-%zx on the GPU", apiCommand->args.size, heap.getUnderlyingAllocator().getMmapRange().start, heap.getUnderlyingAllocator().getMmapRange().end);
             heap.free(shmem);

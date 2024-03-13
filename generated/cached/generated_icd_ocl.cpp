@@ -3283,6 +3283,7 @@ cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, si
     return ret;
 }
 cl_int clEnqueueSVMMemFill (cl_command_queue command_queue, void* svm_ptr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(svm_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMMemFill");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3582,6 +3583,7 @@ cl_command_queue clCreateCommandQueueWithPropertiesKHR (cl_context context, cl_d
     return Cal::Client::Icd::Ocl::clCreateCommandQueueWithProperties(context, device, properties, errcode_ret);
 }
 cl_int clEnqueueMemFillINTEL (cl_command_queue command_queue, void* dstPtr, const void* pattern, size_t patternSize, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dstPtr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMemFillINTEL");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
