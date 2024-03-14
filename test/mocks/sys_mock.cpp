@@ -98,6 +98,10 @@ int (*ftruncate)(int fd, off_t length) = +[](int fd, off_t length) -> int {
     return Cal::Mocks::getSysCallsContext()->ftruncate(fd, length);
 };
 
+int (*statfs)(const char *path, struct statfs *buf) = +[](const char *path, struct statfs *buf) -> int {
+    return Cal::Mocks::getSysCallsContext()->statfs(path, buf);
+};
+
 int (*mprotect)(void *addr, size_t len, int prot) = +[](void *addr, size_t len, int prot) -> int {
     return Cal::Mocks::getSysCallsContext()->mprotect(addr, len, prot);
 };

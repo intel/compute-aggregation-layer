@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -60,6 +60,8 @@ class ShmemAllocatorWhiteBox : public Cal::Ipc::ShmemAllocator {
   public:
     using Cal::Ipc::ShmemAllocator::basePath;
     using Cal::Ipc::ShmemAllocator::shmemIdAllocator;
+    using Cal::Ipc::ShmemAllocator::totalShmemAllocated;
+    using Cal::Ipc::ShmemAllocator::totalShmemAvailable;
 };
 
 class MmappedShmemAllocationWhiteBox : public Cal::Ipc::MmappedShmemAllocationT {

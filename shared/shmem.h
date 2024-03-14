@@ -18,18 +18,21 @@
 #include "shared/utils.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cstdint>
 #include <deque>
 #include <errno.h>
 #include <fcntl.h>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <utility>
 #include <vector>
 
@@ -100,20 +103,47 @@ class ShmemAllocator final {
     using AllocationT = OpenedShmemAllocationT;
     static constexpr size_t minAlignment = Cal::Utils::pageSize4KB;
 
-    ShmemAllocator() : shmemIdAllocator(maxShmems) {
+    ShmemAllocator() : shmemIdAllocator(maxShmems), totalShmemAvailable(queryTotalShmemAvailable()) {
     }
-    ShmemAllocator(const std::string &path) : shmemIdAllocator(maxShmems), basePath(path) {
+    ShmemAllocator(const std::string &path) : shmemIdAllocator(maxShmems), basePath(path), totalShmemAvailable(queryTotalShmemAvailable()) {
     }
 
     mockable ~ShmemAllocator() = default;
+
+    size_t incrementShmemUsed(size_t sizeDiff) {
+        return updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x + y; });
+    }
+
+    size_t decrementShmemUsed(size_t sizeDiff) {
+        return updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x - y; });
+    }
+
+    template <typename Op>
+    size_t updateShmemUsed(size_t sizeDiff, Op op) {
+        auto currentShmemUsed = totalShmemAllocated.load(std::memory_order_relaxed);
+        auto updatedShmemUsed = op(currentShmemUsed, sizeDiff);
+        while (!totalShmemAllocated.compare_exchange_strong(currentShmemUsed, updatedShmemUsed,
+                                                            std::memory_order_release,
+                                                            std::memory_order_relaxed)) {
+            updatedShmemUsed = op(currentShmemUsed, sizeDiff);
+        }
+        return updatedShmemUsed;
+    }
 
     mockable AllocationT allocate(size_t size, size_t alignment) {
         if (false == Cal::Allocators::adjustSizeAndAlignment<Cal::Utils::pageSize4KB>(size, alignment)) {
             return {};
         }
+
+        auto updatedShmemUsed = incrementShmemUsed(size);
+        if (updatedShmemUsed > totalShmemAvailable) {
+            log<Verbosity::info>("Not enough shmem available, total requested: %zu vs available: %zu", updatedShmemUsed, totalShmemAvailable);
+        }
+
         auto shmemId = shmemIdAllocator.allocate();
         if (Cal::Allocators::BitAllocator::invalidOffset == shmemId) {
             log<Verbosity::error>("Maximum number of shmems reached : %zu", shmemIdAllocator.getCapacity());
+            decrementShmemUsed(size);
             return {};
         }
         auto path = basePath + std::to_string(shmemId);
@@ -126,14 +156,18 @@ class ShmemAllocator final {
         if (-1 == shmemFd) {
             auto err = errno;
             log<Verbosity::error>("Failed to create shmem for path : %s (errno=%d=%s)", path.c_str(), err, strerror(err));
+            decrementShmemUsed(size);
             return {};
         }
         if (-1 == Cal::Sys::ftruncate(shmemFd, size)) {
             log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", path.c_str(), size);
             Cal::Sys::close(shmemFd);
             Cal::Sys::shm_unlink(path.c_str());
+            decrementShmemUsed(size);
             return {};
         }
+
+        log<Verbosity::debug>("Truncated shmem: %s to size: 0x%lx total: 0x%lx", path.c_str(), size, totalShmemAllocated.load());
 
         return AllocationT(ShmemAllocation<>(shmemId, true), shmemFd, size, true);
     }
@@ -167,13 +201,26 @@ class ShmemAllocator final {
             } else {
                 log<Verbosity::debug>("shm_unlink-ed shmem %s of size : %zu", path.c_str(), alloc.getFileSize());
                 shmemIdAllocator.free(alloc.getShmemId());
+                decrementShmemUsed(alloc.getFileSize());
             }
         }
     }
 
   protected:
+    size_t queryTotalShmemAvailable() {
+        struct statfs data {};
+        if (int ret = Cal::Sys::statfs("/dev/shm", &data); ret != 0u) {
+            log<Verbosity::error>("Unable to determine available size of shmem");
+            return std::numeric_limits<std::size_t>::max();
+        }
+        log<Verbosity::debug>("Total size of user-available /dev/shm blocks: 0x%zu", data.f_bavail * data.f_bsize);
+        return data.f_bavail * data.f_bsize;
+    }
+
     Cal::Allocators::BitAllocator shmemIdAllocator;
     std::string basePath;
+    size_t totalShmemAvailable = 0u;
+    std::atomic_size_t totalShmemAllocated = 0u;
 };
 
 struct RemoteShmemDesc {

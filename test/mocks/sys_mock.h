@@ -219,6 +219,17 @@ struct SysCallsContext {
         return ftruncateBaseImpl(fd, length);
     }
 
+    virtual int statfs(const char *path, struct statfs *buf) {
+        ++apiConfig.statfs.callCount;
+        if (apiConfig.statfs.returnValue) {
+            return apiConfig.statfs.returnValue.value();
+        }
+        if (apiConfig.statfs.impl) {
+            return apiConfig.statfs.impl.value()(path, buf);
+        }
+        return statfsBaseImpl(path, buf);
+    }
+
     virtual int unlink(const char *pathname) {
         ++apiConfig.unlink.callCount;
         if (apiConfig.unlink.returnValue) {
@@ -491,6 +502,14 @@ struct SysCallsContext {
         return 0;
     }
 
+    int statfsBaseImpl(const char *path, struct statfs *buf) {
+        constexpr fsblkcnt_t mockAvailableShmemBlocksNumber{32768};
+        constexpr size_t mockOptimalShmemBlockSize{4096};
+        buf->f_bavail = mockAvailableShmemBlocksNumber;
+        buf->f_bsize = mockOptimalShmemBlockSize;
+        return 0;
+    }
+
     Vma vma = {{static_cast<uintptr_t>(0U), static_cast<uintptr_t>(1ULL << 48)}};
     std::unordered_map<sem_t *, std::unique_ptr<PSemaphore>> semaphores;
     std::unordered_map<std::string, std::string> envVariables;
@@ -583,6 +602,12 @@ struct SysCallsContext {
             std::optional<std::function<int(int fd, off_t length)>> impl;
             uint64_t callCount = 0U;
         } ftruncate;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *path, struct statfs *buf)>> impl;
+            uint64_t callCount = 0U;
+        } statfs;
 
         struct {
             std::optional<int> returnValue;

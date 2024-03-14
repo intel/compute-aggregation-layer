@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -13,6 +13,9 @@
 #include "test/mocks/shmem_manager_mock.h"
 #include "test/mocks/sys_mock.h"
 
+#include <chrono>
+#include <future>
+#include <pthread.h>
 #include <string>
 
 namespace Cal {
@@ -497,6 +500,148 @@ TEST(ShmemAllocatorAllocate, whenOutOfShmemIdsThenReturnsInvalidAllocationAndEmi
     EXPECT_FALSE(alloc.isValid());
 
     EXPECT_FALSE(logs.empty());
+}
+
+TEST(ShmemAllocatorAllocate, whenTotalSizeOfShmemCannotBeDeterminedThenReturnNumericMax) {
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    Cal::Mocks::LogCaptureContext logs;
+
+    tempSysCallsCtx.apiConfig.statfs.impl = [](const char *, struct statfs *buf) -> int {
+        return 1u;
+    };
+
+    Cal::Mocks::ShmemAllocatorWhiteBox allocator{};
+
+    EXPECT_EQ(1U, tempSysCallsCtx.apiConfig.statfs.callCount);
+    EXPECT_EQ(std::numeric_limits<std::size_t>::max(), allocator.totalShmemAvailable);
+}
+
+TEST(ShmemAllocatorAllocate, whenShmemsCreatedAndFreedFromOneThreadThenTheTotalSizeIsCorrect) {
+    using AllocT = Cal::Ipc::ShmemAllocator::AllocationT;
+
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    constexpr auto allocSize{Cal::Ipc::ShmemAllocator::minAlignment};
+    constexpr size_t allocsCount{16u};
+
+    tempSysCallsCtx.apiConfig.statfs.impl = [](const char *, struct statfs *buf) -> int {
+        buf->f_bavail = allocsCount * 2;
+        buf->f_bsize = allocSize;
+        return 0u;
+    };
+
+    tempSysCallsCtx.apiConfig.shm_unlink.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.shm_open.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.ftruncate.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.close.returnValue = 0u;
+
+    Cal::Mocks::ShmemAllocatorWhiteBox allocator{};
+    std::array<AllocT, allocsCount> shmemArray{};
+    for (auto &shmem : shmemArray) {
+        shmem = allocator.allocate(allocSize);
+    }
+
+    EXPECT_EQ(allocSize * allocsCount, allocator.totalShmemAllocated.load(std::memory_order_relaxed));
+
+    EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.statfs.callCount);
+    EXPECT_EQ(allocsCount, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
+    EXPECT_EQ(allocsCount, tempSysCallsCtx.apiConfig.shm_open.callCount);
+    EXPECT_EQ(allocsCount, tempSysCallsCtx.apiConfig.ftruncate.callCount);
+
+    for (auto &shmem : shmemArray) {
+        allocator.free(shmem);
+    }
+
+    EXPECT_EQ(0u, allocator.totalShmemAllocated.load(std::memory_order_relaxed));
+}
+
+TEST(ShmemAllocatorAllocate, whenShmemsCreatedAndFreedFromMultipleThreadsThenTheTotalSizeIsCorrect) {
+    using namespace std::chrono_literals;
+    using AllocT = Cal::Ipc::ShmemAllocator::AllocationT;
+
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    constexpr auto allocSize{Cal::Ipc::ShmemAllocator::minAlignment};
+    constexpr size_t allocsCount{16u};
+
+    pthread_barrier_t allocBarrier, freeBarrier;
+    pthread_barrier_init(&allocBarrier, NULL, allocsCount);
+    pthread_barrier_init(&freeBarrier, NULL, allocsCount);
+
+    tempSysCallsCtx.apiConfig.statfs.impl = [](const char *, struct statfs *buf) -> int {
+        buf->f_bavail = allocsCount * 2;
+        buf->f_bsize = allocSize;
+        return 0u;
+    };
+
+    tempSysCallsCtx.apiConfig.shm_unlink.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.shm_open.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.ftruncate.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.close.returnValue = 0u;
+
+    Cal::Mocks::ShmemAllocatorWhiteBox allocator{};
+    std::array<std::future<AllocT>, allocsCount> shmemsArray{};
+
+    for (auto &shmem : shmemsArray) {
+        shmem = std::async(
+            std::launch::async,
+            [&allocator](const size_t size, pthread_barrier_t *barrier) {
+                pthread_barrier_wait(barrier);
+                return allocator.allocate(size);
+            },
+            allocSize, &allocBarrier);
+    }
+
+    for (auto &shmem : shmemsArray) {
+        EXPECT_TRUE(shmem.valid());
+        ASSERT_EQ(std::future_status::ready, shmem.wait_for(3s));
+    }
+
+    EXPECT_EQ(allocSize * allocsCount, allocator.totalShmemAllocated.load(std::memory_order_relaxed));
+
+    std::array<std::future<void>, allocsCount> freeCompletions{};
+    for (auto i = 0u; i < allocsCount; i++) {
+        freeCompletions[i] = std::async(
+            std::launch::async,
+            [&allocator](AllocT shmemAlloc, pthread_barrier_t *barrier) {
+                pthread_barrier_wait(barrier);
+                allocator.free(shmemAlloc);
+            },
+            shmemsArray[i].get(), &freeBarrier);
+    }
+    for (auto &isFreed : freeCompletions) {
+        EXPECT_TRUE(isFreed.valid());
+        ASSERT_EQ(std::future_status::ready, isFreed.wait_for(3s));
+    }
+
+    EXPECT_EQ(0u, allocator.totalShmemAllocated.load(std::memory_order_relaxed));
+    pthread_barrier_destroy(&allocBarrier);
+    pthread_barrier_destroy(&freeBarrier);
+}
+
+TEST(ShmemAllocatorAllocate, whenSystemShmemExceededThenTryToAllocateAnyway) {
+    constexpr auto allocSize{Cal::Ipc::ShmemAllocator::minAlignment};
+    Cal::Mocks::SysCallsContext tempSysCallsCtx;
+
+    tempSysCallsCtx.apiConfig.statfs.impl = [](const char *, struct statfs *buf) -> int {
+        buf->f_bavail = 1;
+        buf->f_bsize = allocSize / 2;
+        return 0u;
+    };
+
+    tempSysCallsCtx.apiConfig.shm_unlink.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.shm_open.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.ftruncate.returnValue = 0u;
+    tempSysCallsCtx.apiConfig.close.returnValue = 0u;
+
+    Cal::Mocks::ShmemAllocatorWhiteBox allocator{};
+    auto shmem = allocator.allocate(allocSize);
+
+    EXPECT_EQ(2048u, allocator.totalShmemAvailable);
+    EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.statfs.callCount);
+    EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.shm_unlink.callCount);
+    EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.shm_open.callCount);
+    EXPECT_EQ(1u, tempSysCallsCtx.apiConfig.ftruncate.callCount);
+
+    allocator.free(shmem);
 }
 
 TEST(ShmemAllocatorAllocate, whenCreatingShmemThenFirstUnlinkStalePath) {

@@ -16,6 +16,7 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <unistd.h>
 
 namespace Cal {
@@ -42,6 +43,7 @@ extern int (*sem_post)(sem_t *sem);
 
 extern int (*ftruncate)(int fd, off_t length);
 extern int (*close)(int fd);
+extern int (*statfs)(const char *path, struct statfs *buf);
 extern int (*unlink)(const char *pathname);
 extern int (*socket)(int domain, int type, int protocol);
 extern int (*listen)(int sockfd, int backlog);

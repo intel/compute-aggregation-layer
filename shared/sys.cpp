@@ -33,6 +33,7 @@ int (*sem_post)(sem_t *sem) = ::sem_post;
 
 int (*close)(int fd) = ::close;
 int (*ftruncate)(int fd, off_t length) = ::ftruncate;
+int (*statfs)(const char *path, struct statfs *buf) = ::statfs;
 int (*unlink)(const char *pathname) = ::unlink;
 int (*socket)(int domain, int type, int protocol) = ::socket;
 int (*listen)(int sockfd, int backlog) = ::listen;
