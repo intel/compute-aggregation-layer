@@ -4488,6 +4488,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(mapped_ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
             type: cl_int

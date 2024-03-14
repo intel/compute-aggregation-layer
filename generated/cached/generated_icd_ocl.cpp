@@ -2792,6 +2792,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     return ret;
 }
 cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, void* mapped_ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(mapped_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueUnmapMemObject");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();

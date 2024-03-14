@@ -387,10 +387,25 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         cacheRet = oclKernel->clSetKernelArgCache.findCachedKernelArg(arg_index, arg_size, arg_value);
     }
 
-    cl_int ret = CL_SUCCESS;
+    cl_int ret = CL_INVALID_ARG_VALUE;
 
     if (cacheRet == oclKernel->clSetKernelArgCache.cache.end()) {
-        ret = Cal::Client::Icd::Ocl::clSetKernelArgRpcHelper(kernel, arg_index, arg_size, arg_value);
+        auto argTrait = oclKernel->getArgumentTrait(arg_index);
+        if (argTrait && argTrait->isPointer) {
+            if ((arg_value != nullptr) && (sizeof(arg_size) == sizeof(cl_mem))) {
+                auto oclMemObj = static_cast<IcdOclMem *>(*reinterpret_cast<const cl_mem *>(arg_value));
+                if (oclMemObj != nullptr) {
+                    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+                    if (globalPlatform->getPointerType(oclMemObj->apiHostPtr) == PointerType::usm) {
+                        log<Verbosity::debug>("clSetKernelArg called on buffer with USM ptr %p -> falling back to clSetKernelArgMemPointerINTEL", oclMemObj->apiHostPtr);
+                        ret = Cal::Client::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, arg_index, oclMemObj->apiHostPtr);
+                    }
+                }
+            }
+        }
+        if (ret != CL_SUCCESS) {
+            ret = Cal::Client::Icd::Ocl::clSetKernelArgRpcHelper(kernel, arg_index, arg_size, arg_value);
+        }
 
         if (Cal::Client::Icd::icdGlobalState.isCacheEnabled()) {
             oclKernel->clSetKernelArgCache.cacheKernelArg(arg_index, arg_size, arg_value);

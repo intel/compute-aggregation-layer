@@ -813,6 +813,13 @@ struct IcdOclKernel : Cal::Shared::RefCountedWithParent<_cl_kernel, IcdOclTypePr
     bool initTraits();
     bool initTraits(const IcdOclKernel *source);
 
+    const ArgTraits *getArgumentTrait(uint32_t argIndex) const {
+        if (argIndex >= argsTraits.size()) {
+            return nullptr;
+        }
+        return &argsTraits[argIndex];
+    }
+
     void convertClMemArgIfNeeded(uint32_t argIndex, size_t argSize, void *argData) {
         if (false == argsTraits[argIndex].isPointer) {
             return;
