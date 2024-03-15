@@ -4989,7 +4989,11 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "invalidateKernelArgCache();"
+              handler_prologue:
+                [
+                  "invalidateKernelArgCache();",
+                  "Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);\n",
+                ]
             rpc:
               custom_handler: True
           returns:
@@ -5417,7 +5421,8 @@ config:
               handler_prologue:
                 [
                   "invalidateKernelArgCache();",
-                  "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}\n"
+                  "if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}",
+                  "if(!pfn_notify){for (cl_uint i = 0; i < num_svm_pointers; i++) Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(svm_pointers[i]);}\n",
                 ]
             rpc:
               custom_handler: True
@@ -6194,7 +6199,11 @@ config:
             icd:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
-              handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);\n    invalidateKernelArgCache();"
+              handler_prologue:
+                [
+                  "invalidateKernelArgCache();",
+                  "Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);\n",
+                ]
             rpc:
               custom_handler: True
           returns:

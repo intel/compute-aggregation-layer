@@ -103,6 +103,7 @@ class PageFaultManager {
     }
 
     bool isAllocShared(const void *ptr) {
+        std::lock_guard<std::mutex> lock(this->mtx);
         auto it = this->findSharedAlloc(ptr);
         return it != this->sharedAllocMap.end();
     }

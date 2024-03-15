@@ -3150,6 +3150,8 @@ void* clSVMAllocRpcHelper (cl_context context, cl_svm_mem_flags flags, size_t si
 }
 void clSVMFree (cl_context context, void* ptr) {
     invalidateKernelArgCache();
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);
+
     log<Verbosity::bloat>("Establishing RPC for clSVMFree");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3402,6 +3404,7 @@ cl_int clEnqueueSVMMemcpy (cl_command_queue command_queue, cl_bool blocking, voi
 cl_int clEnqueueSVMFree (cl_command_queue command_queue, cl_uint num_svm_pointers, void** svm_pointers, void (CL_CALLBACK* pfn_notify)(cl_command_queue queue, cl_uint num_svm_pointers, void ** svm_pointers, void* user_data), void* user_data, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     invalidateKernelArgCache();
     if(pfn_notify){Cal::Client::Icd::icdGlobalState.getOclPlatform()->enableCallbacksHandler();}
+    if(!pfn_notify){for (cl_uint i = 0; i < num_svm_pointers; i++) Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(svm_pointers[i]);}
 
     log<Verbosity::bloat>("Establishing RPC for clEnqueueSVMFree");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
@@ -3793,8 +3796,9 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
     return ret;
 }
 cl_int clMemFreeINTEL (cl_context context, void* ptr) {
-    Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);
     invalidateKernelArgCache();
+    Cal::Client::Icd::icdGlobalState.getPageFaultManager().unregisterSharedAlloc(ptr);
+
     log<Verbosity::bloat>("Establishing RPC for clMemFreeINTEL");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
