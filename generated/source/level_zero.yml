@@ -9912,6 +9912,26 @@ config:
               name: ptr
               type: const void*
               kind: pointer
+        - name: zeMemPutIpcHandle
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: Mem
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: handle
+              type: ze_ipc_mem_handle_t
+              kind: scalar
         - name: zexMemGetIpcHandles
           latency: 0.0
           special_handling:
@@ -10011,7 +10031,7 @@ config:
                   kind: scalar
                   translate_after: "{dst} = globalPlatform->openUsmDevicePointerFromIpcHandle(hContext, {arg})"
                 server_access: write
-        - name : zeMemFreeExt
+        - name: zeMemFreeExt
           latency: 0.0
           special_handling:
             icd:
@@ -10046,6 +10066,37 @@ config:
                 type : void*
                 kind : pointer
                 translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
+        - name: zeMemGetFileDescriptorFromIpcHandleExp
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+          ddi_category: MemExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: ipcHandle
+              type: ze_ipc_mem_handle_t
+              kind: scalar
+            2:
+              name: pHandle
+              type: uint64_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: uint64_t
+                  kind: scalar
+                server_access: write
         - name: zeModuleCreate
           latency: 2.0
           special_handling:

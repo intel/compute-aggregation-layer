@@ -344,11 +344,13 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
 ze_result_t zeMemOpenIpcHandle_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr);
 ze_result_t zeMemCloseIpcHandle_WithTracing (ze_context_handle_t hContext, const void* ptr);
+ze_result_t zeMemPutIpcHandle (ze_context_handle_t hContext, ze_ipc_mem_handle_t handle);
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
 ze_result_t zexMemGetIpcHandles_WithTracing (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);
 ze_result_t zexMemOpenIpcHandlesRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zexMemOpenIpcHandles_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, uint32_t numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr);
+ze_result_t zeMemGetFileDescriptorFromIpcHandleExp (ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle);
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleCreate_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 ze_result_t zeModuleDestroy (ze_module_handle_t hModule);
@@ -1062,7 +1064,9 @@ inline void initL0Ddi(ze_dditable_t &dt){
     if (tracingEnabled) {
         dt.Mem.pfnCloseIpcHandle = Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle_WithTracing;
     }
+    dt.Mem.pfnPutIpcHandle = Cal::Client::Icd::LevelZero::zeMemPutIpcHandle;
     dt.Mem.pfnFreeExt = Cal::Client::Icd::LevelZero::zeMemFreeExt;
+    dt.MemExp.pfnGetFileDescriptorFromIpcHandleExp = Cal::Client::Icd::LevelZero::zeMemGetFileDescriptorFromIpcHandleExp;
     dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate;
     if (tracingEnabled) {
         dt.Module.pfnCreate = Cal::Client::Icd::LevelZero::zeModuleCreate_WithTracing;

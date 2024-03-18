@@ -5352,6 +5352,28 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
 
     return ret;
 }
+ze_result_t zeMemPutIpcHandle (ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) {
+    log<Verbosity::bloat>("Establishing RPC for zeMemPutIpcHandle");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hContext, handle);
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     log<Verbosity::bloat>("Establishing RPC for zexMemGetIpcHandles");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -5437,6 +5459,29 @@ ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext
         return command->returnValue();
     }
     command->copyToCaller(dynMemTraits);
+    ze_result_t ret = command->captures.ret;
+
+    return ret;
+}
+ze_result_t zeMemGetFileDescriptorFromIpcHandleExp (ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle) {
+    log<Verbosity::bloat>("Establishing RPC for zeMemGetFileDescriptorFromIpcHandleExp");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::LevelZero::ZeMemGetFileDescriptorFromIpcHandleExpRpcM;
+    auto commandSpace = channel.getCmdSpace<CommandT>(0);
+    auto command = new(commandSpace) CommandT(hContext, ipcHandle, pHandle);
+    command->args.hContext = hContext->asLocalObject()->asRemoteObject();
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller();
     ze_result_t ret = command->captures.ret;
 
     return ret;
@@ -12532,6 +12577,9 @@ ze_result_t zeMemOpenIpcHandle (ze_context_handle_t hContext, ze_device_handle_t
 ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) {
     return Cal::Client::Icd::LevelZero::zeMemCloseIpcHandle(hContext, ptr);
 }
+ze_result_t zeMemPutIpcHandle (ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) {
+    return Cal::Client::Icd::LevelZero::zeMemPutIpcHandle(hContext, handle);
+}
 ze_result_t zexMemGetIpcHandles (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles) {
     return Cal::Client::Icd::LevelZero::zexMemGetIpcHandles(hContext, ptr, numIpcHandles, pIpcHandles);
 }
@@ -12540,6 +12588,9 @@ ze_result_t zexMemOpenIpcHandles (ze_context_handle_t hContext, ze_device_handle
 }
 ze_result_t zeMemFreeExt (ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) {
     return Cal::Client::Icd::LevelZero::zeMemFreeExt(hContext, pMemFreeDesc, ptr);
+}
+ze_result_t zeMemGetFileDescriptorFromIpcHandleExp (ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle) {
+    return Cal::Client::Icd::LevelZero::zeMemGetFileDescriptorFromIpcHandleExp(hContext, ipcHandle, pHandle);
 }
 ze_result_t zeModuleCreate (ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) {
     return Cal::Client::Icd::LevelZero::zeModuleCreate(hContext, hDevice, desc, phModule, phBuildLog);

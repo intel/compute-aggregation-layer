@@ -803,7 +803,15 @@ ze_result_t zeMemCloseIpcHandle(ze_context_handle_t hContext, const void* ptr){
    return {};
 }
 
+ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle){
+   return {};
+}
+
 ze_result_t zeMemFreeExt(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr){
+   return {};
+}
+
+ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle){
    return {};
 }
 

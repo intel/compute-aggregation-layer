@@ -217,7 +217,9 @@ ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const void* pt
 ze_result_t (*zeMemGetIpcHandle)(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) = nullptr;
 ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr) = nullptr;
 ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr) = nullptr;
+ze_result_t (*zeMemPutIpcHandle)(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) = nullptr;
 ze_result_t (*zeMemFreeExt)(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) = nullptr;
+ze_result_t (*zeMemGetFileDescriptorFromIpcHandleExp)(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
 ze_result_t (*zeModuleDynamicLink)(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog) = nullptr;
@@ -1453,9 +1455,21 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeMemPutIpcHandle = reinterpret_cast<decltype(zeMemPutIpcHandle)>(dlsym(libraryHandle, "zeMemPutIpcHandle"));
+    if(nullptr == zeMemPutIpcHandle){
+        log<Verbosity::error>("Missing symbol zeMemPutIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeMemFreeExt = reinterpret_cast<decltype(zeMemFreeExt)>(dlsym(libraryHandle, "zeMemFreeExt"));
     if(nullptr == zeMemFreeExt){
         log<Verbosity::error>("Missing symbol zeMemFreeExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeMemGetFileDescriptorFromIpcHandleExp = reinterpret_cast<decltype(zeMemGetFileDescriptorFromIpcHandleExp)>(dlsym(libraryHandle, "zeMemGetFileDescriptorFromIpcHandleExp"));
+    if(nullptr == zeMemGetFileDescriptorFromIpcHandleExp){
+        log<Verbosity::error>("Missing symbol zeMemGetFileDescriptorFromIpcHandleExp in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1894,7 +1908,9 @@ void unloadLevelZeroLibrary() {
     zeMemGetIpcHandle = nullptr;
     zeMemOpenIpcHandle = nullptr;
     zeMemCloseIpcHandle = nullptr;
+    zeMemPutIpcHandle = nullptr;
     zeMemFreeExt = nullptr;
+    zeMemGetFileDescriptorFromIpcHandleExp = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;
     zeModuleDynamicLink = nullptr;

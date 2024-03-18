@@ -226,7 +226,9 @@ extern ze_result_t (*zeMemGetAddressRange)(ze_context_handle_t hContext, const v
 extern ze_result_t (*zeMemGetIpcHandle)(ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle);
 extern ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
 extern ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr);
+extern ze_result_t (*zeMemPutIpcHandle)(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle);
 extern ze_result_t (*zeMemFreeExt)(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr);
+extern ze_result_t (*zeMemGetFileDescriptorFromIpcHandleExp)(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle);
 extern ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog);
 extern ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule);
 extern ze_result_t (*zeModuleDynamicLink)(uint32_t numModules, ze_module_handle_t* phModules, ze_module_build_log_handle_t* phLinkLog);
@@ -2140,6 +2142,15 @@ inline bool zeMemCloseIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServe
                                                 );
     return true;
 }
+inline bool zeMemPutIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeMemPutIpcHandle");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemPutIpcHandle(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.handle
+                                                );
+    return true;
+}
 inline bool zexMemGetIpcHandlesHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zexMemGetIpcHandles");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZexMemGetIpcHandlesRpcM*>(command);
@@ -2165,6 +2176,16 @@ inline bool zexMemOpenIpcHandlesHandler(Provider &service, Cal::Rpc::ChannelServ
     return true;
 }
 bool zeMemFreeExtHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
+inline bool zeMemGetFileDescriptorFromIpcHandleExpHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeMemGetFileDescriptorFromIpcHandleExp");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetFileDescriptorFromIpcHandleExpRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemGetFileDescriptorFromIpcHandleExp(
+                                                apiCommand->args.hContext, 
+                                                apiCommand->args.ipcHandle, 
+                                                apiCommand->args.pHandle ? &apiCommand->captures.pHandle : nullptr
+                                                );
+    return true;
+}
 bool zeModuleCreateHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeModuleDestroyHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeModuleDestroy");
@@ -4493,9 +4514,11 @@ inline void registerGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtyp
     outHandlers[ZeMemGetIpcHandleRpcM::messageSubtype] = zeMemGetIpcHandleHandler;
     outHandlers[ZeMemOpenIpcHandleRpcM::messageSubtype] = zeMemOpenIpcHandleHandler;
     outHandlers[ZeMemCloseIpcHandleRpcM::messageSubtype] = zeMemCloseIpcHandleHandler;
+    outHandlers[ZeMemPutIpcHandleRpcM::messageSubtype] = zeMemPutIpcHandleHandler;
     outHandlers[ZexMemGetIpcHandlesRpcM::messageSubtype] = zexMemGetIpcHandlesHandler;
     outHandlers[ZexMemOpenIpcHandlesRpcM::messageSubtype] = zexMemOpenIpcHandlesHandler;
     outHandlers[ZeMemFreeExtRpcM::messageSubtype] = zeMemFreeExtHandler;
+    outHandlers[ZeMemGetFileDescriptorFromIpcHandleExpRpcM::messageSubtype] = zeMemGetFileDescriptorFromIpcHandleExpHandler;
     outHandlers[ZeModuleCreateRpcM::messageSubtype] = zeModuleCreateHandler;
     outHandlers[ZeModuleDestroyRpcM::messageSubtype] = zeModuleDestroyHandler;
     outHandlers[ZeModuleDynamicLinkRpcM::messageSubtype] = zeModuleDynamicLinkHandler;
@@ -5889,6 +5912,12 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM &apiComman
                                                 apiCommand.args.ptr
                                                 );
 }
+inline void callDirectly(Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemPutIpcHandle(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.handle
+                                                );
+}
 inline void callDirectly(Cal::Rpc::LevelZero::ZexMemGetIpcHandlesRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Extensions::zexMemGetIpcHandles(
                                                 apiCommand.args.hContext, 
@@ -5912,6 +5941,13 @@ inline void callDirectly(Cal::Rpc::LevelZero::ZeMemFreeExtRpcM &apiCommand) {
                                                 apiCommand.args.hContext, 
                                                 apiCommand.args.pMemFreeDesc, 
                                                 apiCommand.args.ptr
+                                                );
+}
+inline void callDirectly(Cal::Rpc::LevelZero::ZeMemGetFileDescriptorFromIpcHandleExpRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemGetFileDescriptorFromIpcHandleExp(
+                                                apiCommand.args.hContext, 
+                                                apiCommand.args.ipcHandle, 
+                                                apiCommand.args.pHandle
                                                 );
 }
 inline void callDirectly(Cal::Rpc::LevelZero::ZeModuleCreateRpcM &apiCommand) {
@@ -7279,9 +7315,11 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::LevelZero::ZeMemGetIpcHandleRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetIpcHandleRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemOpenIpcHandleRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemOpenIpcHandleRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZexMemGetIpcHandlesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexMemGetIpcHandlesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZexMemOpenIpcHandlesRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZexMemOpenIpcHandlesRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeMemFreeExtRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemFreeExtRpcM*>(command)); break;
+        case Cal::Rpc::LevelZero::ZeMemGetFileDescriptorFromIpcHandleExpRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeMemGetFileDescriptorFromIpcHandleExpRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleCreateRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleCreateRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleDestroyRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDestroyRpcM*>(command)); break;
         case Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::LevelZero::ZeModuleDynamicLinkRpcM*>(command)); break;
