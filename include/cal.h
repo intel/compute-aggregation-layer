@@ -71,6 +71,9 @@ inline constexpr std::string_view calUseCustomOCLPlatformName = "CAL_USE_CUSTOM_
 inline constexpr std::string_view calPlatformName = "Compute Aggregation Layer for oneAPI Level Zero and OpenCL(TM) Applications";
 inline constexpr std::string_view calServiceProcessName = NAME_TO_STR(CAL_NAME);
 
+// If true, appends "(aggregated)" to ze_device_properties_t::name
+inline constexpr std::string_view calAddL0DeviceNameSuffix = "CAL_ADD_L0_DEVICE_NAME_SUFFIX";
+
 // Controls whether CAL should use semaphores as a service synchronization method
 inline constexpr std::string_view calUseSemaphoresInChannelServerEnvName = "CAL_USE_SEMAPHORES_IN_CHANNEL_SERVER";
 // Controls whether CAL should use semaphores as a client synchronization method

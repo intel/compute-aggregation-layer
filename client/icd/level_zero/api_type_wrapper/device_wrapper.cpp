@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -49,6 +49,9 @@ bool IcdL0Device::isZeAffinityMaskPresent() {
 }
 
 bool IcdL0Device::patchDeviceName(ze_device_properties_t &properties) {
+    if (false == Cal::Utils::getCalEnvFlag(calAddL0DeviceNameSuffix)) {
+        return true;
+    }
     const auto nullTerminator = std::find(std::begin(properties.name), std::end(properties.name), '\0');
     if (nullTerminator == std::begin(properties.name)) {
         log<Verbosity::critical>("Cannot patch device name! It is empty!");
