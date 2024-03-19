@@ -298,6 +298,19 @@ struct SysCallsContext {
         return 0;
     }
 
+    virtual int stat(const char *path, struct stat *buf) {
+        ++apiConfig.stat.callCount;
+        if (apiConfig.stat.returnValue) {
+            return apiConfig.stat.returnValue.value();
+        }
+
+        if (apiConfig.stat.impl) {
+            return apiConfig.stat.impl.value()(path, buf);
+        }
+
+        return 0;
+    }
+
     virtual int mkdir(const char *path, mode_t mode) {
         ++apiConfig.mkdir.callCount;
         if (apiConfig.mkdir.returnValue) {
@@ -624,6 +637,12 @@ struct SysCallsContext {
             std::optional<std::function<int(const char *pathname, mode_t mode)>> impl;
             uint64_t callCount = 0U;
         } chmod;
+
+        struct {
+            std::optional<int> returnValue;
+            std::optional<std::function<int(const char *path, struct stat *buf)>> impl;
+            uint64_t callCount = 0U;
+        } stat;
     } apiConfig;
 };
 

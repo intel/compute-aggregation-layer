@@ -134,5 +134,9 @@ int (*chmod)(const char *pathname, mode_t mode) = +[](const char *pathname, mode
     return Cal::Mocks::getSysCallsContext()->chmod(pathname, mode);
 };
 
+int (*stat)(const char *path, struct stat *buf) = +[](const char *path, struct stat *buf) -> int {
+    return Cal::Mocks::getSysCallsContext()->stat(path, buf);
+};
+
 } // namespace Sys
 } // namespace Cal

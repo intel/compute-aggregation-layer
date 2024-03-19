@@ -391,6 +391,15 @@ void signalAbort() {
     signalAbort(nullptr);
 }
 
+mode_t readFilePermissions(const char *path) {
+    struct stat statbuf = {};
+    if (Cal::Sys::stat(path, &statbuf) == -1) {
+        log<Verbosity::error>("Failed to read permissions of %s", path);
+        return 0;
+    }
+    return statbuf.st_mode;
+}
+
 void debugBreak() {
     auto pid = getpid();
     while (Cal::Utils::isDebuggerConnected() == false) {

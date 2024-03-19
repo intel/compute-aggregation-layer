@@ -73,9 +73,9 @@ void ClientConnection::connect() {
     auto connectionPathEnv = Cal::Utils::getCalEnv(calListenerSocketPathEnvName);
     if (connectionPathEnv) {
         this->connectionTraits.socketPath = std::string(connectionPathEnv);
-        auto socketPerms = std::filesystem::status(this->connectionTraits.socketPath).permissions();
-        using std::filesystem::perms;
-        if (perms::none != (socketPerms & (perms::group_all | perms::others_all))) {
+        auto socketPerms = Cal::Utils::readFilePermissions(this->connectionTraits.socketPath.c_str());
+        uint32_t groupAndOthersAll = 0077;
+        if (0 != (socketPerms & groupAndOthersAll)) {
             log<Verbosity::critical>("Socket %s has invalid access mask - expected only owner's rwx permissions", this->connectionTraits.socketPath.c_str());
             return;
         }

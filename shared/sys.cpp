@@ -42,6 +42,7 @@ int (*flock)(int fd, int operation) = ::flock;
 
 int (*mkdir)(const char *path, mode_t mode) = ::mkdir;
 int (*chmod)(const char *pathname, mode_t mode) = ::chmod;
+int (*stat)(const char *path, struct stat *buf) = ::stat;
 
 } // namespace Sys
 } // namespace Cal

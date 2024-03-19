@@ -51,6 +51,7 @@ extern int (*flock)(int fd, int operation);
 
 extern int (*mkdir)(const char *path, mode_t mode);
 extern int (*chmod)(const char *pathname, mode_t mode);
+extern int (*stat)(const char *path, struct stat *buf);
 
 } // namespace Sys
 } // namespace Cal
