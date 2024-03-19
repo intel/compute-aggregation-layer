@@ -4431,7 +4431,7 @@ config:
               name: blocking_map
               type: cl_bool
               kind: scalar
-              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst})"
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst}, globalPlatform->getPointerType(buffer->asLocalObject()->apiHostPtr))"
             3:
               name: map_flags
               type: cl_map_flags
@@ -5855,6 +5855,7 @@ config:
               name: blocking
               type: cl_bool
               kind: scalar
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingRead({dst}, dstPtr_kind)"
             2:
               name: dstPtr
               type: void*

@@ -2759,7 +2759,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
-    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_map);
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking_map, globalPlatform->getPointerType(buffer->asLocalObject()->apiHostPtr));
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5180,6 +5180,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
     command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5241,6 +5242,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     command->copyFromCaller(dynMemTraits);
     command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5302,6 +5304,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     command->copyFromCaller(dynMemTraits);
     command->args.dstPtr = reinterpret_cast<void*>(standalone_dstPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5364,6 +5367,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     command->copyFromCaller(dynMemTraits);
     command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5417,6 +5421,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5470,6 +5475,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5531,6 +5537,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     command->copyFromCaller(dynMemTraits);
     command->args.srcPtr = reinterpret_cast<const void*>(standalone_srcPtr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5584,6 +5591,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -5637,6 +5645,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingRead(command->args.blocking, dstPtr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
