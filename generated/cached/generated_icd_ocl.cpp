@@ -1671,7 +1671,7 @@ cl_int clFinish (cl_command_queue command_queue) {
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
-    command_queue->asLocalObject()->synchronizeNow();
+    command_queue->asLocalObject()->synchronizeNow(true);
     return ret;
 }
 cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t* global_work_offset, const size_t* global_work_size, const size_t* local_work_size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -2788,7 +2788,9 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
 
     ret = globalPlatform->translateMappedPointer(buffer, ret, offset);
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_map);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, void* mapped_ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4336,7 +4338,9 @@ cl_int clEnqueueReadBuffer_Local (cl_command_queue command_queue, cl_mem buffer,
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4390,7 +4394,9 @@ cl_int clEnqueueReadBuffer_Usm (cl_command_queue command_queue, cl_mem buffer, c
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset, size_t size, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4444,7 +4450,9 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4506,7 +4514,9 @@ cl_int clEnqueueReadBufferRect_Local (cl_command_queue command_queue, cl_mem buf
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4560,7 +4570,9 @@ cl_int clEnqueueReadBufferRect_Usm (cl_command_queue command_queue, cl_mem buffe
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, const size_t* buffer_origin, const size_t* host_origin, const size_t* region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4614,7 +4626,9 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4684,7 +4698,9 @@ cl_int clEnqueueSVMMemcpy_Local_Local (cl_command_queue command_queue, cl_bool b
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4746,7 +4762,9 @@ cl_int clEnqueueSVMMemcpy_Local_Usm (cl_command_queue command_queue, cl_bool blo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4808,7 +4826,9 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4870,7 +4890,9 @@ cl_int clEnqueueSVMMemcpy_Usm_Local (cl_command_queue command_queue, cl_bool blo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4924,7 +4946,9 @@ cl_int clEnqueueSVMMemcpy_Usm_Usm (cl_command_queue command_queue, cl_bool block
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -4978,7 +5002,9 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5040,7 +5066,9 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5094,7 +5122,9 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dst_ptr, const void* src_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5148,7 +5178,9 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5218,7 +5250,9 @@ cl_int clEnqueueMemcpyINTEL_Local_Local (cl_command_queue command_queue, cl_bool
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5280,7 +5314,9 @@ cl_int clEnqueueMemcpyINTEL_Local_Usm (cl_command_queue command_queue, cl_bool b
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5342,7 +5378,9 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5404,7 +5442,9 @@ cl_int clEnqueueMemcpyINTEL_Usm_Local (cl_command_queue command_queue, cl_bool b
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5458,7 +5498,9 @@ cl_int clEnqueueMemcpyINTEL_Usm_Usm (cl_command_queue command_queue, cl_bool blo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5512,7 +5554,9 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5574,7 +5618,9 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5628,7 +5674,9 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bool blocking, void* dstPtr, const void* srcPtr, size_t size, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
@@ -5682,7 +5730,9 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     cl_int ret = command->captures.ret;
 
     channelLock.unlock();
+    command_queue->asLocalObject()->synchronizeNow(command->args.blocking);
     command_queue->asLocalObject()->enqueue();
+
     return ret;
 }
 

@@ -2204,7 +2204,7 @@ config:
           special_handling:
             icd:
               handler_prologue: "if(command_queue->asLocalObject()->isSynchronized()){ return CL_SUCCESS; }\n"
-              handler_epilogue: "command_queue->asLocalObject()->synchronizeNow();"
+              handler_epilogue: "command_queue->asLocalObject()->synchronizeNow(true);"
           returns:
             type: cl_int
             kind: scalar
@@ -3607,7 +3607,11 @@ config:
           special_handling:
             icd:
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+              handler_epilogue:
+                [
+                  "command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);",
+                  "command_queue->asLocalObject()->enqueue();\n",
+                ]
           returns:
             type: cl_int
             kind: scalar
@@ -3688,7 +3692,11 @@ config:
           special_handling:
             icd:
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+              handler_epilogue:
+                [
+                  "command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);",
+                  "command_queue->asLocalObject()->enqueue();\n",
+                ]
           returns:
             type: cl_int
             kind: scalar
@@ -4411,7 +4419,11 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+              handler_epilogue:
+                [
+                  "command_queue->asLocalObject()->synchronizeNow(command->args.blocking_map);",
+                  "command_queue->asLocalObject()->enqueue();\n",
+                ]
           returns:
             type: "void*"
             kind: scalar
@@ -5332,7 +5344,11 @@ config:
           special_handling:
             icd:
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dst_ptr, src_ptr);"
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+              handler_epilogue:
+                [
+                  "command_queue->asLocalObject()->synchronizeNow(command->args.blocking);",
+                  "command_queue->asLocalObject()->enqueue();\n",
+                ]
           returns:
             type: cl_int
             kind: scalar
@@ -5840,7 +5856,11 @@ config:
               not_in_dispatch_table: True
               in_get_extension_function_address: True
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(dstPtr, srcPtr);"
-              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+              handler_epilogue:
+                [
+                  "command_queue->asLocalObject()->synchronizeNow(command->args.blocking);",
+                  "command_queue->asLocalObject()->enqueue();\n",
+                ]
           returns:
             type: cl_int
             kind: scalar

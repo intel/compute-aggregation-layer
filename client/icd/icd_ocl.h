@@ -710,7 +710,11 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
         return (enqueueCount <= currentWaitedCount);
     }
 
-    void synchronizeNow() {
+    void synchronizeNow(bool blocking) {
+        log<Verbosity::info>("synchronizeNow blocking=%d", blocking);
+        if (false == blocking) {
+            return;
+        }
         currentWaitedCount = enqueueCount.load();
         this->cleanTemporaryAllocations();
     }
