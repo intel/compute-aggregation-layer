@@ -8367,6 +8367,27 @@ config:
               translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
               translate_after: "{arg}->asLocalObject()->dec()"
               daemon_action_on_success: "ctx.removeResourceTracking({arg})"
+        - name: zeEventPoolPutIpcHandle
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+              handler_only_suffix: "RpcHelper"
+          ddi_category: EventPool
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: hIpc
+              type: ze_ipc_event_pool_handle_t
+              kind: scalar
         - name: zeCommandListAppendBarrier
           latency: 0.0
           call_async: true
@@ -9917,6 +9938,7 @@ config:
           special_handling:
             icd:
               tracable: False
+              handler_only_suffix: "RpcHelper"
           ddi_category: Mem
           returns:
             type: ze_result_t
@@ -10066,11 +10088,44 @@ config:
                 type : void*
                 kind : pointer
                 translate_before: "globalPlatform->destroyUsmDescriptor({arg})"
+        - name: zeMemGetIpcHandleFromFileDescriptorExp
+          latency: 0.0
+          special_handling:
+            icd:
+              tracable: False
+              handler_only_suffix: "RpcHelper"
+          ddi_category: MemExp
+          returns:
+            type: ze_result_t
+            kind: scalar
+            default: "ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY"
+          args:
+            0:
+              name: hContext
+              type: ze_context_handle_t
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: handle
+              type: uint64_t
+              kind: scalar
+            2:
+              name: pIpcHandle
+              type: ze_ipc_mem_handle_t*
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: ze_ipc_mem_handle_t
+                  kind: scalar
+                server_access: write
         - name: zeMemGetFileDescriptorFromIpcHandleExp
           latency: 0.0
           special_handling:
             icd:
               tracable: False
+              handler_only_suffix: "RpcHelper"
           ddi_category: MemExp
           returns:
             type: ze_result_t

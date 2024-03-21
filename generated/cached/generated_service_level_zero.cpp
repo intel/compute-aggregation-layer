@@ -177,6 +177,7 @@ ze_result_t (*zeEventDestroy)(ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeEventPoolGetIpcHandle)(ze_event_pool_handle_t hEventPool, ze_ipc_event_pool_handle_t* phIpc) = nullptr;
 ze_result_t (*zeEventPoolOpenIpcHandle)(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t* phEventPool) = nullptr;
 ze_result_t (*zeEventPoolCloseIpcHandle)(ze_event_pool_handle_t hEventPool) = nullptr;
+ze_result_t (*zeEventPoolPutIpcHandle)(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc) = nullptr;
 ze_result_t (*zeCommandListAppendBarrier)(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) = nullptr;
 ze_result_t (*zeCommandListAppendSignalEvent)(ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) = nullptr;
 ze_result_t (*zeCommandListAppendWaitOnEvents)(ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) = nullptr;
@@ -219,6 +220,7 @@ ze_result_t (*zeMemOpenIpcHandle)(ze_context_handle_t hContext, ze_device_handle
 ze_result_t (*zeMemCloseIpcHandle)(ze_context_handle_t hContext, const void* ptr) = nullptr;
 ze_result_t (*zeMemPutIpcHandle)(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) = nullptr;
 ze_result_t (*zeMemFreeExt)(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr) = nullptr;
+ze_result_t (*zeMemGetIpcHandleFromFileDescriptorExp)(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t* pIpcHandle) = nullptr;
 ze_result_t (*zeMemGetFileDescriptorFromIpcHandleExp)(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t* pHandle) = nullptr;
 ze_result_t (*zeModuleCreate)(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_module_desc_t* desc, ze_module_handle_t* phModule, ze_module_build_log_handle_t* phBuildLog) = nullptr;
 ze_result_t (*zeModuleDestroy)(ze_module_handle_t hModule) = nullptr;
@@ -1215,6 +1217,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
         unloadLevelZeroLibrary();
         return false;
     }
+    zeEventPoolPutIpcHandle = reinterpret_cast<decltype(zeEventPoolPutIpcHandle)>(dlsym(libraryHandle, "zeEventPoolPutIpcHandle"));
+    if(nullptr == zeEventPoolPutIpcHandle){
+        log<Verbosity::error>("Missing symbol zeEventPoolPutIpcHandle in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
     zeCommandListAppendBarrier = reinterpret_cast<decltype(zeCommandListAppendBarrier)>(dlsym(libraryHandle, "zeCommandListAppendBarrier"));
     if(nullptr == zeCommandListAppendBarrier){
         log<Verbosity::error>("Missing symbol zeCommandListAppendBarrier in %s", loadPath.c_str());
@@ -1464,6 +1472,12 @@ bool loadLevelZeroLibrary(std::optional<std::string> path) {
     zeMemFreeExt = reinterpret_cast<decltype(zeMemFreeExt)>(dlsym(libraryHandle, "zeMemFreeExt"));
     if(nullptr == zeMemFreeExt){
         log<Verbosity::error>("Missing symbol zeMemFreeExt in %s", loadPath.c_str());
+        unloadLevelZeroLibrary();
+        return false;
+    }
+    zeMemGetIpcHandleFromFileDescriptorExp = reinterpret_cast<decltype(zeMemGetIpcHandleFromFileDescriptorExp)>(dlsym(libraryHandle, "zeMemGetIpcHandleFromFileDescriptorExp"));
+    if(nullptr == zeMemGetIpcHandleFromFileDescriptorExp){
+        log<Verbosity::error>("Missing symbol zeMemGetIpcHandleFromFileDescriptorExp in %s", loadPath.c_str());
         unloadLevelZeroLibrary();
         return false;
     }
@@ -1868,6 +1882,7 @@ void unloadLevelZeroLibrary() {
     zeEventPoolGetIpcHandle = nullptr;
     zeEventPoolOpenIpcHandle = nullptr;
     zeEventPoolCloseIpcHandle = nullptr;
+    zeEventPoolPutIpcHandle = nullptr;
     zeCommandListAppendBarrier = nullptr;
     zeCommandListAppendSignalEvent = nullptr;
     zeCommandListAppendWaitOnEvents = nullptr;
@@ -1910,6 +1925,7 @@ void unloadLevelZeroLibrary() {
     zeMemCloseIpcHandle = nullptr;
     zeMemPutIpcHandle = nullptr;
     zeMemFreeExt = nullptr;
+    zeMemGetIpcHandleFromFileDescriptorExp = nullptr;
     zeMemGetFileDescriptorFromIpcHandleExp = nullptr;
     zeModuleCreate = nullptr;
     zeModuleDestroy = nullptr;

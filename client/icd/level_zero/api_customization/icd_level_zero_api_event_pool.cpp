@@ -32,6 +32,15 @@ ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_
     return zeEventPoolOpenIpcHandleRpcHelper(hContext, hIpc, phEventPool);
 }
 
+ze_result_t zeEventPoolPutIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc) {
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeEventPoolPutIpcHandle", 1u, &hIpc);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
+    }
+
+    return zeEventPoolPutIpcHandleRpcHelper(hContext, hIpc);
+}
+
 ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout) {
     using namespace std::literals::chrono_literals;
     uint64_t pollingThreshold = std::chrono::nanoseconds(1s).count();

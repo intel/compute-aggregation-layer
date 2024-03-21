@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -66,6 +66,10 @@ ZE_APIEXPORT ze_result_t ZE_APICALL zeGetDriverProcAddrTable(ze_api_version_t ve
 
 ZE_DLLEXPORT ze_result_t ZE_APICALL zeGetMemProcAddrTable(ze_api_version_t version, ze_mem_dditable_t *pDdiTable) {
     return getAddressTable(version, pDdiTable, l0Ddi.Mem, "zeGetMemProcAddrTable");
+}
+
+ZE_DLLEXPORT ze_result_t ZE_APICALL zeGetMemExpProcAddrTable(ze_api_version_t version, ze_mem_exp_dditable_t *pDdiTable) {
+    return getAddressTable(version, pDdiTable, l0Ddi.MemExp, "zeGetMemExpProcAddrTable");
 }
 
 ZE_DLLEXPORT ze_result_t ZE_APICALL zeGetContextProcAddrTable(ze_api_version_t version, ze_context_dditable_t *pDdiTable) {

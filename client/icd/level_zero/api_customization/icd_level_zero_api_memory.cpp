@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -129,6 +129,33 @@ ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t 
     }
 
     return zeMemOpenIpcHandleRpcHelper(hContext, hDevice, handle, flags, pptr);
+}
+
+ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) {
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemPutIpcHandle", 1u, &handle);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
+    }
+
+    return zeMemPutIpcHandleRpcHelper(hContext, handle);
+}
+
+ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t *pIpcHandle) {
+    const auto rpcCommandResult = zeMemGetIpcHandleFromFileDescriptorExpRpcHelper(hContext, handle, pIpcHandle);
+    if (rpcCommandResult != ZE_RESULT_SUCCESS) {
+        return rpcCommandResult;
+    }
+
+    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandleFromFileDescriptorExp", 1u, pIpcHandle);
+}
+
+ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t *pHandle) {
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &ipcHandle);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
+    }
+
+    return zeMemGetFileDescriptorFromIpcHandleExpRpcHelper(hContext, ipcHandle, pHandle);
 }
 
 } // namespace Cal::Client::Icd::LevelZero

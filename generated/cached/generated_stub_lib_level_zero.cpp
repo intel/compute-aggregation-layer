@@ -643,6 +643,10 @@ ze_result_t zeEventPoolCloseIpcHandle(ze_event_pool_handle_t hEventPool){
    return {};
 }
 
+ze_result_t zeEventPoolPutIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc){
+   return {};
+}
+
 ze_result_t zeCommandListAppendBarrier(ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents){
    return {};
 }
@@ -808,6 +812,10 @@ ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t 
 }
 
 ze_result_t zeMemFreeExt(ze_context_handle_t hContext, const ze_memory_free_ext_desc_t* pMemFreeDesc, void* ptr){
+   return {};
+}
+
+ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t* pIpcHandle){
    return {};
 }
 
