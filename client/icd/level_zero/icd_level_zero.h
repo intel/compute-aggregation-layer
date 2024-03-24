@@ -224,13 +224,17 @@ struct IcdL0EventPool : Cal::Shared::RefCountedWithParent<_ze_event_pool_handle_
 struct IcdL0Event : Cal::Shared::RefCountedWithParent<_ze_event_handle_t, Logic::IcdL0TypePrinter> {
     using RefCountedWithParent::RefCountedWithParent;
     enum State : uint32_t {
-        STATE_SIGNALED = 0u,
-        STATE_CLEARED
+        STATE_UNKOWN = 0u,
+        STATE_SIGNALED = 1u,
+        STATE_CLEARED = 2u
     } state = STATE_CLEARED;
     ze_kernel_timestamp_result_t timestamp = {};
 
-    void setAllowIcdState(const ze_command_list_handle_t commandList) {
+    void setAllowIcdState(const ze_command_list_handle_t commandList, bool isBeingAppendedForGpuModification) {
         this->allowIcdState &= static_cast<IcdL0CommandList *>(commandList)->isImmediate();
+        if (isBeingAppendedForGpuModification) {
+            this->state = State::STATE_UNKOWN;
+        }
     }
     void signal() {
         this->state = State::STATE_SIGNALED;

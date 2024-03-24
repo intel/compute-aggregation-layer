@@ -8393,7 +8393,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);\n    }"
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -8433,7 +8433,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "if (!hEvent) {\n        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;\n    }\n    hEvent->asLocalObject()->setAllowIcdState(hCommandList);"
+              handler_prologue: "if (!hEvent) {\n        return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;\n    }\n    hEvent->asLocalObject()->setAllowIcdState(hCommandList, true);"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -8457,7 +8457,7 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);\n    }"
+              handler_prologue: "for (uint32_t i = 0; i < numEvents; ++i) {\n        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
           ddi_category: CommandList
           returns:
             type: ze_result_t
@@ -8545,7 +8545,7 @@ config:
         - name: zeCommandListAppendEventReset
           special_handling:
             icd:
-              handler_prologue: "hEvent->asLocalObject()->setAllowIcdState(hCommandList);\n    if (hEvent->asLocalObject()->isCleared()) {\n        return ZE_RESULT_SUCCESS;\n    }\n    hEvent->asLocalObject()->clear();\n"
+              handler_prologue: "hEvent->asLocalObject()->setAllowIcdState(hCommandList, true);\n"
           ddi_category: CommandList
           returns:
             type: ze_result_t

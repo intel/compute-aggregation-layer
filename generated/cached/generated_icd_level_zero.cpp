@@ -4211,9 +4211,9 @@ ze_result_t zeEventPoolPutIpcHandleRpcHelper (ze_context_handle_t hContext, ze_i
     return ret;
 }
 ze_result_t zeCommandListAppendBarrier (ze_command_list_handle_t hCommandList, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
-    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList);}
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
     for (uint32_t i = 0; i < numWaitEvents; ++i) {
-        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendBarrier");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -4263,7 +4263,7 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
     if (!hEvent) {
         return ZE_RESULT_ERROR_INVALID_NULL_HANDLE;
     }
-    hEvent->asLocalObject()->setAllowIcdState(hCommandList);
+    hEvent->asLocalObject()->setAllowIcdState(hCommandList, true);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendSignalEvent");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -4298,7 +4298,7 @@ ze_result_t zeCommandListAppendSignalEvent (ze_command_list_handle_t hCommandLis
 }
 ze_result_t zeCommandListAppendWaitOnEvents (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents) {
     for (uint32_t i = 0; i < numEvents; ++i) {
-        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList);
+        phEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
     }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWaitOnEvents");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -4427,11 +4427,7 @@ ze_result_t zeEventQueryStatus (ze_event_handle_t hEvent) {
     return ret;
 }
 ze_result_t zeCommandListAppendEventReset (ze_command_list_handle_t hCommandList, ze_event_handle_t hEvent) {
-    hEvent->asLocalObject()->setAllowIcdState(hCommandList);
-    if (hEvent->asLocalObject()->isCleared()) {
-        return ZE_RESULT_SUCCESS;
-    }
-    hEvent->asLocalObject()->clear();
+    hEvent->asLocalObject()->setAllowIcdState(hCommandList, true);
 
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendEventReset");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
