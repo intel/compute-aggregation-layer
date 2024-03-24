@@ -99,6 +99,8 @@ ze_result_t zexDriverImportExternalPointer(ze_driver_handle_t hDriver, void *ptr
 ze_result_t zexDriverReleaseImportedPointer(ze_driver_handle_t hDriver, void *ptr);
 ze_result_t zexDriverGetHostPointerBaseAddress(ze_driver_handle_t hDriver, void *ptr, void **baseAddress);
 
+ze_result_t zeCommandListHostSynchronize(ze_command_list_handle_t hCommandList, uint64_t timeout);
+
 void translateRequiredPNextExtensions(const void *pNext);
 
 } // namespace Cal::Client::Icd::LevelZero

@@ -5507,6 +5507,7 @@ config:
 
         - name: zeCommandListDestroy
           latency: 0.0
+          call_async: true
           special_handling:
             rpc:
               custom_handler: True
@@ -11168,6 +11169,7 @@ config:
           ddi_category: CommandList
           special_handling:
             icd:
+              handler_only_suffix: "RpcHelper"
               tracable: False
             rpc:
               custom_handler: True

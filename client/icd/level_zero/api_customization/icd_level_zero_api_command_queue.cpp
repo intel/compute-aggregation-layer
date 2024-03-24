@@ -12,8 +12,7 @@
 
 namespace Cal::Client::Icd::LevelZero {
 
-extern const uint32_t calCommandQueueSynchronizePollingTimeoutDivisor;
-
+extern uint32_t calCommandQueueSynchronizePollingTimeoutDivisor;
 ze_result_t zeCommandQueueCreate(ze_context_handle_t hContext, ze_device_handle_t hDevice, const ze_command_queue_desc_t *desc, ze_command_queue_handle_t *phCommandQueue) {
     static auto isCommandQueueModeEmulatedSynchronousEnabled = Cal::Utils::getCalEnvFlag(calCommandQueueModeEmulatedSynchronousEnvName, true);
     if (isCommandQueueModeEmulatedSynchronousEnabled && ze_command_queue_mode_t::ZE_COMMAND_QUEUE_MODE_SYNCHRONOUS == desc->mode) {
@@ -26,6 +25,16 @@ ze_result_t zeCommandQueueCreate(ze_context_handle_t hContext, ze_device_handle_
         return result;
     }
     return zeCommandQueueCreateRpcHelper(hContext, hDevice, desc, phCommandQueue);
+}
+
+ze_result_t zeCommandQueueSynchronizeImpl(ze_command_queue_handle_t hCommandQueue, uint64_t timeout) {
+    if (calCommandQueueSynchronizePollingTimeoutDivisor == 1000) {
+        return Cal::Utils::waitForCompletionWithTimeout<std::chrono::microseconds>(hCommandQueue, std::chrono::nanoseconds(timeout), zeCommandQueueSynchronizeRpcHelper,
+                                                                                   ZE_RESULT_SUCCESS, ZE_RESULT_NOT_READY);
+    } else {
+        return Cal::Utils::waitForCompletionWithTimeout<std::chrono::nanoseconds>(hCommandQueue, std::chrono::nanoseconds(timeout), zeCommandQueueSynchronizeRpcHelper,
+                                                                                  ZE_RESULT_SUCCESS, ZE_RESULT_NOT_READY);
+    }
 }
 
 ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommandQueue, uint32_t numCommandLists, ze_command_list_handle_t *phCommandLists, ze_fence_handle_t hFence) {
@@ -48,23 +57,7 @@ ze_result_t zeCommandQueueExecuteCommandLists(ze_command_queue_handle_t hCommand
         if (result != ZE_RESULT_SUCCESS) {
             return result;
         }
-        using namespace std::literals::chrono_literals;
-        uint64_t pollingTimeout = std::chrono::nanoseconds(1s).count() / calCommandQueueSynchronizePollingTimeoutDivisor;
-        uint64_t totalWaited = 0;
-        while (true) {
-            log<Verbosity::debug>("Establishing RPC for zeCommandQueueSynchronize with polling timeout %llu, totalWaited %llu", pollingTimeout, totalWaited);
-            auto result = zeCommandQueueSynchronizeRpcHelper(icdCommandQueue, pollingTimeout);
-            if (result == ZE_RESULT_SUCCESS) {
-                log<Verbosity::debug>("zeCommandQueueSynchronize returned ZE_RESULT_SUCCESS - totalWaited %llu", pollingTimeout + totalWaited);
-                return ZE_RESULT_SUCCESS;
-            }
-            if (result != ZE_RESULT_NOT_READY) {
-                log<Verbosity::debug>("zeCommandQueueSynchronize failed with error code %d", static_cast<int>(result));
-                return result;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            totalWaited += pollingTimeout + std::chrono::nanoseconds(1ms).count();
-        }
+        return zeCommandQueueSynchronizeImpl(icdCommandQueue, std::numeric_limits<uint64_t>::max());
     }
 
     return zeCommandQueueExecuteCommandListsRpcHelper(hCommandQueue, numCommandLists, phCommandLists, hFence);
@@ -74,7 +67,7 @@ ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, u
     if (static_cast<IcdL0CommandQueue *>(hCommandQueue)->isEmulatedSynchronousMode()) {
         return ZE_RESULT_SUCCESS;
     }
-    return zeCommandQueueSynchronizeRpcHelper(hCommandQueue, timeout);
+    return zeCommandQueueSynchronizeImpl(hCommandQueue, timeout);
 }
 
 ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout) {

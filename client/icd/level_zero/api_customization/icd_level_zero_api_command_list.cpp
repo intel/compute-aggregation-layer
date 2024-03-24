@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -10,6 +10,7 @@
 #include "generated_icd_level_zero.h"
 #include "icd_level_zero_api.h"
 #include "shared/log.h"
+#include "shared/synchronization.h"
 #include "shared/usm.h"
 
 #include <array>
@@ -242,6 +243,11 @@ ze_result_t zeCommandListAppendQueryKernelTimestamps(ze_command_list_handle_t hC
 
         return ret;
     }
+}
+
+ze_result_t zeCommandListHostSynchronize(ze_command_list_handle_t hCommandList, uint64_t timeout) {
+    return Cal::Utils::waitForCompletionWithTimeout<std::chrono::nanoseconds>(hCommandList, std::chrono::nanoseconds(timeout), zeCommandListHostSynchronizeRpcHelper,
+                                                                              ZE_RESULT_SUCCESS, ZE_RESULT_NOT_READY);
 }
 
 } // namespace Cal::Client::Icd::LevelZero

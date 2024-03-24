@@ -2577,13 +2577,23 @@ ze_result_t zeCommandListDestroy (ze_command_list_handle_t hCommandList) {
     auto command = new(commandSpace) CommandT(hCommandList);
     command->args.hCommandList = hCommandList->asLocalObject()->asRemoteObject();
 
-
-    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+    if(
+       !static_cast<IcdL0CommandList *>(hCommandList)->isImmediateSynchronous() &&
+       channel.isCallAsyncEnabled()){
+         command->header.flags |= Cal::Rpc::RpcMessageHeader::async;
+         channel.callAsynchronous(command);
+         {
+           hCommandList->asLocalObject()->dec();
+         }
+         return static_cast<CommandT::ReturnValueT>(0);
+    }else{
+      if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
         command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
-    }
+      }
 
-    if(false == channel.callSynchronous(command)){
+      if(false == channel.callSynchronous(command)){
         return command->returnValue();
+      }
     }
     {
         hCommandList->asLocalObject()->dec();
@@ -6331,7 +6341,7 @@ ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_ha
     if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };
     return ret;
 }
-ze_result_t zeCommandListHostSynchronize (ze_command_list_handle_t hCommandList, uint64_t timeout) {
+ze_result_t zeCommandListHostSynchronizeRpcHelper (ze_command_list_handle_t hCommandList, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeCommandListHostSynchronize");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
