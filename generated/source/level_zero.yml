@@ -9143,6 +9143,8 @@ config:
         - name: zeFenceHostSynchronize
           latency: 2.0
           special_handling:
+            icd:
+              handler_only_suffix: "RpcHelper"
             rpc:
               custom_handler: True
           ddi_category: Fence

@@ -66,6 +66,7 @@ ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_ev
 ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t *phEventPool);
 ze_result_t zeEventPoolPutIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc);
 ze_result_t zeEventHostSynchronize(ze_event_handle_t hEvent, uint64_t timeout);
+ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout);
 
 ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void *ptr, ze_ipc_mem_handle_t *pIpcHandle);
 ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void **pptr);

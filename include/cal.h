@@ -105,6 +105,8 @@ inline constexpr std::string_view calUseStandaloneAllocationsForZeMemAllocHost =
 inline constexpr std::string_view calClientZeEnableAltDriversEnvName = "CAL_CLIENT_ZE_ENABLE_ALT_DRIVERS";
 // Set 1 to debug break instead of aborting
 inline constexpr std::string_view calDebugBreakInsteadOfAbortingEnvName = "CAL_DEBUG_BREAK_INSTEAD_ABORT";
+// Set 1 to debug break on unhandled page fault
+inline constexpr std::string_view calDebugBreakOnUnhandledPageFaultEnvName = "CAL_DEBUG_BREAK_ON_UNHANDLED_PAGE_FAULT";
 
 // Set 1 to enable debug keys for CAL built in release mode
 inline constexpr std::string_view calReadDebugKeysEnvName = "CAL_READ_DEBUG_KEYS";

@@ -8,6 +8,7 @@
 #include "client/icd/level_zero/icd_level_zero.h"
 #include "generated_icd_level_zero.h"
 #include "icd_level_zero_api.h"
+#include "shared/synchronization.h"
 
 namespace Cal::Client::Icd::LevelZero {
 
@@ -74,6 +75,11 @@ ze_result_t zeCommandQueueSynchronize(ze_command_queue_handle_t hCommandQueue, u
         return ZE_RESULT_SUCCESS;
     }
     return zeCommandQueueSynchronizeRpcHelper(hCommandQueue, timeout);
+}
+
+ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout) {
+    return Cal::Utils::waitForCompletionWithTimeout<std::chrono::nanoseconds>(hFence, std::chrono::nanoseconds(timeout), zeFenceHostSynchronizeRpcHelper,
+                                                                              ZE_RESULT_SUCCESS, ZE_RESULT_NOT_READY);
 }
 
 } // namespace Cal::Client::Icd::LevelZero

@@ -312,7 +312,7 @@ ze_result_t zeFenceCreate (ze_command_queue_handle_t hCommandQueue, const ze_fen
 ze_result_t zeFenceCreate_WithTracing (ze_command_queue_handle_t hCommandQueue, const ze_fence_desc_t* desc, ze_fence_handle_t* phFence);
 ze_result_t zeFenceDestroy (ze_fence_handle_t hFence);
 ze_result_t zeFenceDestroy_WithTracing (ze_fence_handle_t hFence);
-ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout);
+ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeFenceHostSynchronize_WithTracing (ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeFenceQueryStatus (ze_fence_handle_t hFence);
 ze_result_t zeFenceQueryStatus_WithTracing (ze_fence_handle_t hFence);

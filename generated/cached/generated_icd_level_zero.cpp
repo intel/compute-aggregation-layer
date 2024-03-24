@@ -4868,7 +4868,7 @@ ze_result_t zeFenceDestroy (ze_fence_handle_t hFence) {
 
     return ret;
 }
-ze_result_t zeFenceHostSynchronize (ze_fence_handle_t hFence, uint64_t timeout) {
+ze_result_t zeFenceHostSynchronizeRpcHelper (ze_fence_handle_t hFence, uint64_t timeout) {
     log<Verbosity::bloat>("Establishing RPC for zeFenceHostSynchronize");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();

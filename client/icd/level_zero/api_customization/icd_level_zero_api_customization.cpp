@@ -5,6 +5,8 @@
  *
  */
 
+#include "generated_icd_level_zero.h"
+
 #include <stdint.h>
 
 namespace Cal::Client::Icd::LevelZero {

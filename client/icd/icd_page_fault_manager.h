@@ -27,9 +27,14 @@ class PageFaultManager {
     };
 
     PageFaultManager(Cal::Ipc::Connection &connection)
-        : PageFaultManager(connection, Cal::Utils::getCalEnvFlag(calSharedAllocations, true), Cal::Utils::getCalEnvFlag(calDumpStackOnUnhandledPagefault, false)) {}
+        : PageFaultManager(connection, Cal::Utils::getCalEnvFlag(calSharedAllocations, true),
+                           Cal::Utils::getCalEnvFlag(calDumpStackOnUnhandledPagefault, false),
+                           Cal::Utils::getCalEnvFlag(calDebugBreakOnUnhandledPageFaultEnvName, false)) {}
 
-    PageFaultManager(Cal::Ipc::Connection &connection, bool sharedAllocationsEnabled, bool dumpStackOnUnhandledPageFault) : connection(connection), dumpStackOnUnhandledPageFault(dumpStackOnUnhandledPageFault) {
+    PageFaultManager(Cal::Ipc::Connection &connection, bool sharedAllocationsEnabled,
+                     bool dumpStackOnUnhandledPageFault, bool breakOnUnhandledPageFault)
+        : connection(connection), dumpStackOnUnhandledPageFault(dumpStackOnUnhandledPageFault),
+          breakOnUnhandledPageFault(breakOnUnhandledPageFault) {
         this->sharedAllocationsEnabled = sharedAllocationsEnabled;
         if (!this->sharedAllocationsEnabled) {
             return;
@@ -170,6 +175,9 @@ class PageFaultManager {
             } else {
                 log<Verbosity::error>("Page fault on non shared memory address: %p", ptr);
             }
+            if (this->breakOnUnhandledPageFault) {
+                Cal::Utils::debugBreak();
+            }
             return false;
         }
 
@@ -219,6 +227,7 @@ class PageFaultManager {
     Cal::Ipc::Connection &connection;
     bool sharedAllocationsEnabled = true;
     bool dumpStackOnUnhandledPageFault = false;
+    bool breakOnUnhandledPageFault = false;
 };
 
 } // namespace Cal::Client::Icd
