@@ -35,10 +35,11 @@ class Log {
         silent = 0,
         critical = 1,
         error = 2,
-        info = 3,
-        debug = 4,
-        bloat = 5,
-        unknown = 6
+        warning = 3,
+        info = 4,
+        debug = 5,
+        bloat = 6,
+        unknown = 7
     };
 
     virtual ~Log() = default;
@@ -61,6 +62,8 @@ class Log {
             return "bloat";
         case Verbosity::performance:
             return "performance";
+        case Verbosity::warning:
+            return "warning";
         }
     }
 
@@ -205,7 +208,7 @@ static constexpr bool enablePerformanceLogs = false;
 #endif
 
 inline Verbosity minDynamicVerbosity = Verbosity::silent;
-inline Verbosity maxDynamicVerbosity = Verbosity::error;
+inline Verbosity maxDynamicVerbosity = Verbosity::warning;
 inline Verbosity maxDynamicCallStackVerbosity = Verbosity::silent;
 inline bool useLoggerName = false;
 inline bool appendPID = false;

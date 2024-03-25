@@ -135,7 +135,7 @@ class ShmemAllocator final {
 
         auto updatedShmemUsed = incrementShmemUsed(size);
         if (updatedShmemUsed > (totalShmemAvailable * 0.95)) {
-            log<Verbosity::error>("Reaching size limits of /dev/shm/, allocating additional memory may fail. Please consider increasing the size of /dev/shm.");
+            log<Verbosity::warning>("Reaching size limits of /dev/shm/, allocating additional memory may fail. Please consider increasing the size of /dev/shm.");
         }
 
         auto shmemId = shmemIdAllocator.allocate();

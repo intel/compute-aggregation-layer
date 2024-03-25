@@ -711,7 +711,7 @@ struct IcdOclCommandQueue : Cal::Shared::RefCountedWithParent<_cl_command_queue,
     }
 
     void synchronizeNow(bool blocking) {
-        log<Verbosity::info>("synchronizeNow blocking=%d", blocking);
+        log<Verbosity::debug>("synchronizeNow blocking=%d", blocking);
         if (false == blocking) {
             return;
         }
