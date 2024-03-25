@@ -87,3 +87,25 @@ Note: CAL by default initializes sysman using the ZES_ENABLE_SYSMAN environment 
 calrun test_sysman_power_zesinit --gtest_filter=*GivenPowerHandleWhenRequestingExtensionPowerPropertiesThenValidDefaultLimitsAreReturned*
 test output:
 zesInit failed: ZE_RESULT_ERROR_UNSUPPORTED_FEATURE
+
+## CAL limitations related to shared memory usage
+CAL makes use of shared memory resources for the purpose of communication between client and service. The allocated resources are represented by `/dev/shm/compute_aggregation_layer_shmem_<ID>` filesystem nodes (and associated file-descriptors).
+Both the user-available file-descriptors number as well as the total size of shared memory are limited system resources. Depending on application-created pressure, it is possible that these limits are hit - causing the application to fail.
+In order to mitigate that it is possible to tune the limits with respective shell commands.
+
+_(NOTE: In the following part of this section all commands starting with a dollar sign (`$`) are standard bash commands expected to work on all most popular Linux distributions)_
+
+### System limit for the number of file-descriptors
+If this limit is the cause of the application failure an error message like `Too many open files` (or similar one) should be observable in the standard output.
+* The current value of the limit can be queried with `$ ulimit -n`.
+* The new value of the limit can be set with `$ ulimit -n <NEW_VALUE>`. This may or may not require superuser privileges.
+
+### System limit for the size of shared memory
+When this limit is being approached by the application, the following (or similar one) error message should be observable in the standard output:
+`Reaching size limits of /dev/shm/, allocating additional memory may fail. Please consider increasing the size of /dev/shm.`
+* The static size of shared memory available system-wide can be queried with `$ df -h | grep '/dev/shm'` command. It can be modified (upper-bound by the total size of RAM) with the `$ sudo mount -o remount,size=<NEW_SHMEM_SIZE> /dev/shm` command. The latter requires superuser privileges.
+* The size of dynamically allocated shared memory (at a given moment) can be queried with `$ cat  /proc/meminfo | grep 'Shmem:'` or `$ free`. For real-time observation it is recommended to combine them with the `$ watch` command, e.g. `$ watch -n1 free -g`.
+
+### Shared memory and docker
+In order to use CAL from within a docker container one needs to increase the amount of shared memory assigned to the container by default.
+This can be done by passing the additional `--shm-size <NEW_SHMEM_SIZE>` (e.g. `16G` is a reasonable choice) parameter to the docker command.
