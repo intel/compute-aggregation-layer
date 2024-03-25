@@ -620,6 +620,7 @@ TEST(ShmemAllocatorAllocate, whenShmemsCreatedAndFreedFromMultipleThreadsThenThe
 TEST(ShmemAllocatorAllocate, whenSystemShmemExceededThenTryToAllocateAnyway) {
     constexpr auto allocSize{Cal::Ipc::ShmemAllocator::minAlignment};
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
+    Cal::Mocks::LogCaptureContext logs;
 
     tempSysCallsCtx.apiConfig.statfs.impl = [](const char *, struct statfs *buf) -> int {
         buf->f_bavail = 1;

@@ -122,9 +122,7 @@ class ShmemAllocator final {
     size_t updateShmemUsed(size_t sizeDiff, Op op) {
         auto currentShmemUsed = totalShmemAllocated.load(std::memory_order_relaxed);
         auto updatedShmemUsed = op(currentShmemUsed, sizeDiff);
-        while (!totalShmemAllocated.compare_exchange_strong(currentShmemUsed, updatedShmemUsed,
-                                                            std::memory_order_release,
-                                                            std::memory_order_relaxed)) {
+        while (!totalShmemAllocated.compare_exchange_weak(currentShmemUsed, updatedShmemUsed, std::memory_order_relaxed)) {
             updatedShmemUsed = op(currentShmemUsed, sizeDiff);
         }
         return updatedShmemUsed;
@@ -136,8 +134,8 @@ class ShmemAllocator final {
         }
 
         auto updatedShmemUsed = incrementShmemUsed(size);
-        if (updatedShmemUsed > totalShmemAvailable) {
-            log<Verbosity::info>("Not enough shmem available, total requested: %zu vs available: %zu", updatedShmemUsed, totalShmemAvailable);
+        if (updatedShmemUsed > (totalShmemAvailable * 0.95)) {
+            log<Verbosity::error>("Reaching size limits of /dev/shm/, allocating additional memory may fail. Please consider increasing the size of /dev/shm.");
         }
 
         auto shmemId = shmemIdAllocator.allocate();
