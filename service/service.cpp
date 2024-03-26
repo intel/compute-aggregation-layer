@@ -777,6 +777,226 @@ bool clSetProgramReleaseCallbackHandler(Provider &service, Cal::Rpc::ChannelServ
     return true;
 }
 
+bool clEnqueueWriteBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRectRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_write,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        apiCommand->args.ptr,
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect (as clEnqueueWriteBufferRectHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+bool clEnqueueWriteBufferRect_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect_Local");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_LocalRpcM *>(command);
+    if (apiCommand->args.blocking_write == false) {
+        log<Verbosity::error>("clEnqueueWriteBufferRect_LocalHandler supports blocking writes only");
+        return false;
+    }
+    log<Verbosity::performance>("Allocating additional staging host memory on service side for clEnqueueWriteBufferRect");
+    auto localPtrSize = Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch);
+    auto localPtr = std::make_unique<char[]>(localPtrSize);
+    memcpy(localPtr.get(), apiCommand->args.ptr, localPtrSize);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_write,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        localPtr.get(),
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Local (as clEnqueueWriteBufferRect_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+bool clEnqueueWriteBufferRect_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_UsmRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_write,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        apiCommand->args.ptr,
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Usm (as clEnqueueWriteBufferRect_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+bool clEnqueueWriteBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueWriteBufferRect_Shared");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_SharedRpcM *>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    if ((nullptr == importedMallocPtrPtr) && (nullptr != apiCommand->args.ptr)) {
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
+        return false;
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueWriteBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_write,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        reinterpret_cast<const void *>(importedMallocPtrPtr),
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueWriteBufferRect_Shared (as clEnqueueWriteBufferRect_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+
+bool clEnqueueReadBufferRectHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRectRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_read,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        apiCommand->args.ptr,
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect (as clEnqueueReadBufferRectHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+bool clEnqueueReadBufferRect_LocalHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Local");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_LocalRpcM *>(command);
+    if (apiCommand->args.blocking_read == false) {
+        log<Verbosity::error>("clEnqueueReadBufferRect_LocalHandler supports blocking reads only");
+        return false;
+    }
+    log<Verbosity::performance>("Allocating additional staging host memory on service side for clEnqueueReadBufferRect");
+    auto localPtrSize = Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch);
+    auto localPtr = std::make_unique<char[]>(localPtrSize);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_read,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        localPtr.get(),
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Local (as clEnqueueReadBufferRect_LocalHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    memcpy(apiCommand->args.ptr, localPtr.get(), localPtrSize);
+    return true;
+}
+bool clEnqueueReadBufferRect_UsmHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Usm");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_UsmRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_read,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        apiCommand->args.ptr,
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Usm (as clEnqueueReadBufferRect_UsmHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+bool clEnqueueReadBufferRect_SharedHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueReadBufferRect_Shared");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM *>(command);
+    void *importedMallocPtrPtr = ctx.importClientMallocPtr(reinterpret_cast<uintptr_t>(apiCommand->args.ptr), Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch), 0U);
+    if ((nullptr == importedMallocPtrPtr) && (nullptr != apiCommand->args.ptr)) {
+        log<Verbosity::error>("Could not import client's malloced pointer : %p (size : %zuB)", apiCommand->args.ptr, Cal::Utils::getBufferRectSizeInBytes(apiCommand->captures.host_origin, apiCommand->captures.region, apiCommand->args.host_row_pitch, apiCommand->args.host_slice_pitch));
+        return false;
+    }
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clEnqueueReadBufferRect(
+        apiCommand->args.command_queue,
+        apiCommand->args.buffer,
+        apiCommand->args.blocking_read,
+        apiCommand->args.buffer_origin ? apiCommand->captures.buffer_origin : nullptr,
+        apiCommand->args.host_origin ? apiCommand->captures.host_origin : nullptr,
+        apiCommand->args.region ? apiCommand->captures.region : nullptr,
+        apiCommand->args.buffer_row_pitch,
+        apiCommand->args.buffer_slice_pitch,
+        apiCommand->args.host_row_pitch,
+        apiCommand->args.host_slice_pitch,
+        reinterpret_cast<void *>(importedMallocPtrPtr),
+        apiCommand->args.num_events_in_wait_list,
+        apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr,
+        apiCommand->args.event ? &apiCommand->captures.event : nullptr);
+    if ((false == isSuccessful(apiCommand->captures.ret)) && (0 != (apiCommand->header.flags & Cal::Rpc::RpcMessageHeader::async))) {
+        log<Verbosity::error>("Asynchronous call to clEnqueueReadBufferRect_Shared (as clEnqueueReadBufferRect_SharedHandler) has failed! Please rerun workload with CAL_ASYNC_CALLS=0 to debug the issue.");
+        return false;
+    }
+    return true;
+}
+
 } // namespace Ocl
 
 namespace LevelZero {

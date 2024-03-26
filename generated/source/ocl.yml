@@ -3487,6 +3487,8 @@ config:
             icd:
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+            rpc:
+              custom_handler: True
           returns:
             type: cl_int
             kind: scalar
@@ -3697,6 +3699,8 @@ config:
                   "command_queue->asLocalObject()->synchronizeNow(command->args.blocking_read);",
                   "command_queue->asLocalObject()->enqueue();\n",
                 ]
+            rpc:
+              custom_handler: True
           returns:
             type: cl_int
             kind: scalar
