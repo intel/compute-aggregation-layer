@@ -81,7 +81,6 @@ static ze_result_t zeMemGetAllocPropertiesWithExtensions(ze_context_handle_t hCo
         if (baseDesc->stype == ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD) {
             auto exportFdExt = static_cast<ze_external_memory_export_fd_t *>(current);
             FdIpcHandleWrapper ipcHandle{&exportFdExt->fd};
-
             const auto translationResult = Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("ze_external_memory_export_fd_t", 1u, &ipcHandle);
             if (translationResult != ZE_RESULT_SUCCESS) {
                 return translationResult;
@@ -137,10 +136,22 @@ ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t 
         return reverseTranslationResult;
     }
 
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    globalL0Platform->removeFDMapping(*reinterpret_cast<int *>(handle.data));
+
     return zeMemPutIpcHandleRpcHelper(hContext, handle);
 }
 
 ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t *pIpcHandle) {
+    struct FdIpcHandleWrapper {
+        uint64_t *data{};
+    };
+    FdIpcHandleWrapper fdWrapper{&handle};
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemGetIpcHandleFromFileDescriptorExp", 1u, &fdWrapper);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
+    }
+
     const auto rpcCommandResult = zeMemGetIpcHandleFromFileDescriptorExpRpcHelper(hContext, handle, pIpcHandle);
     if (rpcCommandResult != ZE_RESULT_SUCCESS) {
         return rpcCommandResult;
@@ -155,7 +166,16 @@ ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext,
         return reverseTranslationResult;
     }
 
-    return zeMemGetFileDescriptorFromIpcHandleExpRpcHelper(hContext, ipcHandle, pHandle);
+    const auto rpcCommandResult = zeMemGetFileDescriptorFromIpcHandleExpRpcHelper(hContext, ipcHandle, pHandle);
+    if (rpcCommandResult != ZE_RESULT_SUCCESS) {
+        return rpcCommandResult;
+    }
+
+    struct FdIpcHandleWrapper {
+        uint64_t *data{};
+    };
+    FdIpcHandleWrapper fdWrapper{pHandle};
+    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &fdWrapper);
 }
 
 } // namespace Cal::Client::Icd::LevelZero

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -44,7 +44,8 @@ ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles
     }
 
     for (auto i = 0u; i < numIpcHandles; ++i) {
-        std::memcpy(pIpcHandles[i].data, &localFileDescriptors[i], sizeof(localFileDescriptors[i]));
+        int localFD = globalL0Platform->translateNewRemoteFDToLocalFD(reqTransferFd.remoteFds[i], localFileDescriptors[i]);
+        std::memcpy(pIpcHandles[i].data, &localFD, sizeof(localFD));
     }
 
     return ZE_RESULT_SUCCESS;
@@ -85,7 +86,8 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
     }
 
     for (auto i = 0u; i < numIpcHandles; ++i) {
-        std::memcpy(pIpcHandles[i].data, &respReverseTransferFd.remoteFds[i], sizeof(respReverseTransferFd.remoteFds[i]));
+        int remoteFD = globalL0Platform->translateLocalFDToRemoteFD(localFileDescriptors[i], respReverseTransferFd.remoteFds[i]);
+        std::memcpy(pIpcHandles[i].data, &remoteFD, sizeof(remoteFD));
     }
 
     return ZE_RESULT_SUCCESS;

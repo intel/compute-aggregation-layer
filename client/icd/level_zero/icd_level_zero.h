@@ -467,6 +467,50 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         return nullptr;
     }
 
+    int translateNewRemoteFDToLocalFD(int remoteFD, int translatedLocalFD) {
+        std::lock_guard lock{fileDescriptorsMapMutex};
+        const auto it = fileDescriptorsMap.find(remoteFD);
+        if (it != fileDescriptorsMap.end()) {
+            log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", remoteFD, it->second);
+            return it->second;
+        }
+
+        fileDescriptorsMap[remoteFD] = translatedLocalFD;
+        fileDescriptorsReverseMap[translatedLocalFD] = remoteFD;
+        log<Verbosity::bloat>("Registered new FD mapping: remote %d : local %d", remoteFD, translatedLocalFD);
+        return translatedLocalFD;
+    }
+
+    int translateLocalFDToRemoteFD(int localFD, int translatedRemoteFD) {
+        std::lock_guard lock{fileDescriptorsMapMutex};
+        const auto it = fileDescriptorsReverseMap.find(localFD);
+        if (it == fileDescriptorsReverseMap.end()) {
+            log<Verbosity::bloat>("No mapping for localFD %d found!", localFD);
+            return translatedRemoteFD;
+        }
+
+        log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", it->second, localFD);
+        return it->second;
+    }
+
+    void removeFDMapping(int remoteFD) {
+        std::lock_guard lock{fileDescriptorsMapMutex};
+        const auto it1 = fileDescriptorsMap.find(remoteFD);
+        if (it1 == fileDescriptorsMap.end()) {
+            log<Verbosity::bloat>("Cannot remove FD mapping for remoteFD %d", remoteFD);
+            return;
+        }
+        int localFD = it1->second;
+        fileDescriptorsMap.erase(it1);
+        const auto it2 = fileDescriptorsReverseMap.find(localFD);
+        if (it2 == fileDescriptorsReverseMap.end()) {
+            log<Verbosity::bloat>("Cannot remove FD mapping for localFD %d", localFD);
+            return;
+        }
+        fileDescriptorsReverseMap.erase(it2);
+        log<Verbosity::bloat>("Removed FD mapping: remote %d : local %d", remoteFD, localFD);
+    }
+
     Logic::HostptrCopiesReader &getHostptrCopiesReader() {
         return hostptrCopiesReader;
     }
@@ -575,6 +619,10 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
 
     std::mutex lastErrorDescriptionMapMutex;
     std::map<std::thread::id, std::string> lastErrorDescriptionMap;
+
+    std::mutex fileDescriptorsMapMutex;
+    std::unordered_map<int, int> fileDescriptorsMap;
+    std::unordered_map<int, int> fileDescriptorsReverseMap;
 
     Logic::HostptrCopiesReader hostptrCopiesReader;
 };

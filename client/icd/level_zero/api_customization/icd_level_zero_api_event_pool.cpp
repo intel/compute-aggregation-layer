@@ -39,6 +39,9 @@ ze_result_t zeEventPoolPutIpcHandle(ze_context_handle_t hContext, ze_ipc_event_p
         return reverseTranslationResult;
     }
 
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    globalL0Platform->removeFDMapping(*reinterpret_cast<int *>(hIpc.data));
+
     return zeEventPoolPutIpcHandleRpcHelper(hContext, hIpc);
 }
 
