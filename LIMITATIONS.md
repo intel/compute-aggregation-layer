@@ -46,6 +46,14 @@ CAL support for GPU kernel asserts has been limitted to printing a debug message
 In addition to the debug message the kernel assert will trigger the abort operation in the GPU driver (by design) and therefore cause the CAL service process to terminate, which is the expected behavior.
 Note: The debug message is not communicated back to the CAL client, so if the test expects to catch the message from stderr output then it should configure CAL to redirect Level Zero API calls directly to the GPU driver with the CAL_REDIRECT_L0=1 environmental variable.
 
+## CAL can increase timeouts used with some Level Zero API functions
+The example affected API functions are: zeCommandListHostSynchronize, zeCommandQueueSynchronize, zeEventHostSynchronize, zeFenceHostSynchronize, zesDriverEventListen, zesDriverEventListenEx.
+
+e.g.
+calrun test_cmdqueue --gtest_filter=*GivenTimeoutWhenWaitingForCommandQueueThenWaitForSpecifiedTime*
+test output:
+Expected: (ratio_cq) <= (1.02f), actual: 1.02654 vs 1.02
+
 ## Currently CAL can force some OpenCL API commands used for memory transfers to be blocking/synchronous
 This restrictions applies the non-blocking OpenCL API commands used to read or copy into memory, affects the OpenCL scenarios below and can lead to deadlocks.
 
