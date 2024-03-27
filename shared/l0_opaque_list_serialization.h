@@ -111,6 +111,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(ze_event_query_kernel_timestamps_ext_properties_t);
     }
 
+    if (ZE_STRUCTURE_TYPE_KERNEL_MAX_GROUP_SIZE_EXT_PROPERTIES == desc->stype) {
+        return sizeof(ze_kernel_max_group_size_ext_properties_t);
+    }
+
     if (ZE_STRUCTURE_TYPE_RTAS_DEVICE_EXP_PROPERTIES == desc->stype) {
         return sizeof(ze_rtas_device_exp_properties_t);
     }
