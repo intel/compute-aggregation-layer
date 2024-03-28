@@ -57,11 +57,12 @@ Expected: (ratio_cq) <= (1.02f), actual: 1.02654 vs 1.02
 ## Currently CAL can force some OpenCL API commands used for memory transfers to be blocking/synchronous
 This restrictions applies the non-blocking OpenCL API commands used to read or copy into memory, affects the OpenCL scenarios below and can lead to deadlocks.
 
-|      affected API call (non-blocking)         |                           affected OpenCL scenario                            |                             problem  mitigation                                    |
-|-----------------------------------------------|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| clEnqueueMapBuffer                            | enqueue non-blocking command to map buffer created with malloced host pointer | use USM host or SVM pointer to create buffer with host ptr                         |
-| clEnqueueReadBuffer / clEnqueueReadBufferRect | enqueue non-blocking command to read buffer to malloced pointer               | use USM host or SVM pointer instead as a destination for the read buffer operation |
-| clEnqueueSVMMemcpy / clEnqueueMemcpyINTEL     | enqueue non-blocking command to do a memcpy operation to malloced pointer     | use USM host or SVM pointer instead as a destination for the memcpy operation      |
+|      affected API call (non-blocking)         |                           affected OpenCL scenario                            |                               problem  mitigation                                   |
+|-----------------------------------------------|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| clEnqueueMapBuffer                            | enqueue non-blocking command to map buffer created with malloced host pointer | use USM host or SVM pointer to create buffer with host ptr                          |
+| clEnqueueReadBuffer / clEnqueueReadBufferRect | enqueue non-blocking command to read buffer to malloced pointer               | use USM host or SVM pointer instead as a destination for the read buffer operation  |
+| clEnqueueSVMMemcpy / clEnqueueMemcpyINTEL     | enqueue non-blocking command to do a memcpy operation to malloced pointer     | use USM host or SVM pointer instead as a destination for the memcpy operation       |
+| clEnqueueWriteBufferRect                      | enqueue non-blocking command to write buffer rect from malloced pointer       | use USM host or SVM pointer instead as a source for the write buffer rect operation |
 
 The example scenario in OpenCL Khronos conformance tests when non-blocking clEnqueueReadBuffer command hangs on user event due to forcing blocking read:
 
@@ -80,7 +81,7 @@ SKIPPED: Device does not supported images as required by this test!
 ## Currently CAL doesn't support the per-client ZE_FLAT_DEVICE_HIERARCHY configuration setting
 Clients sharing a CAL service need to use a single configuration mode and this mode needs to be set-up as an environment variable when starting the service.
 
-## Currently CAL doesn't fullyy support zeFabricVertexGetSubVerticesExp
+## Currently CAL doesn't fully support zeFabricVertexGetSubVerticesExp
 The restriction applies to the scenarios when the zeFabricVertexGetSubVerticesExp function is called in conjunction with the per-client ZE_AFFINITY_MASK configuration setting.
 
 e.g.
