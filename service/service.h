@@ -174,7 +174,7 @@ class ClientContext {
                     if (l0ContextsTracking.count(static_cast<ze_context_handle_t>(alloc.second.ctx)) > 0) {
                         alloc.second.gpuDestructor(alloc.second.ctx, alloc.second.shmem.getSubAllocationPtr());
                     } else {
-                        log<Verbosity::info>("USM allocation leaked for context that is already released");
+                        log<Verbosity::debug>("USM allocation leaked for context that is already released");
                     }
                 }
             }
@@ -543,16 +543,24 @@ class Provider {
         log<Verbosity::info>("Starting Compute Aggregation Layer service from PID : %d", getpid());
 
         std::vector<std::future<void>> clients;
-        log<Verbosity::info>("Initializing OCL");
-        systemInfo.availableApis.ocl = sharedObjects.ocl.init();
-        if (false == systemInfo.availableApis.ocl) {
-            log<Verbosity::info>("OpenCL API is not available in the system");
+        if (Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true)) {
+            log<Verbosity::info>("Initializing OCL");
+            systemInfo.availableApis.ocl = sharedObjects.ocl.init();
+            if (false == systemInfo.availableApis.ocl) {
+                log<Verbosity::info>("OpenCL API is not available in the system");
+            }
+        } else {
+            log<Verbosity::info>("OpenCL API disabled with %s=0", calEnableOclInCalrunEnvName.data());
         }
 
-        log<Verbosity::info>("Initializing L0");
-        systemInfo.availableApis.l0 = sharedObjects.l0.init();
-        if (false == systemInfo.availableApis.l0) {
-            log<Verbosity::info>("Level Zero API is not available in the system");
+        if (Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true)) {
+            log<Verbosity::info>("Initializing L0");
+            systemInfo.availableApis.l0 = sharedObjects.l0.init();
+            if (false == systemInfo.availableApis.l0) {
+                log<Verbosity::info>("Level Zero API is not available in the system");
+            }
+        } else {
+            log<Verbosity::info>("Level Zero API disabled with %s=0", calEnableL0InCalrunEnvName.data());
         }
 
         if (systemInfo.availableApis.none()) {
