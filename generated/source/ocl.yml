@@ -3508,6 +3508,7 @@ config:
               name: blocking_write
               type: cl_bool
               kind: scalar
+              translate_before: "Cal::Client::Icd::Ocl::warnIfNonBlockingWrite({dst}, ptr_kind)"
             3:
               name: buffer_origin
               type: "const size_t*"

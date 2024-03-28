@@ -4134,6 +4134,7 @@ cl_int clEnqueueWriteBufferRect_Local (cl_command_queue command_queue, cl_mem bu
     command->args.ptr = reinterpret_cast<const void*>(standalone_ptr);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingWrite(command->args.blocking_write, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4187,6 +4188,7 @@ cl_int clEnqueueWriteBufferRect_Usm (cl_command_queue command_queue, cl_mem buff
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingWrite(command->args.blocking_write, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;
@@ -4240,6 +4242,7 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     command->copyFromCaller(dynMemTraits);
     command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
     command->args.buffer = buffer->asLocalObject()->asRemoteObject();
+    Cal::Client::Icd::Ocl::warnIfNonBlockingWrite(command->args.blocking_write, ptr_kind);
     if(event_wait_list)
     {
         auto base = command->captures.event_wait_list;

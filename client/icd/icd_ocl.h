@@ -1225,13 +1225,27 @@ constexpr void warnIfNonBlockingRead(cl_bool &blockingRead) {
     }
 }
 
-constexpr void warnIfNonBlockingRead(cl_bool &blockingRead, Cal::Client::Icd::PointerType pt) {
+inline bool overrideNonBlockingOperationIfNeeded(cl_bool &blockingOperation, Cal::Client::Icd::PointerType pt) {
     if (pt != Cal::Client::Icd::PointerType::local) {
-        return;
+        return false;
     }
-    if (false == blockingRead) {
-        log<Verbosity::debug>("Overriding async read with serialized one to ensure memory coherency");
-        blockingRead = true;
+    if (true == blockingOperation) {
+        return false;
+    }
+    log<Verbosity::debug>("Overriding async operation with serialized one to ensure memory coherency");
+    blockingOperation = true;
+    return true;
+}
+
+inline void warnIfNonBlockingRead(cl_bool &blockingRead, Cal::Client::Icd::PointerType pt) {
+    if (overrideNonBlockingOperationIfNeeded(blockingRead, pt)) {
+        log<Verbosity::performance>("Overriding non-blocking read operation with blocking one");
+    }
+}
+
+inline void warnIfNonBlockingWrite(cl_bool &blockingWrite, Cal::Client::Icd::PointerType pt) {
+    if (overrideNonBlockingOperationIfNeeded(blockingWrite, pt)) {
+        log<Verbosity::performance>("Overriding non-blocking write operation with blocking one");
     }
 }
 
