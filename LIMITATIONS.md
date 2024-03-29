@@ -118,3 +118,11 @@ When this limit is being approached by the application, the following (or simila
 ### Shared memory and docker
 In order to use CAL from within a docker container one needs to increase the amount of shared memory assigned to the container by default.
 This can be done by passing the additional `--shm-size <NEW_SHMEM_SIZE>` (e.g. `16G` is a reasonable choice) parameter to the docker command.
+
+## CAL limitations related to virtual memory usage
+### System limits the maximum number of memory map areas a process can have
+You may need to increase the `vm.max_map_count` kernel parameter to avoid running out of map areas for memory resources of the application aggregated to the single CAL service.
+
+* The `vm.max_map_count` kernel parameter can be queried with the `$ cat /proc/sys/vm/max_map_count` command. The default value for `vm.max_map_count` is 65530.
+* To increase the `vm.max_map_count` value temporarily, one can load the new count value with the following command: `$ sudo sysctl -w vm.max_map_count=<NEW_MAP_COUNT>`, where `<NEW_MAP_COUNT>` should be around 1 per 128 KB of system memory, e.g. `vm.max_map_count=2097152` on a 256 GB system. The above command will load the new max_map_count value till the next system restart.
+* To increase the max_map_count parameter persistently, one can add or update the following line `vm.max_map_count=<NEW_MAP_COUNT>` to `/etc/sysctl.conf` and reload the config as root with the `$sysctl -p` command.
