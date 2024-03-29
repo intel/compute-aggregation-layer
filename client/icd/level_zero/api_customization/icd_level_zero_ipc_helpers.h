@@ -15,6 +15,7 @@
 
 namespace Cal::Client::Icd::LevelZero::Ipc {
 
+// to_local
 template <typename IpcHandleT>
 ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -51,9 +52,11 @@ ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles
     return ZE_RESULT_SUCCESS;
 }
 
+// to_remote
 template <typename IpcHandleT>
 ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+
     auto &connection = globalL0Platform->getConnection();
     auto lock = connection.lock();
 
@@ -63,15 +66,39 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
         return ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY;
     }
 
+    std::array<int, maxHandlesCount> localFileDescriptors{};
+    for (auto i = 0u; i < numIpcHandles; ++i) {
+        std::memcpy(&localFileDescriptors[i], pIpcHandles[i].data, sizeof(localFileDescriptors[i]));
+    }
+
+    uint64_t knownFds = 0;
+    for (auto i = 0u; i < numIpcHandles; ++i) {
+        int remoteFd = globalL0Platform->translateLocalFDToRemoteFD(localFileDescriptors[i], -1);
+        if (remoteFd != -1) {
+            log<Verbosity::debug>("Reusing known IPC FD mapping local:remote = %d:%d", localFileDescriptors[i], remoteFd);
+            std::memcpy(pIpcHandles[i].data, &remoteFd, sizeof(remoteFd));
+            knownFds |= 1 << i;
+        }
+    }
+
+    if (knownFds) {
+        // some FDs are already known, translate only remaining ones
+        for (auto i = 0u; i < numIpcHandles; ++i) {
+            if (0 != (knownFds & (1 << i))) {
+                continue;
+            }
+            auto ret = reverseTranslateIpcHandles(functionName, 1, &pIpcHandles[i]);
+            if (ZE_RESULT_SUCCESS != ret) {
+                return ret;
+            }
+        }
+        return ZE_RESULT_SUCCESS;
+    }
+
     Cal::Messages::ReqReverseTransferFd reqReverseTransferFd{static_cast<uint16_t>(numIpcHandles)};
     if (false == connection.send(reqReverseTransferFd)) {
         log<Verbosity::error>("%s: Could not request reverse transfer of file descriptor!", functionName);
         return ZE_RESULT_ERROR_DEVICE_LOST;
-    }
-
-    std::array<int, maxHandlesCount> localFileDescriptors{};
-    for (auto i = 0u; i < numIpcHandles; ++i) {
-        std::memcpy(&localFileDescriptors[i], pIpcHandles[i].data, sizeof(localFileDescriptors[i]));
     }
 
     if (false == connection.sendFds(localFileDescriptors.data(), numIpcHandles)) {
