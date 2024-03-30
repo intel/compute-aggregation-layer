@@ -21,11 +21,11 @@ ze_result_t zeEventPoolGetIpcHandle(ze_event_pool_handle_t hEventPool, ze_ipc_ev
         return rpcCommandResult;
     }
 
-    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeEventPoolGetIpcHandle", 1u, phIpc);
+    return Cal::Client::Icd::LevelZero::Ipc::toLocalFds("zeEventPoolGetIpcHandle", 1u, phIpc);
 }
 
 ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc, ze_event_pool_handle_t *phEventPool) {
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeEventPoolOpenIpcHandle", 1u, &hIpc);
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeEventPoolOpenIpcHandle", 1u, &hIpc);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
@@ -34,13 +34,16 @@ ze_result_t zeEventPoolOpenIpcHandle(ze_context_handle_t hContext, ze_ipc_event_
 }
 
 ze_result_t zeEventPoolPutIpcHandle(ze_context_handle_t hContext, ze_ipc_event_pool_handle_t hIpc) {
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeEventPoolPutIpcHandle", 1u, &hIpc);
+    Cal::Utils::LocalFd localFd{*(int *)hIpc.data};
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeEventPoolPutIpcHandle", 1u, &hIpc);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
 
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
-    globalL0Platform->removeFDMapping(*reinterpret_cast<int *>(hIpc.data));
+    if (globalL0Platform->decreaseRefcountForIpcFd(Cal::Utils::RemoteFd(*reinterpret_cast<int *>(hIpc.data)))) {
+        Cal::Sys::close(localFd.fd);
+    }
 
     return zeEventPoolPutIpcHandleRpcHelper(hContext, hIpc);
 }

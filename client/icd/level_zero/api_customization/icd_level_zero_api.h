@@ -71,6 +71,7 @@ ze_result_t zeFenceHostSynchronize(ze_fence_handle_t hFence, uint64_t timeout);
 ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void *ptr, ze_ipc_mem_handle_t *pIpcHandle);
 ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void **pptr);
 ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle);
+ze_result_t zeMemCloseIpcHandle(ze_context_handle_t hContext, const void *ptr);
 ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t *pIpcHandle);
 ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t *pHandle);
 ze_result_t zeMemGetAllocProperties(ze_context_handle_t hContext, const void *ptr, ze_memory_allocation_properties_t *pMemAllocProperties, ze_device_handle_t *phDevice);

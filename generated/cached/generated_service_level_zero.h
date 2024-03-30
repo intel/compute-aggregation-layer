@@ -2144,15 +2144,7 @@ inline bool zeMemOpenIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer
                                                 );
     return true;
 }
-inline bool zeMemCloseIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
-    log<Verbosity::bloat>("Servicing RPC request for zeMemCloseIpcHandle");
-    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM*>(command);
-    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemCloseIpcHandle(
-                                                apiCommand->args.hContext, 
-                                                apiCommand->args.ptr
-                                                );
-    return true;
-}
+bool zeMemCloseIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize);
 inline bool zeMemPutIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for zeMemPutIpcHandle");
     auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemPutIpcHandleRpcM*>(command);

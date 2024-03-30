@@ -71,21 +71,6 @@ bool ensureSizesEqual(size_t expected, size_t actual) {
     return true;
 }
 
-bool getIpcHandleOfNonUsmDeviceMemory(ze_context_handle_t context, void *nonUsmDeviceBuffer) {
-    log<Verbosity::info>("Trying to get ze_ipc_mem_handle_t of nonUsmDeviceBuffer!");
-
-    ze_ipc_mem_handle_t ipcHandle{};
-
-    const auto zeMemGetIpcHandleResult = zeMemGetIpcHandle(context, nonUsmDeviceBuffer, &ipcHandle);
-    if (zeMemGetIpcHandleResult != ZE_RESULT_SUCCESS) {
-        log<Verbosity::info>("zeMemGetIpcHandle() failed as expected for non USM device buffer!");
-        return true;
-    }
-
-    log<Verbosity::error>("Unexpectedly, zeMemGetIpcHandle() returned ZE_RESULT_SUCCESS for non USM device buffer!");
-    return false;
-}
-
 bool getIpcHandle(ze_context_handle_t context, void *usmDeviceBuffer, ze_ipc_mem_handle_t &ipcHandleOfUsmDeviceBuffer) {
     const auto zeMemGetIpcHandleResult = zeMemGetIpcHandle(context, usmDeviceBuffer, &ipcHandleOfUsmDeviceBuffer);
     if (zeMemGetIpcHandleResult != ZE_RESULT_SUCCESS) {
@@ -223,8 +208,6 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(ensureSizesEqual(bufferSize, sizeOfUsmDeviceBuffer));
 
     if (!skipIpcHandlesTests) {
-        RUN_REQUIRED_STEP(getIpcHandleOfNonUsmDeviceMemory(context, usmHostBuffer));
-
         ze_external_memory_export_fd_t exportFdExtension = {
             ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD, // stype
             nullptr,                                     // pNext

@@ -835,5 +835,56 @@ std::string ensureUserPrivateDirectoryLayout();
 
 void debugBreak();
 
+struct RemoteFd {
+    explicit constexpr RemoteFd() : fd(-1) {}
+    explicit constexpr RemoteFd(int fd) : fd(fd) {}
+    constexpr bool valid() const {
+        return -1 != fd;
+    }
+
+    int fd;
+
+    constexpr static RemoteFd invalid() {
+        return RemoteFd{-1};
+    }
+};
+static_assert(sizeof(RemoteFd) == sizeof(int));
+
+struct LocalFd {
+    explicit constexpr LocalFd() : fd(-1) {}
+    explicit constexpr LocalFd(int fd) : fd(fd) {}
+    constexpr bool valid() const {
+        return -1 != fd;
+    }
+    int fd;
+
+    constexpr static LocalFd invalid() {
+        return LocalFd{-1};
+    }
+};
+static_assert(sizeof(LocalFd) == sizeof(int));
+
+inline constexpr bool operator==(const RemoteFd &lhs, const RemoteFd &rhs) noexcept {
+    return lhs.fd == rhs.fd;
+}
+
+inline constexpr bool operator==(const LocalFd &lhs, const LocalFd &rhs) noexcept {
+    return lhs.fd == rhs.fd;
+}
+
 } // namespace Utils
 } // namespace Cal
+
+template <>
+struct std::hash<Cal::Utils::RemoteFd> {
+    std::size_t operator()(const Cal::Utils::RemoteFd &remoteFd) const noexcept {
+        return std::hash<int>{}(remoteFd.fd);
+    }
+};
+
+template <>
+struct std::hash<Cal::Utils::LocalFd> {
+    std::size_t operator()(const Cal::Utils::LocalFd &localFd) const noexcept {
+        return std::hash<int>{}(localFd.fd);
+    }
+};

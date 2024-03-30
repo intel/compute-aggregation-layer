@@ -5304,10 +5304,6 @@ ze_result_t zeMemGetAddressRange (ze_context_handle_t hContext, const void* ptr,
     return ret;
 }
 ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle) {
-    if (!Cal::Client::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {
-        return ZE_RESULT_ERROR_INVALID_ARGUMENT;
-    }
-
     log<Verbosity::bloat>("Establishing RPC for zeMemGetIpcHandle");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -5358,7 +5354,7 @@ ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device
 
     return ret;
 }
-ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) {
+ze_result_t zeMemCloseIpcHandleRpcHelper (ze_context_handle_t hContext, const void* ptr, Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcMImplicitArgs &implArgsForZeMemCloseIpcHandleRpcM) {
     log<Verbosity::bloat>("Establishing RPC for zeMemCloseIpcHandle");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -5366,6 +5362,7 @@ ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr) 
     using CommandT = Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM;
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(hContext, ptr);
+    command->copyFromCaller(implArgsForZeMemCloseIpcHandleRpcM);
     command->args.hContext = hContext->asLocalObject()->asRemoteObject();
 
 

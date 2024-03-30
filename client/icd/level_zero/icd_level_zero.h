@@ -467,48 +467,80 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         return nullptr;
     }
 
-    int translateNewRemoteFDToLocalFD(int remoteFD, int translatedLocalFD) {
-        std::lock_guard lock{fileDescriptorsMapMutex};
-        const auto it = fileDescriptorsMap.find(remoteFD);
-        if (it != fileDescriptorsMap.end()) {
-            log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", remoteFD, it->second);
+    Cal::Utils::LocalFd translateNewRemoteFDToLocalFD(Cal::Utils::RemoteFd remoteFD, Cal::Utils::LocalFd translatedLocalFD) {
+        std::lock_guard lock{ipcFdMapMutex};
+        const auto it = ipcFdMapRemoteToLocal.find(remoteFD);
+        if (it != ipcFdMapRemoteToLocal.end()) {
+            log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", remoteFD.fd, it->second);
             return it->second;
         }
 
-        fileDescriptorsMap[remoteFD] = translatedLocalFD;
-        fileDescriptorsReverseMap[translatedLocalFD] = remoteFD;
-        log<Verbosity::bloat>("Registered new FD mapping: remote %d : local %d", remoteFD, translatedLocalFD);
+        ipcFdMapRemoteToLocal[remoteFD] = translatedLocalFD;
+        ipcFdMapLocalToRemote[translatedLocalFD] = remoteFD;
+        ipcFdRefcounts[remoteFD] = 1;
+        log<Verbosity::bloat>("Registered new FD mapping: remote %d : local %d", remoteFD.fd, translatedLocalFD.fd);
         return translatedLocalFD;
     }
 
-    int translateLocalFDToRemoteFD(int localFD, int translatedRemoteFD) {
-        std::lock_guard lock{fileDescriptorsMapMutex};
-        const auto it = fileDescriptorsReverseMap.find(localFD);
-        if (it == fileDescriptorsReverseMap.end()) {
-            log<Verbosity::bloat>("No mapping for localFD %d found!", localFD);
+    Cal::Utils::LocalFd translateRemoteFDToLocalFD(Cal::Utils::RemoteFd remoteFD, bool increaseRefcount) {
+        std::lock_guard lock{ipcFdMapMutex};
+        const auto it = ipcFdMapRemoteToLocal.find(remoteFD);
+        if (it != ipcFdMapRemoteToLocal.end()) {
+            log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", remoteFD.fd, it->second.fd);
+            if (increaseRefcount) {
+                this->increaseRefcountForIpcFd(remoteFD);
+            }
+            return it->second;
+        }
+
+        return Cal::Utils::LocalFd::invalid();
+    }
+
+    Cal::Utils::RemoteFd translateLocalFDToRemoteFD(Cal::Utils::LocalFd localFD, Cal::Utils::RemoteFd translatedRemoteFD) {
+        std::lock_guard lock{ipcFdMapMutex};
+        const auto it = ipcFdMapLocalToRemote.find(localFD);
+        if (it == ipcFdMapLocalToRemote.end()) {
+            log<Verbosity::bloat>("No mapping for localFD %d found!", localFD.fd);
             return translatedRemoteFD;
         }
 
-        log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", it->second, localFD);
+        log<Verbosity::bloat>("Used existing FD mapping: remote %d : local %d", it->second.fd, localFD.fd);
         return it->second;
     }
 
-    void removeFDMapping(int remoteFD) {
-        std::lock_guard lock{fileDescriptorsMapMutex};
-        const auto it1 = fileDescriptorsMap.find(remoteFD);
-        if (it1 == fileDescriptorsMap.end()) {
-            log<Verbosity::bloat>("Cannot remove FD mapping for remoteFD %d", remoteFD);
-            return;
+    void addPtrToIpcMap(const void *ptr, Cal::Utils::RemoteFd remoteFd) {
+        std::lock_guard lock{ipcFdMapMutex};
+        ipcPtrToRemoteFdMap[ptr] = remoteFd;
+    }
+
+    Cal::Utils::RemoteFd removePtrFromIpcMap(const void *ptr) {
+        std::lock_guard lock{ipcFdMapMutex};
+        auto it = ipcPtrToRemoteFdMap.find(ptr);
+        if (ipcPtrToRemoteFdMap.end() == it) {
+            log<Verbosity::debug>("Failed to remove ptr=%p from ipc map", ptr);
+            return Cal::Utils::RemoteFd::invalid();
         }
-        int localFD = it1->second;
-        fileDescriptorsMap.erase(it1);
-        const auto it2 = fileDescriptorsReverseMap.find(localFD);
-        if (it2 == fileDescriptorsReverseMap.end()) {
-            log<Verbosity::bloat>("Cannot remove FD mapping for localFD %d", localFD);
-            return;
+        auto remoteFd = it->second;
+        if (false == this->decreaseRefcountForIpcFd(remoteFd)) {
+            remoteFd = Cal::Utils::RemoteFd::invalid(); // still needed
         }
-        fileDescriptorsReverseMap.erase(it2);
-        log<Verbosity::bloat>("Removed FD mapping: remote %d : local %d", remoteFD, localFD);
+        return remoteFd;
+    }
+
+    bool decreaseRefcountForIpcFd(Cal::Utils::RemoteFd remoteFd) {
+        std::lock_guard lock{ipcFdMapMutex};
+        auto it = ipcFdRefcounts.find(remoteFd);
+        if (it == ipcFdRefcounts.end()) {
+            log<Verbosity::error>("Could not find refcount for IPC FD : %d", remoteFd.fd);
+        }
+        if (it->second >= 1) {
+            it->second -= 1;
+        }
+        if (it->second >= 1) {
+            return false;
+        }
+
+        return this->removeIpcFDMapping(remoteFd);
     }
 
     Logic::HostptrCopiesReader &getHostptrCopiesReader() {
@@ -534,6 +566,38 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
     }
 
   private:
+    void increaseRefcountForIpcFd(Cal::Utils::RemoteFd remoteFd) {
+        auto it = ipcFdRefcounts.find(remoteFd);
+        if (it == ipcFdRefcounts.end()) {
+            log<Verbosity::error>("Could not find refcount for IPC FD : %d", remoteFd.fd);
+        }
+        it->second += 1;
+    }
+
+    bool removeIpcFDMapping(Cal::Utils::RemoteFd remoteFD) {
+        auto refcountIt = ipcFdRefcounts.find(remoteFD);
+        if (ipcFdRefcounts.end() == refcountIt) {
+            log<Verbosity::bloat>("Cannot remove FD mapping for remoteFD %d", remoteFD.fd);
+            return false;
+        }
+
+        const auto it1 = ipcFdMapRemoteToLocal.find(remoteFD);
+        if (it1 == ipcFdMapRemoteToLocal.end()) {
+            log<Verbosity::bloat>("Cannot remove FD mapping for remoteFD %d", remoteFD.fd);
+            return false;
+        }
+        auto localFD = it1->second;
+        ipcFdMapRemoteToLocal.erase(it1);
+        const auto it2 = ipcFdMapLocalToRemote.find(localFD);
+        if (it2 == ipcFdMapLocalToRemote.end()) {
+            log<Verbosity::bloat>("Cannot remove FD mapping for localFD %d", localFD.fd);
+            return false;
+        }
+        ipcFdMapLocalToRemote.erase(it2);
+        log<Verbosity::bloat>("Removed FD mapping: remote %d : local %d", remoteFD.fd, localFD.fd);
+        return true;
+    }
+
     template <typename LocalT, typename RemoteT, typename MapT>
     RemoteT translateNewRemoteObjectToLocalObject(RemoteT remoteHandle, RemoteT parent, MapT &mapping, std::mutex &mapMutex) {
         if (remoteHandle == nullptr) {
@@ -620,9 +684,11 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
     std::mutex lastErrorDescriptionMapMutex;
     std::map<std::thread::id, std::string> lastErrorDescriptionMap;
 
-    std::mutex fileDescriptorsMapMutex;
-    std::unordered_map<int, int> fileDescriptorsMap;
-    std::unordered_map<int, int> fileDescriptorsReverseMap;
+    std::mutex ipcFdMapMutex;
+    std::unordered_map<Cal::Utils::LocalFd, Cal::Utils::RemoteFd> ipcFdMapLocalToRemote;
+    std::unordered_map<Cal::Utils::RemoteFd, Cal::Utils::LocalFd> ipcFdMapRemoteToLocal;
+    std::unordered_map<Cal::Utils::RemoteFd, uint64_t> ipcFdRefcounts;
+    std::unordered_map<const void *, Cal::Utils::RemoteFd> ipcPtrToRemoteFdMap;
 
     Logic::HostptrCopiesReader hostptrCopiesReader;
 };

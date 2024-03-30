@@ -81,7 +81,7 @@ static ze_result_t zeMemGetAllocPropertiesWithExtensions(ze_context_handle_t hCo
         if (baseDesc->stype == ZE_STRUCTURE_TYPE_EXTERNAL_MEMORY_EXPORT_FD) {
             auto exportFdExt = static_cast<ze_external_memory_export_fd_t *>(current);
             FdIpcHandleWrapper ipcHandle{&exportFdExt->fd};
-            const auto translationResult = Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("ze_external_memory_export_fd_t", 1u, &ipcHandle);
+            const auto translationResult = Cal::Client::Icd::LevelZero::Ipc::toLocalFds("ze_external_memory_export_fd_t", 1u, &ipcHandle);
             if (translationResult != ZE_RESULT_SUCCESS) {
                 return translationResult;
             }
@@ -118,28 +118,44 @@ ze_result_t zeMemGetIpcHandle(ze_context_handle_t hContext, const void *ptr, ze_
         return rpcCommandResult;
     }
 
-    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandle", 1u, pIpcHandle);
+    auto ret = Cal::Client::Icd::LevelZero::Ipc::toLocalFds("zeMemGetIpcHandle", 1u, pIpcHandle);
+    return ret;
 }
 
 ze_result_t zeMemOpenIpcHandle(ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void **pptr) {
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemOpenIpcHandle", 1u, &handle);
-    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
-        return reverseTranslationResult;
-    }
-
-    return zeMemOpenIpcHandleRpcHelper(hContext, hDevice, handle, flags, pptr);
-}
-
-ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) {
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemPutIpcHandle", 1u, &handle);
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeMemOpenIpcHandle", 1u, &handle);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
 
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
-    globalL0Platform->removeFDMapping(*reinterpret_cast<int *>(handle.data));
+    globalL0Platform->addPtrToIpcMap(*pptr, Cal::Utils::RemoteFd(*reinterpret_cast<int *>(handle.data)));
+
+    return zeMemOpenIpcHandleRpcHelper(hContext, hDevice, handle, flags, pptr);
+}
+
+ze_result_t zeMemPutIpcHandle(ze_context_handle_t hContext, ze_ipc_mem_handle_t handle) {
+    Cal::Utils::LocalFd localFd{*(int *)handle.data};
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeMemPutIpcHandle", 1u, &handle);
+    if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
+        return reverseTranslationResult;
+    }
+
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    if (globalL0Platform->decreaseRefcountForIpcFd(Cal::Utils::RemoteFd(*reinterpret_cast<int *>(handle.data)))) {
+        Cal::Sys::close(localFd.fd);
+    }
 
     return zeMemPutIpcHandleRpcHelper(hContext, handle);
+}
+
+ze_result_t zeMemCloseIpcHandle(ze_context_handle_t hContext, const void *ptr) {
+    auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
+    auto remoteFdToClose = globalL0Platform->removePtrFromIpcMap(ptr);
+
+    Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcMImplicitArgs iargs;
+    iargs.handle_to_close = remoteFdToClose.fd;
+    return zeMemCloseIpcHandleRpcHelper(hContext, ptr, iargs);
 }
 
 ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext, uint64_t handle, ze_ipc_mem_handle_t *pIpcHandle) {
@@ -147,7 +163,7 @@ ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext,
         uint64_t *data{};
     };
     FdIpcHandleWrapper fdWrapper{&handle};
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemGetIpcHandleFromFileDescriptorExp", 1u, &fdWrapper);
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeMemGetIpcHandleFromFileDescriptorExp", 1u, &fdWrapper);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
@@ -157,11 +173,11 @@ ze_result_t zeMemGetIpcHandleFromFileDescriptorExp(ze_context_handle_t hContext,
         return rpcCommandResult;
     }
 
-    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetIpcHandleFromFileDescriptorExp", 1u, pIpcHandle);
+    return Cal::Client::Icd::LevelZero::Ipc::toLocalFds("zeMemGetIpcHandleFromFileDescriptorExp", 1u, pIpcHandle);
 }
 
 ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext, ze_ipc_mem_handle_t ipcHandle, uint64_t *pHandle) {
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &ipcHandle);
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &ipcHandle);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }
@@ -175,7 +191,7 @@ ze_result_t zeMemGetFileDescriptorFromIpcHandleExp(ze_context_handle_t hContext,
         uint64_t *data{};
     };
     FdIpcHandleWrapper fdWrapper{pHandle};
-    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &fdWrapper);
+    return Cal::Client::Icd::LevelZero::Ipc::toLocalFds("zeMemGetFileDescriptorFromIpcHandleExp", 1u, &fdWrapper);
 }
 
 } // namespace Cal::Client::Icd::LevelZero

@@ -17051,6 +17051,10 @@ struct ZeMemOpenIpcHandleRpcM {
     }
 };
 static_assert(std::is_standard_layout_v<ZeMemOpenIpcHandleRpcM>);
+struct ZeMemCloseIpcHandleRpcMImplicitArgs {
+    int handle_to_close = {};
+};
+
 struct ZeMemCloseIpcHandleRpcM {
     Cal::Rpc::RpcMessageHeader header;
     static constexpr uint16_t messageSubtype = 192;
@@ -17072,6 +17076,7 @@ struct ZeMemCloseIpcHandleRpcM {
         }
     }args;
 
+    ZeMemCloseIpcHandleRpcMImplicitArgs implicitArgs{};
     struct Captures {
 
         ze_result_t ret = ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY;
@@ -17105,6 +17110,10 @@ struct ZeMemCloseIpcHandleRpcM {
         message.args.ptr = ptr;
     }
     
+
+    void copyFromCaller(const Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcMImplicitArgs &implicitArgs){
+         this->implicitArgs.handle_to_close = implicitArgs.handle_to_close;
+    }
 };
 static_assert(std::is_standard_layout_v<ZeMemCloseIpcHandleRpcM>);
 struct ZeMemPutIpcHandleRpcM {

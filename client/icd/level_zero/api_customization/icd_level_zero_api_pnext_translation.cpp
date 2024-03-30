@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -12,16 +12,16 @@
 namespace Cal::Client::Icd::LevelZero {
 
 static void translateRequiredPNextExtension(ze_external_memory_import_fd_t &memoryImportFdExt) {
-    using Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles;
+    using Cal::Client::Icd::LevelZero::Ipc::toRemoteFds;
 
-    // This structure is used to match interface of reverseTranslateIpcHandles template function.
+    // This structure is used to match interface of toRemoteFds template function.
     struct IpcHandleFdWrapper {
         int *data;
     };
     IpcHandleFdWrapper handle{&memoryImportFdExt.fd};
 
     const auto functionName = "translateRequiredPNextExtension(ze_external_memory_import_fd_t)";
-    const auto reverseTranslationResult = reverseTranslateIpcHandles(functionName, 1u, &handle);
+    const auto reverseTranslationResult = toRemoteFds(functionName, 1u, &handle);
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         log<Verbosity::error>("Could not translate ze_external_memory_import_fd_t! Memory import may not work correctly!");
     }

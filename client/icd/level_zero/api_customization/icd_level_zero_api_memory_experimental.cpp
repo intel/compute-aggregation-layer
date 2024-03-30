@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -19,7 +19,7 @@ ze_result_t zexMemGetIpcHandles(ze_context_handle_t hContext, const void *ptr, u
     }
 
     constexpr const char *functionName = "zexMemGetIpcHandles";
-    return Cal::Client::Icd::LevelZero::Ipc::translateIpcHandles(functionName, *numIpcHandles, pIpcHandles);
+    return Cal::Client::Icd::LevelZero::Ipc::toLocalFds(functionName, *numIpcHandles, pIpcHandles);
 }
 
 ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
@@ -42,7 +42,7 @@ ze_result_t zexMemOpenIpcHandles(ze_context_handle_t hContext,
     std::memcpy(ipcHandles.data(), pIpcHandles, numIpcHandles);
 
     constexpr const char *functionName = "zexMemOpenIpcHandles";
-    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::reverseTranslateIpcHandles(functionName, numIpcHandles, ipcHandles.data());
+    const auto reverseTranslationResult = Cal::Client::Icd::LevelZero::Ipc::toRemoteFds(functionName, numIpcHandles, ipcHandles.data());
     if (reverseTranslationResult != ZE_RESULT_SUCCESS) {
         return reverseTranslationResult;
     }

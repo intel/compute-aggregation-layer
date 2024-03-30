@@ -31,6 +31,7 @@ namespace LevelZero {
 
 struct ZeMemAllocSharedRpcMImplicitArgs;
 struct ZeMemAllocHostRpcMImplicitArgs;
+struct ZeMemCloseIpcHandleRpcMImplicitArgs;
 
 } // namespace LevelZero
 } // namespace Rpc
@@ -343,7 +344,7 @@ ze_result_t zeMemGetIpcHandleRpcHelper (ze_context_handle_t hContext, const void
 ze_result_t zeMemGetIpcHandle_WithTracing (ze_context_handle_t hContext, const void* ptr, ze_ipc_mem_handle_t* pIpcHandle);
 ze_result_t zeMemOpenIpcHandleRpcHelper (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
 ze_result_t zeMemOpenIpcHandle_WithTracing (ze_context_handle_t hContext, ze_device_handle_t hDevice, ze_ipc_mem_handle_t handle, ze_ipc_memory_flags_t flags, void** pptr);
-ze_result_t zeMemCloseIpcHandle (ze_context_handle_t hContext, const void* ptr);
+ze_result_t zeMemCloseIpcHandleRpcHelper (ze_context_handle_t hContext, const void* ptr, Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcMImplicitArgs &implArgsForZeMemCloseIpcHandleRpcM);
 ze_result_t zeMemCloseIpcHandle_WithTracing (ze_context_handle_t hContext, const void* ptr);
 ze_result_t zeMemPutIpcHandleRpcHelper (ze_context_handle_t hContext, ze_ipc_mem_handle_t handle);
 ze_result_t zexMemGetIpcHandlesRpcHelper (ze_context_handle_t hContext, const void* ptr, uint32_t* numIpcHandles, ze_ipc_mem_handle_t* pIpcHandles);

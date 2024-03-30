@@ -1689,6 +1689,18 @@ bool zeDriverGetLastErrorDescriptionRpcHelperHandler(Provider &service, Cal::Rpc
     return false;
 }
 
+bool zeMemCloseIpcHandleHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for zeMemCloseIpcHandle");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::LevelZero::ZeMemCloseIpcHandleRpcM *>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::LevelZero::Standard::zeMemCloseIpcHandle(
+        apiCommand->args.hContext,
+        apiCommand->args.ptr);
+    if (-1 != apiCommand->implicitArgs.handle_to_close) {
+        Cal::Sys::close(apiCommand->implicitArgs.handle_to_close);
+    }
+    return true;
+}
+
 } // namespace LevelZero
 } // namespace Apis
 

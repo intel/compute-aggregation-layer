@@ -9850,7 +9850,6 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "if (!Cal::Client::Icd::icdGlobalState.getL0Platform()->isDeviceUsm(ptr)) {\n        return ZE_RESULT_ERROR_INVALID_ARGUMENT;\n    }\n"
               handler_only_suffix: "RpcHelper"
           ddi_category: Mem
           returns:
@@ -9922,6 +9921,11 @@ config:
         - name: zeMemCloseIpcHandle
           latency: 0.0
           ddi_category: Mem
+          special_handling:
+            rpc:
+              custom_handler: True
+            icd:
+              handler_only_suffix: "RpcHelper"
           returns:
             type: ze_result_t
             kind: scalar
@@ -9936,6 +9940,12 @@ config:
               name: ptr
               type: const void*
               kind: pointer
+          implicit_args:
+            0:
+              name: handle_to_close
+              type: int
+              kind: scalar
+              server_access: read
         - name: zeMemPutIpcHandle
           latency: 0.0
           special_handling:

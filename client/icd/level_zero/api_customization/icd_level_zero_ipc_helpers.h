@@ -16,8 +16,8 @@
 namespace Cal::Client::Icd::LevelZero::Ipc {
 
 // to_local
-template <typename IpcHandleT>
-ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
+template <typename IpcMemHandleT>
+ze_result_t toLocalFds(const char *functionName, uint32_t numIpcHandles, IpcMemHandleT *pIpcHandles) {
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &connection = globalL0Platform->getConnection();
     auto lock = connection.lock();
@@ -26,6 +26,32 @@ ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles
     if (numIpcHandles > maxHandlesCount) {
         log<Verbosity::error>("%s: number of IPC handles to translate exceeds the maximum available count!", functionName, maxHandlesCount);
         return ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY;
+    }
+
+    uint64_t knownFds = 0;
+    static_assert(maxHandlesCount < 64);
+    for (auto i = 0u; i < numIpcHandles; ++i) {
+        int remoteFd = *(int *)pIpcHandles[i].data;
+        auto localFd = globalL0Platform->translateRemoteFDToLocalFD(Cal::Utils::RemoteFd(remoteFd), true);
+        if (localFd.valid()) {
+            log<Verbosity::debug>("Reusing known IPC FD mapping remote:local = %d:%d", remoteFd, localFd.fd);
+            std::memcpy(pIpcHandles[i].data, &localFd, sizeof(localFd));
+            knownFds |= 1 << i;
+        }
+    }
+
+    if (knownFds) {
+        // some FDs are already known, translate only remaining ones
+        for (auto i = 0u; i < numIpcHandles; ++i) {
+            if (0 != (knownFds & (1 << i))) {
+                continue;
+            }
+            auto ret = toLocalFds(functionName, 1, &pIpcHandles[i]);
+            if (ZE_RESULT_SUCCESS != ret) {
+                return ret;
+            }
+        }
+        return ZE_RESULT_SUCCESS;
     }
 
     Cal::Messages::ReqTransferFd reqTransferFd{static_cast<uint16_t>(numIpcHandles)};
@@ -45,16 +71,16 @@ ze_result_t translateIpcHandles(const char *functionName, uint32_t numIpcHandles
     }
 
     for (auto i = 0u; i < numIpcHandles; ++i) {
-        int localFD = globalL0Platform->translateNewRemoteFDToLocalFD(reqTransferFd.remoteFds[i], localFileDescriptors[i]);
-        std::memcpy(pIpcHandles[i].data, &localFD, sizeof(localFD));
+        auto localFD = globalL0Platform->translateNewRemoteFDToLocalFD(Cal::Utils::RemoteFd(reqTransferFd.remoteFds[i]), Cal::Utils::LocalFd(localFileDescriptors[i]));
+        std::memcpy(pIpcHandles[i].data, &localFD.fd, sizeof(localFD.fd));
     }
 
     return ZE_RESULT_SUCCESS;
 }
 
 // to_remote
-template <typename IpcHandleT>
-ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpcHandles, IpcHandleT *pIpcHandles) {
+template <typename IpcMemHandleT>
+ze_result_t toRemoteFds(const char *functionName, uint32_t numIpcHandles, IpcMemHandleT *pIpcHandles) {
     auto *globalL0Platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
 
     auto &connection = globalL0Platform->getConnection();
@@ -72,10 +98,11 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
     }
 
     uint64_t knownFds = 0;
+    static_assert(maxHandlesCount < 64);
     for (auto i = 0u; i < numIpcHandles; ++i) {
-        int remoteFd = globalL0Platform->translateLocalFDToRemoteFD(localFileDescriptors[i], -1);
-        if (remoteFd != -1) {
-            log<Verbosity::debug>("Reusing known IPC FD mapping local:remote = %d:%d", localFileDescriptors[i], remoteFd);
+        auto remoteFd = globalL0Platform->translateLocalFDToRemoteFD(Cal::Utils::LocalFd(localFileDescriptors[i]), Cal::Utils::RemoteFd::invalid());
+        if (remoteFd.valid()) {
+            log<Verbosity::debug>("Reusing known IPC FD mapping local:remote = %d:%d", localFileDescriptors[i], remoteFd.fd);
             std::memcpy(pIpcHandles[i].data, &remoteFd, sizeof(remoteFd));
             knownFds |= 1 << i;
         }
@@ -87,7 +114,7 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
             if (0 != (knownFds & (1 << i))) {
                 continue;
             }
-            auto ret = reverseTranslateIpcHandles(functionName, 1, &pIpcHandles[i]);
+            auto ret = toRemoteFds(functionName, 1, &pIpcHandles[i]);
             if (ZE_RESULT_SUCCESS != ret) {
                 return ret;
             }
@@ -113,8 +140,8 @@ ze_result_t reverseTranslateIpcHandles(const char *functionName, uint32_t numIpc
     }
 
     for (auto i = 0u; i < numIpcHandles; ++i) {
-        int remoteFD = globalL0Platform->translateLocalFDToRemoteFD(localFileDescriptors[i], respReverseTransferFd.remoteFds[i]);
-        std::memcpy(pIpcHandles[i].data, &remoteFD, sizeof(remoteFD));
+        auto remoteFD = globalL0Platform->translateLocalFDToRemoteFD(Cal::Utils::LocalFd(localFileDescriptors[i]), Cal::Utils::RemoteFd(respReverseTransferFd.remoteFds[i]));
+        std::memcpy(pIpcHandles[i].data, &remoteFD.fd, sizeof(remoteFD));
     }
 
     return ZE_RESULT_SUCCESS;
