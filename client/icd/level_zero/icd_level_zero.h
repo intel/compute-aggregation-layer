@@ -513,25 +513,32 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         ipcPtrToRemoteFdMap[ptr] = remoteFd;
     }
 
+    // returns valid remote FD to be closed if passed ptr was the last reference to that remote FD
     Cal::Utils::RemoteFd removePtrFromIpcMap(const void *ptr) {
-        std::lock_guard lock{ipcFdMapMutex};
-        auto it = ipcPtrToRemoteFdMap.find(ptr);
-        if (ipcPtrToRemoteFdMap.end() == it) {
-            log<Verbosity::debug>("Failed to remove ptr=%p from ipc map", ptr);
-            return Cal::Utils::RemoteFd::invalid();
+        Cal::Utils::RemoteFd remoteFd = Cal::Utils::RemoteFd::invalid();
+        {
+            std::lock_guard lock{ipcFdMapMutex};
+            auto it = ipcPtrToRemoteFdMap.find(ptr);
+            if (ipcPtrToRemoteFdMap.end() == it) {
+                log<Verbosity::debug>("Failed to remove ptr=%p from ipc map", ptr);
+                return Cal::Utils::RemoteFd::invalid();
+            }
+            remoteFd = it->second;
+            ipcPtrToRemoteFdMap.erase(it);
         }
-        auto remoteFd = it->second;
         if (false == this->decreaseRefcountForIpcFd(remoteFd)) {
             remoteFd = Cal::Utils::RemoteFd::invalid(); // still needed
         }
         return remoteFd;
     }
 
+    // returns true if refcount reached 0 and removed FD mapping
     bool decreaseRefcountForIpcFd(Cal::Utils::RemoteFd remoteFd) {
         std::lock_guard lock{ipcFdMapMutex};
         auto it = ipcFdRefcounts.find(remoteFd);
         if (it == ipcFdRefcounts.end()) {
             log<Verbosity::error>("Could not find refcount for IPC FD : %d", remoteFd.fd);
+            return false;
         }
         if (it->second >= 1) {
             it->second -= 1;
@@ -570,10 +577,12 @@ class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_ha
         auto it = ipcFdRefcounts.find(remoteFd);
         if (it == ipcFdRefcounts.end()) {
             log<Verbosity::error>("Could not find refcount for IPC FD : %d", remoteFd.fd);
+            return;
         }
         it->second += 1;
     }
 
+    // returns true if succeeded
     bool removeIpcFDMapping(Cal::Utils::RemoteFd remoteFD) {
         auto refcountIt = ipcFdRefcounts.find(remoteFD);
         if (ipcFdRefcounts.end() == refcountIt) {
