@@ -97,6 +97,11 @@ calrun test_sysman_power_zesinit --gtest_filter=*GivenPowerHandleWhenRequestingE
 test output:
 zesInit failed: ZE_RESULT_ERROR_UNSUPPORTED_FEATURE
 
+## Currently CAL does not support IPC for USM host allocations
+This limitation will cause zeMemGetIpcHandle to fail when used on a buffer allocated with zeMemAllocHost
+e.g.
+calrun ./test_ipc_put_handle --gtest_filter=*GivenMultipleThreadsWhenGettingAndPuttingIpcHandlesThenOperationsAreSuccessful*
+
 ## CAL limitations related to shared memory usage
 CAL makes use of shared memory resources for the purpose of communication between client and service. The allocated resources are represented by `/dev/shm/compute_aggregation_layer_shmem_<ID>` filesystem nodes (and associated file-descriptors).
 Both the user-available file-descriptors number as well as the total size of shared memory are limited system resources. Depending on application-created pressure, it is possible that these limits are hit - causing the application to fail.
