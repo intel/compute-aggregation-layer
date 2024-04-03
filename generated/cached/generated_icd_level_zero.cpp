@@ -548,6 +548,10 @@ ze_result_t zetCommandListAppendMetricQueryBegin (zet_command_list_handle_t hCom
     return ret;
 }
 ze_result_t zetCommandListAppendMetricQueryEnd (zet_command_list_handle_t hCommandList, zet_metric_query_handle_t hMetricQuery, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zetCommandListAppendMetricQueryEnd");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2430,6 +2434,10 @@ ze_result_t zeInitRpcHelper (ze_init_flags_t flags) {
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryRangesBarrier (ze_command_list_handle_t hCommandList, uint32_t numRanges, const size_t* pRangeSizes, const void** pRanges, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryRangesBarrier");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3038,6 +3046,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous (ze_command_list_h
 }
  // zeCommandListAppendMemoryFill ignored in generator - based on dont_generate_handler flag
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperUsm2Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3076,6 +3088,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Usm (ze_command_list_handl
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperUsm2Malloc");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3114,6 +3130,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperUsm2Malloc (ze_command_list_ha
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperMalloc2Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -3152,6 +3172,10 @@ ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Usm (ze_command_list_ha
     return ret;
 }
 ze_result_t zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc (ze_command_list_handle_t hCommandList, void* ptr, const void* pattern, size_t pattern_size, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryFillRpcHelperMalloc2Malloc");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -4525,6 +4549,10 @@ ze_result_t zeEventQueryKernelTimestamp (ze_event_handle_t hEvent, ze_kernel_tim
     return ret;
 }
 ze_result_t zeCommandListAppendQueryKernelTimestampsRpcHelper (ze_command_list_handle_t hCommandList, uint32_t numEvents, ze_event_handle_t* phEvents, void* dstptr, const size_t* pOffsets, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendQueryKernelTimestamps");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6142,6 +6170,10 @@ ze_result_t zeKernelGetName (ze_kernel_handle_t hKernel, size_t* pSize, char* pN
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
     hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernel");
@@ -6192,6 +6224,10 @@ ze_result_t zeCommandListAppendLaunchKernel (ze_command_list_handle_t hCommandLi
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchFuncArgs, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
     hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchCooperativeKernel");
@@ -6242,6 +6278,10 @@ ze_result_t zeCommandListAppendLaunchCooperativeKernel (ze_command_list_handle_t
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hCommandList, ze_kernel_handle_t hKernel, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;
     hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendLaunchKernelIndirect");
@@ -6285,6 +6325,10 @@ ze_result_t zeCommandListAppendLaunchKernelIndirect (ze_command_list_handle_t hC
     return ret;
 }
 ze_result_t zeCommandListAppendLaunchMultipleKernelsIndirect (ze_command_list_handle_t hCommandList, uint32_t numKernels, ze_kernel_handle_t* phKernels, const uint32_t* pCountBuffer, const ze_group_count_t* pLaunchArgumentsBuffer, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     for (uint32_t i = 0; i < numKernels; i++) {
         hCommandList->asLocalObject()->sharedIndirectAccessSet |= phKernels[i]->asLocalObject()->sharedIndirectAccessSet;
         hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());
@@ -6715,6 +6759,10 @@ ze_result_t zexDriverGetHostPointerBaseAddressRpcHelper (ze_driver_handle_t hDri
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp_Local (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWriteGlobalTimestamp_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6759,6 +6807,10 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp_Local (ze_command_list_handl
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp_Usm (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWriteGlobalTimestamp_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6794,6 +6846,10 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp_Usm (ze_command_list_handle_
 }
 ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared (ze_command_list_handle_t hCommandList, uint64_t* dstptr, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendWriteGlobalTimestamp_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6830,6 +6886,10 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared (ze_command_list_hand
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6870,6 +6930,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Usm (ze_command_list_handl
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6910,6 +6974,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_ha
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Usm_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -6951,6 +7019,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Remapped (ze_command_list_
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -6991,6 +7063,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_ha
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7031,6 +7107,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Shared_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7072,6 +7152,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_li
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7112,6 +7196,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Usm (ze_command_list_
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7152,6 +7240,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_li
 ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, size);
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -7193,6 +7285,10 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Remapped (ze_command_
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7259,6 +7355,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Local (ze_command_list_
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7315,6 +7415,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Usm (ze_command_list_ha
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Local_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7371,6 +7475,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7428,6 +7536,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Local (ze_command_list_ha
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7475,6 +7587,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Usm (ze_command_list_hand
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7522,6 +7638,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7579,6 +7699,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7626,6 +7750,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
 ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediate_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7673,6 +7801,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7721,6 +7853,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Local (ze_co
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7769,6 +7905,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Usm (ze_comm
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7817,6 +7957,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7864,6 +8008,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Local (ze_comm
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7911,6 +8059,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Usm (ze_comman
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -7958,6 +8110,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = local;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8005,6 +8161,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8052,6 +8212,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
 ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8099,6 +8263,10 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8139,6 +8307,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Usm (ze_command_list
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8179,6 +8351,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Shared (ze_command_l
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Usm_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8220,6 +8396,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Remapped (ze_command
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8260,6 +8440,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Usm (ze_command_l
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8300,6 +8484,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Shared (ze_comman
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Shared_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8341,6 +8529,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Remapped (ze_comm
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8381,6 +8573,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Usm (ze_command
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8421,6 +8617,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Shared (ze_comm
 ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8462,6 +8662,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Remapped (ze_co
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8510,6 +8714,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Usm (z
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8558,6 +8766,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Shared
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8607,6 +8819,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Remapp
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8654,6 +8870,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Usm (ze_
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8701,6 +8921,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Shared (
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8749,6 +8973,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Remapped
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8796,6 +9024,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Usm (
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8843,6 +9075,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Share
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -8891,6 +9127,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Remap
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -8947,6 +9187,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Usm (
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9003,6 +9247,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Share
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9060,6 +9308,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Remap
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9107,6 +9359,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Usm (ze
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9154,6 +9410,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Shared 
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9202,6 +9462,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Remappe
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9249,6 +9513,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Usm 
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Shared (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = shared;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Shared");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9296,6 +9564,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Shar
 ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Remapped (ze_command_list_handle_t hCommandList, void* dstptr, const ze_copy_region_t* dstRegion, uint32_t dstPitch, uint32_t dstSlicePitch, const void* srcptr, const ze_copy_region_t* srcRegion, uint32_t srcPitch, uint32_t srcSlicePitch, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = remapped;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     hCommandList->asLocalObject()->registerMemoryToWrite(srcptr, getTotalSizeForCopyRegion(srcRegion, srcPitch, srcSlicePitch));
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Remapped");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -9344,6 +9616,10 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Rema
 ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9385,6 +9661,10 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Usm_Usm (ze_command
 ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9426,6 +9706,10 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm (ze_comm
 ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = remapped;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextDeferred_Remapped_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9612,6 +9896,10 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_
 ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = local;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9669,6 +9957,10 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Local_
 ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = usm;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -9717,6 +10009,10 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Usm_Us
 ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm (ze_command_list_handle_t hCommandList, void* dstptr, ze_context_handle_t hContextSrc, const void* srcptr, size_t size, ze_event_handle_t hSignalEvent, uint32_t numWaitEvents, ze_event_handle_t* phWaitEvents) {
     [[maybe_unused]] constexpr auto dstptr_kind = shared;
     [[maybe_unused]] constexpr auto srcptr_kind = usm;
+    if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}
+    for (uint32_t i = 0; i < numWaitEvents; ++i) {
+        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);
+    }
     log<Verbosity::bloat>("Establishing RPC for zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_Usm");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getL0Platform();
     auto &channel = globalPlatform->getRpcChannel();

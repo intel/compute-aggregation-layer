@@ -3029,6 +3029,9 @@ config:
         - name: zetCommandListAppendMetricQueryEnd
           latency: 0.0
           ddi_category: CommandList
+          special_handling:
+            icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
           returns:
             type: ze_result_t
             kind: scalar
@@ -5282,6 +5285,9 @@ config:
         - name: zeCommandListAppendMemoryRangesBarrier
           latency: 0.0
           ddi_category: CommandList
+          special_handling:
+            icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
           returns:
             type: ze_result_t
             kind: scalar
@@ -5561,6 +5567,9 @@ config:
 
         - name: zeCommandListAppendWriteGlobalTimestamp
           ddi_category: CommandList
+          special_handling:
+            icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
           returns:
             type: ze_result_t
             kind: scalar
@@ -5974,6 +5983,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopy"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6054,6 +6064,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopy"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6137,6 +6148,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopy"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6211,6 +6223,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               dont_generate_handler: True
             rpc:
               dont_generate_rpc_message: True
@@ -6258,6 +6271,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryFill"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6316,6 +6330,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryFill"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
             rpc:
@@ -6376,6 +6391,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryFill"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6441,6 +6457,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryFill"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
             rpc:
@@ -6507,6 +6524,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               dont_generate_handler: True
             rpc:
               dont_generate_rpc_message: True
@@ -6570,6 +6588,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopyRegion"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6684,6 +6703,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopyRegion"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6795,6 +6815,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopyRegion"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -6956,6 +6977,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopyFromContext"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -7116,6 +7138,7 @@ config:
           special_handling:
             variant_of: "zeCommandListAppendMemoryCopyFromContext"
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               not_in_dispatch_table: True
               dont_generate_stub: True
           ddi_category: CommandList
@@ -8612,6 +8635,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_prologue: "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }"
               handler_only_suffix: "RpcHelper"
           ddi_category: CommandList
           returns:
@@ -10950,7 +10974,11 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_prologue:
+                [
+                  "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }",
+                  "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());",
+                ]
               handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
@@ -11007,7 +11035,11 @@ config:
           call_async: true
           special_handling:
             icd:
-              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_prologue:
+                [
+                  "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }",
+                  "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());",
+                ]
               handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
@@ -11063,7 +11095,11 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());"
+              handler_prologue:
+                [
+                  "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }",
+                  "hCommandList->asLocalObject()->sharedIndirectAccessSet |= hKernel->asLocalObject()->sharedIndirectAccessSet;\n    hCommandList->asLocalObject()->moveKernelArgsToGpu(hKernel->asLocalObject());",
+                ]
               handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
@@ -11112,7 +11148,11 @@ config:
           latency: 0.0
           special_handling:
             icd:
-              handler_prologue: "for (uint32_t i = 0; i < numKernels; i++) {\n        hCommandList->asLocalObject()->sharedIndirectAccessSet |= phKernels[i]->asLocalObject()->sharedIndirectAccessSet;\n        hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());\n    }"
+              handler_prologue:
+                [
+                  "if(hSignalEvent){hSignalEvent->asLocalObject()->setAllowIcdState(hCommandList, true);}\n    for (uint32_t i = 0; i < numWaitEvents; ++i) {\n        phWaitEvents[i]->asLocalObject()->setAllowIcdState(hCommandList, false);\n    }",
+                  "for (uint32_t i = 0; i < numKernels; i++) {\n        hCommandList->asLocalObject()->sharedIndirectAccessSet |= phKernels[i]->asLocalObject()->sharedIndirectAccessSet;\n        hCommandList->asLocalObject()->moveKernelArgsToGpu(phKernels[i]->asLocalObject());\n    }",
+                ]
               handler_epilogue: "if (hCommandList->asLocalObject()->isImmediate()) { hCommandList->asLocalObject()->sharedIndirectAccessSet = false; };"
           ddi_category: CommandList
           returns:
