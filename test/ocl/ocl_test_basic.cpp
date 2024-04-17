@@ -729,7 +729,7 @@ int main(int argc, const char *argv[]) {
 
     int svmInitData = 111;
     log<Verbosity::info>("Mapping SVM ptr : %p", svmMem);
-    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_READ_WRITE, svmMem, sizeof(int), 0, nullptr, nullptr);
+    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svmMem, sizeof(int), 0, nullptr, nullptr);
     if (CL_SUCCESS != cl_err) {
         log<Verbosity::error>("Failed to map SVM ptr %p, error : %d", svmMem, cl_err);
         return 1;
@@ -768,7 +768,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully synchronized the queue");
 
     log<Verbosity::info>("Mapping SVM ptr : %p", svmMem);
-    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_READ_WRITE, svmMem, sizeof(int), 0, nullptr, nullptr);
+    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svmMem, sizeof(int), 0, nullptr, nullptr);
     if (CL_SUCCESS != cl_err) {
         log<Verbosity::error>("Failed to map SVM ptr %p, error : %d", svmMem, cl_err);
         return 1;
@@ -800,7 +800,7 @@ int main(int argc, const char *argv[]) {
     log<Verbosity::info>("Succesfully enqueued fill memory");
 
     log<Verbosity::info>("Mapping SVM ptr : %p", svmMem);
-    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_READ_WRITE, svmMem, sizeof(int), 0, nullptr, nullptr);
+    cl_err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svmMem, sizeof(int), 0, nullptr, nullptr);
     if (CL_SUCCESS != cl_err) {
         log<Verbosity::error>("Failed to map SVM ptr %p, error : %d", svmMem, cl_err);
         return 1;
