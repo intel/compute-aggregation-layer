@@ -286,11 +286,18 @@ int main(int argc, const char *argv[]) {
 
     log<Verbosity::info>("Getting compiled program binaries from service!");
 
-    std::vector<std::vector<unsigned char>> programBinariesStorage(devices.size(), std::vector<unsigned char>{});
-    std::vector<unsigned char *> programBinaries(devices.size(), nullptr);
-    std::vector<size_t> binariesSizes(devices.size(), 0);
+    cl_uint numDevicesForLinkedProgram = 0;
+    auto clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &numDevicesForLinkedProgram, nullptr);
+    if (clGetProgramInfoResult != CL_SUCCESS) {
+        log<Verbosity::error>("Could not get number of devices associated with compiled program binaries from the service!");
+        return -1;
+    }
 
-    auto clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * devices.size(), binariesSizes.data(), nullptr);
+    std::vector<std::vector<unsigned char>> programBinariesStorage(numDevicesForLinkedProgram, std::vector<unsigned char>{});
+    std::vector<unsigned char *> programBinaries(numDevicesForLinkedProgram, nullptr);
+    std::vector<size_t> binariesSizes(numDevicesForLinkedProgram, 0);
+
+    clGetProgramInfoResult = clGetProgramInfo(linkedProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * numDevicesForLinkedProgram, binariesSizes.data(), nullptr);
     if (clGetProgramInfoResult != CL_SUCCESS) {
         log<Verbosity::error>("Could not get sizes of compiled program binaries from the service!");
         return -1;
