@@ -24,6 +24,16 @@ add_executable(ocl_test_use_host_ptr
 target_compile_definitions(ocl_test_use_host_ptr PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
 target_link_libraries(ocl_test_use_host_ptr OpenCL ${common_library_dependencies})
 
+add_executable(ocl_test_usm
+               ${CMAKE_CURRENT_SOURCE_DIR}/ocl_test_usm.cpp
+               ${cal_source_root_dir}/shared/callstack.cpp
+               ${cal_source_root_dir}/shared/sys.cpp
+               ${cal_source_root_dir}/shared/utils.cpp
+               ${cal_source_root_dir}/test/utils/ocl_common_steps.cpp
+)
+target_compile_definitions(ocl_test_usm PUBLIC FULL_VERBOSITY_IN_RELEASE_BUILD=1 ENABLE_BLOATED_VERBOSITY=1)
+target_link_libraries(ocl_test_usm OpenCL ${common_library_dependencies})
+
 add_executable(ocl_parallel_copy
                ${CMAKE_CURRENT_SOURCE_DIR}/ocl_parallel_copy.cpp
                ${cal_source_root_dir}/shared/callstack.cpp

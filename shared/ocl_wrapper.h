@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -164,6 +164,7 @@ struct Usm {
         usm.clSetKernelArgMemPointerINTEL = reinterpret_cast<decltype(clSetKernelArgMemPointerINTEL)>(clGetExtensionFunctionAddressForPlatform(platform, "clSetKernelArgMemPointerINTEL"));
         usm.clDeviceMemAllocINTEL = reinterpret_cast<decltype(clDeviceMemAllocINTEL)>(clGetExtensionFunctionAddressForPlatform(platform, "clDeviceMemAllocINTEL"));
         usm.clHostMemAllocINTEL = reinterpret_cast<decltype(clHostMemAllocINTEL)>(clGetExtensionFunctionAddressForPlatform(platform, "clHostMemAllocINTEL"));
+        usm.clSharedMemAllocINTEL = reinterpret_cast<decltype(clSharedMemAllocINTEL)>(clGetExtensionFunctionAddressForPlatform(platform, "clSharedMemAllocINTEL"));
         usm.clMemFreeINTEL = reinterpret_cast<decltype(clMemFreeINTEL)>(clGetExtensionFunctionAddressForPlatform(platform, "clMemFreeINTEL"));
         bool valid = true;
         if (nullptr == usm.clEnqueueMemFillINTEL) {
@@ -228,6 +229,14 @@ struct Usm {
 
     void *(*clHostMemAllocINTEL)(
         cl_context context,
+        const cl_mem_properties_intel *properties,
+        size_t size,
+        cl_uint alignment,
+        cl_int *errcodeRet) = nullptr;
+
+    void *(*clSharedMemAllocINTEL)(
+        cl_context context,
+        cl_device_id device,
         const cl_mem_properties_intel *properties,
         size_t size,
         cl_uint alignment,

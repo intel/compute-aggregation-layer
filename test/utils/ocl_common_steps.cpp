@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -174,7 +174,7 @@ void buildProgram(cl_program program, cl_device_id device) {
 cl_kernel createKernel(cl_program program, const char *kernelName) {
     log<Verbosity::info>("Creating kernel object");
     cl_int cl_err{};
-    auto kernel = clCreateKernel(program, "k", &cl_err);
+    auto kernel = clCreateKernel(program, kernelName, &cl_err);
     if ((nullptr == kernel) || (CL_SUCCESS != cl_err)) {
         log<Verbosity::error>("Failed to create kernel with error : %d", cl_err);
         std::abort();
