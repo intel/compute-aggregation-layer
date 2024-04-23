@@ -2747,7 +2747,7 @@ cl_int clEnqueueCopyBufferToImage (cl_command_queue command_queue, cl_mem src_bu
     command_queue->asLocalObject()->enqueue();
     return ret;
 }
-void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags, size_t offset, size_t cb, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event, cl_int* errcode_ret) {
+void* clEnqueueMapBufferRpcHelper (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags, size_t offset, size_t cb, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event, cl_int* errcode_ret) {
     log<Verbosity::bloat>("Establishing RPC for clEnqueueMapBuffer");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
     auto &channel = globalPlatform->getRpcChannel();
@@ -2793,7 +2793,7 @@ void* clEnqueueMapBuffer (cl_command_queue command_queue, cl_mem buffer, cl_bool
 
     return ret;
 }
-cl_int clEnqueueUnmapMemObject (cl_command_queue command_queue, cl_mem memobj, void* mapped_ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+cl_int clEnqueueUnmapMemObjectRpcHelper (cl_command_queue command_queue, cl_mem memobj, void* mapped_ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(mapped_ptr);
     log<Verbosity::bloat>("Establishing RPC for clEnqueueUnmapMemObject");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
@@ -3256,7 +3256,7 @@ cl_int clEnqueueSVMUnmap (cl_command_queue command_queue, void* svm_ptr, cl_uint
     return ret;
 }
  // clSetKernelArgSVMPointer ignored in generator - based on dont_generate_handler flag
-cl_int clSetKernelExecInfo (cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void* param_value) {
+cl_int clSetKernelExecInfoRpcHelper (cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void* param_value) {
     kernel->asLocalObject()->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);
     log<Verbosity::bloat>("Establishing RPC for clSetKernelExecInfo");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();

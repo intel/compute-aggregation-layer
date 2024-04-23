@@ -257,8 +257,10 @@ int main(int argc, const char *argv[]) {
     const char *k = "__kernel void k(__global int *x, int y) { *x = f0(*x)*f1(*x) + y; }";
     const char *g = "__global int my_special_global_var = 5;";
     const char *h = "__kernel void exchange_special_global_var(__global int* old_ret, int new_val) { *old_ret = my_special_global_var; my_special_global_var = new_val; }";
-    const char *src[] = {f0, f1, k, g, h};
-    auto program = createProgramWithSource(context, 5, src);
+    const char *s = "struct X; typedef struct {__global int *pY; } X;";
+    const char *l = "__kernel void l(__global X *pX) { (*(pX->pY))++; }";
+    const char *src[] = {f0, f1, k, g, h, s, l};
+    auto program = createProgramWithSource(context, 7, src);
     compileProgram(program, devices[deviceIndex]);
     auto linkedProgram = linkProgram(context, devices[deviceIndex], program);
 
@@ -830,8 +832,154 @@ int main(int argc, const char *argv[]) {
     }
     log<Verbosity::info>("Succesfully unmapped SVM ptr : %p", svmMem);
 
+    typedef struct {
+        cl_int *pY;
+    } X;
+    auto kernelL = createKernel(linkedProgram, "l");
+
+    log<Verbosity::info>("Creating SVM alloc - pX");
+    void *pX = clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(X), 0);
+    if (nullptr == pX) {
+        log<Verbosity::error>("Failed to allocate SVM alloc - pX");
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully allocated SVM alloc - pX : %p", pX);
+
+    log<Verbosity::info>("Creating SVM alloc - pY");
+    void *pY = clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(cl_int), 0);
+    if (nullptr == pY) {
+        log<Verbosity::error>("Failed to allocate SVM alloc - pY");
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully allocated SVM alloc - pY : %p", pY);
+
+    log<Verbosity::info>("Creating CL buffer with SVM alloc ptr - bX");
+    cl_mem bX = clCreateBuffer(context, CL_MEM_USE_HOST_PTR, sizeof(X), pX, &cl_err);
+    if ((nullptr == bX) || (CL_SUCCESS != cl_err)) {
+        log<Verbosity::error>("Failed to create CL buffer - bX with error : %d", cl_err);
+        return 1;
+    };
+    log<Verbosity::info>("Succesfully created CL buffer - bX : %p", bX);
+
+    log<Verbosity::info>("Creating CL buffer with SVM alloc ptr - bY");
+    cl_mem bY = clCreateBuffer(context, CL_MEM_USE_HOST_PTR, sizeof(int), pY, &cl_err);
+    if ((nullptr == bY) || (CL_SUCCESS != cl_err)) {
+        log<Verbosity::error>("Failed to create CL buffer - bY with error : %d", cl_err);
+        return 1;
+    };
+    log<Verbosity::info>("Succesfully created CL buffer - bY : %p", bY);
+
+    clEnqueueMapBuffer(queue, bX, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(X), 0, nullptr, nullptr, &cl_err);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to map buffer - bX with error : %d", cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Sucessfully mapped CL buffer - bX : %p", bX);
+
+    clEnqueueMapBuffer(queue, bY, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(int), 0, nullptr, nullptr, &cl_err);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to map buffer - bY with error : %d", cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Sucessfully mapped CL buffer - bY : %p", bY);
+
+    log<Verbosity::info>("Initializing SVM allocs - bX and bY");
+    *reinterpret_cast<cl_int *>(pY) = 0x55;
+    reinterpret_cast<X *>(pX)->pY = reinterpret_cast<cl_int *>(pY);
+
+    log<Verbosity::info>("Unmapping CL buffer - bX : %p", pX);
+    cl_err = clEnqueueUnmapMemObject(queue, bX, pX, 0, nullptr, nullptr);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to unmap CL buffer - bX : %p with error : %d", bX, cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully unmapped CL buffer - bX : %p", bX);
+
+    log<Verbosity::info>("Unmapping CL buffer - bY : %p", pY);
+    cl_err = clEnqueueUnmapMemObject(queue, bY, pY, 0, nullptr, nullptr);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to unmap CL buffer - bY %p with error : %d", bY, cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully unmapped CL buffer - bY : %p", bY);
+
+    log<Verbosity::info>("Setting-up kernel argument with SVM alloc - pX");
+    if (CL_SUCCESS != clSetKernelArgSVMPointer(kernelL, 0, pX)) {
+        log<Verbosity::error>("Failed to set kernel arg 0 with SVM alloc - pX)");
+        return 1;
+    }
+
+    log<Verbosity::info>("Setting-up kernel exec info with SVM alloc - pY");
+    if (CL_SUCCESS != clSetKernelExecInfo(kernelL, CL_KERNEL_EXEC_INFO_SVM_PTRS, sizeof(X), pX)) {
+        log<Verbosity::error>("Failed to set kernel exec info with SVM alloc - pY");
+        return 1;
+    }
+    log<Verbosity::info>("Kernel arguments set-up properly");
+
+    log<Verbosity::info>("Enqueing kernel L to the queue");
+    if (CL_SUCCESS != clEnqueueNDRangeKernel(queue, kernelL, 1, nullptr, &gws, &lws, 0, nullptr, nullptr)) {
+        log<Verbosity::error>("Failed to enqueue the kernel");
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully enqueued kernel L to the queue");
+
+    log<Verbosity::info>("Synchronizing the queue");
+    if (CL_SUCCESS != clFinish(queue)) {
+        log<Verbosity::error>("Failed to synchronize the queue");
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully synchronized the queue");
+
+    clEnqueueMapBuffer(queue, bX, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(X), 0, nullptr, nullptr, &cl_err);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to map buffer - bX with error : %d", cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Sucessfully mapped CL buffer - bX : %p", bX);
+
+    clEnqueueMapBuffer(queue, bY, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(int), 0, nullptr, nullptr, &cl_err);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to map buffer - bY with error : %d", cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Sucessfully mapped CL buffer - bY : %p", bY);
+
+    log<Verbosity::info>("Validating SVM allocs - pX and pY");
+    readBack = *reinterpret_cast<cl_int *>(pY);
+    expected = 0x55 + 1;
+    if (readBack != expected) {
+        log<Verbosity::error>("Results are incorrect (got:0x%x, expected:0x%x)", readBack, expected);
+        return 1;
+    }
+    log<Verbosity::info>("Results are correct (got:0x%x, expected:0x%x)", readBack, expected);
+
+    log<Verbosity::info>("Unmapping CL buffer - bX : %p", pX);
+    cl_err = clEnqueueUnmapMemObject(queue, bX, pX, 0, nullptr, nullptr);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to unmap CL buffer - bX : %p with error : %d", bX, cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully unmapped CL buffer - bX : %p", bX);
+
+    log<Verbosity::info>("Unmapping CL buffer - bY : %p", pY);
+    cl_err = clEnqueueUnmapMemObject(queue, bY, pY, 0, nullptr, nullptr);
+    if (CL_SUCCESS != cl_err) {
+        log<Verbosity::error>("Failed to unmap CL buffer - bY %p with error : %d", bY, cl_err);
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully unmapped CL buffer - bY : %p", bY);
+
+    log<Verbosity::info>("Synchronizing the queue");
+    if (CL_SUCCESS != clFinish(queue)) {
+        log<Verbosity::error>("Failed to synchronize the queue");
+        return 1;
+    }
+    log<Verbosity::info>("Succesfully synchronized the queue");
+
     log<Verbosity::info>("Freeing SVM coarse grain buffer");
     clSVMFree(context, svmMem);
+    clSVMFree(context, pX);
+    clSVMFree(context, pY);
 
     log<Verbosity::info>("");
     log<Verbosity::info>("Releasing opencl objects");
@@ -842,6 +990,8 @@ int main(int argc, const char *argv[]) {
     clReleaseMemObject(mem);
     clRetainKernel(kernel);
     clReleaseKernel(kernel);
+    clRetainKernel(kernelL);
+    clReleaseKernel(kernelL);
     clRetainProgram(program);
     clReleaseProgram(program);
     clRetainContext(context);

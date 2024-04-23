@@ -416,6 +416,41 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
     return ret;
 }
 
+void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags, size_t offset, size_t cb, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event, cl_int *errcode_ret) {
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueMapBuffer");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    auto isBufferFromSvmPtr = globalPlatform->isUsmHostOrShared(buffer->asLocalObject()->apiHostPtr) && (buffer->asLocalObject()->flags & CL_MEM_USE_HOST_PTR);
+
+    if (isBufferFromSvmPtr) {
+        auto offsetedApiHostPtr = Cal::Utils::moveByBytes(buffer->asLocalObject()->apiHostPtr, offset);
+        auto ret = Cal::Client::Icd::Ocl::clEnqueueSVMMap(command_queue, blocking_map, map_flags, offsetedApiHostPtr, cb, num_events_in_wait_list, event_wait_list, event);
+        if (ret != CL_SUCCESS) {
+            log<Verbosity::error>("clEnqueueMapBuffer - fallback to clEnqueueSVMMap with SVM ptr = %p failed with err=%d", offsetedApiHostPtr, ret);
+            return nullptr;
+        }
+        log<Verbosity::debug>("clEnqueueMapBuffer - fallback to clEnqueueSVMMap with SVM ptr = %p succeeded", offsetedApiHostPtr);
+        return offsetedApiHostPtr;
+    }
+    return Cal::Client::Icd::Ocl::clEnqueueMapBufferRpcHelper(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+}
+
+cl_int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, void *mapped_ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueUnmapMemObject");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    auto isBufferFromSvmPtr = globalPlatform->isUsmHostOrShared(memobj->asLocalObject()->apiHostPtr) && (memobj->asLocalObject()->flags & CL_MEM_USE_HOST_PTR);
+
+    if (isBufferFromSvmPtr) {
+        auto ret = Cal::Client::Icd::Ocl::clEnqueueSVMUnmap(command_queue, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
+        if (ret != CL_SUCCESS) {
+            log<Verbosity::error>("clEnqueueUnmapMemObject - fallback to clEnqueueSVMUnmap with SVM ptr = %p failed with err=%d", mapped_ptr, ret);
+            return ret;
+        }
+        log<Verbosity::debug>("clEnqueueUnmapMemObject - fallback to clEnqueueSVMUnmap with SVM ptr = %p succeeded", mapped_ptr);
+        return ret;
+    }
+    return Cal::Client::Icd::Ocl::clEnqueueUnmapMemObjectRpcHelper(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
+}
+
 cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
     if (!Cal::Client::Icd::icdGlobalState.getOclPlatform()->hasCallbacksHandler()) {
         log<Verbosity::debug>("clWaitForEvents - callbacks handler is not enabled");
@@ -474,6 +509,21 @@ cl_int clSetKernelArgMemPointerINTEL(cl_kernel kernel, cl_uint argIndex, const v
 
 cl_int clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint argIndex, const void *argValue) {
     return Cal::Client::Icd::Ocl::clSetKernelArgMemPointerINTEL(kernel, argIndex, argValue);
+}
+
+cl_int clSetKernelExecInfo(cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void *param_value) {
+    if (param_name == CL_KERNEL_EXEC_INFO_SVM_PTRS) {
+        log<Verbosity::debug>("clSetKernelExecInfo - translating CL_KERNEL_EXEC_INFO_SVM_PTRS to CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL");
+        param_name = CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL;
+        size_t numPointers = param_value_size / sizeof(void *);
+        auto svmPtrs = static_cast<const uintptr_t *>(param_value);
+        for (uint32_t idx = 0; idx < numPointers; idx++) {
+            auto svmPtr = reinterpret_cast<const void *>(svmPtrs[idx]);
+            auto oclKernel = static_cast<IcdOclKernel *>(kernel);
+            oclKernel->storeKernelArg(svmPtr, idx);
+        }
+    }
+    return clSetKernelExecInfoRpcHelper(kernel, param_name, param_value_size, param_value);
 }
 
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {

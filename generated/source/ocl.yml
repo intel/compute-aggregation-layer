@@ -4424,6 +4424,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_only_suffix: "RpcHelper"
               handler_epilogue:
                 [
                   "command_queue->asLocalObject()->synchronizeNow(command->args.blocking_map);",
@@ -4505,6 +4506,7 @@ config:
           latency: 0.0
           special_handling:
             icd:
+              handler_only_suffix: "RpcHelper"
               handler_prologue: "Cal::Client::Icd::icdGlobalState.getPageFaultManager().moveAllocationToGpu(mapped_ptr);"
               handler_epilogue: "command_queue->asLocalObject()->enqueue();"
           returns:
@@ -5170,6 +5172,7 @@ config:
           call_async: true
           special_handling:
             icd:
+              handler_only_suffix: "RpcHelper"
               handler_prologue: "kernel->asLocalObject()->sharedIndirectAccessSet |= ((param_name == CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL && param_value) ? *reinterpret_cast<const bool*>(param_value) : false);"
           returns:
             type: cl_int
