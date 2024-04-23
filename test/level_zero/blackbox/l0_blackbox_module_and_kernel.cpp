@@ -640,7 +640,7 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(testBuildLogFunctions(context, devices[0], spirv, ZE_MODULE_FORMAT_IL_SPIRV));
 
     ze_module_handle_t module{};
-    RUN_REQUIRED_STEP(createModule(context, devices[0], spirv, ZE_MODULE_FORMAT_IL_SPIRV, module));
+    RUN_REQUIRED_STEP(createModule(context, devices[0], spirv, ZE_MODULE_FORMAT_IL_SPIRV, module, "-library-compilation"));
 
     std::vector<uint8_t> nativeBinary{};
     RUN_REQUIRED_STEP(getNativeBinary(nativeBinary, module));
