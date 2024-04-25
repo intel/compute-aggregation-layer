@@ -139,10 +139,10 @@ int main(int argc, const char *argv[]) {
 
     const char *k = "__kernel void k(__global int *x) { *x = *x * *x; }";
     const char *src[] = {k};
-    auto program = createProgramWithSource(context, 5, src);
+    auto program = createProgramWithSource(context, 1, src);
     compileProgram(program, devices[deviceIndex]);
     auto linkedProgram = linkProgram(context, devices[deviceIndex], program);
-    auto kernel = createKernel(linkedProgram, "K");
+    auto kernel = createKernel(linkedProgram, "k");
 
     log<Verbosity::info>("Creating cl_command_queue object");
     cl_command_queue queue = clCreateCommandQueueWithProperties(context, devices[deviceIndex], nullptr, &cl_err);
