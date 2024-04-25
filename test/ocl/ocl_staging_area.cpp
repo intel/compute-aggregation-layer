@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -204,6 +204,15 @@ int main(int argc, const char *argv[]) {
     auto platform = getPlatform(platformOrd);
     auto devices = getDevices(platform, CL_DEVICE_TYPE_ALL);
     size_t deviceIndex = 0;
+
+    cl_bool imageSupport = isImageSupportedOnTestedDevice(devices[deviceIndex]);
+    if (imageSupport) {
+        if (-1 == platformOrd) {
+            log<Verbosity::error>("CAL support for images should be disabled.");
+            return -1;
+        }
+    }
+
     auto context = createContext(platform, devices, deviceIndex);
     cl_int cl_err{};
 
@@ -239,9 +248,11 @@ int main(int argc, const char *argv[]) {
         return -1;
     }
 
-    if (false == enqueueImage(context, queue)) {
-        log<Verbosity::error>("enqueueImage scenario has failed");
-        return -1;
+    if (imageSupport) {
+        if (false == enqueueImage(context, queue)) {
+            log<Verbosity::error>("enqueueImage scenario has failed");
+            return -1;
+        }
     }
 
     clReleaseContext(context);

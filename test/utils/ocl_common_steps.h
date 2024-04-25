@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,6 +20,7 @@ void compileProgram(cl_program program, cl_device_id device);
 cl_program linkProgram(cl_context context, cl_device_id device, cl_program program);
 void buildProgram(cl_program program, cl_device_id device);
 cl_kernel createKernel(cl_program program, const char *kernelName);
+bool isImageSupportedOnTestedDevice(cl_device_id device);
 
 class MemObject {
   public:

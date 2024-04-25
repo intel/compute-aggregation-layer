@@ -236,12 +236,7 @@ int main(int argc, const char *argv[]) {
     auto devices = getDevices(platform, CL_DEVICE_TYPE_ALL);
     size_t deviceIndex = 0;
 
-    cl_bool imageSupport = true;
-    auto clGetDeviceInfoForImageSupportResult = clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_IMAGE_SUPPORT, sizeof(imageSupport), &imageSupport, NULL);
-    if (clGetDeviceInfoForImageSupportResult != CL_SUCCESS) {
-        log<Verbosity::error>("Failed to get device info for image support");
-        return -1;
-    }
+    cl_bool imageSupport = isImageSupportedOnTestedDevice(devices[deviceIndex]);
     if (imageSupport) {
         if (-1 == platformOrd) {
             log<Verbosity::error>("CAL support for images should be disabled.");

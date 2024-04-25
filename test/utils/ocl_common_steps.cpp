@@ -183,3 +183,13 @@ cl_kernel createKernel(cl_program program, const char *kernelName) {
     log<Verbosity::info>("Succesfully created kernel : %p", kernel);
     return kernel;
 }
+
+bool isImageSupportedOnTestedDevice(cl_device_id device) {
+    cl_bool imageSupport = true;
+    auto clGetDeviceInfoForImageSupportResult = clGetDeviceInfo(device, CL_DEVICE_IMAGE_SUPPORT, sizeof(imageSupport), &imageSupport, NULL);
+    if (clGetDeviceInfoForImageSupportResult != CL_SUCCESS) {
+        log<Verbosity::error>("Failed to get device info for image support");
+        return false;
+    }
+    return imageSupport;
+}
