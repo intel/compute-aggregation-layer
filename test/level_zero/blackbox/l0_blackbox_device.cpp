@@ -569,8 +569,6 @@ int main(int argc, const char *argv[]) {
         RUN_REQUIRED_STEP(getDeviceComputeProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceModuleProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceImageProperties(devices[deviceIndex]));
-        RUN_REQUIRED_STEP(getDeviceExternalMemoryProperties(devices[deviceIndex]));
-        RUN_REQUIRED_STEP(getDeviceMemoryAccessProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceMemoryProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceCacheProperties(devices[deviceIndex]));
         RUN_REQUIRED_STEP(getDeviceCommandQueueGroupProperties(devices[deviceIndex]));
@@ -578,9 +576,13 @@ int main(int argc, const char *argv[]) {
         RUN_REQUIRED_STEP(getOwnP2PProperties(devices[deviceIndex]));
 
         if (allowOptionalSteps) {
+            RUN_OPTIONAL_STEP(getDeviceExternalMemoryProperties(devices[deviceIndex]));
+            RUN_OPTIONAL_STEP(getDeviceMemoryAccessProperties(devices[deviceIndex]));
             RUN_OPTIONAL_STEP(getDevicePciPropertiesExt(devices[deviceIndex]));
             RUN_OPTIONAL_STEP(gatherSynchronizedHostAndGpuTimestamps(devices[deviceIndex]));
         } else {
+            RUN_REQUIRED_STEP(getDeviceExternalMemoryProperties(devices[deviceIndex]));
+            RUN_REQUIRED_STEP(getDeviceMemoryAccessProperties(devices[deviceIndex]));
             RUN_REQUIRED_STEP(getDevicePciPropertiesExt(devices[deviceIndex]));
             RUN_REQUIRED_STEP(gatherSynchronizedHostAndGpuTimestamps(devices[deviceIndex]));
         }
