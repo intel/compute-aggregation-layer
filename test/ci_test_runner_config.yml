@@ -1,0 +1,60 @@
+#
+# Copyright (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+#
+
+# include: [list] -> list of platforms on which test will be run
+# exclude: [list] -> list of platforms on which test will not be run
+# include and exclude are mutually exclusive
+# skip: [boolean] -> flag to skip test on all platforms
+# _default -> default config for test binary (used if not defined config for given binary)
+# params -> parameter for given test
+# envs -> environmental variables to set for test
+# cases -> run binary multiple times with different params/envs
+
+l0_blackbox_append_mem_fill_copy_asynchronous_queue:
+  skip: true
+
+l0_blackbox_append_mem_fill_copy_immediate_asynchronous:
+  skip: true
+
+l0_blackbox_append_mem_fill_copy_immediate_synchronous:
+  skip: true
+
+l0_blackbox_append_mem_fill_copy_resubmit:
+  skip: true
+
+l0_blackbox_device:
+  params:
+    - '--allow-optional-steps'
+
+l0_blackbox_event:
+  skip: true
+
+l0_blackbox_experimental_memory:
+  skip: true
+
+l0_blackbox_memory:
+  params:
+    - '--skip-ipc-handles-tests'
+
+l0_blackbox_metrics:
+  skip: true
+
+l0_blackbox_module_and_kernel:
+  skip: true
+
+l0_blackbox_sysman:
+  skip: true
+
+ocl_parallel_copy:
+  cases:
+    - params:
+        - '--loop_count 1'
+
+ocl_test_basic:
+  skip: true
+
+ocl_test_usm:
+  skip: true
