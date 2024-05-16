@@ -6339,6 +6339,66 @@ config:
                   kind: scalar
                   translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
                 server_access: write
+        - name: clEnqueueMemAdviseINTEL
+          latency: 0.0
+          special_handling:
+            extension_name: "USM"
+            icd:
+              not_in_dispatch_table: True
+              in_get_extension_function_address: True
+              handler_epilogue: "command_queue->asLocalObject()->enqueue();"
+          returns:
+            type: cl_int
+            kind: scalar
+            default: "CL_DEVICE_NOT_AVAILABLE"
+          args:
+            0:
+              name: command_queue
+              type: cl_command_queue
+              kind: scalar
+              translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+            1:
+              name: ptr
+              type: const void*
+              kind: ptr_usm_va
+              kind_details:
+                server_access: none
+            2:
+              name: size
+              type: size_t
+              kind: scalar
+            3:
+              name: advice
+              type: cl_mem_advice_intel
+              kind: scalar
+            4:
+              name: num_events_in_wait_list
+              type: cl_uint
+              kind: scalar
+            5:
+              name: event_wait_list
+              type: "const cl_event*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "num_events_in_wait_list"
+                can_be_null: True
+                element:
+                  type: cl_event
+                  kind: scalar
+                  translate_before: "{dst} = {arg}->asLocalObject()->asRemoteObject()"
+                server_access: read
+            6:
+              name: event
+              type: "cl_event*"
+              kind: ptr_array
+              kind_details:
+                num_elements: "1"
+                can_be_null: True
+                element:
+                  type: cl_event
+                  kind: scalar
+                  translate_after: "{dst} = globalPlatform->translateNewRemoteObjectToLocalObject({arg}, command_queue)"
+                server_access: write
         ################### cl_get_device_global_variable_pointer_intel EXTENSION
         - name: clGetDeviceGlobalVariablePointerINTEL
           latency: 0.0

@@ -163,6 +163,7 @@ void* clSharedMemAllocINTELRpcHelper (cl_context context, cl_device_id device, c
 cl_int clMemFreeINTEL (cl_context context, void* ptr);
 cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr);
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+cl_int clEnqueueMemAdviseINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 cl_mem clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_Usm (cl_context context, cl_mem_flags flags, size_t size, void* host_ptr, cl_int* errcode_ret);
 cl_int clEnqueueWriteBuffer_Local (cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset, size_t size, const void* ptr, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);

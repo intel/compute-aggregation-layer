@@ -3888,6 +3888,47 @@ cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr
     command_queue->asLocalObject()->enqueue();
     return ret;
 }
+cl_int clEnqueueMemAdviseINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    log<Verbosity::bloat>("Establishing RPC for clEnqueueMemAdviseINTEL");
+    auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
+    auto &channel = globalPlatform->getRpcChannel();
+    auto channelLock = channel.lock();
+    using CommandT = Cal::Rpc::Ocl::ClEnqueueMemAdviseINTELRpcM;
+    const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, ptr, size, advice, num_events_in_wait_list, event_wait_list, event);
+    auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
+    auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, ptr, size, advice, num_events_in_wait_list, event_wait_list, event);
+    command->copyFromCaller(dynMemTraits);
+    command->args.command_queue = command_queue->asLocalObject()->asRemoteObject();
+    if(event_wait_list)
+    {
+        auto base = command->captures.event_wait_list;
+        auto baseMutable = mutable_element_cast(base);
+        auto numEntries = dynMemTraits.event_wait_list.count;
+
+        for(size_t i = 0; i < numEntries; ++i){
+            baseMutable[i] = baseMutable[i]->asLocalObject()->asRemoteObject();
+        }
+    }
+
+
+    if(channel.shouldSynchronizeNextCommandWithSemaphores(CommandT::latency)) {
+        command->header.flags |= Cal::Rpc::RpcMessageHeader::signalSemaphoreOnCompletion;
+    }
+
+    if(false == channel.callSynchronous(command)){
+        return command->returnValue();
+    }
+    command->copyToCaller(dynMemTraits);
+    if(event)
+    {
+        event[0] = globalPlatform->translateNewRemoteObjectToLocalObject(event[0], command_queue);
+    }
+    cl_int ret = command->captures.ret;
+
+    channelLock.unlock();
+    command_queue->asLocalObject()->enqueue();
+    return ret;
+}
 cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
     log<Verbosity::bloat>("Establishing RPC for clGetDeviceGlobalVariablePointerINTEL");
     auto *globalPlatform = Cal::Client::Icd::icdGlobalState.getOclPlatform();
@@ -5788,6 +5829,9 @@ void *getOclExtensionFuncionAddressRpcHelper(const char *funcName) {
     if(0 == strcmp("clEnqueueMigrateMemINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Client::Icd::Ocl::clEnqueueMigrateMemINTEL);
     }
+    if(0 == strcmp("clEnqueueMemAdviseINTEL", funcName)) {
+        return reinterpret_cast<void*>(Cal::Client::Icd::Ocl::clEnqueueMemAdviseINTEL);
+    }
     if(0 == strcmp("clGetDeviceGlobalVariablePointerINTEL", funcName)) {
         return reinterpret_cast<void*>(Cal::Client::Icd::Ocl::clGetDeviceGlobalVariablePointerINTEL);
     }
@@ -6185,6 +6229,9 @@ cl_int clMemBlockingFreeINTEL (cl_context context, void* ptr) {
 }
 cl_int clEnqueueMigrateMemINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
     return Cal::Client::Icd::Ocl::clEnqueueMigrateMemINTEL(command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
+}
+cl_int clEnqueueMemAdviseINTEL (cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    return Cal::Client::Icd::Ocl::clEnqueueMemAdviseINTEL(command_queue, ptr, size, advice, num_events_in_wait_list, event_wait_list, event);
 }
 cl_int clGetDeviceGlobalVariablePointerINTEL (cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
     return Cal::Client::Icd::Ocl::clGetDeviceGlobalVariablePointerINTEL(device, program, globalVariableName, globalVariableSizeRet, globalVariablePointerRet);

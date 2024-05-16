@@ -1959,6 +1959,26 @@ size_t ClEnqueueMigrateMemINTELRpcM::Captures::getCaptureDynMemSize() const {
      return size;
 }
 
+ClEnqueueMemAdviseINTELRpcM::Captures::DynamicTraits ClEnqueueMemAdviseINTELRpcM::Captures::DynamicTraits::calculate(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) {
+    DynamicTraits ret = {};
+    ret.event_wait_list.count = event_wait_list ? (num_events_in_wait_list) : 0;
+    ret.event_wait_list.size = ret.event_wait_list.count * sizeof(cl_event);
+    ret.totalDynamicSize = alignUpPow2<8>(ret.event_wait_list.offset + ret.event_wait_list.size);
+
+
+    return ret;
+}
+
+size_t ClEnqueueMemAdviseINTELRpcM::Captures::getCaptureTotalSize() const {
+     auto size = offsetof(Captures, event_wait_list) + Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
+size_t ClEnqueueMemAdviseINTELRpcM::Captures::getCaptureDynMemSize() const {
+     auto size = Cal::Utils::alignUpPow2<8>(this->countEvent_wait_list * sizeof(cl_event));
+     return size;
+}
+
 ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::DynamicTraits ClGetDeviceGlobalVariablePointerINTELRpcM::Captures::DynamicTraits::calculate(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) {
     DynamicTraits ret = {};
     ret.globalVariableName.count = globalVariableName ? (Cal::Utils::countNullterminated(globalVariableName)) : 0;

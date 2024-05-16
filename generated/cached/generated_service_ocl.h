@@ -158,6 +158,7 @@ extern void* (*clSharedMemAllocINTEL)(cl_context context, cl_device_id device, c
 extern cl_int (*clMemFreeINTEL)(cl_context context, void* ptr);
 extern cl_int (*clMemBlockingFreeINTEL)(cl_context context, void* ptr);
 extern cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
+extern cl_int (*clEnqueueMemAdviseINTEL)(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event);
 extern cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet);
 } // Extensions
 
@@ -1439,6 +1440,20 @@ inline bool clEnqueueMigrateMemINTELHandler(Provider &service, Cal::Rpc::Channel
                                                 );
     return true;
 }
+inline bool clEnqueueMemAdviseINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
+    log<Verbosity::bloat>("Servicing RPC request for clEnqueueMemAdviseINTEL");
+    auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemAdviseINTELRpcM*>(command);
+    apiCommand->captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemAdviseINTEL(
+                                                apiCommand->args.command_queue, 
+                                                apiCommand->args.ptr, 
+                                                apiCommand->args.size, 
+                                                apiCommand->args.advice, 
+                                                apiCommand->args.num_events_in_wait_list, 
+                                                apiCommand->args.event_wait_list ? apiCommand->captures.event_wait_list : nullptr, 
+                                                apiCommand->args.event ? &apiCommand->captures.event : nullptr
+                                                );
+    return true;
+}
 inline bool clGetDeviceGlobalVariablePointerINTELHandler(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader*command, size_t commandMaxSize) {
     log<Verbosity::bloat>("Servicing RPC request for clGetDeviceGlobalVariablePointerINTEL");
     auto apiCommand = reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command);
@@ -2130,6 +2145,7 @@ inline void registerGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandl
     outHandlers[ClMemFreeINTELRpcM::messageSubtype] = clMemFreeINTELHandler;
     outHandlers[ClMemBlockingFreeINTELRpcM::messageSubtype] = clMemBlockingFreeINTELHandler;
     outHandlers[ClEnqueueMigrateMemINTELRpcM::messageSubtype] = clEnqueueMigrateMemINTELHandler;
+    outHandlers[ClEnqueueMemAdviseINTELRpcM::messageSubtype] = clEnqueueMemAdviseINTELHandler;
     outHandlers[ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype] = clGetDeviceGlobalVariablePointerINTELHandler;
     outHandlers[ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM::messageSubtype] = clCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmHandler;
     outHandlers[ClEnqueueWriteBuffer_LocalRpcM::messageSubtype] = clEnqueueWriteBuffer_LocalHandler;
@@ -3254,6 +3270,17 @@ inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM &apiCommand
                                                 apiCommand.args.event
                                                 );
 }
+inline void callDirectly(Cal::Rpc::Ocl::ClEnqueueMemAdviseINTELRpcM &apiCommand) {
+    apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clEnqueueMemAdviseINTEL(
+                                                apiCommand.args.command_queue, 
+                                                apiCommand.args.ptr, 
+                                                apiCommand.args.size, 
+                                                apiCommand.args.advice, 
+                                                apiCommand.args.num_events_in_wait_list, 
+                                                apiCommand.args.event_wait_list, 
+                                                apiCommand.args.event
+                                                );
+}
 inline void callDirectly(Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM &apiCommand) {
     apiCommand.captures.ret = Cal::Service::Apis::Ocl::Extensions::clGetDeviceGlobalVariablePointerINTEL(
                                                 apiCommand.args.device, 
@@ -3809,6 +3836,7 @@ inline bool callDirectly(Cal::Rpc::RpcMessageHeader *command) {
         case Cal::Rpc::Ocl::ClMemFreeINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClMemFreeINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClMemBlockingFreeINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMigrateMemINTELRpcM*>(command)); break;
+        case Cal::Rpc::Ocl::ClEnqueueMemAdviseINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueMemAdviseINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClGetDeviceGlobalVariablePointerINTELRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClCreateBufferRpcHelperNotUseHostPtrZeroCopyMallocShmem_UsmRpcM*>(command)); break;
         case Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM::messageSubtype : callDirectly(*reinterpret_cast<Cal::Rpc::Ocl::ClEnqueueWriteBuffer_LocalRpcM*>(command)); break;

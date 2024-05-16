@@ -1099,6 +1099,17 @@ cl_int clEnqueueMigrateMemINTELLoad(cl_command_queue command_queue, const void* 
     Cal::Service::Apis::Ocl::Extensions::clEnqueueMigrateMemINTEL = extAddr;
     return extAddr(command_queue, ptr, size, flags, num_events_in_wait_list, event_wait_list, event);
 }
+cl_int clEnqueueMemAdviseINTELLoad(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event){
+    using ExtFuncT = decltype(clEnqueueMemAdviseINTELLoad);
+    static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clEnqueueMemAdviseINTEL"));
+    if(nullptr == extAddr){
+        log<Verbosity::error>("Client requested for unavailable extension function rpc : clEnqueueMemAdviseINTEL");
+        assert(false);
+        return {};
+    }
+    Cal::Service::Apis::Ocl::Extensions::clEnqueueMemAdviseINTEL = extAddr;
+    return extAddr(command_queue, ptr, size, advice, num_events_in_wait_list, event_wait_list, event);
+}
 cl_int clGetDeviceGlobalVariablePointerINTELLoad(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet){
     using ExtFuncT = decltype(clGetDeviceGlobalVariablePointerINTELLoad);
     static ExtFuncT *extAddr = reinterpret_cast<ExtFuncT*>(Cal::Service::Apis::Ocl::getExtensionFuncAddress("clGetDeviceGlobalVariablePointerINTEL"));
@@ -1126,6 +1137,7 @@ void* (*clSharedMemAllocINTEL)(cl_context context, cl_device_id device, const cl
 cl_int (*clMemFreeINTEL)(cl_context context, void* ptr) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clMemFreeINTELLoad;
 cl_int (*clMemBlockingFreeINTEL)(cl_context context, void* ptr) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clMemBlockingFreeINTELLoad;
 cl_int (*clEnqueueMigrateMemINTEL)(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_migration_flags flags, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMigrateMemINTELLoad;
+cl_int (*clEnqueueMemAdviseINTEL)(cl_command_queue command_queue, const void* ptr, size_t size, cl_mem_advice_intel advice, cl_uint num_events_in_wait_list, const cl_event* event_wait_list, cl_event* event) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clEnqueueMemAdviseINTELLoad;
 cl_int (*clGetDeviceGlobalVariablePointerINTEL)(cl_device_id device, cl_program program, const char* globalVariableName, size_t* globalVariableSizeRet, void** globalVariablePointerRet) = Cal::Service::Apis::Ocl::Extensions::LazyLoad::clGetDeviceGlobalVariablePointerINTELLoad;
 } // namespace Extensions
 
