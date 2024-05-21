@@ -758,15 +758,21 @@ class FunctionCaptureLayout:
 
             current_member_name = formatter.get_full_member_name(self)
             current_member_offset = f"{parent_name}Traits[{it}].{self.member.name}Offset"
-            current_member_count = f"{parent_name}Traits[{it}].{self.member.name}Count"
+            current_member_count_name = current_member_name + "Count"
+            prefix = "args." if not self.uses_extension_prefix() else "extension."
+            current_member_access = formatter.generate_member_access(self, it, prefix=prefix)
+            current_member_count_access = formatter.generate_member_count_access(self, it, prefix=prefix)
             current_member_element_type = self.member.kind_details.element.type.str
 
-            copy_to_caller = f"""{spaces}if({parent_name}Traits[{it}].{self.member.name}Offset == -1){{
+            copy_to_caller = f"""{spaces}const auto& {current_member_name} = {current_member_access};
+{spaces}if(!{current_member_name}){{
 {spaces}    continue;
-{spaces}}}"""
+{spaces}}}
+{spaces}const auto {current_member_count_name} = static_cast<int32_t>({current_member_count_access});"""
 
             if not self.member.kind.is_opaque_list():
-                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({current_member_element_type}));"
+                copy_to_caller += f"\n\n{spaces}std::memcpy({current_member_name}, dynMem + {current_offset_var}, {current_member_count_name} * sizeof({current_member_element_type}));"
+                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({current_member_element_type}));"
             else:
                 next_it = str(chr(ord(it) + 1))
                 iterator_type = self.member.kind_details.iterator_type
@@ -776,21 +782,16 @@ class FunctionCaptureLayout:
                 copy_to_caller += f"\n\n{spaces}{current_dest_access} = {parent_name}Traits[{it}].{self.member.name}FirstOriginalElement;"
 
                 copy_to_caller += f"\n\n{spaces}auto {list_element_name}Traits = reinterpret_cast<{opaque_traits}*>(dynMem + {current_offset_var});"
-                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count} * sizeof({opaque_traits}));"
+                copy_to_caller += f"\n{spaces}{current_offset_var} += alignUpPow2<8>({current_member_count_name} * sizeof({opaque_traits}));"
 
                 copy_to_caller += f"\n\n{spaces}auto {list_element_name} = static_cast<const {iterator_type}*>({current_dest_access});"
 
-                copy_to_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count}; ++{next_it}){{"
+                copy_to_caller += f"\n{spaces}for(int32_t {next_it} = 0; {next_it} < {current_member_count_name}; ++{next_it}){{"
                 copy_to_caller += f"\n{spaces}    const auto sizeInBytes = getUnderlyingSize({list_element_name});"
                 copy_to_caller += f"\n{spaces}    {current_offset_var} += alignUpPow2<8>(sizeInBytes);\n"
 
                 copy_to_caller += f"\n{spaces}    const auto extensionType = getExtensionType({list_element_name});"
                 copy_to_caller += f"\n{spaces}    if (!isReadOnly(extensionType)) {{"
-                copy_to_caller += f"\n{spaces}        auto originalNextOpaqueElement = getNext({list_element_name});"
-                copy_to_caller += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
-                copy_to_caller += f"\n{spaces}        auto destination = const_cast<{iterator_type}*>({list_element_name});"
-                copy_to_caller += f"\n{spaces}        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);\n"
-                copy_to_caller += f"\n{spaces}        getNextField(*destination) = originalNextOpaqueElement;"
 
                 if self.children:
                     children_per_ext_dict = self.get_children_per_extension()
@@ -798,14 +799,19 @@ class FunctionCaptureLayout:
                         extension_type = ext_children[0].extension_data.type_name
                         copy_to_caller += f"\n{spaces}        if (extensionType == static_cast<int>({enum_value})) {{"
                         copy_to_caller += f"\n{spaces}            auto& extension = *reinterpret_cast<const {extension_type}*>({list_element_name});"
-                        copy_to_caller += f"\n{spaces}            auto* extensionTraits = reinterpret_cast<DynamicStructTraits<{extension_type}>*>(dynMem + {current_offset_var});"
                         copy_to_caller += f"\n{spaces}            {current_offset_var} += alignUpPow2<8>(sizeof(DynamicStructTraits<{extension_type}>));"
                         for child in ext_children:
                             next_it_2 = str(chr(ord(next_it) + 1))
                             copy_to_caller += f"\n\n{spaces}            for(int32_t {next_it_2} = 0; {next_it_2} < 1; ++{next_it_2}) {{"
-                            copy_to_caller += "\n" + child.create_copy_from_caller(current_offset_var, formatter, spaces_count + 16, next_it_2)
+                            copy_to_caller += "\n" + child.create_copy_to_caller(current_offset_var, formatter, spaces_count + 16, next_it_2)
                             copy_to_caller += f"\n    {spaces}        }}"
                         copy_to_caller += f"\n{spaces}        }}"
+
+                copy_to_caller += f"\n{spaces}        auto originalNextOpaqueElement = getNext({list_element_name});"
+                copy_to_caller += f"\n{spaces}        const auto extensionOffset = {list_element_name}Traits[{next_it}].extensionOffset;"
+                copy_to_caller += f"\n{spaces}        auto destination = const_cast<{iterator_type}*>({list_element_name});"
+                copy_to_caller += f"\n{spaces}        std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);\n"
+                copy_to_caller += f"\n{spaces}        getNextField(*destination) = originalNextOpaqueElement;"
 
                 copy_to_caller += f"\n{spaces}    }}\n"
                 copy_to_caller += f"\n{spaces}    {list_element_name} = getNext({list_element_name});"

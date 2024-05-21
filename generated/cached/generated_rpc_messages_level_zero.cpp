@@ -1094,6 +1094,26 @@ ZeDeviceGetModulePropertiesRpcM::Captures::DynamicTraits ZeDeviceGetModuleProper
             auto pModulePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(pModuleProperties[i].pNext);
             for(uint32_t j = 0; j < pModulePropertiesPNextCount; ++j){
                 ret.totalDynamicSize += alignUpPow2<8>(getUnderlyingSize(pModulePropertiesPNextListElement));
+
+                const auto extensionType = static_cast<int>(getExtensionType(pModulePropertiesPNextListElement));
+                if (extensionType == ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP) {
+                    auto& extension = *reinterpret_cast<const zex_device_module_register_file_exp_t*>(pModulePropertiesPNextListElement);
+                    ret.totalDynamicSize += alignUpPow2<8>(sizeof(DynamicStructTraits<zex_device_module_register_file_exp_t>));
+
+                    do {
+                        const auto& pModulePropertiesPNextRegisterFileSizes = extension.registerFileSizes;
+                        if(!pModulePropertiesPNextRegisterFileSizes){
+                            continue;
+                        }
+
+                        const auto pModulePropertiesPNextRegisterFileSizesCount = static_cast<uint32_t>(extension.registerFileSizesCount);
+                        if(!pModulePropertiesPNextRegisterFileSizesCount){
+                            continue;
+                        }
+
+                        ret.totalDynamicSize += alignUpPow2<8>(pModulePropertiesPNextRegisterFileSizesCount * sizeof(uint32_t));
+                    } while (0);
+                }
                 pModulePropertiesPNextListElement = getNext(pModulePropertiesPNextListElement);
             }
 

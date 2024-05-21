@@ -467,6 +467,31 @@ config:
           type: "uint32_t[ZE_SUBGROUPSIZE_COUNT]"
           kind: scalar
 
+    - name: zex_device_module_register_file_exp_t
+      members:
+        0:
+          name: stype
+          type: ze_structure_type_t
+          kind: scalar
+        1:
+          name: pNext
+          type: "const void*"
+          kind: scalar
+        2:
+          name: registerFileSizesCount
+          type: uint32_t
+          kind: scalar
+        3:
+          name: registerFileSizes
+          type: uint32_t*
+          kind: ptr_array
+          kind_details:
+            num_elements: "registerFileSizesCount"
+            can_be_null: True
+            element:
+              type: uint32_t
+              kind: scalar
+            server_access: read_write
     - name: ze_device_module_properties_t
       members:
         0:
@@ -480,6 +505,9 @@ config:
           kind_details:
             iterator_type: ze_base_desc_t
             opaque_traits_name: NestedPNextTraits
+            possible_nontrivial_nested_types:
+              - extension_type: zex_device_module_register_file_exp_t
+                extension_enum_value: ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP
         2:
           name: spirvVersionSupported
           type: uint32_t

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "driver_experimental/public/zex_api.h"
 #include "level_zero/ze_api.h"
 #include "level_zero/zes_api.h"
 #include "level_zero/zet_api.h"
@@ -131,6 +132,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
 
     if (ZES_STRUCTURE_TYPE_PCI_BAR_PROPERTIES_1_2 == stypeInt) {
         return sizeof(zes_power_ext_properties_t);
+    }
+
+    if (ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP == stypeInt) {
+        return sizeof(zex_device_module_register_file_exp_t);
     }
 
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", stypeInt);

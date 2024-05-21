@@ -75,6 +75,12 @@ struct DynamicStructTraits<ze_device_properties_t> {
 };
 
 template <>
+struct DynamicStructTraits<zex_device_module_register_file_exp_t> {
+    int32_t registerFileSizesOffset{-1};
+    int32_t registerFileSizesCount{-1};
+};
+
+template <>
 struct DynamicStructTraits<ze_device_module_properties_t> {
     int32_t pNextOffset{-1};
     int32_t pNextCount{-1};
@@ -506,17 +512,19 @@ struct ZetMetricGroupGetPropertiesRpcM {
             auto* destPProperties = args.pProperties;
 
             for (uint32_t i = 0; i < captures.pPropertiesNestedTraitsCount; ++i) {
-                if(pPropertiesTraits[i].pNextOffset == -1){
+                const auto& pPropertiesPNext = args.pProperties[i].pNext;
+                if(!pPropertiesPNext){
                     continue;
                 }
+                const auto pPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pProperties[i].pNext)));
 
                 destPProperties[i].pNext = pPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPProperties[i].pNext);
-                for(int32_t j = 0; j < pPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -2383,17 +2391,19 @@ struct ZetDeviceGetDebugPropertiesRpcM {
             auto* destPDebugProperties = args.pDebugProperties;
 
             for (uint32_t i = 0; i < captures.pDebugPropertiesNestedTraitsCount; ++i) {
-                if(pDebugPropertiesTraits[i].pNextOffset == -1){
+                const auto& pDebugPropertiesPNext = args.pDebugProperties[i].pNext;
+                if(!pDebugPropertiesPNext){
                     continue;
                 }
+                const auto pDebugPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pDebugProperties[i].pNext)));
 
                 destPDebugProperties[i].pNext = pDebugPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pDebugPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pDebugPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pDebugPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pDebugPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPDebugProperties[i].pNext);
-                for(int32_t j = 0; j < pDebugPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pDebugPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pDebugPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -3115,55 +3125,45 @@ struct ZesPowerGetPropertiesRpcM {
             auto* destPProperties = args.pProperties;
 
             for (uint32_t i = 0; i < captures.pPropertiesNestedTraitsCount; ++i) {
-                if(pPropertiesTraits[i].pNextOffset == -1){
+                const auto& pPropertiesPNext = args.pProperties[i].pNext;
+                if(!pPropertiesPNext){
                     continue;
                 }
+                const auto pPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pProperties[i].pNext)));
 
                 destPProperties[i].pNext = pPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPProperties[i].pNext);
-                for(int32_t j = 0; j < pPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pPropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
+                        if (extensionType == static_cast<int>(ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES)) {
+                            auto& extension = *reinterpret_cast<const zes_power_ext_properties_t*>(pPropertiesPNextListElement);
+                            currentOffset += alignUpPow2<8>(sizeof(DynamicStructTraits<zes_power_ext_properties_t>));
+
+                            for(int32_t k = 0; k < 1; ++k) {
+                                const auto& pPropertiesPNextDefaultLimit = extension.defaultLimit;
+                                if(!pPropertiesPNextDefaultLimit){
+                                    continue;
+                                }
+                                const auto pPropertiesPNextDefaultLimitCount = static_cast<int32_t>(1);
+
+                                std::memcpy(pPropertiesPNextDefaultLimit, dynMem + currentOffset, pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
+                                currentOffset += alignUpPow2<8>(pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
+                            }
+                        }
                         auto originalNextOpaqueElement = getNext(pPropertiesPNextListElement);
                         const auto extensionOffset = pPropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pPropertiesPNextListElement);
                         std::memcpy(destination, dynMem + extensionOffset, sizeInBytes);
 
                         getNextField(*destination) = originalNextOpaqueElement;
-                        if (extensionType == static_cast<int>(ZES_STRUCTURE_TYPE_POWER_EXT_PROPERTIES)) {
-                            auto& extension = *reinterpret_cast<const zes_power_ext_properties_t*>(pPropertiesPNextListElement);
-                            auto* extensionTraits = reinterpret_cast<DynamicStructTraits<zes_power_ext_properties_t>*>(dynMem + currentOffset);
-                            currentOffset += alignUpPow2<8>(sizeof(DynamicStructTraits<zes_power_ext_properties_t>));
-
-                            for(int32_t k = 0; k < 1; ++k) {
-                                const auto& pPropertiesPNextDefaultLimit = extension.defaultLimit;
-                                if(!pPropertiesPNextDefaultLimit){
-                                    extensionTraits[k].defaultLimitOffset = -1;
-                                    extensionTraits[k].defaultLimitCount = -1;
-                                    continue;
-                                }
-
-                                const auto pPropertiesPNextDefaultLimitCount = static_cast<int32_t>(1);
-                                if(!pPropertiesPNextDefaultLimitCount){
-                                    extensionTraits[k].defaultLimitOffset = -1;
-                                    extensionTraits[k].defaultLimitCount = -1;
-                                    continue;
-                                }
-
-                                extensionTraits[k].defaultLimitOffset = currentOffset;
-                                extensionTraits[k].defaultLimitCount = pPropertiesPNextDefaultLimitCount;
-
-                                std::memcpy(dynMem + currentOffset, pPropertiesPNextDefaultLimit, pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
-                                currentOffset += alignUpPow2<8>(pPropertiesPNextDefaultLimitCount * sizeof(zes_power_limit_ext_desc_t));
-                            }
-                        }
                     }
 
                     pPropertiesPNextListElement = getNext(pPropertiesPNextListElement);
@@ -7132,17 +7132,19 @@ struct ZesDevicePciGetBarsRpcM {
             auto* destPProperties = args.pProperties;
 
             for (uint32_t i = 0; i < captures.pPropertiesNestedTraitsCount; ++i) {
-                if(pPropertiesTraits[i].pNextOffset == -1){
+                const auto& pPropertiesPNext = args.pProperties[i].pNext;
+                if(!pPropertiesPNext){
                     continue;
                 }
+                const auto pPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pProperties[i].pNext)));
 
                 destPProperties[i].pNext = pPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPProperties[i].pNext);
-                for(int32_t j = 0; j < pPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -10448,17 +10450,19 @@ struct ZeDeviceGetPropertiesRpcM {
             auto* destPDeviceProperties = args.pDeviceProperties;
 
             for (uint32_t i = 0; i < captures.pDevicePropertiesNestedTraitsCount; ++i) {
-                if(pDevicePropertiesTraits[i].pNextOffset == -1){
+                const auto& pDevicePropertiesPNext = args.pDeviceProperties[i].pNext;
+                if(!pDevicePropertiesPNext){
                     continue;
                 }
+                const auto pDevicePropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pDeviceProperties[i].pNext)));
 
                 destPDeviceProperties[i].pNext = pDevicePropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pDevicePropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pDevicePropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pDevicePropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pDevicePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPDeviceProperties[i].pNext);
-                for(int32_t j = 0; j < pDevicePropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pDevicePropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pDevicePropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -10630,6 +10634,22 @@ struct ZeDeviceGetModulePropertiesRpcM {
                             forcePointerWrite(getNextField(*pModulePropertiesPNextListElement), dynMem + extensionOffset);
                         }
 
+                        const auto extensionType = static_cast<int>(pModulePropertiesPNextListElementTraits[j - 1].extensionType);
+                        if (extensionType == ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP) {
+                            auto& extension = *reinterpret_cast<const zex_device_module_register_file_exp_t*>(pModulePropertiesPNextListElement);
+                            auto* extensionTraits = reinterpret_cast<DynamicStructTraits<zex_device_module_register_file_exp_t>*>(dynMem + currentOffset);
+                            currentOffset += alignUpPow2<8>(sizeof(DynamicStructTraits<zex_device_module_register_file_exp_t>));
+
+                            for(int32_t k = 0; k < 1; ++k) {
+                                if(extensionTraits[k].registerFileSizesOffset == -1){
+                                    forcePointerWrite(extension.registerFileSizes, nullptr);
+                                    continue;
+                                }
+
+                                forcePointerWrite(extension.registerFileSizes, dynMem + extensionTraits[k].registerFileSizesOffset);
+                                currentOffset += alignUpPow2<8>(extensionTraits[k].registerFileSizesCount * sizeof(uint32_t));
+                            }
+                        }
                         if (j < pModulePropertiesTraits[i].pNextCount) {
                             const auto pNextElement = getNext(pModulePropertiesPNextListElement);
                             const auto sizeInBytes = getUnderlyingSize(pNextElement);
@@ -10713,6 +10733,35 @@ struct ZeDeviceGetModulePropertiesRpcM {
                     std::memcpy(dynMem + currentOffset, pModulePropertiesPNextListElement, sizeInBytes);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
+
+                    const auto extensionType = static_cast<int>(getExtensionType(pModulePropertiesPNextListElement));
+                    if (extensionType == ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP) {
+                        auto& extension = *reinterpret_cast<const zex_device_module_register_file_exp_t*>(pModulePropertiesPNextListElement);
+                        auto* extensionTraits = reinterpret_cast<DynamicStructTraits<zex_device_module_register_file_exp_t>*>(dynMem + currentOffset);
+                        currentOffset += alignUpPow2<8>(sizeof(DynamicStructTraits<zex_device_module_register_file_exp_t>));
+
+                        for(int32_t k = 0; k < 1; ++k) {
+                            const auto& pModulePropertiesPNextRegisterFileSizes = extension.registerFileSizes;
+                            if(!pModulePropertiesPNextRegisterFileSizes){
+                                extensionTraits[k].registerFileSizesOffset = -1;
+                                extensionTraits[k].registerFileSizesCount = -1;
+                                continue;
+                            }
+
+                            const auto pModulePropertiesPNextRegisterFileSizesCount = static_cast<int32_t>(extension.registerFileSizesCount);
+                            if(!pModulePropertiesPNextRegisterFileSizesCount){
+                                extensionTraits[k].registerFileSizesOffset = -1;
+                                extensionTraits[k].registerFileSizesCount = -1;
+                                continue;
+                            }
+
+                            extensionTraits[k].registerFileSizesOffset = currentOffset;
+                            extensionTraits[k].registerFileSizesCount = pModulePropertiesPNextRegisterFileSizesCount;
+
+                            std::memcpy(dynMem + currentOffset, pModulePropertiesPNextRegisterFileSizes, pModulePropertiesPNextRegisterFileSizesCount * sizeof(uint32_t));
+                            currentOffset += alignUpPow2<8>(pModulePropertiesPNextRegisterFileSizesCount * sizeof(uint32_t));
+                        }
+                    }
                     pModulePropertiesPNextListElement = getNext(pModulePropertiesPNextListElement);
                 }
 
@@ -10736,22 +10785,39 @@ struct ZeDeviceGetModulePropertiesRpcM {
             auto* destPModuleProperties = args.pModuleProperties;
 
             for (uint32_t i = 0; i < captures.pModulePropertiesNestedTraitsCount; ++i) {
-                if(pModulePropertiesTraits[i].pNextOffset == -1){
+                const auto& pModulePropertiesPNext = args.pModuleProperties[i].pNext;
+                if(!pModulePropertiesPNext){
                     continue;
                 }
+                const auto pModulePropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pModuleProperties[i].pNext)));
 
                 destPModuleProperties[i].pNext = pModulePropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pModulePropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pModulePropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pModulePropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pModulePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPModuleProperties[i].pNext);
-                for(int32_t j = 0; j < pModulePropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pModulePropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pModulePropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
                     const auto extensionType = getExtensionType(pModulePropertiesPNextListElement);
                     if (!isReadOnly(extensionType)) {
+                        if (extensionType == static_cast<int>(ZEX_STRUCTURE_DEVICE_MODULE_REGISTER_FILE_EXP)) {
+                            auto& extension = *reinterpret_cast<const zex_device_module_register_file_exp_t*>(pModulePropertiesPNextListElement);
+                            currentOffset += alignUpPow2<8>(sizeof(DynamicStructTraits<zex_device_module_register_file_exp_t>));
+
+                            for(int32_t k = 0; k < 1; ++k) {
+                                const auto& pModulePropertiesPNextRegisterFileSizes = extension.registerFileSizes;
+                                if(!pModulePropertiesPNextRegisterFileSizes){
+                                    continue;
+                                }
+                                const auto pModulePropertiesPNextRegisterFileSizesCount = static_cast<int32_t>(extension.registerFileSizesCount);
+
+                                std::memcpy(pModulePropertiesPNextRegisterFileSizes, dynMem + currentOffset, pModulePropertiesPNextRegisterFileSizesCount * sizeof(uint32_t));
+                                currentOffset += alignUpPow2<8>(pModulePropertiesPNextRegisterFileSizesCount * sizeof(uint32_t));
+                            }
+                        }
                         auto originalNextOpaqueElement = getNext(pModulePropertiesPNextListElement);
                         const auto extensionOffset = pModulePropertiesPNextListElementTraits[j].extensionOffset;
                         auto destination = const_cast<ze_base_desc_t*>(pModulePropertiesPNextListElement);
@@ -11065,17 +11131,19 @@ struct ZeDeviceGetMemoryPropertiesRpcM {
             auto* destPMemProperties = args.pMemProperties;
 
             for (uint32_t i = 0; i < captures.pMemPropertiesNestedTraitsCount; ++i) {
-                if(pMemPropertiesTraits[i].pNextOffset == -1){
+                const auto& pMemPropertiesPNext = args.pMemProperties[i].pNext;
+                if(!pMemPropertiesPNext){
                     continue;
                 }
+                const auto pMemPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pMemProperties[i].pNext)));
 
                 destPMemProperties[i].pNext = pMemPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pMemPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pMemPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pMemPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pMemPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPMemProperties[i].pNext);
-                for(int32_t j = 0; j < pMemPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pMemPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pMemPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -11371,17 +11439,19 @@ struct ZeDeviceGetCachePropertiesRpcM {
             auto* destPCacheProperties = args.pCacheProperties;
 
             for (uint32_t i = 0; i < captures.pCachePropertiesNestedTraitsCount; ++i) {
-                if(pCachePropertiesTraits[i].pNextOffset == -1){
+                const auto& pCachePropertiesPNext = args.pCacheProperties[i].pNext;
+                if(!pCachePropertiesPNext){
                     continue;
                 }
+                const auto pCachePropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pCacheProperties[i].pNext)));
 
                 destPCacheProperties[i].pNext = pCachePropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pCachePropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pCachePropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pCachePropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pCachePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPCacheProperties[i].pNext);
-                for(int32_t j = 0; j < pCachePropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pCachePropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pCachePropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -11732,17 +11802,19 @@ struct ZeDeviceGetP2PPropertiesRpcM {
             auto* destPP2PProperties = args.pP2PProperties;
 
             for (uint32_t i = 0; i < captures.pP2PPropertiesNestedTraitsCount; ++i) {
-                if(pP2PPropertiesTraits[i].pNextOffset == -1){
+                const auto& pP2PPropertiesPNext = args.pP2PProperties[i].pNext;
+                if(!pP2PPropertiesPNext){
                     continue;
                 }
+                const auto pP2PPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pP2PProperties[i].pNext)));
 
                 destPP2PProperties[i].pNext = pP2PPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pP2PPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pP2PPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pP2PPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pP2PPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPP2PProperties[i].pNext);
-                for(int32_t j = 0; j < pP2PPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pP2PPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pP2PPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -14360,17 +14432,19 @@ struct ZeFabricVertexGetPropertiesExpRpcM {
             auto* destPVertexProperties = args.pVertexProperties;
 
             for (uint32_t i = 0; i < captures.pVertexPropertiesNestedTraitsCount; ++i) {
-                if(pVertexPropertiesTraits[i].pNextOffset == -1){
+                const auto& pVertexPropertiesPNext = args.pVertexProperties[i].pNext;
+                if(!pVertexPropertiesPNext){
                     continue;
                 }
+                const auto pVertexPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pVertexProperties[i].pNext)));
 
                 destPVertexProperties[i].pNext = pVertexPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pVertexPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pVertexPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pVertexPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pVertexPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPVertexProperties[i].pNext);
-                for(int32_t j = 0; j < pVertexPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pVertexPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pVertexPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -14887,17 +14961,19 @@ struct ZeFabricEdgeGetPropertiesExpRpcM {
             auto* destPEdgeProperties = args.pEdgeProperties;
 
             for (uint32_t i = 0; i < captures.pEdgePropertiesNestedTraitsCount; ++i) {
-                if(pEdgePropertiesTraits[i].pNextOffset == -1){
+                const auto& pEdgePropertiesPNext = args.pEdgeProperties[i].pNext;
+                if(!pEdgePropertiesPNext){
                     continue;
                 }
+                const auto pEdgePropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pEdgeProperties[i].pNext)));
 
                 destPEdgeProperties[i].pNext = pEdgePropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pEdgePropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pEdgePropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pEdgePropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pEdgePropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPEdgeProperties[i].pNext);
-                for(int32_t j = 0; j < pEdgePropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pEdgePropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pEdgePropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -16802,17 +16878,19 @@ struct ZeMemGetAllocPropertiesRpcM {
             auto* destPMemAllocProperties = args.pMemAllocProperties;
 
             for (uint32_t i = 0; i < captures.pMemAllocPropertiesNestedTraitsCount; ++i) {
-                if(pMemAllocPropertiesTraits[i].pNextOffset == -1){
+                const auto& pMemAllocPropertiesPNext = args.pMemAllocProperties[i].pNext;
+                if(!pMemAllocPropertiesPNext){
                     continue;
                 }
+                const auto pMemAllocPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pMemAllocProperties[i].pNext)));
 
                 destPMemAllocProperties[i].pNext = pMemAllocPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pMemAllocPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pMemAllocPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pMemAllocPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pMemAllocPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPMemAllocProperties[i].pNext);
-                for(int32_t j = 0; j < pMemAllocPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pMemAllocPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pMemAllocPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
@@ -20155,17 +20233,19 @@ struct ZeKernelGetPropertiesRpcM {
             auto* destPKernelProperties = args.pKernelProperties;
 
             for (uint32_t i = 0; i < captures.pKernelPropertiesNestedTraitsCount; ++i) {
-                if(pKernelPropertiesTraits[i].pNextOffset == -1){
+                const auto& pKernelPropertiesPNext = args.pKernelProperties[i].pNext;
+                if(!pKernelPropertiesPNext){
                     continue;
                 }
+                const auto pKernelPropertiesPNextCount = static_cast<int32_t>(countOpaqueList(static_cast<const ze_base_desc_t*>(args.pKernelProperties[i].pNext)));
 
                 destPKernelProperties[i].pNext = pKernelPropertiesTraits[i].pNextFirstOriginalElement;
 
                 auto pKernelPropertiesPNextListElementTraits = reinterpret_cast<NestedPNextTraits*>(dynMem + currentOffset);
-                currentOffset += alignUpPow2<8>(pKernelPropertiesTraits[i].pNextCount * sizeof(NestedPNextTraits));
+                currentOffset += alignUpPow2<8>(pKernelPropertiesPNextCount * sizeof(NestedPNextTraits));
 
                 auto pKernelPropertiesPNextListElement = static_cast<const ze_base_desc_t*>(destPKernelProperties[i].pNext);
-                for(int32_t j = 0; j < pKernelPropertiesTraits[i].pNextCount; ++j){
+                for(int32_t j = 0; j < pKernelPropertiesPNextCount; ++j){
                     const auto sizeInBytes = getUnderlyingSize(pKernelPropertiesPNextListElement);
                     currentOffset += alignUpPow2<8>(sizeInBytes);
 
