@@ -111,11 +111,15 @@ class ShmemAllocator final {
     mockable ~ShmemAllocator() = default;
 
     size_t incrementShmemUsed(size_t sizeDiff) {
-        return updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x + y; });
+        auto incrementedShmemUsed = updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x + y; });
+        log<Verbosity::bloat>("shmem stats - incremented used: %zu / total available : %zu", incrementedShmemUsed, totalShmemAvailable);
+        return incrementedShmemUsed;
     }
 
     size_t decrementShmemUsed(size_t sizeDiff) {
-        return updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x - y; });
+        auto decrementedShmemUsed = updateShmemUsed(sizeDiff, [](const size_t x, const size_t y) { return x - y; });
+        log<Verbosity::bloat>("shmem stats - decremented used: %zu / total available : %zu", decrementedShmemUsed, totalShmemAvailable);
+        return decrementedShmemUsed;
     }
 
     template <typename Op>
@@ -129,6 +133,7 @@ class ShmemAllocator final {
     }
 
     mockable AllocationT allocate(size_t size, size_t alignment) {
+        log<Verbosity::debug>("Allocating shmem with size : %zu", size);
         if (false == Cal::Allocators::adjustSizeAndAlignment<Cal::Utils::pageSize4KB>(size, alignment)) {
             return {};
         }
@@ -157,6 +162,9 @@ class ShmemAllocator final {
             decrementShmemUsed(size);
             return {};
         }
+
+        log<Verbosity::debug>("Allocated shmem for path : %s with size : %zu", path.c_str(), size);
+
         if (-1 == Cal::Sys::ftruncate(shmemFd, size)) {
             log<Verbosity::error>("Failed to ftruncate shmem %s to size : %zu", path.c_str(), size);
             Cal::Sys::close(shmemFd);
@@ -165,7 +173,7 @@ class ShmemAllocator final {
             return {};
         }
 
-        log<Verbosity::debug>("Truncated shmem: %s to size: 0x%lx total: 0x%lx", path.c_str(), size, totalShmemAllocated.load());
+        log<Verbosity::debug>("Truncated shmem: %s to size: %zu total: %zu", path.c_str(), size, totalShmemAllocated.load());
 
         return AllocationT(ShmemAllocation<>(shmemId, true), shmemFd, size, true);
     }
