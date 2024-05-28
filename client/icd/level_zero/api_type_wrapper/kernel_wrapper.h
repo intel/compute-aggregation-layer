@@ -64,7 +64,7 @@ struct IcdL0Kernel : Cal::Shared::RefCountedWithParent<_ze_kernel_handle_t, Logi
         return false;
     }
     void storeSuggestedGroupSizes(uint32_t globalSizeX, uint32_t globalSizeY, uint32_t globalSizeZ, uint32_t groupSizeX, uint32_t groupSizeY, uint32_t groupSizeZ) {
-        suggestedGroupSizes.push_back(SuggestedGroupSizeEntry{GroupSize{globalSizeX, globalSizeY, globalSizeX}, GroupSize{groupSizeX, groupSizeY, groupSizeZ}});
+        suggestedGroupSizes.push_back(SuggestedGroupSizeEntry{GroupSize{globalSizeX, globalSizeY, globalSizeZ}, GroupSize{groupSizeX, groupSizeY, groupSizeZ}});
     }
 };
 
