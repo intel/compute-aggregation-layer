@@ -131,7 +131,7 @@ ze_result_t zeDriverGetExtensionFunctionAddress(ze_driver_handle_t hDriver, cons
 
     *ppFunctionAddress = getAllL0ExtensionFuncionAddress(name);
     if (*ppFunctionAddress == nullptr) {
-        log<Verbosity::error>("Unsupported extension function address requested for : %s", name);
+        log<Verbosity::warning>("Unsupported extension function address requested for : %s", name);
     }
 
     return *ppFunctionAddress ? ZE_RESULT_SUCCESS : ZE_RESULT_ERROR_INVALID_ARGUMENT;
