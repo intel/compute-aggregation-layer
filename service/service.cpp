@@ -11,6 +11,7 @@
 #include "generated_rpc_messages_ocl.h"
 #include "generated_service_level_zero.h"
 #include "generated_service_ocl.h"
+#include "service/service_drm_ioctl.h"
 
 #include <cstddef>
 #include <dlfcn.h>
@@ -1727,8 +1728,8 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
         this->sharedVaArenaSizeMB = requestedSharedVaArenaSizeMB;
     }
 
-    this->rpcHandlers.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero + 1);
-    this->directCallCallbacks.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero + 1);
+    this->rpcHandlers.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcDrmIoctl + 1);
+    this->directCallCallbacks.resize(Cal::Rpc::RpcMessageHeader::messageTypeRpcDrmIoctl + 1);
 
     Cal::Service::Apis::Ocl::registerAllGeneratedHandlersOcl(this->rpcHandlers[Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl]);
     this->rpcHandlers[Cal::Rpc::RpcMessageHeader::messageTypeRpcOcl][Cal::Rpc::Ocl::ClGetPlatformIDsRpcM::messageSubtype] = Cal::Service::Apis::Ocl::clGetPlatformIDsHandler;
@@ -1736,6 +1737,8 @@ Provider::Provider(std::unique_ptr<ChoreographyLibrary> knownChoreographies, Ser
 
     Cal::Service::Apis::LevelZero::registerAllGeneratedHandlersLevelZero(this->rpcHandlers[Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero]);
     this->directCallCallbacks[Cal::Rpc::RpcMessageHeader::messageTypeRpcLevelZero] = Cal::Service::Apis::LevelZero::callDirectly;
+
+    Cal::Service::Apis::DrmIoctl::registerAllHandlersDrmIoctl(this->rpcHandlers[Cal::Rpc::RpcMessageHeader::messageTypeRpcDrmIoctl]);
 
     this->yieldThreads = Cal::Utils::getCalEnvFlag(calYieldThreadsEnvName, this->yieldThreads);
     this->commandQueueGroups.copyRoundRobinEnabled = Cal::Utils::getCalEnvFlag(calUseCopyRoundRobin, this->commandQueueGroups.copyRoundRobinEnabled);

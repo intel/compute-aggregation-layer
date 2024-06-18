@@ -1377,6 +1377,10 @@ bool addRelay(ze_result_t &status, ze_event_handle_t action, ze_event_handle_t t
 bool synchronizeOnEventAndRequestClientMemoryUpdate(ze_result_t &status, ze_event_handle_t event, Cal::Rpc::ChannelServer &channel, ClientContext &calClientCtx, void *ptr, size_t size);
 } // namespace Apis::LevelZero
 
+namespace Apis::DrmIoctl {
+void registerAllHandlersDrmIoctl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers);
+}
+
 } // namespace Service
 
 } // namespace Cal

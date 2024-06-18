@@ -7,6 +7,7 @@
 
 #include "generated_service_level_zero.h"
 #include "generated_service_ocl.h"
+#include "service/service_drm_ioctl.h"
 
 namespace Cal::Service::Apis::Ocl{
 void registerAllGeneratedHandlersOcl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
@@ -20,3 +21,8 @@ void registerAllGeneratedHandlersLevelZero(Cal::Service::Provider::RpcSubtypeHan
 }
 }
 
+namespace Cal::Service::Apis::DrmIoctl{
+void registerAllHandlersDrmIoctl(Cal::Service::Provider::RpcSubtypeHandlers &outHandlers){
+    registerHandlersDrmIoctl(outHandlers);
+}
+}

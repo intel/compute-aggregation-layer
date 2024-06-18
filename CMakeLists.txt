@@ -51,6 +51,11 @@ elseif(__LD_GOLD_FOUND AND COMPILER_SUPPORTS_GOLD)
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Werror=format-security -Wno-unused-parameter -Wno-missing-field-initializers -pthread -fstack-protector -fPIC -fno-rtti")
+
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-extern-c-compat")
+endif()
+
 if(USE_SANITIZE_UB)
   unset(COMPILER_SUPPORTS_UNDEFINED_BEHAVIOR_SANITIZER CACHE)
   check_cxx_compiler_flag(-fsanitize=undefined COMPILER_SUPPORTS_UNDEFINED_BEHAVIOR_SANITIZER)

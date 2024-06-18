@@ -31,6 +31,7 @@ struct RpcMessageHeader {
     static constexpr MessageTypeT messageTypeUnknown = 0U;
     static constexpr MessageTypeT messageTypeRpcOcl = 1U;
     static constexpr MessageTypeT messageTypeRpcLevelZero = 2U;
+    static constexpr MessageTypeT messageTypeRpcDrmIoctl = 3U;
     MessageFlagsT flags = 0U;
     MessageTypeT type = messageTypeUnknown;
     MessageSubTypeT subtype = messageTypeUnknown;
