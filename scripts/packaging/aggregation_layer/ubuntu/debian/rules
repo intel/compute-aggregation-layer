@@ -9,6 +9,3 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	${BUILD_PREFIX} dh_auto_build
-
-override_dh_builddeb:
-	dh_builddeb -- -Zxz
