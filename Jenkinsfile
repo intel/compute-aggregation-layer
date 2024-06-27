@@ -8,6 +8,6 @@
  */
 
 buildConfig = [
-	'master-build': ['gcc11', 'gcc12', 'gcc13', 'clang16'],
-	'master-gate': ['gcc11', 'gcc12', 'gcc13', 'clang16'],
+	'master-build': ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'clang18'],
+	'master-gate': ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'clang18'],
 ]
