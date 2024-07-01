@@ -17,6 +17,9 @@
 
 namespace Cal::Client::Icd::LevelZero {
 
+extern const uint32_t calCommandQueueSynchronizePollingTimeoutFallbackDivisor;
+uint32_t calCommandQueueSynchronizePollingTimeoutDivisor = 1000;
+
 ze_result_t zeInit(ze_init_flags_t flags) {
     Cal::Client::Icd::LevelZero::initializeL0RedirectionLibraryIfNeeded();
     const auto platform = Cal::Client::Icd::icdGlobalState.getL0Platform();
@@ -55,6 +58,26 @@ ze_result_t zeDriverGet(uint32_t *pCount, ze_driver_handle_t *phDrivers) {
 
         log<Verbosity::debug>("Got ze_driver_handle_t from service : %p", calDriverHandle);
         platform->setRemoteObject(calDriverHandle);
+
+        ze_driver_properties_t driverProps;
+        LevelZero::zeDriverGetProperties(platform, &driverProps);
+
+        // ci-neo-028631 changed timeout to be in nanoseconds
+        // before timeout was in microseconds which is default for below value.
+        // For drivers built without version info divisor will be set based on branch
+        constexpr uint32_t initialDriverVersionValue = 0x01030000;
+        constexpr uint32_t driverVersionWithChange = initialDriverVersionValue + 28631;
+        if (driverProps.driverVersion >= driverVersionWithChange) {
+            calCommandQueueSynchronizePollingTimeoutDivisor = 1;
+            log<Verbosity::bloat>("Using new CommandQueueSynchronizePollingTimeoutDivisor");
+        } else if (driverProps.driverVersion == initialDriverVersionValue) {
+            calCommandQueueSynchronizePollingTimeoutDivisor = calCommandQueueSynchronizePollingTimeoutFallbackDivisor;
+            log<Verbosity::bloat>("Using branch dependent CommandQueueSynchronizePollingTimeoutDivisor");
+        }
+
+        if (0 != Cal::Utils::getCalEnvI64(calCommandQueueSynchronizePollingTimeoutDivisorEnvName, 0)) {
+            calCommandQueueSynchronizePollingTimeoutDivisor = Cal::Utils::getCalEnvI64(calCommandQueueSynchronizePollingTimeoutDivisorEnvName, 0);
+        }
     }
 
     if (pCount) {

@@ -41,8 +41,6 @@ namespace Cal {
 namespace Client::Icd {
 namespace LevelZero {
 
-extern uint32_t calCommandQueueSynchronizePollingTimeoutDivisor;
-
 extern void *l0RedirectLibary;
 void initializeL0RedirectionLibraryIfNeeded();
 
@@ -292,11 +290,7 @@ class IcdL0Fence : public Cal::Shared::RefCountedWithParent<_ze_fence_handle_t, 
 class IcdL0Platform : public Cal::Client::Icd::IcdPlatform, public _ze_driver_handle_t {
   public:
     IcdL0Platform(Cal::Client::Icd::IcdGlobalState &globalState)
-        : IcdPlatform(globalState, Cal::ApiType::LevelZero) {
-        if (0 != Cal::Utils::getCalEnvI64(calCommandQueueSynchronizePollingTimeoutDivisorEnvName, 0)) {
-            calCommandQueueSynchronizePollingTimeoutDivisor = Cal::Utils::getCalEnvI64(calCommandQueueSynchronizePollingTimeoutDivisorEnvName, 0);
-        }
-    }
+        : IcdPlatform(globalState, Cal::ApiType::LevelZero) {}
 
     ze_driver_handle_t asRemoteObject() {
         return calDriverHandle;

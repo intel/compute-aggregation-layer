@@ -11,6 +11,6 @@
 
 namespace Cal::Client::Icd::LevelZero {
 
-uint32_t calCommandQueueSynchronizePollingTimeoutDivisor = 1000;
+extern const uint32_t calCommandQueueSynchronizePollingTimeoutFallbackDivisor = 1000;
 
 } // namespace Cal::Client::Icd::LevelZero
