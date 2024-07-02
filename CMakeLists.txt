@@ -170,6 +170,12 @@ set(distro_codename "")
 get_os_release_info(distro_id distro_version_id distro_codename)
 add_definitions(-DCAL_BUILD_SYSTEM="${distro_id}-${distro_version_id}-${distro_codename}")
 
+if(${BRANCH_DIR_SUFFIX} STREQUAL "/")
+  add_definitions(-DBRANCH_BASED_CMDQ_TIMEOUT_DIVISOR=1000)
+else()
+  add_definitions(-DBRANCH_BASED_CMDQ_TIMEOUT_DIVISOR=1)
+endif()
+
 include_directories(${OpenCL_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/include
