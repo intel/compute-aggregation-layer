@@ -185,7 +185,7 @@ class Socket : public Connection {
         constexpr int flags{0};
         const auto ret = sendmsg(socketFd, &message, flags);
         if (ret == -1) {
-            log<Verbosity::error>("Could not send file descriptor! Errno is %d", static_cast<int>(errno));
+            log<Verbosity::error>("Could not send file descriptor! Errno is %d (%s)", static_cast<int>(errno), strerror(errno));
             return false;
         }
 
