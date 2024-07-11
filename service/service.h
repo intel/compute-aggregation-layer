@@ -1073,6 +1073,14 @@ class Provider {
             }
             return service(request, clientConnection, ctx);
         }
+        case Cal::Messages::ReqRemoteMmap::messageSubtype: {
+            Cal::Messages::ReqRemoteMmap request;
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqRemoteMmap)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
         }
     }
 
@@ -1270,6 +1278,25 @@ class Provider {
 
         if (false == clientConnection.send(response)) {
             log<Verbosity::error>("Could not send response for ReqReverseTransferFd!");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool service(const Cal::Messages::ReqRemoteMmap &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested remote mmap : address=%p, lenght=%zu, prot=0x%x, flags=0x%x, fd=%d, offset=%zu", clientConnection.getId(), request.address, request.length, request.prot, request.flags, request.fd, request.offset);
+        auto lock = ctx.lock();
+        void *mappedPtr = Cal::Sys::mmap(request.address, request.length, request.prot, request.flags, request.fd, request.offset);
+        if (mappedPtr == MAP_FAILED) {
+            log<Verbosity::error>("Failed to call mmap in service memory : address=%p, lenght=%zu, fd=%d", request.address, request.length, request.fd);
+            return false;
+        }
+
+        Cal::Messages::RespRemoteMmap response;
+        response.mappedPtr = mappedPtr;
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response for remote mmap : address=%p, lenght=%zu, fd=%d", request.address, request.length, request.fd);
             return false;
         }
 

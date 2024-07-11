@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -633,6 +633,59 @@ struct RespCheckApiAvailability {
     bool available = false;
 };
 static_assert(std::is_standard_layout<RespCheckApiAvailability>::value);
+
+struct ReqRemoteMmap {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 18;
+
+    ReqRemoteMmap() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqRemoteMmap::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqRemoteMmap::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqRemoteMmap is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    void *address{};
+    size_t length{};
+    int prot{};
+    int flags{};
+    int fd{};
+    off_t offset{};
+};
+static_assert(std::is_standard_layout<ReqRemoteMmap>::value);
+
+struct RespRemoteMmap {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 19;
+
+    RespRemoteMmap() {
+        header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        header.subtype = RespRemoteMmap::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespRemoteMmap::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespRemoteMmap is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    void *mappedPtr = MAP_FAILED;
+};
+static_assert(std::is_standard_layout<RespRemoteMmap>::value);
 
 } // namespace Messages
 } // namespace Cal
