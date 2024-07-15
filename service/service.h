@@ -233,6 +233,18 @@ class ClientContext {
         return usmHeaps;
     }
 
+    bool isAddressFromUsmHeap(void *address) const {
+        bool foundAddress = false;
+        for (auto &heap : usmHeaps) {
+            auto heapRange = heap.getUnderlyingAllocator().getMmapRange();
+            if (heapRange.contains(address)) {
+                foundAddress = true;
+                break;
+            }
+        }
+        return foundAddress;
+    }
+
     void addUsmSharedHostAlloc(void *ctx, const Cal::Usm::UsmMmappedShmemArenaAllocator::AllocationT &shmem, ApiType apiType, void (*gpuDestructor)(void *ctx, void *ptr)) {
         usmSharedHostMap[shmem.getSubAllocationPtr()] = UsmSharedHostAlloc{ctx, shmem, apiType, gpuDestructor};
     }
@@ -1287,6 +1299,12 @@ class Provider {
     bool service(const Cal::Messages::ReqRemoteMmap &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         log<Verbosity::debug>("Client : %d requested remote mmap : address=%p, lenght=%zu, prot=0x%x, flags=0x%x, fd=%d, offset=%zu", clientConnection.getId(), request.address, request.length, request.prot, request.flags, request.fd, request.offset);
         auto lock = ctx.lock();
+
+        if (!ctx.isAddressFromUsmHeap(request.address)) {
+            log<Verbosity::error>("Client : %d requested remote mmap for address %p beyond shared address space range", clientConnection.getId(), request.address);
+            return false;
+        }
+
         void *mappedPtr = Cal::Sys::mmap(request.address, request.length, request.prot, request.flags, request.fd, request.offset);
         if (mappedPtr == MAP_FAILED) {
             log<Verbosity::error>("Failed to call mmap in service memory : address=%p, lenght=%zu, fd=%d", request.address, request.length, request.fd);
