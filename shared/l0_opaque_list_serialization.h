@@ -138,6 +138,10 @@ inline size_t getUnderlyingSize(const ze_base_desc_t *desc) {
         return sizeof(zex_device_module_register_file_exp_t);
     }
 
+    if (ZEX_STRUCTURE_KERNEL_REGISTER_FILE_SIZE_EXP == stypeInt) {
+        return sizeof(zex_kernel_register_file_size_exp_t);
+    }
+
     log<Verbosity::error>("Unknown type passed as pNext! ENUM = %d", stypeInt);
     Cal::Utils::signalAbort();
     return 0;

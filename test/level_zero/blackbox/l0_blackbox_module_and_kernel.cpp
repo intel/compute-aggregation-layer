@@ -11,6 +11,7 @@
 #include "test/utils/assertions.h"
 #include "test/utils/dynamic_library.h"
 #include "test/utils/l0_common_steps.h"
+#include "third_party/level_zero_headers/driver_experimental/public/zex_module.h"
 
 #include <cstdint>
 #include <cstring>
@@ -277,16 +278,18 @@ bool getTotalGroupCount(ze_kernel_handle_t kernel) {
 bool getKernelProperties(ze_kernel_handle_t kernel) {
     log<Verbosity::info>("Getting kernel properties via zeKernelGetProperties()!");
 
-    ze_kernel_preferred_group_size_properties_t extension = {
+    zex_kernel_register_file_size_exp_t registerFilesSize{};
+
+    ze_kernel_preferred_group_size_properties_t preferredGroupSizeProperties = {
         ZE_STRUCTURE_TYPE_KERNEL_PREFERRED_GROUP_SIZE_PROPERTIES, // stype
-        nullptr,                                                  // pNext
+        &registerFilesSize,                                       // pNext
         0u                                                        // preferredMultiple
     };
 
     ze_kernel_properties_t kernelProperties = {};
 
     kernelProperties.stype = ZE_STRUCTURE_TYPE_KERNEL_PROPERTIES;
-    kernelProperties.pNext = &extension;
+    kernelProperties.pNext = &preferredGroupSizeProperties;
 
     const auto zeKernelGetPropertiesResult = zeKernelGetProperties(kernel, &kernelProperties);
     if (zeKernelGetPropertiesResult != ZE_RESULT_SUCCESS) {
@@ -299,7 +302,9 @@ bool getKernelProperties(ze_kernel_handle_t kernel) {
                          static_cast<int>(kernelProperties.numKernelArgs));
 
     log<Verbosity::info>("ze_kernel_preferred_group_size_properties_t: preferredMultiple = %d",
-                         static_cast<int>(extension.preferredMultiple));
+                         static_cast<int>(preferredGroupSizeProperties.preferredMultiple));
+
+    log<Verbosity::info>("zex_kernel_register_file_size_exp_t: registerFileSize = %d", registerFilesSize.registerFileSize);
 
     return true;
 }
