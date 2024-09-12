@@ -1752,22 +1752,15 @@ std::unique_ptr<Cal::Ipc::ConnectionListener> Provider::createConnectionListener
     return std::make_unique<Cal::Ipc::NamedSocketConnectionListener>();
 }
 
-void checkForRequiredFiles() {
-    auto calDir = Cal::Utils::getProcessPath().parent_path();
-    bool enableOcl = Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true);
-    bool enableL0 = Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true);
-    bool overrideMalloc = Cal::Utils::getCalEnvFlag(calOverrideMallocEnvName, false);
-    std::filesystem::path libCalPath;
-    std::string fullCalLibPath;
-
-    if (auto handle = dlopen("libcal.so", RTLD_LAZY); handle) {
+void checkForRequiredFilesLibrary(std::filesystem::path &calDir, std::string &libCalName, std::filesystem::path &libCalPath, std::string &fullCalLibPath) {
+    if (auto handle = dlopen(libCalName.c_str(), RTLD_LAZY); handle) {
         fullCalLibPath = Cal::Utils::getLibraryPath(handle);
         dlclose(handle);
-        libCalPath = "libcal.so";
-    } else if (handle = dlopen((calDir / "libcal.so").c_str(), RTLD_LAZY); handle) {
+        libCalPath = libCalName;
+    } else if (handle = dlopen((calDir / libCalName).c_str(), RTLD_LAZY); handle) {
         fullCalLibPath = Cal::Utils::getLibraryPath(handle);
         dlclose(handle);
-        libCalPath = calDir / "libcal.so";
+        libCalPath = calDir / libCalName;
 
         auto oldLdPath = getenv("LD_LIBRARY_PATH");
         if (oldLdPath) {
@@ -1784,8 +1777,10 @@ void checkForRequiredFiles() {
         log<Verbosity::critical>("libcal.so not available");
         exit(EXIT_FAILURE);
     }
-    log<Verbosity::info>("CAL library: %s", fullCalLibPath.c_str());
+}
 
+void checkForRequiredFilesOcl(std::filesystem::path &calDir) {
+    bool enableOcl = Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true);
     if (enableOcl) {
         std::filesystem::path calIcdPath = Utils::getPathForTempFiles();
         bool isInOpt = std::filesystem::exists(calIcdPath / "cal.icd");
@@ -1816,14 +1811,20 @@ void checkForRequiredFiles() {
             }
         }
     }
+}
 
+void checkForRequiredFilesL0(std::filesystem::path &libCalPath) {
+    bool enableL0 = Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true);
     if (enableL0) {
         Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", libCalPath.c_str(), 1);
         if (Cal::Utils::getCalEnv(calClientZeEnableAltDriversEnvName.data())) {
             Cal::Sys::setenv("ZE_ENABLE_ALT_DRIVERS", Cal::Utils::getCalEnv(calClientZeEnableAltDriversEnvName.data()), 1);
         }
     }
+}
 
+void checkForRequiredFilesMallocOverride(std::string &fullCalLibPath) {
+    bool overrideMalloc = Cal::Utils::getCalEnvFlag(calOverrideMallocEnvName, false);
     if (overrideMalloc) {
         log<Verbosity::info>("CAL Malloc override enabled, using malloc implementation from : %s", fullCalLibPath.c_str());
         Cal::Sys::setenv("LD_PRELOAD", fullCalLibPath.c_str(), 1);
@@ -1858,7 +1859,7 @@ void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
 
 bool Provider::runCommand(const ServiceConfig::RunnerConfig &config) {
     runnerConfig.subprocess = std::async(std::launch::async, [&] {
-        checkForRequiredFiles();
+        checkForRequiredFiles(this->serviceConfig.kmdShimEnabled);
         spawnProcessAndWait(config);
 
         this->runInLoop = false;

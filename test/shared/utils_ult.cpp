@@ -818,9 +818,17 @@ TEST(Setenv, whenCreateServiceConfigThenSetProperEnv) {
     Cal::Mocks::SysCallsContext tempSysCallsCtx;
     auto envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
     EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
-    auto config = std::make_unique<Cal::Service::ServiceConfig>();
+
+    auto config = std::make_unique<Cal::Service::ServiceConfig>(false);
     envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
     EXPECT_FALSE(std::strcmp(envIt->second.c_str(), Cal::Service::ServiceConfig::neoCalEnabledEnvValue));
+    config.reset();
+    envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
+    EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
+
+    config = std::make_unique<Cal::Service::ServiceConfig>(true);
+    envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
+    EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());
     config.reset();
     envIt = tempSysCallsCtx.envVariables.find(Cal::Service::ServiceConfig::neoCalEnabledEnvName);
     EXPECT_TRUE(envIt == tempSysCallsCtx.envVariables.end());

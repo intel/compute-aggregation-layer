@@ -853,7 +853,7 @@ struct MockProvider : public Cal::Service::Provider {
 };
 
 TEST(CopyGroupAssign, whenServiceProviderIsCreatedThenApplyDefaultServiceConfigurationSettings) {
-    MockProvider service(nullptr, Cal::Service::ServiceConfig());
+    MockProvider service(nullptr, Cal::Service::ServiceConfig(false));
 
     EXPECT_EQ(service.defaultSharedVaSizeInGB, 256);
     EXPECT_EQ(service.defaultRpcMessageChannelSizeMB, 256);
@@ -861,7 +861,7 @@ TEST(CopyGroupAssign, whenServiceProviderIsCreatedThenApplyDefaultServiceConfigu
 }
 
 TEST(CopyGroupAssign, givenParsedCommandQueueGroupsWhenOverrideClientsDescsThenAssignProperCopyQueueGroups) {
-    MockProvider service(nullptr, Cal::Service::ServiceConfig());
+    MockProvider service(nullptr, Cal::Service::ServiceConfig(false));
 
     std::array<ze_command_queue_group_properties_t, 4u> prop{};
     prop[0].flags |= ZE_COMMAND_QUEUE_GROUP_PROPERTY_FLAG_COMPUTE;

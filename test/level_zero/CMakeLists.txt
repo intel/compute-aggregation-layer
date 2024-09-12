@@ -42,6 +42,7 @@ add_executable(l0_test_ult_rpc
                ${cal_source_root_dir}/client/icd/icd_ocl.cpp
 
                ${cal_source_root_dir}/service/service.cpp
+               ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/service_ext.cpp
 
                ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/register_all_generated_handlers.cpp
                ${cal_source_root_dir}/shared/allocators.cpp

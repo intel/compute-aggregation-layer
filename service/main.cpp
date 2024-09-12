@@ -38,7 +38,8 @@ constexpr option options[] = {
 int main(int argc, const char *argv[]) {
     std::string choreographiesPath = ".";
 
-    Cal::Service::ServiceConfig serviceConfig;
+    bool isKmdShimEnabled = Cal::Service::getNeoKmdShimEnvEnabled();
+    Cal::Service::ServiceConfig serviceConfig(isKmdShimEnabled);
     bool isExplicitPersistentMode = false;
     bool isExplicitSharedRunnerMode = false;
 
@@ -157,7 +158,7 @@ int main(int argc, const char *argv[]) {
 
     if (existingSharedCalConnection) {
         log<Verbosity::debug>("Establishing pass-through connection");
-        Cal::Service::checkForRequiredFiles();
+        Cal::Service::checkForRequiredFiles(serviceConfig.kmdShimEnabled);
         Cal::Service::spawnProcessAndWait(serviceConfig.runner.value());
         return 0;
     } else { // new service

@@ -45,6 +45,9 @@ namespace Cal {
 
 namespace Service {
 
+bool getNeoKmdShimEnvEnabled();
+void setNeoKmdShimEnvEnabled(bool value);
+
 struct ServiceConfig {
     struct RunnerConfig {
         std::string command;
@@ -73,14 +76,20 @@ struct ServiceConfig {
         return (this->mode == Mode::runner) || (this->mode == Mode::sharedRunner);
     }
 
+    bool kmdShimEnabled = false;
+
     inline static const char *neoCalEnabledEnvName = "NEO_CAL_ENABLED";
     inline static const char *neoCalEnabledEnvValue = "1";
 
-    ServiceConfig() {
-        Cal::Sys::setenv(neoCalEnabledEnvName, neoCalEnabledEnvValue, 1);
+    ServiceConfig(bool kmdShimEnabled) : kmdShimEnabled(kmdShimEnabled) {
+        if (!kmdShimEnabled) {
+            Cal::Sys::setenv(neoCalEnabledEnvName, neoCalEnabledEnvValue, 1);
+        }
     }
     ~ServiceConfig() {
-        Cal::Sys::unsetenv(neoCalEnabledEnvName);
+        if (!kmdShimEnabled) {
+            Cal::Sys::unsetenv(neoCalEnabledEnvName);
+        }
     }
 };
 
@@ -557,7 +566,13 @@ class Provider {
         std::vector<std::future<void>> clients;
         if (Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true)) {
             log<Verbosity::info>("Initializing OCL");
+            if (this->serviceConfig.kmdShimEnabled) {
+                setNeoKmdShimEnvEnabled(false);
+            }
             systemInfo.availableApis.ocl = sharedObjects.ocl.init();
+            if (this->serviceConfig.kmdShimEnabled) {
+                setNeoKmdShimEnvEnabled(true);
+            }
             if (false == systemInfo.availableApis.ocl) {
                 log<Verbosity::info>("OpenCL API is not available in the system");
             }
@@ -567,7 +582,13 @@ class Provider {
 
         if (Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true)) {
             log<Verbosity::info>("Initializing L0");
+            if (this->serviceConfig.kmdShimEnabled) {
+                setNeoKmdShimEnvEnabled(false);
+            }
             systemInfo.availableApis.l0 = sharedObjects.l0.init();
+            if (this->serviceConfig.kmdShimEnabled) {
+                setNeoKmdShimEnvEnabled(true);
+            }
             if (false == systemInfo.availableApis.l0) {
                 log<Verbosity::info>("Level Zero API is not available in the system");
             }
@@ -1408,7 +1429,11 @@ class Provider {
     bool runCommand(const ServiceConfig::RunnerConfig &config);
 };
 
-void checkForRequiredFiles();
+void checkForRequiredFilesLibrary(std::filesystem::path &calDir, std::string &libCalName, std::filesystem::path &libCalPath, std::string &fullCalLibPath);
+void checkForRequiredFilesOcl(std::filesystem::path &calDir);
+void checkForRequiredFilesL0(std::filesystem::path &libCalPath);
+void checkForRequiredFilesMallocOverride(std::string &fullCalLibPath);
+void checkForRequiredFiles(bool kmdShimEnabled);
 void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 
 namespace Apis::Ocl {
