@@ -320,8 +320,10 @@ class ClientContext {
         return mallocShmemImporter.import(clientPtr, size, exporterCurrentHeapSizeHint);
     }
 
-    bool isImportedClientMallocPtr(void *ptr) {
-        return mallocShmemImporter.isImported(ptr);
+    bool isImportableClientMallocPtr(void *ptr) {
+        bool isImportable = mallocShmemImporter.isImportable(ptr);
+        log<Verbosity::bloat>("isImportableClientMallocPtr (ptr=%p) : %s", ptr, isImportable ? "yes" : "no");
+        return isImportable;
     }
 
     uint32_t getCopyCommandQueueGroupIndex() const { return this->copyCommandQueueGroupIndex; }

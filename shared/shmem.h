@@ -1100,7 +1100,7 @@ class MallocShmemImporter {
             return nullptr; // invalid operation
         }
 
-        if (offset + size < *importedHeapSize) {
+        if (offset + size <= *importedHeapSize) {
             return Cal::Utils::moveByBytes(localBaseAddress, offset);
         }
 
@@ -1112,6 +1112,7 @@ class MallocShmemImporter {
         auto importedEnd = Cal::Utils::moveByBytes(localBaseAddress, *importedHeapSize);
         auto ptr = Cal::Sys::mmap(importedEnd, requiredHeapSize - *importedHeapSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, *importedHeapSize);
         if (MAP_FAILED == ptr) {
+            log<Verbosity::error>("Failed to mmap imported ptr : addr=%p length=%zu (errno=%d=%s)", importedEnd, requiredHeapSize - *importedHeapSize, errno, strerror(errno));
             return nullptr;
         }
 
@@ -1119,8 +1120,9 @@ class MallocShmemImporter {
         return Cal::Utils::moveByBytes(localBaseAddress, offset);
     }
 
-    bool isImported(void *ptr) {
-        return Cal::Utils::AddressRange(localBaseAddress, capacity).contains(ptr);
+    bool isImportable(void *ptr) {
+        log<Verbosity::bloat>("isImportable : fd=%d, exporterBaseAddress=%p capacity=%zu importedHeapSize=%zu localBaseAddress=%p", fd, exporterBaseAddress, capacity, *importedHeapSize, localBaseAddress);
+        return capacity && Cal::Utils::AddressRange(reinterpret_cast<void *>(exporterBaseAddress), capacity).contains(ptr);
     }
 
     void *getLocalBaseAddress() {

@@ -26,6 +26,9 @@ extern char *__progname;
 cl_icd_dispatch clIcdDispatchTable;
 
 namespace Cal {
+
+const char *libName = "libcal.so";
+
 namespace Client::Icd {
 namespace Ocl {
 

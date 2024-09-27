@@ -465,7 +465,7 @@ bool clReleaseMemObjectHandler(Provider &service, Cal::Rpc::ChannelServer &chann
         }
     }
     apiCommand->captures.ret = Cal::Service::Apis::Ocl::Standard::clReleaseMemObject(apiCommand->args.memobj);
-    if (hostPtr && (false == ctx.isImportedClientMallocPtr(hostPtr))) {
+    if (hostPtr && (false == ctx.isImportableClientMallocPtr(hostPtr))) {
         auto ctxLock = ctx.lock();
         ctx.reapUsmSharedHostAlloc(hostPtr, false);
     }

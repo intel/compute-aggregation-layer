@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -25,6 +25,8 @@ using ReallocFT = void *(*)(void *, size_t);
 
 namespace Cal {
 
+extern const char *libName;
+
 namespace Client::MallocOverride {
 
 void *mallocRetAddress = nullptr;
@@ -40,7 +42,7 @@ Cal::Utils::AddressRange readCalLibExecAddressRange() {
     }
     char buffer[4096U] = {};
     while (fgets(buffer, sizeof(buffer), file)) {
-        if (strstr(buffer, "libcal.so") && strstr(buffer, " r-xp ")) {
+        if (strstr(buffer, libName) && strstr(buffer, " r-xp ")) {
             // e.g. "7f593027f000-7f5930431000 "
             auto delimDash = strstr(buffer, "-");
             if (nullptr == delimDash) {
@@ -80,7 +82,7 @@ bool isAllocFromCal(const Cal::Utils::AddressRange &libraryExecAddressRange) {
 
 void *getRetAddress(const char *fname) {
     char pattern[1024];
-    snprintf(pattern, sizeof(pattern), "libcal.so(%s", fname);
+    snprintf(pattern, sizeof(pattern), "%s(%s", libName, fname);
     constexpr int maxBacktraceDepth = 32;
     void *backtracePtrs[maxBacktraceDepth];
     int backtraceDepth = backtrace(backtracePtrs, maxBacktraceDepth);
