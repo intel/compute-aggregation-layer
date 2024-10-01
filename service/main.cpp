@@ -39,6 +39,10 @@ int main(int argc, const char *argv[]) {
     std::string choreographiesPath = ".";
 
     bool isKmdShimEnabled = Cal::Service::getNeoKmdShimEnvEnabled();
+    if (isKmdShimEnabled) {
+        Cal::Sys::setenv(calOverrideMallocEnvName.data(), "1", 1);
+        Cal::Sys::setenv(calOverrideMallocThresholdEnvName.data(), "0", 1);
+    }
     Cal::Service::ServiceConfig serviceConfig(isKmdShimEnabled);
     bool isExplicitPersistentMode = false;
     bool isExplicitSharedRunnerMode = false;

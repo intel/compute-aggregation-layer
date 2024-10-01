@@ -130,6 +130,11 @@ ReallocFT realloc = nullptr;
 namespace AsCalShmem {
 
 struct GlobalState {
+    ~GlobalState() {
+        snprintf(initError, sizeof(initError), "DEINITIALIZED");
+        maxCapacity = 0;
+    }
+
     size_t threshold = Cal::Utils::pageSize4KB;
     size_t maxCapacity = 4 * Cal::Utils::GB;
     size_t initialCapacity = 8 * Cal::Utils::MB;
@@ -221,6 +226,9 @@ void free(void *ptr) {
     auto &globalState = getGlobalState();
     if (BOOST_LIKELY(false == globalState.asShmemHeapRange.contains(ptr))) {
         return Cal::Client::MallocOverride::Original::free(ptr);
+    }
+    if (globalState.maxCapacity == 0) {
+        return;
     }
     std::lock_guard<std::mutex> lock{globalState.mutex};
     globalState.rangeAllocator.free(ptr);
