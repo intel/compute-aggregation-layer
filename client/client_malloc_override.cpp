@@ -131,6 +131,8 @@ namespace AsCalShmem {
 
 struct GlobalState {
     ~GlobalState() {
+        Cal::Sys::close(shmemFd);
+        Cal::Sys::shm_unlink(privateMallocShmemPath);
         snprintf(initError, sizeof(initError), "DEINITIALIZED");
         maxCapacity = 0;
     }
