@@ -130,6 +130,12 @@ ReallocFT realloc = nullptr;
 namespace AsCalShmem {
 
 struct GlobalState {
+    GlobalState() = default;
+    GlobalState(GlobalState &&) = delete;
+    GlobalState(const GlobalState &) = delete;
+    GlobalState &operator=(GlobalState &&) = delete;
+    GlobalState &operator=(const GlobalState &) = delete;
+
     ~GlobalState() {
         Cal::Sys::close(shmemFd);
         Cal::Sys::shm_unlink(privateMallocShmemPath);
