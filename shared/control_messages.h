@@ -687,5 +687,99 @@ struct RespRemoteMmap {
 };
 static_assert(std::is_standard_layout<RespRemoteMmap>::value);
 
+struct ReqOpenGpuDevice {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 20;
+
+    ReqOpenGpuDevice() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqOpenGpuDevice::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqOpenGpuDevice::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqOpenGpuDevice is not valid");
+        }
+        return 0 != invalid;
+    }
+};
+static_assert(std::is_standard_layout<ReqOpenGpuDevice>::value);
+
+struct RespOpenGpuDevice {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 21;
+
+    RespOpenGpuDevice() {
+        header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        header.subtype = RespOpenGpuDevice::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespOpenGpuDevice::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespOpenGpuDevice is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    int remoteFd = -1;
+};
+static_assert(std::is_standard_layout<RespOpenGpuDevice>::value);
+
+struct ReqCloseGpuDevice {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 22;
+
+    ReqCloseGpuDevice() {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqCloseGpuDevice::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqCloseGpuDevice::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqCloseGpuDevice is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    int remoteFd = -1;
+};
+static_assert(std::is_standard_layout<ReqCloseGpuDevice>::value);
+
+struct RespCloseGpuDevice {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 23;
+
+    RespCloseGpuDevice() {
+        header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        header.subtype = RespCloseGpuDevice::messageSubtype;
+    }
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespCloseGpuDevice::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespCloseGpuDevice is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    int result = -1;
+};
+static_assert(std::is_standard_layout<RespCloseGpuDevice>::value);
+
 } // namespace Messages
 } // namespace Cal

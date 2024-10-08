@@ -1116,6 +1116,22 @@ class Provider {
             }
             return service(request, clientConnection, ctx);
         }
+        case Cal::Messages::ReqOpenGpuDevice::messageSubtype: {
+            Cal::Messages::ReqOpenGpuDevice request;
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqOpenGpuDevice)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
+        case Cal::Messages::ReqCloseGpuDevice::messageSubtype: {
+            Cal::Messages::ReqCloseGpuDevice request;
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqCloseGpuDevice)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
         }
     }
 
@@ -1338,6 +1354,45 @@ class Provider {
         response.mappedPtr = mappedPtr;
         if (false == clientConnection.send(response)) {
             log<Verbosity::error>("Could not send response for remote mmap : address=%p, lenght=%zu, fd=%d", request.address, request.length, request.fd);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool service(const Cal::Messages::ReqOpenGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested service to open GPU device : ctx=%p", clientConnection.getId(), &ctx);
+        auto lock = ctx.lock();
+
+        std::string path = "/dev/dri/renderD128";
+        int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
+        if (fd < 0) {
+            return false;
+        }
+
+        Cal::Messages::RespOpenGpuDevice response;
+        response.remoteFd = fd;
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response from service to open GPU device : fd=%d", response.remoteFd);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool service(const Cal::Messages::ReqCloseGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested service to close GPU device : ctx=%p", clientConnection.getId(), &ctx);
+        auto lock = ctx.lock();
+
+        int result = close(request.remoteFd);
+        if (result != 0) {
+            return false;
+        }
+
+        Cal::Messages::RespCloseGpuDevice response;
+        response.result = result;
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response from service to close GPU device : result=%d", response.result);
             return false;
         }
 
