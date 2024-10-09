@@ -692,9 +692,18 @@ struct ReqOpenGpuDevice {
 
     static constexpr uint16_t messageSubtype = 20;
 
-    ReqOpenGpuDevice() {
+    ReqOpenGpuDevice(const char *path) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqOpenGpuDevice::messageSubtype;
+        if (path) {
+            strncpy(this->devicePath, path, PATH_MAX - 1);
+            this->devicePath[PATH_MAX - 1] = '\0';
+        } else {
+            this->devicePath[0] = '\0';
+        }
+    }
+
+    ReqOpenGpuDevice() : ReqOpenGpuDevice(nullptr) {
     }
 
     bool isInvalid() const {
@@ -706,6 +715,12 @@ struct ReqOpenGpuDevice {
         }
         return 0 != invalid;
     }
+
+    friend void sanitizeReceivedData(ReqOpenGpuDevice *reqOpenGpuDevice) {
+        reqOpenGpuDevice->devicePath[PATH_MAX - 1] = '\0';
+    }
+
+    char devicePath[PATH_MAX] = {};
 };
 static_assert(std::is_standard_layout<ReqOpenGpuDevice>::value);
 
@@ -738,9 +753,13 @@ struct ReqCloseGpuDevice {
 
     static constexpr uint16_t messageSubtype = 22;
 
-    ReqCloseGpuDevice() {
+    ReqCloseGpuDevice(int fd) {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqCloseGpuDevice::messageSubtype;
+        this->remoteFd = fd;
+    }
+
+    ReqCloseGpuDevice() : ReqCloseGpuDevice(-1) {
     }
 
     bool isInvalid() const {

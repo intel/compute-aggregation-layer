@@ -1364,9 +1364,9 @@ class Provider {
         log<Verbosity::debug>("Client : %d requested service to open GPU device : ctx=%p", clientConnection.getId(), &ctx);
         auto lock = ctx.lock();
 
-        std::string path = "/dev/dri/renderD128";
-        int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
+        int fd = open(request.devicePath, O_RDWR | O_CLOEXEC);
         if (fd < 0) {
+            log<Verbosity::error>("Failed to open GPU device in service : path=%s, fd=%d", request.devicePath, fd);
             return false;
         }
 
@@ -1386,6 +1386,7 @@ class Provider {
 
         int result = close(request.remoteFd);
         if (result != 0) {
+            log<Verbosity::error>("Failed to close GPU device in service : fd=%d", request.remoteFd);
             return false;
         }
 
