@@ -1036,6 +1036,63 @@ class Provider {
         ctx.cleanup();
     }
 
+    struct DeviceFdByPathCache {
+        int getRefCountedFd(const std::string &devicePath) {
+            auto mapLock = refCountedFdByDevicePath.lock();
+            auto iter = (*refCountedFdByDevicePath).find(devicePath);
+            if (iter == (*refCountedFdByDevicePath).end()) {
+                auto openedFd = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
+                if (openedFd < 0) {
+                    auto err = errno;
+                    log<Verbosity::error>("Failed to open file for devicePath=%s : errno=%d=%s", devicePath.c_str(), err, strerror(err));
+                    return -1;
+                }
+                (*refCountedFdByDevicePath)[devicePath] = {openedFd, 1};
+                log<Verbosity::debug>("File opened successfully for devicePath=%s : openedFd=%d refCount=1", devicePath.c_str(), openedFd);
+                return openedFd;
+            } else {
+                auto &[cachedFd, refCount] = (*iter).second;
+                ++refCount;
+                log<Verbosity::debug>("File already open for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+                return cachedFd;
+            }
+        }
+
+        int closeRefCountedFd(const std::string &devicePath) {
+            auto mapLock = refCountedFdByDevicePath.lock();
+            auto iter = (*refCountedFdByDevicePath).find(devicePath);
+            if (iter == (*refCountedFdByDevicePath).end()) {
+                log<Verbosity::debug>("Couldn't find file for devicePath=%s", devicePath.c_str());
+                return -1;
+            }
+            auto &[cachedFd, refCount] = (*iter).second;
+            if (refCount <= 0) {
+                log<Verbosity::error>("Found incorrect refcount for devicePath=%s : refCount=%d", devicePath.c_str(), refCount);
+                return -1;
+            }
+            if (refCount == 1) {
+                auto ret = close(cachedFd);
+                if (ret != 0) {
+                    auto err = errno;
+                    log<Verbosity::error>("Failed to close file for devicePath=%s : cachedFd=%d errno=%d=%s", devicePath.c_str(), cachedFd, err, strerror(err));
+                    return ret;
+                }
+                log<Verbosity::debug>("File closed successfully for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+                (*refCountedFdByDevicePath).erase(devicePath);
+                return 0;
+            } else {
+                log<Verbosity::debug>("File not closed yet for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+                --refCount;
+                return 0;
+            }
+        }
+
+        using RefCountedFd = std::pair<int /*cachedFd*/, int /*refCount*/>;
+        Cal::Utils::Lockable<std::unordered_map<std::string /*devicePath*/, RefCountedFd>> refCountedFdByDevicePath{};
+    };
+
+    DeviceFdByPathCache deviceFdByPathCache{};
+
     bool serviceRequestMessage(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         switch (messageHeader.subtype) {
         default:
@@ -1361,19 +1418,18 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqOpenGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested service to open GPU device : ctx=%p", clientConnection.getId(), &ctx);
+        log<Verbosity::debug>("Client : %d requested service to open GPU device : devicePath=%s", clientConnection.getId(), request.devicePath);
         auto lock = ctx.lock();
 
-        int fd = open(request.devicePath, O_RDWR | O_CLOEXEC);
-        if (fd < 0) {
-            log<Verbosity::error>("Failed to open GPU device in service : path=%s, fd=%d", request.devicePath, fd);
+        int refCountedFd = deviceFdByPathCache.getRefCountedFd(request.devicePath);
+        if (refCountedFd < 0) {
+            log<Verbosity::error>("Failed to open GPU device in service : devicePath=%s refCountedFd=%d", request.devicePath, refCountedFd);
             return false;
         }
 
-        Cal::Messages::RespOpenGpuDevice response;
-        response.remoteFd = fd;
+        Cal::Messages::RespOpenGpuDevice response(refCountedFd);
         if (false == clientConnection.send(response)) {
-            log<Verbosity::error>("Could not send response from service to open GPU device : fd=%d", response.remoteFd);
+            log<Verbosity::error>("Could not send response from service to open GPU device : devicePath=%s refCountedFd=%d", request.devicePath, refCountedFd);
             return false;
         }
 
@@ -1381,19 +1437,18 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqCloseGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested service to close GPU device : ctx=%p", clientConnection.getId(), &ctx);
+        log<Verbosity::debug>("Client : %d requested service to close GPU device : devicePath=%s", clientConnection.getId(), request.devicePath);
         auto lock = ctx.lock();
 
-        int result = close(request.remoteFd);
+        int result = deviceFdByPathCache.closeRefCountedFd(request.devicePath);
         if (result != 0) {
-            log<Verbosity::error>("Failed to close GPU device in service : fd=%d", request.remoteFd);
+            log<Verbosity::error>("Failed to close GPU device in service : devicePath=%s result=%d", request.devicePath, result);
             return false;
         }
 
-        Cal::Messages::RespCloseGpuDevice response;
-        response.result = result;
+        Cal::Messages::RespCloseGpuDevice response(result);
         if (false == clientConnection.send(response)) {
-            log<Verbosity::error>("Could not send response from service to close GPU device : result=%d", response.result);
+            log<Verbosity::error>("Could not send response from service to close GPU device : devicePath=%s result=%d", request.devicePath, result);
             return false;
         }
 
