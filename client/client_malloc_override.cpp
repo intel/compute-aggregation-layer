@@ -130,19 +130,6 @@ ReallocFT realloc = nullptr;
 namespace AsCalShmem {
 
 struct GlobalState {
-    GlobalState() = default;
-    GlobalState(GlobalState &&) = delete;
-    GlobalState(const GlobalState &) = delete;
-    GlobalState &operator=(GlobalState &&) = delete;
-    GlobalState &operator=(const GlobalState &) = delete;
-
-    ~GlobalState() {
-        Cal::Sys::close(shmemFd);
-        Cal::Sys::shm_unlink(privateMallocShmemPath);
-        snprintf(initError, sizeof(initError), "DEINITIALIZED");
-        maxCapacity = 0;
-    }
-
     size_t threshold = Cal::Utils::pageSize4KB;
     size_t maxCapacity = 4 * Cal::Utils::GB;
     size_t initialCapacity = 8 * Cal::Utils::MB;
@@ -158,8 +145,8 @@ struct GlobalState {
 };
 
 GlobalState &getGlobalState() {
-    static GlobalState globalState;
-    return globalState;
+    static GlobalState *globalState = new GlobalState;
+    return *globalState;
 }
 
 // NOT thread-safe
@@ -302,6 +289,22 @@ void *realloc(void *ptr, size_t size) {
 
     return newRange.base();
 }
+
+struct MallocOverrideSystemResourcesCleanup {
+    MallocOverrideSystemResourcesCleanup() = default;
+    MallocOverrideSystemResourcesCleanup(MallocOverrideSystemResourcesCleanup &&) = delete;
+    MallocOverrideSystemResourcesCleanup(const MallocOverrideSystemResourcesCleanup &) = delete;
+    MallocOverrideSystemResourcesCleanup &operator=(MallocOverrideSystemResourcesCleanup &&) = delete;
+    MallocOverrideSystemResourcesCleanup &operator=(const MallocOverrideSystemResourcesCleanup &) = delete;
+
+    ~MallocOverrideSystemResourcesCleanup() {
+        Cal::Sys::close(getGlobalState().shmemFd);
+        Cal::Sys::shm_unlink(getGlobalState().privateMallocShmemPath);
+        snprintf(getGlobalState().initError, sizeof(getGlobalState().initError), "DEINITIALIZED");
+        getGlobalState().maxCapacity = 0;
+    }
+} mallocOverrideSystemResourcesCleanupGaurd;
+
 } // namespace AsCalShmem
 
 namespace Init {
