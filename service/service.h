@@ -566,8 +566,10 @@ class Provider {
         log<Verbosity::info>("Starting Compute Aggregation Layer service from PID : %d", getpid());
 
         std::vector<std::future<void>> clients;
-        if (Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, true)) {
-            log<Verbosity::info>("Initializing OCL");
+
+        bool calEnableOclInCalrunEnvDefaultValue = this->serviceConfig.kmdShimEnabled ? false : true;
+        if (Cal::Utils::getCalEnvFlag(calEnableOclInCalrunEnvName, calEnableOclInCalrunEnvDefaultValue)) {
+            log<Verbosity::info>("Initializing OCL API");
             if (this->serviceConfig.kmdShimEnabled) {
                 setNeoKmdShimEnvEnabled(false);
             }
@@ -576,14 +578,15 @@ class Provider {
                 setNeoKmdShimEnvEnabled(true);
             }
             if (false == systemInfo.availableApis.ocl) {
-                log<Verbosity::info>("OpenCL API is not available in the system");
+                log<Verbosity::warning>("OpenCL API is not available in the system");
             }
         } else {
-            log<Verbosity::info>("OpenCL API disabled with %s=0", calEnableOclInCalrunEnvName.data());
+            log<Verbosity::debug>("OpenCL API disabled with %s=0", calEnableOclInCalrunEnvName.data());
         }
 
-        if (Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, true)) {
-            log<Verbosity::info>("Initializing L0");
+        bool calEnableL0InCalrunEnvDefaultValue = this->serviceConfig.kmdShimEnabled ? false : true;
+        if (Cal::Utils::getCalEnvFlag(calEnableL0InCalrunEnvName, calEnableL0InCalrunEnvDefaultValue)) {
+            log<Verbosity::info>("Initializing L0 API");
             if (this->serviceConfig.kmdShimEnabled) {
                 setNeoKmdShimEnvEnabled(false);
             }
@@ -592,10 +595,15 @@ class Provider {
                 setNeoKmdShimEnvEnabled(true);
             }
             if (false == systemInfo.availableApis.l0) {
-                log<Verbosity::info>("Level Zero API is not available in the system");
+                log<Verbosity::warning>("Level Zero API is not available in the system");
             }
         } else {
-            log<Verbosity::info>("Level Zero API disabled with %s=0", calEnableL0InCalrunEnvName.data());
+            log<Verbosity::debug>("Level Zero API disabled with %s=0", calEnableL0InCalrunEnvName.data());
+        }
+
+        if (this->serviceConfig.kmdShimEnabled) {
+            log<Verbosity::info>("Initializing IOCTL API");
+            systemInfo.availableApis.ioctl = true;
         }
 
         if (systemInfo.availableApis.none()) {
@@ -888,8 +896,9 @@ class Provider {
         struct {
             bool l0 = false;
             bool ocl = false;
+            bool ioctl = false;
             bool any() const {
-                return l0 || ocl;
+                return l0 || ocl || ioctl;
             }
             bool none() const {
                 return false == any();
