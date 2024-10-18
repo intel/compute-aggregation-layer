@@ -7,7 +7,7 @@ components:
   infra:
     branch: master
     dest_dir: infra
-    revision: v6442
+    revision: v6464
     fetch_tags: true
     type: git
 version: '1'
