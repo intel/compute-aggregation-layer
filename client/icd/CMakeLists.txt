@@ -15,6 +15,7 @@ add_library(cal SHARED # acts as ICD
             ${cal_source_root_dir}/client/client_connection.cpp
             ${cal_source_root_dir}/client/client_malloc_override.cpp
             ${cal_source_root_dir}/client/client_malloc_override_entry.cpp
+            ${cal_source_root_dir}/client/${BRANCH_DIR_SUFFIX}/client_malloc_override_external.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/icd_ocl.cpp
             ${cal_source_root_dir}/shared/allocators.cpp
             ${cal_source_root_dir}/shared/callstack.cpp

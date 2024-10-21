@@ -817,5 +817,64 @@ struct RespCloseGpuDevice {
 };
 static_assert(std::is_standard_layout<RespCloseGpuDevice>::value);
 
+struct ReqConfigMallocOverride {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 24;
+
+    explicit ReqConfigMallocOverride(const char *shmName) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = ReqConfigMallocOverride::messageSubtype;
+        strncpy(this->shmName, shmName, NAME_MAX - 1);
+        this->shmName[NAME_MAX - 1] = '\0';
+    }
+
+    ReqConfigMallocOverride() : ReqConfigMallocOverride("") {}
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != ReqConfigMallocOverride::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message ReqConfigMallocOverride is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    friend void sanitizeReceivedData(ReqConfigMallocOverride *reqConfigMallocOverride) {
+        reqConfigMallocOverride->shmName[NAME_MAX - 1] = '\0';
+    }
+
+    char shmName[NAME_MAX] = {};
+};
+static_assert(std::is_standard_layout<ReqConfigMallocOverride>::value);
+
+struct RespConfigMallocOverride {
+    Cal::Ipc::ControlMessageHeader header = {};
+
+    static constexpr uint16_t messageSubtype = 25;
+
+    explicit RespConfigMallocOverride(bool isMallocOverridenInCAL) {
+        this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
+        this->header.subtype = RespConfigMallocOverride::messageSubtype;
+        this->isMallocOverridenInCAL = isMallocOverridenInCAL;
+    }
+
+    RespConfigMallocOverride() : RespConfigMallocOverride(false) {}
+
+    bool isInvalid() const {
+        uint32_t invalid = 0;
+        invalid |= (this->header.type != Cal::Ipc::ControlMessageHeader::messageTypeRequest) ? 1 : 0;
+        invalid |= (this->header.subtype != RespConfigMallocOverride::messageSubtype) ? 1 : 0;
+        if (0 != invalid) {
+            log<Verbosity::error>("Message RespConfigMallocOverride is not valid");
+        }
+        return 0 != invalid;
+    }
+
+    bool isMallocOverridenInCAL;
+};
+static_assert(std::is_standard_layout<RespConfigMallocOverride>::value);
+
 } // namespace Messages
 } // namespace Cal

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Intel Corporation
+ * Copyright (C) 2023-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -112,5 +112,11 @@ class MallocShmemExporter {
     Cal::Utils::AddressRange localRange;
     uintptr_t remoteHeapBase = std::numeric_limits<uintptr_t>::max();
 };
+
+namespace External {
+
+const char *getShmemName();
+
+} // namespace External
 
 } // namespace Cal::Client::MallocOverride

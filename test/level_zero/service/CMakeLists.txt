@@ -25,6 +25,7 @@ set(SERVICE_L0_TESTS_SHARED_DEPENDECIES
     ${cal_source_root_dir}/service/service.cpp
     ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/register_all_generated_handlers.cpp
     ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/service_ext.cpp
+    ${cal_source_root_dir}/service/${BRANCH_DIR_SUFFIX}/service_malloc_override.cpp
     $<TARGET_OBJECTS:generated_ult_service>
 )
 

@@ -15,6 +15,7 @@
 #include "service/level_zero/context_mappings_tracker.h"
 #include "service/level_zero/l0_shared_objects.h"
 #include "service/level_zero/ongoing_hostptr_copies_manager.h"
+#include "service/service_malloc_override.h"
 #include "shared/control_messages.h"
 #include "shared/ipc.h"
 #include "shared/log.h"
@@ -1198,6 +1199,14 @@ class Provider {
             }
             return service(request, clientConnection, ctx);
         }
+        case Cal::Messages::ReqConfigMallocOverride::messageSubtype: {
+            Cal::Messages::ReqConfigMallocOverride request;
+            if ((false == clientConnection.receive(request)) || request.isInvalid()) {
+                log<Verbosity::error>("Client : %d sent broken CAL request message (subtype:ReqConfigMallocOverride)", clientConnection.getId());
+                return false;
+            }
+            return service(request, clientConnection, ctx);
+        }
         }
     }
 
@@ -1464,6 +1473,25 @@ class Provider {
         return true;
     }
 
+    bool service(const Cal::Messages::ReqConfigMallocOverride &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+        log<Verbosity::debug>("Client : %d requested service to config malloc override : shmemName=%s", clientConnection.getId(), request.shmName);
+
+        bool isMallocOverridenInCal = MallocOverride::isOverridenInCAL();
+        if (!isMallocOverridenInCal) {
+            if (!MallocOverride::initializeClientData(request.shmName)) {
+                return false;
+            }
+        }
+
+        Cal::Messages::RespConfigMallocOverride response(isMallocOverridenInCal);
+        if (false == clientConnection.send(response)) {
+            log<Verbosity::error>("Could not send response from service to config malloc override : isMallocOverridenInCAL=%s", (response.isMallocOverridenInCAL ? "true" : "false"));
+            return false;
+        }
+
+        return true;
+    }
+
     static void serviceSingleRpcChannel(Cal::Rpc::ChannelServer *channel, ClientContext &ctx, Provider &service) {
         log<Verbosity::debug>("Starting to service RPC channel : %d", channel->getId());
         static std::shared_mutex batchedMtx;
@@ -1554,7 +1582,6 @@ class Provider {
 void checkForRequiredFilesLibrary(std::filesystem::path &calDir, std::string &libCalName, std::filesystem::path &libCalPath, std::string &fullCalLibPath);
 void checkForRequiredFilesOcl(std::filesystem::path &calDir);
 void checkForRequiredFilesL0(std::filesystem::path &libCalPath);
-void checkForRequiredFilesMallocOverride(std::string &fullCalLibPath);
 void checkForRequiredFiles(bool kmdShimEnabled);
 void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config);
 

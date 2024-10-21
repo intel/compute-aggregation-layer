@@ -106,6 +106,21 @@ void ClientConnection::connect() {
 
     serviceDebugBreakEnv(serviceConfig.assignedClientOrdinal);
 
+    log<Verbosity::debug>("Configuring malloc override");
+    Cal::Messages::ReqConfigMallocOverride reqMallocOverride;
+    strncpy(reqMallocOverride.shmName, MallocOverride::External::getShmemName(), sizeof(reqMallocOverride.shmName) - 1);
+    if (false == this->connection->send(reqMallocOverride)) {
+        log<Verbosity::critical>("Configuring malloc override - request failed");
+        this->connection.reset();
+        return;
+    }
+    Cal::Messages::RespConfigMallocOverride respMallocOverride;
+    if ((false == this->connection->receive(respMallocOverride)) || respMallocOverride.isInvalid()) {
+        log<Verbosity::critical>("Configuring malloc override - response failed");
+        this->connection.reset();
+        return;
+    }
+
     this->mallocShmemExporter = std::make_unique<Cal::Client::MallocOverride::MallocShmemExporter>();
     if (this->mallocShmemExporter->isAllowed()) {
         log<Verbosity::debug>("Exporting user address space for zero-copy sharing of user allocated memory (malloc)");

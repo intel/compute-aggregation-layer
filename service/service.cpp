@@ -1823,14 +1823,6 @@ void checkForRequiredFilesL0(std::filesystem::path &libCalPath) {
     }
 }
 
-void checkForRequiredFilesMallocOverride(std::string &fullCalLibPath) {
-    bool overrideMalloc = Cal::Utils::getCalEnvFlag(calOverrideMallocEnvName, false);
-    if (overrideMalloc) {
-        log<Verbosity::info>("CAL Malloc override enabled, using malloc implementation from : %s", fullCalLibPath.c_str());
-        Cal::Sys::setenv("LD_PRELOAD", fullCalLibPath.c_str(), 1);
-    }
-}
-
 void spawnProcessAndWait(const ServiceConfig::RunnerConfig &config) {
     unsetenv("ZE_AFFINITY_MASK");
     auto childPid = fork();
