@@ -187,6 +187,9 @@ bool ensureMemoryIsMapped(Cal::Utils::AddressRange range) {
 
 // thread-safe
 void *mallocNoFallback(size_t size) {
+    if (0 == size) {
+        return nullptr;
+    }
     auto &globalState = getGlobalState();
     std::lock_guard<std::mutex> lock{globalState.mutex};
     auto range = globalState.rangeAllocator.allocate(size, naturalAlignment);
