@@ -32,6 +32,7 @@ namespace Client::MallocOverride {
 void *mallocRetAddress = nullptr;
 void *callocRetAddress = nullptr;
 constexpr size_t naturalAlignment = 16U;
+constexpr const char *mpi_process_name = "hydra_pmi_proxy";
 
 Cal::Utils::AddressRange readCalLibExecAddressRange() {
     Cal::Utils::AddressRange calLibExecAddressRange = {nullptr, size_t{0}};
@@ -400,6 +401,9 @@ bool ensureCallocRetAddressCaptured() {
 
 void *malloc(size_t size) {
     Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::Original::malloc;
+    if (mpi_process_name == Cal::Utils::getProcessName()) {
+        return Cal::Client::MallocOverride::Original::malloc(size);
+    }
     ensureMallocRetAddressCaptured();
     ensureInitialized();
     Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::AsCalShmem::malloc;
@@ -409,6 +413,9 @@ void *malloc(size_t size) {
 
 void *calloc(size_t nitems, size_t size) {
     Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::Original::calloc;
+    if (mpi_process_name == Cal::Utils::getProcessName()) {
+        return Cal::Client::MallocOverride::Original::calloc(nitems, size);
+    }
     ensureCallocRetAddressCaptured();
     ensureInitialized();
     Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::AsCalShmem::calloc;
