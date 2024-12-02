@@ -7,6 +7,7 @@
 
 // #### Generated code -- begin ####
 
+#include "client/client_malloc_override.h"
 #include "client/icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
@@ -6855,6 +6856,7 @@ ze_result_t zeCommandListAppendWriteGlobalTimestamp_Shared (ze_command_list_hand
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendWriteGlobalTimestamp_SharedRpcM;
+    dstptr = reinterpret_cast<uint64_t*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -6939,6 +6941,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Usm_Shared (ze_command_list_ha
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7028,6 +7031,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Usm (ze_command_list_ha
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7072,6 +7076,8 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Shared (ze_command_list
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7117,6 +7123,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Shared_Remapped (ze_command_li
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Shared_RemappedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7205,6 +7212,7 @@ ze_result_t zeCommandListAppendMemoryCopyDeferred_Remapped_Shared (ze_command_li
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyDeferred_Remapped_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7432,6 +7440,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Local_Shared (ze_command_list
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Local_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7596,6 +7605,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Usm_Shared (ze_command_list_h
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7656,6 +7666,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Local (ze_command_list
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_LocalRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7708,6 +7719,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Usm (ze_command_list_h
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7759,6 +7771,8 @@ ze_result_t zeCommandListAppendMemoryCopyImmediate_Shared_Shared (ze_command_lis
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediate_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -7914,6 +7928,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Local_Shared (ze_c
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Local_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8068,6 +8083,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Usm_Shared (ze_com
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8119,6 +8135,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Local (ze_c
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_LocalRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8170,6 +8187,7 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Usm (ze_com
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8221,6 +8239,8 @@ ze_result_t zeCommandListAppendMemoryCopyImmediateSynchronous_Shared_Shared (ze_
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyImmediateSynchronous_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8316,6 +8336,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Usm_Shared (ze_command_l
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionDeferred_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8405,6 +8426,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Usm (ze_command_l
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionDeferred_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8449,6 +8471,8 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Shared (ze_comman
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionDeferred_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8494,6 +8518,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Shared_Remapped (ze_comm
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionDeferred_Shared_RemappedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8582,6 +8607,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionDeferred_Remapped_Shared (ze_comm
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionDeferred_Remapped_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8723,6 +8749,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_Shared
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateSynchronous_Local_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8879,6 +8906,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_Shared (
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateSynchronous_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -8982,6 +9010,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Usm (
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9033,6 +9062,8 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Share
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9085,6 +9116,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_Remap
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateSynchronous_Shared_RemappedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9204,6 +9236,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_Share
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Local_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9368,6 +9401,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_Shared 
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Usm_SharedRpcM;
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9471,6 +9505,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Usm 
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9522,6 +9557,8 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Shar
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_SharedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
+    srcptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9574,6 +9611,7 @@ ze_result_t zeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_Rema
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyRegionImmediateAsynchronous_Shared_RemappedRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, dstRegion, dstPitch, dstSlicePitch, srcptr, srcRegion, srcPitch, srcSlicePitch, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9670,6 +9708,7 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextDeferred_Shared_Usm (ze_comm
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyFromContextDeferred_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -9853,6 +9892,7 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyFromContextImmediateSynchronous_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
@@ -10018,6 +10058,7 @@ ze_result_t zeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::LevelZero::ZeCommandListAppendMemoryCopyFromContextImmediateAsynchronous_Shared_UsmRpcM;
+    dstptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, hCommandList, dstptr, hContextSrc, srcptr, size, hSignalEvent, numWaitEvents, phWaitEvents);

@@ -14,9 +14,25 @@ namespace Cal::Service {
 
 namespace MallocOverride {
 
+class ClientData {
+  public:
+    explicit ClientData(void *handle) : handle{handle} {}
+    ~ClientData();
+
+    void *getHandle() const { return handle; }
+
+    ClientData(ClientData &) = delete;
+    ClientData &operator=(ClientData &) = delete;
+
+  private:
+    void *handle = nullptr;
+};
+
 bool isOverridenInCAL();
 
-bool initializeClientData(const char *shmemName);
+ClientData *initializeClientData();
+
+void *importPtr(void *ptr, ClientData *data);
 
 } // namespace MallocOverride
 

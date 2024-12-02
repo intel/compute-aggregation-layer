@@ -24,6 +24,11 @@ add_library(cal SHARED # acts as ICD
             ${cal_source_root_dir}/shared/utils.cpp
             $<TARGET_OBJECTS:icd_l0_objects>
             $<TARGET_OBJECTS:generated_icd>
+            ${ICD_ADDITIONAL_SOURCES}
+)
+
+target_include_directories(cal PRIVATE
+                           ${ICD_ADDITIONAL_INCLUDE_DIRS}
 )
 
 target_link_libraries(cal ${common_library_dependencies})

@@ -18,6 +18,8 @@ int main() {
         log<Cal::Utils::Log::Verbosity::warning>("This test is intended to be run with CAL_OVERRIDE_MALLOC set.");
     }
 
+    size_t mallocOverrideThreshold = Cal::Utils::getCalEnvI64(calOverrideMallocThresholdEnvName, Cal::Utils::pageSize4KB);
+
     std::vector<ze_driver_handle_t> drivers{};
     std::vector<ze_device_handle_t> devices{};
 
@@ -35,23 +37,42 @@ int main() {
     ze_command_list_handle_t cmdList{};
     RUN_REQUIRED_STEP(createCommandList(context, devices[0], ordinal, cmdList));
 
-    constexpr size_t memSize = 5555;
-    void *mallocedPtr = malloc(memSize);
-    memset(mallocedPtr, 0x42, memSize);
+    size_t smallAllocationMemSize = mallocOverrideThreshold / 2;
+    size_t largeAllocationMemSize = mallocOverrideThreshold + 1024;
+    log<Verbosity::info>("Allocating malloc memory smaller than threshold - size = %zu", smallAllocationMemSize);
+    void *smallAllocationPtr = malloc(smallAllocationMemSize);
+    log<Verbosity::info>("Allocating malloc memory larger than threshold - size = %zu", largeAllocationMemSize);
+    void *largeAllocationPtr = malloc(largeAllocationMemSize);
 
-    void *destMemory{nullptr};
-    RUN_REQUIRED_STEP(allocateHostMemory(context, memSize, 8, destMemory));
-    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(destMemory, 0xCD, memSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(smallAllocationPtr, 0x42, smallAllocationMemSize));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(largeAllocationPtr, 0xCD, largeAllocationMemSize));
 
-    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, destMemory, mallocedPtr, memSize));
+    void *usmMemory{nullptr};
+    RUN_REQUIRED_STEP(allocateHostMemory(context, largeAllocationMemSize, 8, usmMemory));
+    RUN_REQUIRED_STEP(fillBufferOnHostViaMemset(usmMemory, 0x42, largeAllocationMemSize));
+
+    // copy from unoverriden malloc ptr to overriden malloc ptr
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, largeAllocationPtr, smallAllocationPtr, smallAllocationMemSize));
     RUN_REQUIRED_STEP(closeCommandList(cmdList));
 
     RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
     RUN_REQUIRED_STEP(synchronizeCommandQueue(queue));
 
-    RUN_REQUIRED_STEP(verifyMemoryCopyResults(mallocedPtr, destMemory, memSize));
+    RUN_REQUIRED_STEP(verifyMemoryCopyResults(largeAllocationPtr, smallAllocationPtr, smallAllocationMemSize));
 
-    free(mallocedPtr);
+    RUN_REQUIRED_STEP(resetCommandList(cmdList));
+    // copy from usm ptr to overriden malloc ptr
+    RUN_REQUIRED_STEP(appendMemoryCopy(cmdList, largeAllocationPtr, usmMemory, largeAllocationMemSize));
+    RUN_REQUIRED_STEP(closeCommandList(cmdList));
+
+    RUN_REQUIRED_STEP(executeCommandLists(queue, 1, &cmdList, nullptr));
+    RUN_REQUIRED_STEP(synchronizeCommandQueue(queue));
+
+    RUN_REQUIRED_STEP(verifyMemoryCopyResults(usmMemory, largeAllocationPtr, largeAllocationMemSize));
+
+    RUN_REQUIRED_STEP(freeMemory(context, usmMemory));
+    free(largeAllocationPtr);
+    free(smallAllocationPtr);
     RUN_REQUIRED_STEP(destroyCommandList(cmdList));
     RUN_REQUIRED_STEP(destroyCommandQueue(queue));
     RUN_REQUIRED_STEP(destroyContext(context));

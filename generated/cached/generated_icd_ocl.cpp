@@ -7,6 +7,7 @@
 
 // #### Generated code -- begin ####
 
+#include "client/client_malloc_override.h"
 #include "client/icd/icd_global_state.h"
 #include "shared/rpc.h"
 #include "shared/utils.h"
@@ -1998,6 +1999,7 @@ cl_mem clCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmem (cl_context context,
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClCreateBufferRpcHelperUseHostPtrZeroCopyMallocShmemRpcM;
+    host_ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(host_ptr, channel));
     auto commandSpace = channel.getCmdSpace<CommandT>(0);
     auto command = new(commandSpace) CommandT(context, flags, size, host_ptr, errcode_ret);
     command->args.context = context->asLocalObject()->asRemoteObject();
@@ -4108,6 +4110,7 @@ cl_int clEnqueueWriteBuffer_Shared (cl_command_queue command_queue, cl_mem buffe
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBuffer_SharedRpcM;
+    ptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -4277,6 +4280,7 @@ cl_int clEnqueueWriteBufferRect_Shared (cl_command_queue command_queue, cl_mem b
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueWriteBufferRect_SharedRpcM;
+    ptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_write, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_write, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -4451,6 +4455,7 @@ cl_int clEnqueueReadBuffer_Shared (cl_command_queue command_queue, cl_mem buffer
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBuffer_SharedRpcM;
+    ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, offset, size, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -4627,6 +4632,7 @@ cl_int clEnqueueReadBufferRect_Shared (cl_command_queue command_queue, cl_mem bu
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueReadBufferRect_SharedRpcM;
+    ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, buffer, blocking_read, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, buffer, blocking_read, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -4826,6 +4832,7 @@ cl_int clEnqueueSVMMemcpy_Local_Shared (cl_command_queue command_queue, cl_bool 
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Local_SharedRpcM;
+    src_ptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(src_ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5004,6 +5011,7 @@ cl_int clEnqueueSVMMemcpy_Usm_Shared (cl_command_queue command_queue, cl_bool bl
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Usm_SharedRpcM;
+    src_ptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(src_ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5066,6 +5074,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Local (cl_command_queue command_queue, cl_bool 
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_LocalRpcM;
+    dst_ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dst_ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5124,6 +5133,7 @@ cl_int clEnqueueSVMMemcpy_Shared_Usm (cl_command_queue command_queue, cl_bool bl
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_UsmRpcM;
+    dst_ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dst_ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5180,6 +5190,8 @@ cl_int clEnqueueSVMMemcpy_Shared_Shared (cl_command_queue command_queue, cl_bool
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueSVMMemcpy_Shared_SharedRpcM;
+    dst_ptr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dst_ptr, channel));
+    src_ptr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(src_ptr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5378,6 +5390,7 @@ cl_int clEnqueueMemcpyINTEL_Local_Shared (cl_command_queue command_queue, cl_boo
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Local_SharedRpcM;
+    srcPtr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcPtr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5556,6 +5569,7 @@ cl_int clEnqueueMemcpyINTEL_Usm_Shared (cl_command_queue command_queue, cl_bool 
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Usm_SharedRpcM;
+    srcPtr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcPtr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5618,6 +5632,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Local (cl_command_queue command_queue, cl_boo
     }
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_LocalRpcM;
+    dstPtr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstPtr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5676,6 +5691,7 @@ cl_int clEnqueueMemcpyINTEL_Shared_Usm (cl_command_queue command_queue, cl_bool 
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_UsmRpcM;
+    dstPtr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstPtr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
@@ -5732,6 +5748,8 @@ cl_int clEnqueueMemcpyINTEL_Shared_Shared (cl_command_queue command_queue, cl_bo
     auto &channel = globalPlatform->getRpcChannel();
     auto channelLock = channel.lock();
     using CommandT = Cal::Rpc::Ocl::ClEnqueueMemcpyINTEL_Shared_SharedRpcM;
+    dstPtr = reinterpret_cast<void*>(MallocOverride::External::exportPtr(dstPtr, channel));
+    srcPtr = reinterpret_cast<const void*>(MallocOverride::External::exportPtr(srcPtr, channel));
     const auto dynMemTraits = CommandT::Captures::DynamicTraits::calculate(command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);
     auto commandSpace = channel.getCmdSpace<CommandT>(dynMemTraits.totalDynamicSize);
     auto command = new(commandSpace) CommandT(dynMemTraits, command_queue, blocking, dstPtr, srcPtr, size, num_events_in_wait_list, event_wait_list, event);

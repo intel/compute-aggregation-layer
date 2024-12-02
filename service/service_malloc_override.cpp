@@ -14,12 +14,20 @@ namespace Cal::Service {
 
 namespace MallocOverride {
 
+ClientData::~ClientData() {
+}
+
 bool isOverridenInCAL() {
     return true;
 }
 
-bool initializeClientData(const char *shmemName) {
-    return true;
+ClientData *initializeClientData() {
+    return nullptr;
+}
+
+void *importPtr(void *ptr, ClientData *data) {
+    log<Verbosity::critical>("Importing from external malloc override failed! External malloc override not initialized!");
+    return nullptr;
 }
 
 } // namespace MallocOverride

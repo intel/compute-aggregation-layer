@@ -9,8 +9,19 @@
 
 namespace Cal::Client::MallocOverride::External {
 
-const char *getShmemName() {
-    return "not_used";
+void initialize() {
+}
+
+bool isExportable(const void *ptr) {
+    return false;
+}
+
+const void *exportPtr(const void *ptr, Rpc::ChannelClient &channel) {
+    return ptr;
+}
+
+void *exportPtr(void *ptr, Rpc::ChannelClient &channel) {
+    return ptr;
 }
 
 } // namespace Cal::Client::MallocOverride::External

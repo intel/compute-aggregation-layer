@@ -108,7 +108,6 @@ void ClientConnection::connect() {
 
     log<Verbosity::debug>("Configuring malloc override");
     Cal::Messages::ReqConfigMallocOverride reqMallocOverride;
-    strncpy(reqMallocOverride.shmName, MallocOverride::External::getShmemName(), sizeof(reqMallocOverride.shmName) - 1);
     if (false == this->connection->send(reqMallocOverride)) {
         log<Verbosity::critical>("Configuring malloc override - request failed");
         this->connection.reset();
@@ -119,6 +118,9 @@ void ClientConnection::connect() {
         log<Verbosity::critical>("Configuring malloc override - response failed");
         this->connection.reset();
         return;
+    }
+    if (respMallocOverride.isMallocOverridenInCAL == false) {
+        MallocOverride::External::initialize();
     }
 
     this->mallocShmemExporter = std::make_unique<Cal::Client::MallocOverride::MallocShmemExporter>();

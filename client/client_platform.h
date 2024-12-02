@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -230,7 +230,7 @@ class IcdPlatform {
     }
 
     PointerType getPointerType(const void *ptr) {
-        if (globalState.getMallocShmemExporter().isRegionSharable(ptr) || (nullptr == ptr)) {
+        if (MallocOverride::External::isExportable(ptr) || globalState.getMallocShmemExporter().isRegionSharable(ptr) || (nullptr == ptr)) {
             return PointerType::shared;
         } else if (isUsm(ptr)) {
             return PointerType::usm;

@@ -822,14 +822,10 @@ struct ReqConfigMallocOverride {
 
     static constexpr uint16_t messageSubtype = 24;
 
-    explicit ReqConfigMallocOverride(const char *shmName) {
+    ReqConfigMallocOverride() {
         this->header.type = Cal::Ipc::ControlMessageHeader::messageTypeRequest;
         this->header.subtype = ReqConfigMallocOverride::messageSubtype;
-        strncpy(this->shmName, shmName, NAME_MAX - 1);
-        this->shmName[NAME_MAX - 1] = '\0';
     }
-
-    ReqConfigMallocOverride() : ReqConfigMallocOverride("") {}
 
     bool isInvalid() const {
         uint32_t invalid = 0;
@@ -840,12 +836,6 @@ struct ReqConfigMallocOverride {
         }
         return 0 != invalid;
     }
-
-    friend void sanitizeReceivedData(ReqConfigMallocOverride *reqConfigMallocOverride) {
-        reqConfigMallocOverride->shmName[NAME_MAX - 1] = '\0';
-    }
-
-    char shmName[NAME_MAX] = {};
 };
 static_assert(std::is_standard_layout<ReqConfigMallocOverride>::value);
 

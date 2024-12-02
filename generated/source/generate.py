@@ -553,6 +553,9 @@ class FunctionTraits:
     def get_remapped_pointer_args(self):
         return [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_remapped()]
 
+    def get_shared_pointer_args(self):
+        return [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_zero_copy_malloc_shmem()]
+
     def get_ptr_array_args(self):
         return [arg for arg in self.function.args+self.function.implicit_args if arg.kind.is_pointer_to_array()]
 

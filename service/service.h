@@ -318,6 +318,9 @@ class ClientContext {
     }
 
     void *importClientMallocPtr(uintptr_t clientPtr, size_t size, size_t exporterCurrentHeapSizeHint) {
+        if (mallocOverrideData) {
+            return MallocOverride::importPtr(reinterpret_cast<void *>(clientPtr), mallocOverrideData.get());
+        }
         return mallocShmemImporter.import(clientPtr, size, exporterCurrentHeapSizeHint);
     }
 
@@ -326,6 +329,8 @@ class ClientContext {
         log<Verbosity::bloat>("isImportableClientMallocPtr (ptr=%p) : %s", ptr, isImportable ? "yes" : "no");
         return isImportable;
     }
+
+    void setMallocOverrideData(MallocOverride::ClientData *data) { mallocOverrideData.reset(data); }
 
     uint32_t getCopyCommandQueueGroupIndex() const { return this->copyCommandQueueGroupIndex; }
     void setCopyCommandQueueGroupIndex(uint32_t value) { this->copyCommandQueueGroupIndex = value; }
@@ -431,6 +436,7 @@ class ClientContext {
     Cal::Service::LevelZero::ArtificialEventsManager artificialEventsManager{};
     Cal::Service::LevelZero::OngoingHostptrCopiesManager hostptrCopiesManager{};
     Cal::Ipc::MallocShmemImporter mallocShmemImporter = {};
+    std::unique_ptr<MallocOverride::ClientData> mallocOverrideData{};
 };
 
 class Provider {
@@ -1474,13 +1480,17 @@ class Provider {
     }
 
     bool service(const Cal::Messages::ReqConfigMallocOverride &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
-        log<Verbosity::debug>("Client : %d requested service to config malloc override : shmemName=%s", clientConnection.getId(), request.shmName);
+        log<Verbosity::debug>("Client : %d requested service to config malloc override", clientConnection.getId());
+
+        auto clientCtxLock = ctx.lock();
 
         bool isMallocOverridenInCal = MallocOverride::isOverridenInCAL();
         if (!isMallocOverridenInCal) {
-            if (!MallocOverride::initializeClientData(request.shmName)) {
+            MallocOverride::ClientData *data = MallocOverride::initializeClientData();
+            if (!data) {
                 return false;
             }
+            ctx.setMallocOverrideData(data);
         }
 
         Cal::Messages::RespConfigMallocOverride response(isMallocOverridenInCal);

@@ -15,7 +15,13 @@
 #include <dlfcn.h>
 #include <mutex>
 
-namespace Cal::Client::MallocOverride {
+namespace Cal {
+
+namespace Rpc {
+class ChannelClient;
+} // namespace Rpc
+
+namespace Client::MallocOverride {
 
 enum class MallocOverrideMode {
     Disabled,
@@ -115,8 +121,15 @@ class MallocShmemExporter {
 
 namespace External {
 
-const char *getShmemName();
+void initialize();
+
+bool isExportable(const void *ptr);
+
+const void *exportPtr(const void *ptr, Rpc::ChannelClient &channel);
+void *exportPtr(void *ptr, Rpc::ChannelClient &channel);
 
 } // namespace External
 
-} // namespace Cal::Client::MallocOverride
+} // namespace Client::MallocOverride
+
+} // namespace Cal

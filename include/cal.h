@@ -64,6 +64,8 @@ inline constexpr std::string_view calSharedVaArenaSizeEnvName = "CAL_SHARED_VA_A
 inline constexpr std::string_view calOverrideMallocEnvName = "CAL_OVERRIDE_MALLOC";
 // Minimum size of allocation that will be redirected to CAL implementation of malloc
 inline constexpr std::string_view calOverrideMallocThresholdEnvName = "CAL_OVERRIDE_MALLOC_THRESHOLD_BYTES";
+// Force internal implementation of malloc override (default = 0)
+inline constexpr std::string_view calOverrideMallocForceInternalEnvName = "CAL_OVERRIDE_MALLOC_FORCE_INTERNAL";
 // Controls whether CAL should use emulated synchronous mode for command lists in synchronous mode (i.e. override synchronous queue with asynchronous mode and call command list execute + queue synchronize with timeout)
 inline constexpr std::string_view calCommandQueueModeEmulatedSynchronousEnvName = "CAL_COMMAND_QUEUE_MODE_EMULATED_SYNCHRONOUS";
 
