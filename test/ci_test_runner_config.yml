@@ -35,6 +35,11 @@ l0_blackbox_event:
 l0_blackbox_experimental_memory:
   skip: true
 
+l0_blackbox_malloc_override:
+  cases:
+    - envs:
+        CAL_OVERRIDE_MALLOC: '1'
+
 l0_blackbox_memory:
   params:
     - '--skip-ipc-handles-tests'
