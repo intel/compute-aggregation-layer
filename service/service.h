@@ -319,7 +319,7 @@ class ClientContext {
 
     void *importClientMallocPtr(uintptr_t clientPtr, size_t size, size_t exporterCurrentHeapSizeHint) {
         if (mallocOverrideData) {
-            return MallocOverride::importPtr(reinterpret_cast<void *>(clientPtr), mallocOverrideData.get());
+            return MallocOverride::importPtr(reinterpret_cast<void *>(clientPtr), *mallocOverrideData);
         }
         return mallocShmemImporter.import(clientPtr, size, exporterCurrentHeapSizeHint);
     }
@@ -330,7 +330,7 @@ class ClientContext {
         return isImportable;
     }
 
-    void setMallocOverrideData(MallocOverride::ClientData *data) { mallocOverrideData.reset(data); }
+    void setMallocOverrideData(std::unique_ptr<MallocOverride::ClientData> &data) { mallocOverrideData = std::move(data); }
 
     uint32_t getCopyCommandQueueGroupIndex() const { return this->copyCommandQueueGroupIndex; }
     void setCopyCommandQueueGroupIndex(uint32_t value) { this->copyCommandQueueGroupIndex = value; }
@@ -1375,11 +1375,11 @@ class Provider {
         if (response.successfullyImported) {
             log<Verbosity::debug>("Succesfully imported client %d's address space handle (resource : %s, client address: %p, address space size %zu) as local address : %p",
                                   clientConnection.getId(), request.mallocShmemResourcePath, request.clientAddressSpaceBaseAddress, request.clientAddressSpaceSize, response.serviceBaseAddressForClientAddressSpace);
-            log<Verbosity::debug>("Zero copy malloc for client %d's - ALLOWED");
+            log<Verbosity::debug>("Zero copy malloc for client %d's - ALLOWED", clientConnection.getId());
         } else {
             log<Verbosity::error>("Failed to import client %d's address space handle (resource : %s, client address: %p, address space size %zu) as local address : %p",
                                   clientConnection.getId(), request.mallocShmemResourcePath, request.clientAddressSpaceBaseAddress, request.clientAddressSpaceSize, response.serviceBaseAddressForClientAddressSpace);
-            log<Verbosity::error>("Zero copy malloc for client %d's - DISABLED");
+            log<Verbosity::error>("Zero copy malloc for client %d's - DISABLED", clientConnection.getId());
         }
 
         if (false == clientConnection.send(response)) {
@@ -1486,7 +1486,7 @@ class Provider {
 
         bool isMallocOverridenInCal = MallocOverride::isOverridenInCAL();
         if (!isMallocOverridenInCal) {
-            MallocOverride::ClientData *data = MallocOverride::initializeClientData();
+            auto data = MallocOverride::initializeClientData();
             if (!data) {
                 return false;
             }

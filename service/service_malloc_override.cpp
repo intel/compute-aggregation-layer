@@ -21,11 +21,11 @@ bool isOverridenInCAL() {
     return true;
 }
 
-ClientData *initializeClientData() {
-    return nullptr;
+std::unique_ptr<ClientData> initializeClientData() {
+    return {};
 }
 
-void *importPtr(void *ptr, ClientData *data) {
+void *importPtr(void *ptr, ClientData &data) {
     log<Verbosity::critical>("Importing from external malloc override failed! External malloc override not initialized!");
     return nullptr;
 }

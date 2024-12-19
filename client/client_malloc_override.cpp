@@ -447,6 +447,10 @@ const char *getCalMallocOverrideInitError() {
 };
 
 MallocOverrideMode getMode() {
+    if (ExternalMemoryProvider::isEnabled()) {
+        return MallocOverrideMode::ExternalMemoryProvider;
+    }
+
     if (Overriden::malloc == AsCalShmem::malloc) {
         return MallocOverrideMode::CalMallocAsShmem;
     }

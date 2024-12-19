@@ -8,6 +8,7 @@
 #pragma once
 #include "cal.h"
 
+#include <memory>
 #include <string>
 
 namespace Cal::Service {
@@ -30,9 +31,9 @@ class ClientData {
 
 bool isOverridenInCAL();
 
-ClientData *initializeClientData();
+std::unique_ptr<ClientData> initializeClientData();
 
-void *importPtr(void *ptr, ClientData *data);
+void *importPtr(void *ptr, ClientData &data);
 
 } // namespace MallocOverride
 

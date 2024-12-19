@@ -230,7 +230,7 @@ class IcdPlatform {
     }
 
     PointerType getPointerType(const void *ptr) {
-        if (MallocOverride::External::isExportable(ptr) || globalState.getMallocShmemExporter().isRegionSharable(ptr) || (nullptr == ptr)) {
+        if (globalState.getMallocShmemExporter().isRegionSharable(ptr) || (nullptr == ptr)) {
             return PointerType::shared;
         } else if (isUsm(ptr)) {
             return PointerType::usm;

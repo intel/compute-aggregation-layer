@@ -26,6 +26,7 @@ namespace Client::MallocOverride {
 enum class MallocOverrideMode {
     Disabled,
     CalMallocAsShmem,
+    ExternalMemoryProvider
 };
 
 const char *getCalMallocOverrideInitError();
@@ -41,18 +42,35 @@ struct MallocShmemState {
 
 MallocShmemState readMallocShmemState();
 
+namespace ExternalMemoryProvider {
+
+void initialize();
+
+bool isEnabled();
+
+bool isSharable(const void *ptr);
+
+const void *exportPtr(const void *ptr, Rpc::ChannelClient &channel);
+void *exportPtr(void *ptr, Rpc::ChannelClient &channel);
+
+} // namespace ExternalMemoryProvider
+
 class MallocShmemExporter {
   public:
-    MallocShmemExporter() {
+    explicit MallocShmemExporter(bool isMallocOverridenInCAL) {
         auto initState = readMallocShmemState();
         this->localRange = Cal::Utils::AddressRange(initState.baseAddress, initState.capacity);
+
+        if (!isMallocOverridenInCAL) {
+            ExternalMemoryProvider::initialize();
+        }
     }
 
     MallocShmemExporter(const MallocShmemExporter &) = delete;
     MallocShmemExporter &operator=(const MallocShmemExporter &) = delete;
 
     bool isAllowed() const {
-        bool available = (Cal::Client::MallocOverride::MallocOverrideMode::CalMallocAsShmem == Cal::Client::MallocOverride::getMode());
+        bool available = (Cal::Client::MallocOverride::MallocOverrideMode::Disabled != Cal::Client::MallocOverride::getMode());
         if ((false == available) && enabled) {
             log<Verbosity::debug>("CAL malloc override not available because : %s", Cal::Client::MallocOverride::getCalMallocOverrideInitError());
         }
@@ -73,7 +91,7 @@ class MallocShmemExporter {
     }
 
     bool isRegionSharable(const void *ptr) {
-        bool sharable = localRange.contains({ptr, 8});
+        bool sharable = ExternalMemoryProvider::isSharable(ptr) || localRange.contains({ptr, 8});
         return sharable;
     }
 
@@ -118,17 +136,6 @@ class MallocShmemExporter {
     Cal::Utils::AddressRange localRange;
     uintptr_t remoteHeapBase = std::numeric_limits<uintptr_t>::max();
 };
-
-namespace External {
-
-void initialize();
-
-bool isExportable(const void *ptr);
-
-const void *exportPtr(const void *ptr, Rpc::ChannelClient &channel);
-void *exportPtr(void *ptr, Rpc::ChannelClient &channel);
-
-} // namespace External
 
 } // namespace Client::MallocOverride
 

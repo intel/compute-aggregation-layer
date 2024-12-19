@@ -150,7 +150,7 @@ ${r.destination.name}(${func_base.get_call_params_list_str()});
     using CommandT = ${get_fq_message_name(func_base)};
 %      if f.traits.requires_malloc_shmem_zero_copy_handler:
 %       for arg in func_base.traits.get_shared_pointer_args():
-    ${arg.name} = reinterpret_cast<${arg.type.str}>(MallocOverride::External::exportPtr(${arg.name}, channel));
+    ${arg.name} = reinterpret_cast<${arg.type.str}>(MallocOverride::ExternalMemoryProvider::exportPtr(${arg.name}, channel));
 %       endfor # in func_base.traits.get_remapped_pointer_args
 %      endif # f.traits.requires_malloc_shmem_zero_copy_handler
 %      if func_base.capture_layout.emit_dynamic_traits:

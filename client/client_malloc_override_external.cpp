@@ -7,12 +7,16 @@
 
 #include "client/client_malloc_override.h"
 
-namespace Cal::Client::MallocOverride::External {
+namespace Cal::Client::MallocOverride::ExternalMemoryProvider {
 
 void initialize() {
 }
 
-bool isExportable(const void *ptr) {
+bool isEnabled() {
+    return false;
+}
+
+bool isSharable(const void *ptr) {
     return false;
 }
 
@@ -24,4 +28,4 @@ void *exportPtr(void *ptr, Rpc::ChannelClient &channel) {
     return ptr;
 }
 
-} // namespace Cal::Client::MallocOverride::External
+} // namespace Cal::Client::MallocOverride::ExternalMemoryProvider

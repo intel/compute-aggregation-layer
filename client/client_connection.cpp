@@ -119,12 +119,9 @@ void ClientConnection::connect() {
         this->connection.reset();
         return;
     }
-    if (respMallocOverride.isMallocOverridenInCAL == false) {
-        MallocOverride::External::initialize();
-    }
 
-    this->mallocShmemExporter = std::make_unique<Cal::Client::MallocOverride::MallocShmemExporter>();
-    if (this->mallocShmemExporter->isAllowed()) {
+    this->mallocShmemExporter = std::make_unique<Cal::Client::MallocOverride::MallocShmemExporter>(respMallocOverride.isMallocOverridenInCAL);
+    if (this->mallocShmemExporter->isAllowed() && MallocOverride::getMode() == MallocOverride::MallocOverrideMode::CalMallocAsShmem) {
         log<Verbosity::debug>("Exporting user address space for zero-copy sharing of user allocated memory (malloc)");
         Cal::Messages::ReqImportAddressSpace reqImportAddressSpace;
         strncpy(reqImportAddressSpace.mallocShmemResourcePath, this->mallocShmemExporter->getResourcePath(), sizeof(reqImportAddressSpace.mallocShmemResourcePath) - 1);
@@ -156,8 +153,8 @@ void ClientConnection::connect() {
             this->mallocShmemExporter->disable();
         }
     } else {
-        log<Verbosity::performance>("Could not export user address space for zero-copy sharing of user allocated memory (malloc)");
-        log<Verbosity::debug>("Could not export user address space for zero-copy sharing of user allocated memory (malloc)");
+        log<Verbosity::performance>("Zero-copy sharing of user allocated memory (malloc) is disabled");
+        log<Verbosity::debug>("Zero-copy sharing of user allocated memory (malloc) is disabled");
     }
 
     log<Verbosity::debug>("Negotiating initial USM heap");
