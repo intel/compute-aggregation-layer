@@ -125,4 +125,6 @@ inline constexpr std::string_view calReleaseModeEnvs[] = {
     calAsynchronousCalls,
     calUseCustomOCLPlatformName,
     calRedirectL0EnvName,
-    calListenerSocketPathEnvName};
+    calListenerSocketPathEnvName,
+    calOverrideMallocEnvName,
+    calOverrideMallocThresholdEnvName};
