@@ -96,6 +96,15 @@ class Log {
 #endif
     }
 
+    std::string to_string_timestamp() {
+        auto now = std::chrono::system_clock::now();
+        std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
+        tm timeInfo = *std::localtime(&nowTime);
+        std::stringstream ss;
+        ss << "[" << std::put_time(&timeInfo, "%Y-%m-%d %H:%M:%S") << "] ";
+        return ss.str();
+    }
+
     const char *to_cstring_pid() {
         static std::string pid = std::invoke([]() {
             std::ostringstream oss;
@@ -109,7 +118,7 @@ class Log {
     }
 
     template <Verbosity V, typename... Args>
-    int add(bool useLoggerName, bool appendPID, [[maybe_unused]] bool addCallStackDump, const char *formatString, Args &&...args) {
+    int add(bool appendTimestamp, bool useLoggerName, bool appendPID, [[maybe_unused]] bool addCallStackDump, const char *formatString, Args &&...args) {
         isEmpty = false;
         auto len = snprintf(nullptr, 0, formatString, args...);
         if (len <= 0) {
@@ -127,7 +136,7 @@ class Log {
                 buff.push_back('\0');
             }
         }
-        return log(useLoggerName, appendPID, V, buff.data());
+        return log(appendTimestamp, useLoggerName, appendPID, V, buff.data());
     }
 
     bool empty() const {
@@ -135,15 +144,15 @@ class Log {
     }
 
   protected:
-    virtual int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) = 0;
+    virtual int log(bool appendTimestamp, bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) = 0;
     bool isEmpty = true;
 };
 
 class LogStdout : public Log {
   protected:
-    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
+    int log(bool appendTimestamp, bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
         int ret = 0;
-        printf("%s%s%s : %s\n", useLoggerName ? to_cstring_logger() : "", appendPID ? to_cstring_pid() : "", to_cstring_tag(verbosity), logMessage);
+        printf("%s%s%s%s : %s\n", appendTimestamp ? to_string_timestamp().c_str() : "", useLoggerName ? to_cstring_logger() : "", appendPID ? to_cstring_pid() : "", to_cstring_tag(verbosity), logMessage);
         fflush(stdout);
         return ret;
     }
@@ -159,8 +168,11 @@ class LogSstream : public Log {
     }
 
   protected:
-    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
+    int log(bool appendTimestamp, bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
         auto prevPos = buff.tellp();
+        if (appendTimestamp) {
+            buff << to_string_timestamp();
+        }
         if (useLoggerName) {
             buff << to_cstring_logger();
         }
@@ -210,8 +222,9 @@ static constexpr bool enablePerformanceLogs = false;
 inline Verbosity minDynamicVerbosity = Verbosity::silent;
 inline Verbosity maxDynamicVerbosity = Verbosity::warning;
 inline Verbosity maxDynamicCallStackVerbosity = Verbosity::silent;
-inline bool useLoggerName = false;
 inline bool appendPID = false;
+inline bool useLoggerName = false;
+inline bool appendTimestamp = false;
 
 inline std::string getListOfAllExistingVerbosityLevels() {
     std::string existing;
@@ -306,6 +319,7 @@ inline void initDynamicVerbosity() {
         }
     }
 
+    appendTimestamp = getCalEnvFlag(calAppendTimestampEnvName);
     useLoggerName = getCalEnvFlag(calUseLoggerNameEnvName);
     appendPID = getCalEnvFlag(calAppendPIDEnvName);
 
@@ -341,7 +355,7 @@ inline int log(const char *formatString, Args &&...args) {
         }
     }
 
-    return Cal::Utils::globalLog->add<V>(Cal::Utils::useLoggerName, Cal::Utils::appendPID, addCallStackDump, formatString, std::forward<Args>(args)...);
+    return Cal::Utils::globalLog->add<V>(Cal::Utils::appendTimestamp, Cal::Utils::useLoggerName, Cal::Utils::appendPID, addCallStackDump, formatString, std::forward<Args>(args)...);
 }
 
 #pragma GCC diagnostic pop

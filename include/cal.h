@@ -91,6 +91,8 @@ inline constexpr std::string_view calVerbosityEnvName = "CAL_MAX_VERBOSITY";
 inline constexpr std::string_view calVerbosityCallStackEnvName = "CAL_MAX_VERBOSITY_CALLSTACK_DUMP";
 // Controls whether CAL should work in benchmarking mode, which prints performance logs for aggregation layer
 inline constexpr std::string_view calBenchmarkEnvName = "CAL_BENCHMARK";
+// Appends timestamp to logger, for performance analysis
+inline constexpr std::string_view calAppendTimestampEnvName = "CAL_APPEND_TIMESTAMP";
 // Set name of logger that prints results to stdout
 inline constexpr std::string_view calUseLoggerNameEnvName = "CAL_USE_LOGGER_NAME";
 // Appends PID to logger, for easier debug of multi process applications
@@ -119,6 +121,7 @@ inline constexpr std::string_view calReadDebugKeysEnvName = "CAL_READ_DEBUG_KEYS
 inline constexpr std::string_view calReleaseModeEnvs[] = {
     calVerbosityEnvName,
     calUseLoggerNameEnvName,
+    calAppendTimestampEnvName,
     calAppendPIDEnvName,
     calEnableL0InCalrunEnvName,
     calEnableOclInCalrunEnvName,

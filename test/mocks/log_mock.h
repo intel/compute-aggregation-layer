@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -36,8 +36,8 @@ class UnexpectedLogException : public std::runtime_error {
 
 class DisallowLogs : public LogCaptureContext {
   public:
-    int log(bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
-        Cal::Utils::LogSstream::log(useLoggerName, appendPID, verbosity, logMessage);
+    int log(bool appendTimestamp, bool useLoggerName, bool appendPID, Verbosity verbosity, const char *logMessage) override {
+        Cal::Utils::LogSstream::log(appendTimestamp, useLoggerName, appendPID, verbosity, logMessage);
         auto log = this->str();
         this->clear();
         throw UnexpectedLogException("Unexpected Log : " + log);
