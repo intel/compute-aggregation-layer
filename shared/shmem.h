@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -1072,6 +1072,7 @@ class MallocShmemImporter {
             log<Verbosity::error>("Failed to open shmem object for path : %s (errno=%d=%s)", std::string(path).c_str(), err, strerror(err));
             return false;
         }
+        log<Verbosity::debug>("Opened shmem object for path : %s", std::string(path).c_str());
         localBaseAddress = Cal::Sys::mmap(nullptr, capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, fd, 0);
         if (MAP_FAILED == localBaseAddress) {
             localBaseAddress = nullptr;

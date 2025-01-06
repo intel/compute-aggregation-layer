@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -11,8 +11,8 @@ namespace Cal {
 namespace Mocks {
 
 static SysCallsContext &getDefaultSysCallsContext() {
-    static SysCallsContext defaultSysCallsContext;
-    return defaultSysCallsContext;
+    static SysCallsContext *defaultSysCallsContext = new SysCallsContext();
+    return *defaultSysCallsContext;
 }
 
 static SysCallsContext *&getSysCallsContextPtr() {

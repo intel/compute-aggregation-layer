@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Intel Corporation
+ * Copyright (C) 2023-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -32,7 +32,7 @@ namespace Client::MallocOverride {
 void *mallocRetAddress = nullptr;
 void *callocRetAddress = nullptr;
 constexpr size_t naturalAlignment = 16U;
-constexpr const char *mpi_process_name = "hydra_pmi_proxy";
+std::array<const char *, 3> process_names_exclusions = {"hydra_pmi_proxy", "mpiexec.hydra", "sh"};
 
 Cal::Utils::AddressRange readCalLibExecAddressRange() {
     Cal::Utils::AddressRange calLibExecAddressRange = {nullptr, size_t{0}};
@@ -76,6 +76,15 @@ bool isAllocFromCal(const Cal::Utils::AddressRange &libraryExecAddressRange) {
             if (libraryExecAddressRange.contains(backtracePtrs[i])) {
                 return true;
             }
+        }
+    }
+    return false;
+}
+
+bool isMallocOverrideExcludedByProcessName() {
+    for (const auto &name : process_names_exclusions) {
+        if (name == Cal::Utils::getProcessName()) {
+            return true;
         }
     }
     return false;
@@ -302,10 +311,16 @@ struct MallocOverrideSystemResourcesCleanup {
     MallocOverrideSystemResourcesCleanup &operator=(const MallocOverrideSystemResourcesCleanup &) = delete;
 
     ~MallocOverrideSystemResourcesCleanup() {
-        Cal::Sys::close(getGlobalState().shmemFd);
-        Cal::Sys::shm_unlink(getGlobalState().privateMallocShmemPath);
-        snprintf(getGlobalState().initError, sizeof(getGlobalState().initError), "DEINITIALIZED");
-        getGlobalState().maxCapacity = 0;
+        auto &globalState = AsCalShmem::getGlobalState();
+        if (globalState.shmemFd != -1) {
+            Cal::Sys::close(globalState.shmemFd);
+            Cal::Sys::shm_unlink(globalState.privateMallocShmemPath);
+        } else {
+            Cal::Ipc::getCalShmemPathBase(globalState.privateMallocShmemPath, sizeof(globalState.privateMallocShmemPath), getpid());
+            Cal::Sys::shm_unlink(globalState.privateMallocShmemPath);
+        }
+        snprintf(globalState.initError, sizeof(globalState.initError), "DEINITIALIZED");
+        globalState.maxCapacity = 0;
     }
 } mallocOverrideSystemResourcesCleanupGaurd;
 
@@ -401,7 +416,7 @@ bool ensureCallocRetAddressCaptured() {
 
 void *malloc(size_t size) {
     Cal::Client::MallocOverride::Overriden::malloc = Cal::Client::MallocOverride::Original::malloc;
-    if (mpi_process_name == Cal::Utils::getProcessName()) {
+    if (isMallocOverrideExcludedByProcessName()) {
         return Cal::Client::MallocOverride::Original::malloc(size);
     }
     ensureMallocRetAddressCaptured();
@@ -413,7 +428,7 @@ void *malloc(size_t size) {
 
 void *calloc(size_t nitems, size_t size) {
     Cal::Client::MallocOverride::Overriden::calloc = Cal::Client::MallocOverride::Original::calloc;
-    if (mpi_process_name == Cal::Utils::getProcessName()) {
+    if (isMallocOverrideExcludedByProcessName()) {
         return Cal::Client::MallocOverride::Original::calloc(nitems, size);
     }
     ensureCallocRetAddressCaptured();
