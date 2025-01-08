@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2025 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -30,7 +30,7 @@ export CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Release}"
 (
 if [ "${BUILD_SRPM}" == "1" ]; then
     BRANCH_SUFFIX="$( cat ${REPO_DIR}/.branch )"
-    PACKAGING_DIR="$REPO_DIR/scripts/packaging/aggregation_layer/${SPEC_FILE}"
+    PACKAGING_DIR="$REPO_DIR/scripts/packaging/${BRANCH_SUFFIX}/aggregation_layer/${SPEC_FILE}"
     SPEC_SRC="$PACKAGING_DIR/SPECS/aggregation_layer.spec"
     SPEC="$BUILD_DIR/SPECS/aggregation_layer.spec"
     COPYRIGHT="${REPO_DIR}/scripts/packaging/${BRANCH_SUFFIX}/aggregation_layer/${SPEC_FILE}/copyright"
