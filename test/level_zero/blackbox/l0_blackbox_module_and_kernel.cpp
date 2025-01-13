@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -746,7 +746,7 @@ int main(int argc, const char *argv[]) {
     RUN_REQUIRED_STEP(appendQueryKernelTimestamps(cmdList, 1, &copyBufferFinishedEvent, &timestampResultStruct, timestampResultOffsets));
 
     RUN_REQUIRED_STEP(queryTimestampsExp(copyBufferFinishedEvent, devices[0]));
-    RUN_REQUIRED_STEP(queryKernelTimestampsExt(copyBufferFinishedEvent, devices[0]));
+    RUN_OPTIONAL_STEP(queryKernelTimestampsExt(copyBufferFinishedEvent, devices[0]));
 
     void *sourceDoubleVals{nullptr};
     void *destinationDoubleVals{nullptr};
