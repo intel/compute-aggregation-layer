@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -438,6 +438,8 @@ class ClientContext {
     Cal::Ipc::MallocShmemImporter mallocShmemImporter = {};
     std::unique_ptr<MallocOverride::ClientData> mallocOverrideData{};
 };
+
+bool serviceRequestMessageExtra(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx);
 
 class Provider {
   public:
@@ -1112,8 +1114,7 @@ class Provider {
     bool serviceRequestMessage(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         switch (messageHeader.subtype) {
         default:
-            log<Verbosity::error>("Client : %d sent broken CAL request message (type:%u, unknown subtype:%u)", clientConnection.getId(), messageHeader.type, messageHeader.subtype);
-            return false;
+            return serviceRequestMessageExtra(messageHeader, clientConnection, ctx);
         case Cal::Messages::ReqHandshake::messageSubtype:
             log<Verbosity::error>("Client : %d unxpectedly sent handshake request (ReqHandshake)", clientConnection.getId());
             return false;

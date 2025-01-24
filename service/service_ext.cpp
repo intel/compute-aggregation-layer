@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Intel Corporation
+ * Copyright (C) 2024-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -30,6 +30,11 @@ void checkForRequiredFiles(bool kmdShimEnabled) {
     checkForRequiredFilesOcl(calDir);
     checkForRequiredFilesL0(libCalPath);
     checkForRequiredFilesMallocOverride(fullCalLibPath);
+}
+
+bool serviceRequestMessageExtra(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+    log<Verbosity::error>("Client : %d sent broken CAL request message (type:%u, unknown subtype:%u)", clientConnection.getId(), messageHeader.type, messageHeader.subtype);
+    return false;
 }
 
 } // namespace Service
