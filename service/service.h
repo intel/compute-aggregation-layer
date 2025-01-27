@@ -94,6 +94,10 @@ struct ServiceConfig {
     }
 };
 
+struct ClientConfig {
+    virtual ~ClientConfig() {}
+};
+
 namespace Apis {
 
 namespace Ocl {
@@ -439,8 +443,6 @@ class ClientContext {
     std::unique_ptr<MallocOverride::ClientData> mallocOverrideData{};
 };
 
-bool serviceRequestMessageExtra(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx);
-
 class Provider {
   public:
     using RpcHandler = bool (*)(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
@@ -683,6 +685,14 @@ class Provider {
         return config;
     }
 
+    void setClientConfig(ClientConfig *config) {
+        clientConfig.reset(config);
+    }
+
+    const ClientConfig *getClientConfig() const {
+        return clientConfig.get();
+    }
+
     Cal::Ipc::GlobalShmemAllocators &getGlobalShmemAllocators() {
         return *globalShmemAllocators;
     }
@@ -898,6 +908,7 @@ class Provider {
         Cal::Service::Apis::LevelZero::L0SharedObjects l0;
     } sharedObjects;
     Cal::Messages::RespHandshake config;
+    std::unique_ptr<Cal::Service::ClientConfig> clientConfig;
     std::unique_ptr<Cal::Ipc::GlobalShmemAllocators> globalShmemAllocators;
     std::vector<RpcSubtypeHandlers> rpcHandlers;
     std::vector<Cal::Rpc::DirectCallCallbackT> directCallCallbacks;
@@ -1111,10 +1122,12 @@ class Provider {
 
     DeviceFdByPathCache deviceFdByPathCache{};
 
+    bool serviceRequestMessageExt(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx);
+
     bool serviceRequestMessage(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         switch (messageHeader.subtype) {
         default:
-            return serviceRequestMessageExtra(messageHeader, clientConnection, ctx);
+            return serviceRequestMessageExt(messageHeader, clientConnection, ctx);
         case Cal::Messages::ReqHandshake::messageSubtype:
             log<Verbosity::error>("Client : %d unxpectedly sent handshake request (ReqHandshake)", clientConnection.getId());
             return false;

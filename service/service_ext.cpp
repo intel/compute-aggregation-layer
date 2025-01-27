@@ -32,7 +32,7 @@ void checkForRequiredFiles(bool kmdShimEnabled) {
     checkForRequiredFilesMallocOverride(fullCalLibPath);
 }
 
-bool serviceRequestMessageExtra(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
+bool Provider::serviceRequestMessageExt(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
     log<Verbosity::error>("Client : %d sent broken CAL request message (type:%u, unknown subtype:%u)", clientConnection.getId(), messageHeader.type, messageHeader.subtype);
     return false;
 }
