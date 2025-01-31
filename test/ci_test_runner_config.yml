@@ -1,65 +1,116 @@
 #
-# Copyright (C) 2024 Intel Corporation
+# Copyright (C) 2024-2025 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
 
-# include: [list] -> list of platforms on which test will be run
-# exclude: [list] -> list of platforms on which test will not be run
-# include and exclude are mutually exclusive
-# skip: [boolean] -> flag to skip test on all platforms
-# _default -> default config for test binary (used if not defined config for given binary)
-# params -> parameter for given test
-# envs -> environmental variables to set for test
-# cases -> run binary multiple times with different params/envs
+# _default_config:
+#   _default_platform:     -> default config, used if not found config for given platform
+#     envs:                -> dictionary of default environmental variables
+#       ENV1: 'VALUE1'
+#       ENV2: 'VALUE2'
+#     params:              -> list of default parameters, order matters
+#       - --param1 1
+#       - --param2
+#   platform1:             -> platform1 default config, envs dictionary is used as given, params are copied from _default_platform
+#     envs:
+#       ENV3: 'VALUE3'
+#
+#   platform2:             -> platform2 default config, envs dictionary is used as given, params list is empty
+#     envs:
+#       ENV3: 'VALUE3'
+#     params:
+#
+#
+# each test that need to be run MUST have its key and given platforms under it
+# test1:               -> run definition for test1 blackbox test
+#   platform1:         -> 1 run on platform1 with default parameters
+#
+#   platform2:         -> 2 diffrent runs on platform2 with custom parameters, default parameters are ignored
+#     - --other1
+#     - --other2
+#
+#   platform3:         -> 1 run on platform3 with extra NEW_ENV=1 environmental variable, default parameters are ignored
+#     - env:NEW_ENV=1
+#
+#   platform4:         -> 1 run on platform4 with --other1 parameter and ENV1 variable removed, default parameters are ignored
+#     - --other1 env:ENV1=
 
-l0_blackbox_append_mem_fill_copy_asynchronous_queue:
-  skip: true
+_default_config:
+  _default_platform:
+    envs:
+      SetCommandStreamReceiver: '2'
+      NEOReadDebugKeys: '1'
 
-l0_blackbox_append_mem_fill_copy_immediate_asynchronous:
-  skip: true
+l0_blackbox_append_memory_ranges_barrier:
+  pvc.b0:
 
-l0_blackbox_append_mem_fill_copy_immediate_synchronous:
-  skip: true
+l0_blackbox_append_mem_copy_from_context_deferred:
+  pvc.b0:
 
-l0_blackbox_append_mem_fill_copy_resubmit:
-  skip: true
+l0_blackbox_append_mem_copy_from_context_immediate:
+  pvc.b0:
+
+l0_blackbox_append_mem_copy_region_deferred:
+  pvc.b0:
+
+l0_blackbox_append_mem_copy_region_immediate:
+  pvc.b0:
+
+l0_blackbox_append_mem_fill_copy_synchronous:
+  pvc.b0:
+
+l0_blackbox_context:
+  pvc.b0:
 
 l0_blackbox_device:
-  params:
-    - '--allow-optional-steps'
+  pvc.b0:
+    - --allow-optional-steps
 
-l0_blackbox_event:
-  skip: true
+l0_blackbox_driver:
+  pvc.b0:
 
-l0_blackbox_experimental_memory:
-  skip: true
+l0_blackbox_dynamic_link:
+  pvc.b0:
+
+l0_blackbox_fence:
+  pvc.b0:
+
+l0_blackbox_image:
+  pvc.b0:
 
 l0_blackbox_malloc_override:
-  cases:
-    - envs:
-        CAL_OVERRIDE_MALLOC: '1'
+  pvc.b0:
+    - env:CAL_OVERRIDE_MALLOC=1
 
 l0_blackbox_memory:
-  params:
-    - '--skip-ipc-handles-tests'
+  pvc.b0:
+    - --skip-ipc-handles-tests
 
-l0_blackbox_metrics:
-  skip: true
+l0_blackbox_module_create_via_extension:
+  pvc.b0:
 
-l0_blackbox_module_and_kernel:
-  skip: true
+l0_test_ult_icd:
+  pvc.b0:
 
-l0_blackbox_sysman:
-  skip: true
+l0_test_ult_rpc:
+  pvc.b0:
+
+l0_test_ult_service:
+  pvc.b0:
 
 ocl_parallel_copy:
-  cases:
-    - params:
-        - '--loop_count 1'
+  pvc.b0:
+    - --loop_count 1
 
-ocl_test_basic:
-  skip: true
+ocl_staging_area:
+  pvc.b0:
 
-ocl_test_usm:
-  skip: true
+ocl_test_ult_icd:
+  pvc.b0:
+
+ocl_test_use_host_ptr:
+  pvc.b0:
+
+shared_test_ult:
+  pvc.b0:
