@@ -443,6 +443,80 @@ class ClientContext {
     std::unique_ptr<MallocOverride::ClientData> mallocOverrideData{};
 };
 
+struct DeviceFdByPathCache {
+    using RefCountedFd = std::pair<int /*cachedFd*/, int /*refCount*/>;
+    using FdCallback = std::function<void(const std::string &devicePath, int fd)>;
+
+    FdCallback onOpenFd = nullptr;
+    FdCallback onCloseFd = nullptr;
+
+    void setOnOpenCallback(FdCallback callback) {
+        onOpenFd = std::move(callback);
+    }
+
+    void setOnCloseCallback(FdCallback callback) {
+        onCloseFd = std::move(callback);
+    }
+
+    int getRefCountedFd(const std::string &devicePath) {
+        auto mapLock = refCountedFdByDevicePath.lock();
+        auto iter = (*refCountedFdByDevicePath).find(devicePath);
+        if (iter == (*refCountedFdByDevicePath).end()) {
+            auto openedFd = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
+            if (openedFd < 0) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to open file for devicePath=%s : errno=%d=%s", devicePath.c_str(), err, strerror(err));
+                return -1;
+            }
+            (*refCountedFdByDevicePath)[devicePath] = {openedFd, 1};
+            log<Verbosity::debug>("File opened successfully for devicePath=%s : openedFd=%d refCount=1", devicePath.c_str(), openedFd);
+            if (onOpenFd) {
+                onOpenFd(devicePath, openedFd);
+            }
+            return openedFd;
+        } else {
+            auto &[cachedFd, refCount] = (*iter).second;
+            ++refCount;
+            log<Verbosity::debug>("File already open for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+            return cachedFd;
+        }
+    }
+
+    int closeRefCountedFd(const std::string &devicePath) {
+        auto mapLock = refCountedFdByDevicePath.lock();
+        auto iter = (*refCountedFdByDevicePath).find(devicePath);
+        if (iter == (*refCountedFdByDevicePath).end()) {
+            log<Verbosity::debug>("Couldn't find file for devicePath=%s", devicePath.c_str());
+            return -1;
+        }
+        auto &[cachedFd, refCount] = (*iter).second;
+        if (refCount <= 0) {
+            log<Verbosity::error>("Found incorrect refcount for devicePath=%s : refCount=%d", devicePath.c_str(), refCount);
+            return -1;
+        }
+        if (refCount == 1) {
+            if (onCloseFd) {
+                onCloseFd(devicePath, cachedFd);
+            }
+            auto ret = close(cachedFd);
+            if (ret != 0) {
+                auto err = errno;
+                log<Verbosity::error>("Failed to close file for devicePath=%s : cachedFd=%d errno=%d=%s", devicePath.c_str(), cachedFd, err, strerror(err));
+                return ret;
+            }
+            log<Verbosity::debug>("File closed successfully for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+            (*refCountedFdByDevicePath).erase(devicePath);
+            return 0;
+        } else {
+            log<Verbosity::debug>("File not closed yet for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
+            --refCount;
+            return 0;
+        }
+    }
+
+    Cal::Utils::Lockable<std::unordered_map<std::string /*devicePath*/, RefCountedFd>> refCountedFdByDevicePath{};
+};
+
 class Provider {
   public:
     using RpcHandler = bool (*)(Provider &service, Cal::Rpc::ChannelServer &channel, ClientContext &ctx, Cal::Rpc::RpcMessageHeader *command, size_t commandMaxSize);
@@ -887,8 +961,13 @@ class Provider {
         return this->batchedService;
     }
 
+    DeviceFdByPathCache &getDeviceFdByPathCache() {
+        return deviceFdByPathCache;
+    }
+
   protected:
     ServiceConfig serviceConfig;
+    DeviceFdByPathCache deviceFdByPathCache{};
     struct {
         std::string commandLine;
         std::future<void> subprocess;
@@ -1064,63 +1143,6 @@ class Provider {
         log<Verbosity::debug>("Reaping resources after client : %d", clientConnection->getId());
         ctx.cleanup();
     }
-
-    struct DeviceFdByPathCache {
-        int getRefCountedFd(const std::string &devicePath) {
-            auto mapLock = refCountedFdByDevicePath.lock();
-            auto iter = (*refCountedFdByDevicePath).find(devicePath);
-            if (iter == (*refCountedFdByDevicePath).end()) {
-                auto openedFd = open(devicePath.c_str(), O_RDWR | O_CLOEXEC);
-                if (openedFd < 0) {
-                    auto err = errno;
-                    log<Verbosity::error>("Failed to open file for devicePath=%s : errno=%d=%s", devicePath.c_str(), err, strerror(err));
-                    return -1;
-                }
-                (*refCountedFdByDevicePath)[devicePath] = {openedFd, 1};
-                log<Verbosity::debug>("File opened successfully for devicePath=%s : openedFd=%d refCount=1", devicePath.c_str(), openedFd);
-                return openedFd;
-            } else {
-                auto &[cachedFd, refCount] = (*iter).second;
-                ++refCount;
-                log<Verbosity::debug>("File already open for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
-                return cachedFd;
-            }
-        }
-
-        int closeRefCountedFd(const std::string &devicePath) {
-            auto mapLock = refCountedFdByDevicePath.lock();
-            auto iter = (*refCountedFdByDevicePath).find(devicePath);
-            if (iter == (*refCountedFdByDevicePath).end()) {
-                log<Verbosity::debug>("Couldn't find file for devicePath=%s", devicePath.c_str());
-                return -1;
-            }
-            auto &[cachedFd, refCount] = (*iter).second;
-            if (refCount <= 0) {
-                log<Verbosity::error>("Found incorrect refcount for devicePath=%s : refCount=%d", devicePath.c_str(), refCount);
-                return -1;
-            }
-            if (refCount == 1) {
-                auto ret = close(cachedFd);
-                if (ret != 0) {
-                    auto err = errno;
-                    log<Verbosity::error>("Failed to close file for devicePath=%s : cachedFd=%d errno=%d=%s", devicePath.c_str(), cachedFd, err, strerror(err));
-                    return ret;
-                }
-                log<Verbosity::debug>("File closed successfully for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
-                (*refCountedFdByDevicePath).erase(devicePath);
-                return 0;
-            } else {
-                log<Verbosity::debug>("File not closed yet for devicePath=%s : cachedFd=%d refCount=%d", devicePath.c_str(), cachedFd, refCount);
-                --refCount;
-                return 0;
-            }
-        }
-
-        using RefCountedFd = std::pair<int /*cachedFd*/, int /*refCount*/>;
-        Cal::Utils::Lockable<std::unordered_map<std::string /*devicePath*/, RefCountedFd>> refCountedFdByDevicePath{};
-    };
-
-    DeviceFdByPathCache deviceFdByPathCache{};
 
     bool serviceRequestMessageExt(const Cal::Ipc::ControlMessageHeader &messageHeader, Cal::Ipc::Connection &clientConnection, ClientContext &ctx);
 
