@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2024 Intel Corporation
+# Copyright (C) 2022-2025 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -97,9 +97,14 @@ if(USE_SANITIZE_UB)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} $<$<BOOL:${COMPILER_SUPPORTS_UNDEFINED_BEHAVIOR_SANITIZER}>:-fsanitize=undefined>")
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fstack-protector-strong -O2 -D_FORTIFY_SOURCE=2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fstack-protector-strong -DNDEBUG")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro")
+
+string(FIND ${CMAKE_CXX_FLAGS_RELEASE} "-D_FORTIFY_SOURCE=3" __FORTIFY_SOURCE_3_SET)
+if(${__FORTIFY_SOURCE_3_SET} LESS 0)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -D_FORTIFY_SOURCE=2")
+endif()
 
 find_package(Threads REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}")
