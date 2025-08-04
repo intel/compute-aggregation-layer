@@ -46,6 +46,78 @@ namespace Cal {
 
 namespace Service {
 
+// Security utility functions for input validation
+namespace Security {
+
+// Validates that a device path is safe and follows expected GPU device patterns
+inline bool isValidDevicePath(const std::string &devicePath) {
+    // Check for null or empty path
+    if (devicePath.empty() || devicePath.size() >= PATH_MAX) {
+        log<Verbosity::error>("Device path validation failed: empty or too long (size=%zu, max=%d)\n", devicePath.size(), PATH_MAX);
+        return false;
+    }
+
+    // Check for directory traversal attempts
+    if (devicePath.find("..") != std::string::npos) {
+        log<Verbosity::error>("Device path validation failed: contains '..' traversal: %s\n", devicePath.c_str());
+        return false;
+    }
+
+    // Check for absolute path traversal attempts
+    if (devicePath.find("/.") != std::string::npos) {
+        log<Verbosity::error>("Device path validation failed: contains '/.' reference: %s\n", devicePath.c_str());
+        return false;
+    }
+
+    // Only allow paths that start with /dev/dri/ (typical GPU device path)
+    if (devicePath.find("/dev/dri/") != 0) {
+        log<Verbosity::error>("Device path validation failed: malformed path structure: %s\n", devicePath.c_str());
+        return false;
+    }
+
+    // Check for valid DRI device name patterns (renderD[0-9]+, card[0-9]+)
+    size_t lastSlash = devicePath.find_last_of('/');
+    if (lastSlash == std::string::npos || lastSlash == devicePath.length() - 1) {
+        log<Verbosity::error>("Device path validation failed: malformed path structure: %s\n", devicePath.c_str());
+        return false;
+    }
+
+    std::string deviceName = devicePath.substr(lastSlash + 1);
+
+    // Valid patterns: renderD128, renderD129, etc. or card0, card1, etc.
+    if (deviceName.find("renderD") == 0) {
+        std::string numberPart = deviceName.substr(7); // Skip "renderD"
+        bool valid = !numberPart.empty() && std::all_of(numberPart.begin(), numberPart.end(), ::isdigit);
+        if (!valid) {
+            log<Verbosity::error>("Device path validation failed: invalid renderD format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
+        }
+        return valid;
+    } else if (deviceName.find("card") == 0) {
+        std::string numberPart = deviceName.substr(4); // Skip "card"
+        bool valid = !numberPart.empty() && std::all_of(numberPart.begin(), numberPart.end(), ::isdigit);
+        if (!valid) {
+            log<Verbosity::error>("Device path validation failed: invalid card format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
+        }
+        return valid;
+    }
+
+    // Check for symlink patterns under by-path/pci-*-render, by-path/pci-*-card
+    if (devicePath.find("/dev/dri/by-path/pci-") != std::string::npos) {
+        // Valid symlink patterns: pci-XXXX:XX:XX.X-render or pci-XXXX:XX:XX.X-card
+        if (deviceName.find("pci-") == 0 && (deviceName.find("-render") != std::string::npos || deviceName.find("-card") != std::string::npos)) {
+            return true;
+        } else {
+            log<Verbosity::error>("Device path validation failed: invalid by-path symlink format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
+            return false;
+        }
+    }
+
+    log<Verbosity::error>("Device path validation failed: unrecognized device pattern: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
+    return false;
+}
+
+} // namespace Security
+
 bool getNeoKmdShimEnvEnabled();
 void setNeoKmdShimEnvEnabled(bool value);
 
@@ -1479,6 +1551,13 @@ class Provider {
 
     bool service(const Cal::Messages::ReqOpenGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         log<Verbosity::debug>("Client : %d requested service to open GPU device : devicePath=%s", clientConnection.getId(), request.devicePath);
+
+        // Validate device path for security
+        if (!Security::isValidDevicePath(request.devicePath)) {
+            log<Verbosity::error>("Client : %d provided invalid device path : devicePath=%s", clientConnection.getId(), request.devicePath);
+            return false;
+        }
+
         auto lock = ctx.lock();
 
         int refCountedFd = deviceFdByPathCache.getRefCountedFd(request.devicePath);
@@ -1498,6 +1577,13 @@ class Provider {
 
     bool service(const Cal::Messages::ReqCloseGpuDevice &request, Cal::Ipc::Connection &clientConnection, ClientContext &ctx) {
         log<Verbosity::debug>("Client : %d requested service to close GPU device : devicePath=%s", clientConnection.getId(), request.devicePath);
+
+        // Validate device path for security
+        if (!Security::isValidDevicePath(request.devicePath)) {
+            log<Verbosity::error>("Client : %d provided invalid device path : devicePath=%s", clientConnection.getId(), request.devicePath);
+            return false;
+        }
+
         auto lock = ctx.lock();
 
         int result = deviceFdByPathCache.closeRefCountedFd(request.devicePath);
