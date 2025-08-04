@@ -34,6 +34,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <regex>
 #include <shared_mutex>
 #include <sys/file.h>
 #include <thread>
@@ -82,37 +83,21 @@ inline bool isValidDevicePath(const std::string &devicePath) {
         return false;
     }
 
-    std::string deviceName = devicePath.substr(lastSlash + 1);
+    // Comprehensive regex pattern for valid DRI device paths
+    // Matches:
+    // - /dev/dri/renderD[0-9]+
+    // - /dev/dri/card[0-9]+
+    // - /dev/dri/by-path/pci-[hex:hex:hex.hex]-render
+    // - /dev/dri/by-path/pci-[hex:hex:hex.hex]-card
+    static const std::regex validDevicePattern(
+        R"(^/dev/dri/(?:(?:renderD|card)\d+|by-path/pci-[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]-(?:render|card))$)");
 
-    // Valid patterns: renderD128, renderD129, etc. or card0, card1, etc.
-    if (deviceName.find("renderD") == 0) {
-        std::string numberPart = deviceName.substr(7); // Skip "renderD"
-        bool valid = !numberPart.empty() && std::all_of(numberPart.begin(), numberPart.end(), ::isdigit);
-        if (!valid) {
-            log<Verbosity::error>("Device path validation failed: invalid renderD format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
-        }
-        return valid;
-    } else if (deviceName.find("card") == 0) {
-        std::string numberPart = deviceName.substr(4); // Skip "card"
-        bool valid = !numberPart.empty() && std::all_of(numberPart.begin(), numberPart.end(), ::isdigit);
-        if (!valid) {
-            log<Verbosity::error>("Device path validation failed: invalid card format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
-        }
-        return valid;
+    if (std::regex_match(devicePath, validDevicePattern)) {
+        log<Verbosity::info>("Device path validation passed: %s\n", devicePath.c_str());
+        return true;
     }
 
-    // Check for symlink patterns under by-path/pci-*-render, by-path/pci-*-card
-    if (devicePath.find("/dev/dri/by-path/pci-") != std::string::npos) {
-        // Valid symlink patterns: pci-XXXX:XX:XX.X-render or pci-XXXX:XX:XX.X-card
-        if (deviceName.find("pci-") == 0 && (deviceName.find("-render") != std::string::npos || deviceName.find("-card") != std::string::npos)) {
-            return true;
-        } else {
-            log<Verbosity::error>("Device path validation failed: invalid by-path symlink format: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
-            return false;
-        }
-    }
-
-    log<Verbosity::error>("Device path validation failed: unrecognized device pattern: %s (device=%s)\n", devicePath.c_str(), deviceName.c_str());
+    log<Verbosity::error>("Device path validation failed: unrecognized device pattern: %s\n", devicePath.c_str());
     return false;
 }
 
