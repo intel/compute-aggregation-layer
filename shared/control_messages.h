@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,6 +20,34 @@
 namespace Cal {
 
 namespace Messages {
+
+// Common helper function to sanitize string buffers against embedded null byte attacks
+inline void sanitizeStringBuffer(char *buffer, size_t bufferSize) {
+    // Ensure the buffer is null-terminated at the end
+    buffer[bufferSize - 1] = '\0';
+
+    // Security: Replace embedded null bytes with underscores
+    // This prevents attacks where malicious data is hidden after null bytes
+    for (size_t i = 0; i < bufferSize - 1; ++i) {
+        if (buffer[i] == '\0') {
+            // Check if there's non-null data after this position
+            bool hasDataAfter = false;
+            for (size_t j = i + 1; j < bufferSize - 1; ++j) {
+                if (buffer[j] != '\0') {
+                    hasDataAfter = true;
+                    break;
+                }
+            }
+            if (hasDataAfter) {
+                // This is an embedded null - replace it
+                buffer[i] = '_';
+            } else {
+                // This is the natural end of the string
+                break;
+            }
+        }
+    }
+}
 
 struct ControlMessageNop {
     Cal::Ipc::ControlMessageHeader header = {};
@@ -61,7 +89,7 @@ struct ReqHandshake {
     }
 
     friend void sanitizeReceivedData(ReqHandshake *reqHandshake) {
-        reqHandshake->clientProcessName[TS_COMM_LEN - 1] = '\0';
+        sanitizeStringBuffer(reqHandshake->clientProcessName, TS_COMM_LEN);
     }
 
     pid_t pid = 0;
@@ -428,7 +456,7 @@ struct ReqImportAddressSpace {
     }
 
     friend void sanitizeReceivedData(ReqImportAddressSpace *reqImportAddressSpace) {
-        reqImportAddressSpace->mallocShmemResourcePath[PATH_MAX - 1] = '\0';
+        sanitizeStringBuffer(reqImportAddressSpace->mallocShmemResourcePath, PATH_MAX);
     }
 
     char mallocShmemResourcePath[PATH_MAX] = {};
@@ -654,6 +682,19 @@ struct ReqRemoteMmap {
         return 0 != invalid;
     }
 
+    friend void sanitizeReceivedData(ReqRemoteMmap *reqRemoteMmap) {
+        // Validate and sanitize mmap parameters to prevent malicious usage
+        // Ensure length is reasonable (not zero and not too large)
+        if (reqRemoteMmap->length == 0 || reqRemoteMmap->length > SIZE_MAX / 2) {
+            reqRemoteMmap->length = 0; // Mark as invalid
+        }
+
+        // Ensure file descriptor is non-negative
+        if (reqRemoteMmap->fd < 0) {
+            reqRemoteMmap->fd = -1; // Mark as invalid
+        }
+    }
+
     void *address{};
     size_t length{};
     int prot{};
@@ -717,7 +758,7 @@ struct ReqOpenGpuDevice {
     }
 
     friend void sanitizeReceivedData(ReqOpenGpuDevice *reqOpenGpuDevice) {
-        reqOpenGpuDevice->devicePath[PATH_MAX - 1] = '\0';
+        sanitizeStringBuffer(reqOpenGpuDevice->devicePath, PATH_MAX);
     }
 
     char devicePath[PATH_MAX] = {};
@@ -782,7 +823,7 @@ struct ReqCloseGpuDevice {
     }
 
     friend void sanitizeReceivedData(ReqCloseGpuDevice *reqCloseGpuDevice) {
-        reqCloseGpuDevice->devicePath[PATH_MAX - 1] = '\0';
+        sanitizeStringBuffer(reqCloseGpuDevice->devicePath, PATH_MAX);
     }
 
     char devicePath[PATH_MAX] = {};
